@@ -339,7 +339,8 @@
 
     <script type="module">
         // Import transformers from the CDN as an ES Module
-        import { pipeline, env } from 'https://cdn.jsdelivr.net/npm/@xenova/transformers@2.17.2';
+        // Using @huggingface/transformers (v3) which supports Segformer architecture.
+        import { pipeline, env } from 'https://cdn.jsdelivr.net/npm/@huggingface/transformers';
 
         // Expose them to the global scope for the main application script
         window.transformersPipeline = pipeline;
