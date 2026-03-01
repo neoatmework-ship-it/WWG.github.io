@@ -337,8 +337,7 @@
         </div>
     </div>
 
-    <script type="module">
-        import imglyRemoveBackground from "https://unpkg.com/@imgly/background-removal@1.4.3/dist/imglyRemoveBackground.esm.js";
+    <script>
 
         const fileInput = document.getElementById('file-input');
         const dropZone = document.getElementById('drop-zone');
@@ -426,6 +425,10 @@
         async function processBgRemoval(canvas) {
             return new Promise(async (resolve, reject) => {
                 try {
+                    // Dynamically import the module only when needed
+                    const module = await import("https://unpkg.com/@imgly/background-removal@1.4.3/dist/imglyRemoveBackground.esm.js");
+                    const imglyRemoveBackground = module.default;
+
                     const blob = await new Promise(r => canvas.toBlob(r, 'image/png'));
                     const config = {
                         publicPath: "https://unpkg.com/@imgly/background-removal@1.4.3/dist/"
