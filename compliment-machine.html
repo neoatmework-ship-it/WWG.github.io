@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Compliment Machine 💖</title>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box
+        }
+
+        body {
+            font-family: 'Fredoka', sans-serif;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            transition: background 1s;
+            overflow: hidden
+        }
+
+        .container {
+            text-align: center;
+            padding: 20px;
+            max-width: 600px;
+            z-index: 2
+        }
+
+        h1 {
+            font-size: 1.8rem;
+            color: #fff;
+            margin-bottom: 4px
+        }
+
+        .sub {
+            color: rgba(255, 255, 255, .4);
+            font-size: .7rem;
+            margin-bottom: 40px
+        }
+
+        .compliment {
+            font-size: 1.6rem;
+            font-weight: 700;
+            color: #fff;
+            min-height: 100px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0 20px;
+            transition: all .3s;
+            animation: fade-in .5s ease
+        }
+
+        @keyframes fade-in {
+            from {
+                opacity: 0;
+                transform: scale(.9)
+            }
+
+            to {
+                opacity: 1;
+                transform: scale(1)
+            }
+        }
+
+        .emoji-burst {
+            font-size: 3rem;
+            margin: 20px 0
+        }
+
+        .click-hint {
+            color: rgba(255, 255, 255, .3);
+            font-size: .7rem;
+            margin-top: 30px;
+            animation: pulse 2s infinite
+        }
+
+        @keyframes pulse {
+
+            0%,
+            100% {
+                opacity: .3
+            }
+
+            50% {
+                opacity: .6
+            }
+        }
+
+        .counter {
+            position: fixed;
+            bottom: 15px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: rgba(255, 255, 255, .2);
+            font-size: .6rem;
+            z-index: 3
+        }
+
+        .counter span {
+            color: rgba(255, 255, 255, .5);
+            font-weight: 700
+        }
+
+        .heart {
+            position: fixed;
+            pointer-events: none;
+            z-index: 1;
+            animation: float-up 3s ease-out forwards;
+            opacity: 0
+        }
+
+        @keyframes float-up {
+            0% {
+                opacity: 0;
+                transform: translateY(0) scale(0)
+            }
+
+            10% {
+                opacity: 1;
+                transform: translateY(0) scale(1)
+            }
+
+            90% {
+                opacity: .5
+            }
+
+            100% {
+                opacity: 0;
+                transform: translateY(-300px) scale(.5) rotate(20deg)
+            }
+        }
+
+        .intensity {
+            position: fixed;
+            top: 15px;
+            right: 15px;
+            z-index: 3
+        }
+
+        .intensity label {
+            color: rgba(255, 255, 255, .3);
+            font-size: .6rem;
+            display: block;
+            margin-bottom: 4px
+        }
+
+        .intensity select {
+            background: rgba(255, 255, 255, .1);
+            border: 1px solid rgba(255, 255, 255, .1);
+            color: #fff;
+            border-radius: 8px;
+            padding: 4px 8px;
+            font-family: inherit;
+            font-size: .65rem;
+            cursor: pointer
+        }
+    </style>
+</head>
+
+<body style="background:linear-gradient(135deg,#831843,#4c1d95)">
+    <div class="intensity">
+        <label>Intensity</label>
+        <select id="intensity">
+            <option value="nice">Nice 😊</option>
+            <option value="extra" selected>Extra 💖</option>
+            <option value="unhinged">Unhinged 🤪</option>
+            <option value="cosmic">Cosmic 🌌</option>
+        </select>
+    </div>
+
+    <div class="container">
+        <h1>💖 The Compliment Machine</h1>
+        <div class="sub">You deserve this. Click or press any key for more.</div>
+        <div class="emoji-burst" id="emoji">✨</div>
+        <div class="compliment" id="compliment">You look absolutely incredible today.</div>
+        <div class="click-hint">click anywhere · press any key · exist beautifully</div>
+    </div>
+
+    <div class="counter">Compliments received: <span id="count">1</span></div>
+
+    <script>
+        const compliments = {
+            nice: [
+                "You have a really nice smile.",
+                "You're doing great, honestly.",
+                "Someone out there is thinking about you right now.",
+                "You make the world a little bit better.",
+                "Your taste in websites is impeccable.",
+                "You deserve a really good nap.",
+                "Your hair looks fantastic today.",
+                "You're way more interesting than you think.",
+                "Someone is genuinely lucky to know you.",
+                "You have excellent vibes.",
+                "Your existence is appreciated.",
+                "You're the kind of person people write songs about.",
+                "You give really good energy to a room.",
+                "Your sense of humor is underrated.",
+                "Hot take: you're pretty great.",
+            ],
+            extra: [
+                "You're so gorgeous even your SHADOW is attractive.",
+                "If you were a candle, you'd be the expensive kind that smells like vacation.",
+                "Your energy could power a small city. A FANCY small city.",
+                "Scientists agree: you are scientifically wonderful. Peer reviewed.",
+                "You're not just a snack, you're the WHOLE BUFFET. 🍽️",
+                "Even your typos are charming.",
+                "You walked so fashion could RUN.",
+                "Your brain is so big it needs its own zip code.",
+                "WiFi signals get stronger when you walk by.",
+                "Even autocorrect can't fix how perfect you are.",
+                "You're the human equivalent of finding $20 in your jacket pocket.",
+                "Your potential has potential.",
+                "If kindness was currency, you'd be a billionaire.",
+                "You make Mondays feel like Fridays.",
+                "Your smile just crashed my compliment algorithm. Too powerful.",
+            ],
+            unhinged: [
+                "If you were a polygon, you'd have INFINITE sides because you're WELL ROUNDED.",
+                "You're so bright, NASA wants to classify you as a celestial body.",
+                "Your DNA should be in a museum. The COOL museum.",
+                "You're the reason aliens haven't invaded. They're INTIMIDATED.",
+                "Every mirror you look into files a thank you note.",
+                "The sun is just trying to compete with your glow. It's LOSING.",
+                "You're so magnetic, compasses just point at you now.",
+                "Dictionaries want to add your photo next to the word 'perfection.'",
+                "Even your cells are impressed with you. Mitochondria? More like MIGHT-ochondria.",
+                "You're so cool, ice cubes get nervous around you.",
+                "If you were a vegetable, you'd be a CUTE-cumber. That's not science. I don't care.",
+                "Your vibe is so strong the Geneva Convention wanted to ban it.",
+                "You walk into a room and the room upgrades itself.",
+                "Your existence violated the second law of thermodynamics. You only go UP.",
+                "Gravity is just the Earth trying to be near you.",
+            ],
+            cosmic: [
+                "You are the universe experiencing itself, and the universe chose WELL.",
+                "Every atom in your body was forged in the heart of a dying star. Those stars would be HONORED.",
+                "The probability of you existing is 1 in 400 trillion. The universe rolled a PERFECT score.",
+                "Black holes aren't dark enough to contain your brilliance.",
+                "Time itself pauses slightly when you smile. This is not metaphorical.",
+                "You are what would happen if a sunset gained sentience and chose kindness.",
+                "Every galaxy in the observable universe is less complex than your beauty.",
+                "The cosmic microwave background radiation has a subtle pattern that, if decoded, just says your name.",
+                "You are the answer to a question the universe has been asking for 13.8 billion years.",
+                "Parallel universes exist solely so that more versions of you can be appreciated.",
+                "If consciousness is the universe's way of knowing itself, you are its favorite thought.",
+                "Entropy decreases in your presence. This violates physics. You are exempt.",
+                "Your existence is the universe's greatest flex.",
+                "Dark energy is just the cosmos blushing because you exist.",
+                "The Fibonacci sequence was discovered when someone tried to mathematically describe your proportions.",
+            ]
+        };
+
+        const emojis = {
+            nice: ['😊', '🌸', '✨', '💫', '🌈', '☀️', '🦋'],
+            extra: ['💖', '🔥', '💎', '👑', '🌟', '💅', '🎀', '✨'],
+            unhinged: ['🤪', '🫠', '💀', '🔥', '👁️', '🧠', '⚡', '🌋'],
+            cosmic: ['🌌', '🪐', '✨', '🌠', '🔮', '💫', '🌙', '⭐', '🌀']
+        };
+
+        const backgrounds = {
+            nice: ['#831843,#4c1d95', '#065f46,#1e3a5f', '#78350f,#831843', '#1e3a5f,#312e81'],
+            extra: ['#831843,#be185d', '#4c1d95,#7c3aed', '#be123c,#9333ea', '#b91c1c,#c026d3'],
+            unhinged: ['#000,#4c1d95', '#1a1a2e,#e94560', '#0a0a0a,#ff6b00', '#16213e,#e94560'],
+            cosmic: ['#0a0a2e,#1a0a3e', '#000,#0f172a', '#0c0c1d,#1a1a3e', '#020617,#172554'],
+        };
+
+        let count = 1;
+        let currentIntensity = 'extra';
+        let lastIndex = -1;
+
+        function getCompliment() {
+            const list = compliments[currentIntensity];
+            let idx;
+            do { idx = Math.floor(Math.random() * list.length); } while (idx === lastIndex && list.length > 1);
+            lastIndex = idx;
+            return list[idx];
+        }
+
+        function showCompliment() {
+            count++;
+            currentIntensity = document.getElementById('intensity').value;
+
+            document.getElementById('compliment').style.animation = 'none';
+            void document.getElementById('compliment').offsetWidth;
+            document.getElementById('compliment').style.animation = 'fade-in .5s ease';
+            document.getElementById('compliment').textContent = getCompliment();
+
+            const emojiList = emojis[currentIntensity];
+            document.getElementById('emoji').textContent = emojiList[Math.floor(Math.random() * emojiList.length)];
+            document.getElementById('count').textContent = count;
+
+            // Background
+            const bgs = backgrounds[currentIntensity];
+            const bg = bgs[Math.floor(Math.random() * bgs.length)].split(',');
+            document.body.style.background = `linear-gradient(135deg,${bg[0]},${bg[1]})`;
+
+            // Floating hearts
+            for (let i = 0; i < 5; i++) {
+                const h = document.createElement('div');
+                h.className = 'heart';
+                h.textContent = emojiList[Math.floor(Math.random() * emojiList.length)];
+                h.style.left = (10 + Math.random() * 80) + '%';
+                h.style.bottom = '20%';
+                h.style.fontSize = (1.5 + Math.random() * 2) + 'rem';
+                h.style.animationDelay = (Math.random() * .3) + 's';
+                document.body.appendChild(h);
+                setTimeout(() => h.remove(), 3000);
+            }
+        }
+
+        document.addEventListener('click', e => {
+            if (e.target.closest('.intensity')) return;
+            showCompliment();
+        });
+        document.addEventListener('keydown', e => {
+            if (e.key === 'Tab') return;
+            showCompliment();
+        });
+
+        // Auto-compliment every 8 seconds
+        setInterval(showCompliment, 8000);
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Infinite Maze — Can You Escape?</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #0a0a12;
+            color: #fff;
+            height: 100vh;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column
+        }
+
+        canvas {
+            display: block;
+            flex: 1
+        }
+
+        .hud {
+            position: fixed;
+            top: 16px;
+            left: 16px;
+            z-index: 10;
+            display: flex;
+            flex-direction: column;
+            gap: 8px
+        }
+
+        .hud-card {
+            background: rgba(10, 10, 18, .85);
+            backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, .06);
+            border-radius: 12px;
+            padding: 12px 16px;
+            font-size: .82rem
+        }
+
+        .hud-title {
+            font-size: .65rem;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            color: rgba(255, 255, 255, .35);
+            margin-bottom: 6px;
+            font-weight: 600
+        }
+
+        .hud-row {
+            display: flex;
+            gap: 16px
+        }
+
+        .stat-val {
+            font-weight: 700;
+            color: #4ade80;
+            font-size: 1rem
+        }
+
+        .stat-label {
+            font-size: .7rem;
+            color: rgba(255, 255, 255, .4)
+        }
+
+        .controls-hint {
+            position: fixed;
+            bottom: 16px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 10;
+            background: rgba(10, 10, 18, .8);
+            backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, .06);
+            border-radius: 12px;
+            padding: 10px 20px;
+            font-size: .75rem;
+            color: rgba(255, 255, 255, .35)
+        }
+
+        .controls-hint kbd {
+            display: inline-block;
+            padding: 2px 7px;
+            background: rgba(255, 255, 255, .08);
+            border: 1px solid rgba(255, 255, 255, .1);
+            border-radius: 4px;
+            font-family: inherit;
+            margin: 0 2px
+        }
+
+        .win-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, .7);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 100;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity .4s
+        }
+
+        .win-overlay.show {
+            opacity: 1;
+            pointer-events: auto
+        }
+
+        .win-overlay h2 {
+            font-size: 2.2rem;
+            font-weight: 800;
+            margin-bottom: 8px;
+            background: linear-gradient(135deg, #4ade80, #22d3ee);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent
+        }
+
+        .win-overlay p {
+            color: rgba(255, 255, 255, .5);
+            margin-bottom: 24px
+        }
+
+        .win-btn {
+            padding: 12px 28px;
+            background: linear-gradient(135deg, #4ade80, #22d3ee);
+            border: none;
+            border-radius: 12px;
+            color: #000;
+            font-weight: 700;
+            font-family: inherit;
+            font-size: .95rem;
+            cursor: pointer;
+            transition: transform .2s
+        }
+
+        .win-btn:hover {
+            transform: translateY(-2px)
+        }
+    </style>
+</head>
+
+<body>
+    <div class="hud">
+        <div class="hud-card">
+            <div class="hud-title">Maze</div>
+            <div class="hud-row">
+                <div>
+                    <div class="stat-val" id="level">1</div>
+                    <div class="stat-label">Level</div>
+                </div>
+                <div>
+                    <div class="stat-val" id="moves">0</div>
+                    <div class="stat-label">Moves</div>
+                </div>
+                <div>
+                    <div class="stat-val" id="timer">0:00</div>
+                    <div class="stat-label">Time</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="controls-hint"><kbd>↑</kbd> <kbd>↓</kbd> <kbd>←</kbd> <kbd>→</kbd> or
+        <kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> to move · Reach the green exit</div>
+    <div class="win-overlay" id="win-overlay">
+        <h2 id="win-text">Maze Complete!</h2>
+        <p id="win-stats">Solved in 0 moves</p>
+        <button class="win-btn" id="btn-next">Next Level →</button>
+    </div>
+    <canvas id="canvas"></canvas>
+    <script>
+        const canvas = document.getElementById('canvas'), ctx = canvas.getContext('2d');
+        let W, H; function resize() { W = canvas.width = innerWidth; H = canvas.height = innerHeight } resize(); window.addEventListener('resize', () => { resize(); draw() });
+
+        let level = 1, moves = 0, startTime = Date.now(), timerInterval;
+        let maze = [], cols, rows, cellSize, player, exit, offsetX, offsetY;
+
+        function generateMaze(c, r) {
+            const grid = []; for (let y = 0; y < r; y++) { grid[y] = []; for (let x = 0; x < c; x++)grid[y][x] = { x, y, walls: { top: true, right: true, bottom: true, left: true }, visited: false } }
+            const stack = []; let cur = grid[0][0]; cur.visited = true; stack.push(cur);
+            function neighbors(cell) { const n = []; const { x, y } = cell; if (y > 0 && !grid[y - 1][x].visited) n.push(grid[y - 1][x]); if (x < c - 1 && !grid[y][x + 1].visited) n.push(grid[y][x + 1]); if (y < r - 1 && !grid[y + 1][x].visited) n.push(grid[y + 1][x]); if (x > 0 && !grid[y][x - 1].visited) n.push(grid[y][x - 1]); return n }
+            while (stack.length > 0) { const nb = neighbors(cur); if (nb.length > 0) { const next = nb[Math.floor(Math.random() * nb.length)]; stack.push(cur); const dx = next.x - cur.x, dy = next.y - cur.y; if (dx === 1) { cur.walls.right = false; next.walls.left = false } else if (dx === -1) { cur.walls.left = false; next.walls.right = false } else if (dy === 1) { cur.walls.bottom = false; next.walls.top = false } else if (dy === -1) { cur.walls.top = false; next.walls.bottom = false } next.visited = true; cur = next } else { cur = stack.pop() } }
+            return grid;
+        }
+
+        function initLevel() {
+            const baseSize = 8 + level * 2; cols = Math.min(baseSize, 40); rows = Math.min(baseSize, 30);
+            cellSize = Math.min(Math.floor((W - 80) / cols), Math.floor((H - 80) / rows), 40);
+            offsetX = Math.floor((W - cols * cellSize) / 2); offsetY = Math.floor((H - rows * cellSize) / 2);
+            maze = generateMaze(cols, rows); player = { x: 0, y: 0 }; exit = { x: cols - 1, y: rows - 1 };
+            moves = 0; startTime = Date.now(); document.getElementById('level').textContent = level; document.getElementById('moves').textContent = 0;
+            document.getElementById('win-overlay').classList.remove('show');
+            clearInterval(timerInterval); timerInterval = setInterval(updateTimer, 1000); draw();
+        }
+
+        function updateTimer() { const s = Math.floor((Date.now() - startTime) / 1000); const m = Math.floor(s / 60); document.getElementById('timer').textContent = `${m}:${String(s % 60).padStart(2, '0')}` }
+
+        function draw() {
+            ctx.fillStyle = '#0a0a12'; ctx.fillRect(0, 0, W, H);
+            // Draw cells
+            for (let y = 0; y < rows; y++)for (let x = 0; x < cols; x++) {
+                const cell = maze[y][x], px = offsetX + x * cellSize, py = offsetY + y * cellSize;
+                // Floor
+                ctx.fillStyle = '#14141e'; ctx.fillRect(px + 1, py + 1, cellSize - 2, cellSize - 2);
+                // Walls
+                ctx.strokeStyle = '#3a3a50'; ctx.lineWidth = 2;
+                if (cell.walls.top) { ctx.beginPath(); ctx.moveTo(px, py); ctx.lineTo(px + cellSize, py); ctx.stroke() }
+                if (cell.walls.right) { ctx.beginPath(); ctx.moveTo(px + cellSize, py); ctx.lineTo(px + cellSize, py + cellSize); ctx.stroke() }
+                if (cell.walls.bottom) { ctx.beginPath(); ctx.moveTo(px, py + cellSize); ctx.lineTo(px + cellSize, py + cellSize); ctx.stroke() }
+                if (cell.walls.left) { ctx.beginPath(); ctx.moveTo(px, py); ctx.lineTo(px, py + cellSize); ctx.stroke() }
+            }
+            // Exit
+            const ex = offsetX + exit.x * cellSize, ey = offsetY + exit.y * cellSize;
+            ctx.fillStyle = 'rgba(74,222,128,.15)'; ctx.fillRect(ex + 2, ey + 2, cellSize - 4, cellSize - 4);
+            ctx.fillStyle = '#4ade80'; ctx.beginPath(); ctx.arc(ex + cellSize / 2, ey + cellSize / 2, cellSize * .25, 0, Math.PI * 2); ctx.fill();
+            // Player
+            const ppx = offsetX + player.x * cellSize, ppy = offsetY + player.y * cellSize;
+            const grd = ctx.createRadialGradient(ppx + cellSize / 2, ppy + cellSize / 2, 0, ppx + cellSize / 2, ppy + cellSize / 2, cellSize * .6);
+            grd.addColorStop(0, 'rgba(124,92,255,.25)'); grd.addColorStop(1, 'transparent'); ctx.fillStyle = grd; ctx.fillRect(ppx - cellSize * .2, ppy - cellSize * .2, cellSize * 1.4, cellSize * 1.4);
+            ctx.fillStyle = '#7c5cff'; ctx.beginPath(); ctx.arc(ppx + cellSize / 2, ppy + cellSize / 2, cellSize * .3, 0, Math.PI * 2); ctx.fill();
+            ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.arc(ppx + cellSize / 2 - cellSize * .06, ppy + cellSize / 2 - cellSize * .06, cellSize * .08, 0, Math.PI * 2); ctx.fill();
+        }
+
+        function movePlayer(dx, dy) {
+            const cell = maze[player.y][player.x];
+            if (dx === 1 && cell.walls.right) return; if (dx === -1 && cell.walls.left) return;
+            if (dy === 1 && cell.walls.bottom) return; if (dy === -1 && cell.walls.top) return;
+            player.x += dx; player.y += dy; moves++; document.getElementById('moves').textContent = moves; draw();
+            if (player.x === exit.x && player.y === exit.y) winLevel();
+        }
+
+        function winLevel() {
+            clearInterval(timerInterval); const s = Math.floor((Date.now() - startTime) / 1000);
+            document.getElementById('win-text').textContent = `Level ${level} Complete!`;
+            document.getElementById('win-stats').textContent = `Solved in ${moves} moves · ${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
+            document.getElementById('win-overlay').classList.add('show');
+        }
+
+        document.getElementById('btn-next').addEventListener('click', () => { level++; initLevel() });
+
+        document.addEventListener('keydown', e => {
+            switch (e.key) { case 'ArrowUp': case 'w': case 'W': e.preventDefault(); movePlayer(0, -1); break; case 'ArrowDown': case 's': case 'S': e.preventDefault(); movePlayer(0, 1); break; case 'ArrowLeft': case 'a': case 'A': e.preventDefault(); movePlayer(-1, 0); break; case 'ArrowRight': case 'd': case 'D': e.preventDefault(); movePlayer(1, 0); break }
+        });
+
+        // Touch support
+        let touchStart = null;
+        canvas.addEventListener('touchstart', e => { touchStart = { x: e.touches[0].clientX, y: e.touches[0].clientY } }, { passive: true });
+        canvas.addEventListener('touchend', e => { if (!touchStart) return; const dx = e.changedTouches[0].clientX - touchStart.x, dy = e.changedTouches[0].clientY - touchStart.y; if (Math.abs(dx) > Math.abs(dy)) { movePlayer(dx > 0 ? 1 : -1, 0) } else if (Math.abs(dy) > 20) { movePlayer(0, dy > 0 ? 1 : -1) } touchStart = null });
+
+        initLevel();
+    </script>
+</body>
+
+</html>

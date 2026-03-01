@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Memory But It Cheats 🃏</title>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box
+        }
+
+        body {
+            font-family: 'Fredoka', sans-serif;
+            background: #0a0a1a;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            color: #fff;
+            padding: 15px 0
+        }
+
+        h1 {
+            font-size: 1.4rem;
+            margin-bottom: 3px
+        }
+
+        h1 span {
+            color: #ef4444
+        }
+
+        .sub {
+            color: rgba(255, 255, 255, .4);
+            font-size: .65rem;
+            margin-bottom: 12px
+        }
+
+        .stats {
+            display: flex;
+            gap: 20px;
+            font-size: .7rem;
+            color: rgba(255, 255, 255, .4);
+            margin-bottom: 10px
+        }
+
+        .stats span {
+            color: #ef4444;
+            font-weight: 700
+        }
+
+        .board {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 8px;
+            max-width: 380px;
+            margin: 0 auto
+        }
+
+        .card {
+            width: 80px;
+            height: 90px;
+            perspective: 800px;
+            cursor: pointer
+        }
+
+        .card-inner {
+            width: 100%;
+            height: 100%;
+            position: relative;
+            transition: transform .4s;
+            transform-style: preserve-3d
+        }
+
+        .card.flipped .card-inner {
+            transform: rotateY(180deg)
+        }
+
+        .card.matched .card-inner {
+            transform: rotateY(180deg)
+        }
+
+        .card.matched {
+            opacity: .6;
+            pointer-events: none
+        }
+
+        .card-front,
+        .card-back {
+            position: absolute;
+            inset: 0;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            backface-visibility: hidden
+        }
+
+        .card-front {
+            background: linear-gradient(135deg, #1e1b4b, #312e81);
+            border: 2px solid rgba(139, 92, 246, .3);
+            font-size: 1.5rem
+        }
+
+        .card-back {
+            background: rgba(255, 255, 255, .06);
+            border: 2px solid rgba(255, 255, 255, .1);
+            transform: rotateY(180deg);
+            font-size: 2.5rem
+        }
+
+        .card:hover .card-front {
+            border-color: rgba(139, 92, 246, .6);
+            box-shadow: 0 0 15px rgba(139, 92, 246, .2)
+        }
+
+        .cheat-msg {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(239, 68, 68, .2);
+            border: 1px solid rgba(239, 68, 68, .3);
+            color: #fca5a5;
+            padding: 10px 20px;
+            border-radius: 12px;
+            font-size: .8rem;
+            z-index: 10;
+            pointer-events: none;
+            animation: cheat-pop .8s ease-out forwards
+        }
+
+        @keyframes cheat-pop {
+            0% {
+                opacity: 0;
+                transform: translate(-50%, -50%) scale(.8)
+            }
+
+            10% {
+                opacity: 1;
+                transform: translate(-50%, -50%) scale(1)
+            }
+
+            80% {
+                opacity: 1
+            }
+
+            100% {
+                opacity: 0;
+                transform: translate(-50%, -50%) translateY(-20px)
+            }
+        }
+
+        .win {
+            text-align: center;
+            margin: 20px 0;
+            display: none
+        }
+
+        .win.show {
+            display: block;
+            animation: pop .5s ease
+        }
+
+        @keyframes pop {
+            from {
+                opacity: 0;
+                transform: scale(.8)
+            }
+
+            to {
+                opacity: 1;
+                transform: scale(1)
+            }
+        }
+
+        .win h2 {
+            font-size: 1.5rem;
+            color: #4ade80;
+            margin-bottom: 6px
+        }
+
+        .win p {
+            color: rgba(255, 255, 255, .4);
+            font-size: .75rem;
+            margin-bottom: 10px
+        }
+
+        .btn {
+            padding: 8px 20px;
+            border-radius: 10px;
+            border: none;
+            background: #8b5cf6;
+            color: #fff;
+            font-family: inherit;
+            font-size: .75rem;
+            font-weight: 600;
+            cursor: pointer
+        }
+
+        .btn:hover {
+            background: #7c3aed
+        }
+
+        .cheats-used {
+            color: rgba(239, 68, 68, .5);
+            font-size: .6rem;
+            margin-top: 6px
+        }
+    </style>
+</head>
+
+<body>
+    <h1>🃏 Memory But It <span>Cheats</span></h1>
+    <div class="sub">A normal matching game. The cards just... move when you're not looking.</div>
+    <div class="stats">
+        Moves: <span id="moves">0</span> | Pairs: <span id="pairs">0</span>/8 | Cheats: <span id="cheats">0</span>
+    </div>
+    <div class="board" id="board"></div>
+    <div class="win" id="win">
+        <h2>🎉 You Won! (Despite the cheating)</h2>
+        <p id="win-text"></p>
+        <button class="btn" onclick="initGame()">🃏 Play Again (It Will Cheat Again)</button>
+    </div>
+
+    <script>
+        const emojis = ['🐶', '🐱', '🐸', '🦊', '🐼', '🦄', '🐙', '🎃', '🌈', '🍕', '💎', '🎸', '🚀', '👾', '🌸', '🎭'];
+        let cards = [];
+        let flipped = [];
+        let matched = 0;
+        let moves = 0;
+        let cheats = 0;
+        let locked = false;
+        const board = document.getElementById('board');
+
+        function initGame() {
+            board.innerHTML = '';
+            matched = 0; moves = 0; cheats = 0; flipped = []; locked = false;
+            document.getElementById('moves').textContent = 0;
+            document.getElementById('pairs').textContent = '0';
+            document.getElementById('cheats').textContent = 0;
+            document.getElementById('win').classList.remove('show');
+
+            // Pick 8 random emojis, double them
+            const picked = emojis.sort(() => Math.random() - .5).slice(0, 8);
+            const deck = [...picked, ...picked].sort(() => Math.random() - .5);
+
+            cards = deck.map((emoji, i) => {
+                const card = document.createElement('div');
+                card.className = 'card';
+                card.innerHTML = `<div class="card-inner"><div class="card-front">?</div><div class="card-back">${emoji}</div></div>`;
+                card.dataset.emoji = emoji;
+                card.dataset.index = i;
+                card.addEventListener('click', () => flipCard(card));
+                board.appendChild(card);
+                return card;
+            });
+        }
+
+        function flipCard(card) {
+            if (locked || card.classList.contains('flipped') || card.classList.contains('matched')) return;
+
+            card.classList.add('flipped');
+            flipped.push(card);
+
+            if (flipped.length === 2) {
+                moves++;
+                document.getElementById('moves').textContent = moves;
+                locked = true;
+
+                const [a, b] = flipped;
+                if (a.dataset.emoji === b.dataset.emoji) {
+                    // Match!
+                    setTimeout(() => {
+                        a.classList.add('matched');
+                        b.classList.add('matched');
+                        matched++;
+                        document.getElementById('pairs').textContent = matched;
+                        flipped = [];
+                        locked = false;
+
+                        if (matched === 8) {
+                            document.getElementById('win').classList.add('show');
+                            document.getElementById('win-text').textContent = `${moves} moves, ${cheats} times cheated. You won despite ${cheats} acts of sabotage.`;
+                        }
+
+                        // CHEAT: After a match, secretly swap some unmatched cards
+                        if (matched < 7 && Math.random() < 0.7) {
+                            sneakySwap();
+                        }
+                    }, 500);
+                } else {
+                    // No match — flip back
+                    setTimeout(() => {
+                        a.classList.remove('flipped');
+                        b.classList.remove('flipped');
+                        flipped = [];
+                        locked = false;
+
+                        // CHEAT: Sometimes swap after a failed match
+                        if (Math.random() < 0.5) {
+                            sneakySwap();
+                        }
+                    }, 800);
+                }
+            }
+        }
+
+        function sneakySwap() {
+            const unmatched = cards.filter(c => !c.classList.contains('matched') && !c.classList.contains('flipped'));
+            if (unmatched.length < 2) return;
+
+            // Pick 2 random unmatched cards and swap their emojis
+            const i = Math.floor(Math.random() * unmatched.length);
+            let j = Math.floor(Math.random() * unmatched.length);
+            while (j === i) j = Math.floor(Math.random() * unmatched.length);
+
+            const a = unmatched[i], b = unmatched[j];
+            const tempEmoji = a.dataset.emoji;
+            a.dataset.emoji = b.dataset.emoji;
+            b.dataset.emoji = tempEmoji;
+
+            const tempBack = a.querySelector('.card-back').textContent;
+            a.querySelector('.card-back').textContent = b.querySelector('.card-back').textContent;
+            b.querySelector('.card-back').textContent = tempBack;
+
+            cheats++;
+            document.getElementById('cheats').textContent = cheats;
+
+            // Show cheat message
+            const msgs = [
+                "🃏 Cards shuffled themselves...",
+                "👀 Something moved...",
+                "🎭 The cards are plotting...",
+                "🔀 *suspicious shuffling noises*",
+                "😈 The game just cheated.",
+                "🃏 Cards rearranged. Deal with it.",
+                "🤫 Shhh... nothing happened...",
+                "♻️ Some cards swapped. Oops.",
+            ];
+            const msg = document.createElement('div');
+            msg.className = 'cheat-msg';
+            msg.textContent = msgs[Math.floor(Math.random() * msgs.length)];
+            document.body.appendChild(msg);
+            setTimeout(() => msg.remove(), 1000);
+        }
+
+        initGame();
+    </script>
+</body>
+
+</html>

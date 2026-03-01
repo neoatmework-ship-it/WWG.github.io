@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cookie Clicker But Worse 🍪</title>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box
+        }
+
+        body {
+            font-family: 'Fredoka', sans-serif;
+            background: linear-gradient(135deg, #1a0f00, #0a0a1a);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+            overflow: hidden
+        }
+
+        h1 {
+            font-size: 1.6rem;
+            margin-bottom: 4px
+        }
+
+        h1 span {
+            color: #f59e0b
+        }
+
+        .sub {
+            color: rgba(255, 255, 255, .4);
+            font-size: .7rem;
+            margin-bottom: 20px
+        }
+
+        .cookie-area {
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 20px 0
+        }
+
+        .cookie {
+            font-size: 10rem;
+            cursor: pointer;
+            user-select: none;
+            transition: transform .1s, font-size .3s;
+            filter: drop-shadow(0 0 20px rgba(245, 158, 11, .2))
+        }
+
+        .cookie:hover {
+            filter: drop-shadow(0 0 30px rgba(245, 158, 11, .4))
+        }
+
+        .cookie:active {
+            transform: scale(.9)
+        }
+
+        .stats {
+            display: flex;
+            gap: 30px;
+            margin: 20px 0;
+            font-size: .8rem;
+            color: rgba(255, 255, 255, .5)
+        }
+
+        .stats div {
+            text-align: center
+        }
+
+        .stats span {
+            display: block;
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #f59e0b
+        }
+
+        .commentary {
+            color: rgba(255, 255, 255, .3);
+            font-size: .75rem;
+            min-height: 25px;
+            text-align: center;
+            max-width: 400px;
+            margin: 10px 0;
+            transition: all .3s
+        }
+
+        .crumb {
+            position: fixed;
+            pointer-events: none;
+            z-index: 10;
+            font-size: .8rem;
+            animation: crumb-fall 1s ease-in forwards
+        }
+
+        @keyframes crumb-fall {
+            0% {
+                opacity: 1;
+                transform: translateY(0) rotate(0deg)
+            }
+
+            100% {
+                opacity: 0;
+                transform: translateY(100px) rotate(180deg)
+            }
+        }
+
+        .plus {
+            position: fixed;
+            pointer-events: none;
+            z-index: 10;
+            font-size: .9rem;
+            font-weight: 700;
+            color: #f59e0b;
+            animation: float-up 1s ease-out forwards
+        }
+
+        @keyframes float-up {
+            0% {
+                opacity: 1;
+                transform: translateY(0)
+            }
+
+            100% {
+                opacity: 0;
+                transform: translateY(-60px)
+            }
+        }
+
+        .stage-flash {
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            z-index: 20;
+            animation: sflash .4s ease-out forwards
+        }
+
+        @keyframes sflash {
+            from {
+                opacity: 1
+            }
+
+            to {
+                opacity: 0
+            }
+        }
+
+        .win-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, .8);
+            z-index: 30;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            display: none
+        }
+
+        .win-overlay.show {
+            display: flex;
+            animation: pop .5s ease
+        }
+
+        @keyframes pop {
+            from {
+                transform: scale(.5);
+                opacity: 0
+            }
+
+            to {
+                transform: scale(1);
+                opacity: 1
+            }
+        }
+
+        .win-overlay h2 {
+            font-size: 2rem;
+            margin-bottom: 10px
+        }
+
+        .win-overlay p {
+            color: rgba(255, 255, 255, .5);
+            font-size: .85rem;
+            margin-bottom: 5px;
+            text-align: center;
+            max-width: 400px
+        }
+
+        .btn {
+            padding: 10px 24px;
+            border-radius: 12px;
+            border: none;
+            background: #f59e0b;
+            color: #000;
+            font-family: inherit;
+            font-size: .85rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all .15s;
+            margin-top: 15px
+        }
+
+        .btn:hover {
+            background: #d97706;
+            transform: translateY(-2px)
+        }
+
+        .size-bar {
+            width: 200px;
+            height: 6px;
+            border-radius: 3px;
+            background: rgba(255, 255, 255, .05);
+            overflow: hidden;
+            margin: 10px auto
+        }
+
+        .size-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #ef4444, #f59e0b);
+            transition: width .3s;
+            border-radius: 3px
+        }
+
+        .hint {
+            color: rgba(255, 255, 255, .2);
+            font-size: .55rem;
+            margin-top: 6px
+        }
+    </style>
+</head>
+
+<body>
+    <h1>🍪 Cookie Clicker But <span>Worse</span></h1>
+    <div class="sub">Every click makes the cookie smaller. How far can you go?</div>
+    <div class="stats">
+        <div>Clicks<span id="clicks">0</span></div>
+        <div>Cookie Size<span id="size-pct">100%</span></div>
+        <div>Stage<span id="stage">1</span></div>
+    </div>
+    <div class="size-bar">
+        <div class="size-fill" id="size-fill" style="width:100%"></div>
+    </div>
+    <div class="cookie-area">
+        <div class="cookie" id="cookie">🍪</div>
+    </div>
+    <div class="commentary" id="commentary">Click the cookie. It's that simple. (It's not.)</div>
+    <div class="hint">Hint: the cookie gets smaller. Way smaller.</div>
+
+    <div class="win-overlay" id="win">
+        <h2 id="win-title">🏆 You... won?</h2>
+        <p id="win-text"></p>
+        <p style="color:#f59e0b;font-size:1.2rem;font-weight:700" id="win-clicks"></p>
+        <button class="btn" onclick="location.reload()">🍪 Reset Cookie</button>
+    </div>
+
+    <script>
+        const cookie = document.getElementById('cookie');
+        const commentary = document.getElementById('commentary');
+        let clicks = 0;
+        let size = 10; // in rem
+        let stage = 1;
+        const startSize = 10;
+
+        const stages = [
+            { at: 0, name: 'Fresh Cookie', size: 10 },
+            { at: 10, name: 'Nibbled', size: 7 },
+            { at: 25, name: 'Snack Size', size: 5 },
+            { at: 50, name: 'Mini Cookie', size: 3 },
+            { at: 80, name: 'Crumb', size: 1.5 },
+            { at: 120, name: 'Pixel Cookie', size: 0.5 },
+            { at: 160, name: 'Atom Cookie', size: 0.15 },
+            { at: 200, name: 'Quantum Cookie', size: 0.05 },
+            { at: 250, name: 'Theoretical Cookie', size: 0.01 },
+        ];
+
+        const commentaries = [
+            [0, "A perfectly normal cookie. Click it."],
+            [5, "Nom nom nom."],
+            [10, "It's getting smaller... that's the point."],
+            [20, "You're really committed to this, huh?"],
+            [30, "The cookie is now fun-sized. Like you."],
+            [50, "Okay it's getting hard to see."],
+            [70, "You need a microscope for this cookie."],
+            [80, "Where is it. WHERE IS THE COOKIE."],
+            [100, "The cookie is now smaller than your will to continue."],
+            [120, "This is a pixel. You're clicking a pixel."],
+            [140, "Scientists cannot detect this cookie."],
+            [160, "The cookie has entered the quantum realm."],
+            [180, "Schrodinger's cookie: it both exists and doesn't."],
+            [200, "You're clicking where a cookie USED to be."],
+            [220, "At this point you're just clicking vibes."],
+            [240, "The cookie is a concept now."],
+            [250, "You've transcended cookies entirely."],
+        ];
+
+        cookie.addEventListener('click', e => {
+            clicks++;
+            document.getElementById('clicks').textContent = clicks;
+
+            // Find current stage
+            let currentStage = stages[0];
+            for (const s of stages) {
+                if (clicks >= s.at) currentStage = s;
+            }
+
+            // Smooth shrink
+            const progress = Math.min(1, clicks / 260);
+            size = startSize * (1 - progress * 0.999);
+            if (size < 0.01) size = 0.01;
+
+            cookie.style.fontSize = size + 'rem';
+            document.getElementById('size-pct').textContent = (size / startSize * 100).toFixed(1) + '%';
+            document.getElementById('size-fill').style.width = (size / startSize * 100) + '%';
+
+            // Stage
+            const stageNum = stages.indexOf(currentStage) + 1;
+            if (stageNum !== stage) {
+                stage = stageNum;
+                document.getElementById('stage').textContent = stage + ' - ' + currentStage.name;
+                const flash = document.createElement('div');
+                flash.className = 'stage-flash';
+                flash.style.background = `rgba(245,158,11,${0.1 + stage * 0.02})`;
+                document.body.appendChild(flash);
+                setTimeout(() => flash.remove(), 400);
+            }
+
+            // Commentary
+            for (const c of commentaries) {
+                if (clicks === c[0]) {
+                    commentary.textContent = c[1];
+                }
+            }
+
+            // +1 floating text
+            const plus = document.createElement('div');
+            plus.className = 'plus';
+            plus.textContent = '+1';
+            plus.style.left = e.clientX + 'px';
+            plus.style.top = e.clientY + 'px';
+            document.body.appendChild(plus);
+            setTimeout(() => plus.remove(), 1000);
+
+            // Crumb particles
+            for (let i = 0; i < 3; i++) {
+                const crumb = document.createElement('div');
+                crumb.className = 'crumb';
+                crumb.textContent = '🍪';
+                crumb.style.fontSize = Math.max(0.3, size * 0.3) + 'rem';
+                crumb.style.left = (e.clientX + (Math.random() - .5) * 40) + 'px';
+                crumb.style.top = e.clientY + 'px';
+                document.body.appendChild(crumb);
+                setTimeout(() => crumb.remove(), 1000);
+            }
+
+            // Win condition
+            if (clicks >= 260) {
+                document.getElementById('win').classList.add('show');
+                document.getElementById('win-text').textContent = `You clicked a cookie 260 times until it was smaller than a quark. This is what peak gaming looks like.`;
+                document.getElementById('win-clicks').textContent = `${clicks} clicks to achieve... nothing.`;
+            }
+        });
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pixel War ⚔️</title>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box
+        }
+
+        body {
+            font-family: 'Fredoka', sans-serif;
+            background: #0a0a1a;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            color: #fff;
+            overflow: hidden
+        }
+
+        .hud {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            padding: 12px 0;
+            z-index: 5
+        }
+
+        h1 {
+            font-size: 1.2rem;
+            font-weight: 700
+        }
+
+        h1 span {
+            color: #ef4444
+        }
+
+        .team-score {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: .75rem
+        }
+
+        .team-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%
+        }
+
+        .team-score span {
+            font-weight: 700;
+            min-width: 36px
+        }
+
+        .bar-container {
+            width: 200px;
+            height: 8px;
+            border-radius: 4px;
+            background: rgba(255, 255, 255, .1);
+            overflow: hidden;
+            display: flex
+        }
+
+        .bar-fill {
+            height: 100%;
+            transition: width .3s
+        }
+
+        canvas {
+            border: 1px solid rgba(255, 255, 255, .1);
+            border-radius: 8px;
+            cursor: crosshair
+        }
+
+        .pick {
+            display: flex;
+            gap: 8px;
+            margin: 10px 0
+        }
+
+        .pick-btn {
+            padding: 6px 16px;
+            border-radius: 10px;
+            border: 2px solid transparent;
+            background: rgba(255, 255, 255, .06);
+            color: rgba(255, 255, 255, .6);
+            font-family: inherit;
+            font-size: .7rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all .15s;
+            display: flex;
+            align-items: center;
+            gap: 4px
+        }
+
+        .pick-btn:hover {
+            background: rgba(255, 255, 255, .1);
+            color: #fff
+        }
+
+        .pick-btn.active {
+            color: #fff
+        }
+
+        .pick-btn .dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%
+        }
+
+        .info {
+            color: rgba(255, 255, 255, .3);
+            font-size: .6rem;
+            margin-top: 6px
+        }
+
+        .speed {
+            display: flex;
+            gap: 6px;
+            margin: 8px 0
+        }
+
+        .sp-btn {
+            padding: 4px 10px;
+            border-radius: 8px;
+            border: 1px solid rgba(255, 255, 255, .1);
+            background: rgba(255, 255, 255, .05);
+            color: rgba(255, 255, 255, .5);
+            font-family: inherit;
+            font-size: .6rem;
+            cursor: pointer
+        }
+
+        .sp-btn:hover {
+            background: rgba(255, 255, 255, .1);
+            color: #fff
+        }
+
+        .sp-btn.active {
+            background: rgba(255, 255, 255, .15);
+            color: #fff;
+            border-color: rgba(255, 255, 255, .3)
+        }
+    </style>
+</head>
+
+<body>
+    <div class="hud">
+        <div class="team-score">
+            <div class="team-dot" style="background:#ef4444"></div>
+            Red: <span id="red-count">0</span>
+        </div>
+        <div class="bar-container">
+            <div class="bar-fill" id="red-bar" style="background:#ef4444;width:50%"></div>
+            <div class="bar-fill" id="blue-bar" style="background:#3b82f6;width:50%"></div>
+        </div>
+        <div class="team-score">
+            <div class="team-dot" style="background:#3b82f6"></div>
+            Blue: <span id="blue-count">0</span>
+        </div>
+        <h1>⚔️ Pixel <span>War</span></h1>
+    </div>
+
+    <canvas id="canvas"></canvas>
+
+    <div class="pick">
+        <button class="pick-btn active" data-team="red">
+            <div class="dot" style="background:#ef4444"></div> Red Team
+        </button>
+        <button class="pick-btn" data-team="blue">
+            <div class="dot" style="background:#3b82f6"></div> Blue Team
+        </button>
+        <button class="pick-btn" data-team="green">
+            <div class="dot" style="background:#22c55e"></div> Green Team
+        </button>
+        <button class="pick-btn" data-team="purple">
+            <div class="dot" style="background:#a855f7"></div> Purple
+        </button>
+        <button class="pick-btn" data-team="gold">
+            <div class="dot" style="background:#f59e0b"></div> Gold
+        </button>
+    </div>
+    <div class="speed">
+        <button class="sp-btn" data-speed="1">🐢 Slow</button>
+        <button class="sp-btn active" data-speed="3">⚡ Normal</button>
+        <button class="sp-btn" data-speed="8">🔥 Fast</button>
+        <button class="sp-btn" data-speed="20">💀 Chaos</button>
+    </div>
+    <div class="info">Click to place soldiers · Watch them fight · Pick your side</div>
+
+    <script>
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        const PX = 4;
+
+        canvas.width = Math.floor((window.innerWidth - 40) / PX) * PX;
+        canvas.height = Math.floor((window.innerHeight - 180) / PX) * PX;
+        const W = canvas.width / PX;
+        const H = canvas.height / PX;
+
+        const TEAMS = {
+            red: { r: 239, g: 68, b: 68 },
+            blue: { r: 59, g: 130, b: 246 },
+            green: { r: 34, g: 197, b: 94 },
+            purple: { r: 168, g: 85, b: 247 },
+            gold: { r: 245, g: 158, b: 11 },
+        };
+        const TEAM_NAMES = Object.keys(TEAMS);
+
+        // Grid: 0 = empty, or team name
+        const grid = Array.from({ length: H }, () => Array(W).fill(null));
+
+        let selectedTeam = 'red';
+        let speed = 3;
+        let painting = false;
+
+        // Random initial territories
+        function seedTeams() {
+            const spread = 40;
+            // Red top-left quarter
+            for (let i = 0; i < 200; i++) {
+                const x = Math.floor(Math.random() * (W / 3));
+                const y = Math.floor(Math.random() * (H / 3));
+                if (x < W && y < H) grid[y][x] = 'red';
+            }
+            // Blue bottom-right quarter
+            for (let i = 0; i < 200; i++) {
+                const x = Math.floor(W * 2 / 3 + Math.random() * (W / 3));
+                const y = Math.floor(H * 2 / 3 + Math.random() * (H / 3));
+                if (x < W && y < H) grid[y][x] = 'blue';
+            }
+        }
+
+        function render() {
+            const imageData = ctx.createImageData(canvas.width, canvas.height);
+            const data = imageData.data;
+
+            for (let y = 0; y < H; y++) {
+                for (let x = 0; x < W; x++) {
+                    const team = grid[y][x];
+                    if (team) {
+                        const c = TEAMS[team];
+                        // Fill PXxPX block
+                        for (let py = 0; py < PX; py++) {
+                            for (let px = 0; px < PX; px++) {
+                                const idx = ((y * PX + py) * canvas.width + (x * PX + px)) * 4;
+                                data[idx] = c.r;
+                                data[idx + 1] = c.g;
+                                data[idx + 2] = c.b;
+                                data[idx + 3] = 255;
+                            }
+                        }
+                    }
+                }
+            }
+            ctx.putImageData(imageData, 0, 0);
+        }
+
+        function simulate() {
+            const iterations = speed * 500;
+            for (let i = 0; i < iterations; i++) {
+                const x = Math.floor(Math.random() * W);
+                const y = Math.floor(Math.random() * H);
+                const cell = grid[y][x];
+                if (!cell) continue;
+
+                // Try to spread to a random neighbor
+                const dirs = [[0, -1], [1, 0], [0, 1], [-1, 0]];
+                const [dx, dy] = dirs[Math.floor(Math.random() * 4)];
+                const nx = x + dx, ny = y + dy;
+                if (nx < 0 || nx >= W || ny < 0 || ny >= H) continue;
+
+                const neighbor = grid[ny][nx];
+                if (!neighbor) {
+                    // Spread to empty space
+                    if (Math.random() < 0.3) grid[ny][nx] = cell;
+                } else if (neighbor !== cell) {
+                    // FIGHT! 50/50 chance
+                    if (Math.random() < 0.5) {
+                        grid[ny][nx] = cell; // attacker wins
+                    } else {
+                        grid[y][x] = neighbor; // defender wins
+                    }
+                }
+            }
+        }
+
+        function updateScores() {
+            const counts = {};
+            TEAM_NAMES.forEach(t => counts[t] = 0);
+            let total = 0;
+            for (let y = 0; y < H; y++) {
+                for (let x = 0; x < W; x++) {
+                    if (grid[y][x]) {
+                        counts[grid[y][x]]++;
+                        total++;
+                    }
+                }
+            }
+            document.getElementById('red-count').textContent = counts.red;
+            document.getElementById('blue-count').textContent = counts.blue;
+            if (total > 0) {
+                document.getElementById('red-bar').style.width = (counts.red / total * 100) + '%';
+                document.getElementById('blue-bar').style.width = (counts.blue / total * 100) + '%';
+            }
+        }
+
+        function loop() {
+            simulate();
+            render();
+            updateScores();
+            requestAnimationFrame(loop);
+        }
+
+        // Paint soldiers
+        canvas.addEventListener('mousedown', e => { painting = true; paint(e); });
+        canvas.addEventListener('mousemove', e => { if (painting) paint(e); });
+        canvas.addEventListener('mouseup', () => painting = false);
+        canvas.addEventListener('mouseleave', () => painting = false);
+
+        function paint(e) {
+            const rect = canvas.getBoundingClientRect();
+            const cx = Math.floor((e.clientX - rect.left) / PX);
+            const cy = Math.floor((e.clientY - rect.top) / PX);
+            const brush = 3;
+            for (let dy = -brush; dy <= brush; dy++) {
+                for (let dx = -brush; dx <= brush; dx++) {
+                    const nx = cx + dx, ny = cy + dy;
+                    if (nx >= 0 && nx < W && ny >= 0 && ny < H && Math.random() < 0.7) {
+                        grid[ny][nx] = selectedTeam;
+                    }
+                }
+            }
+        }
+
+        // Team selection
+        document.querySelectorAll('.pick-btn').forEach(btn => {
+            btn.addEventListener('click', function () {
+                document.querySelectorAll('.pick-btn').forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+                selectedTeam = this.dataset.team;
+                this.style.borderColor = `rgb(${TEAMS[selectedTeam].r},${TEAMS[selectedTeam].g},${TEAMS[selectedTeam].b})`;
+            });
+        });
+        document.querySelector('.pick-btn[data-team="red"]').style.borderColor = '#ef4444';
+
+        // Speed
+        document.querySelectorAll('.sp-btn').forEach(btn => {
+            btn.addEventListener('click', function () {
+                document.querySelectorAll('.sp-btn').forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+                speed = parseInt(this.dataset.speed);
+            });
+        });
+
+        seedTeams();
+        loop();
+    </script>
+</body>
+
+</html>

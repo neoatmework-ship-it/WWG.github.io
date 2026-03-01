@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Color Piano — Play Music with Colors</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        *,
+        *::before,
+        *::after {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #070710;
+            color: #fff;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            user-select: none
+        }
+
+        #bg-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0
+        }
+
+        .header {
+            position: relative;
+            z-index: 10;
+            padding: 16px 24px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 10px
+        }
+
+        .header-logo {
+            width: 32px;
+            height: 32px;
+            background: linear-gradient(135deg, #ff6b9d, #c084fc, #38bdf8);
+            border-radius: 8px
+        }
+
+        .header-title {
+            font-weight: 700;
+            font-size: 1rem
+        }
+
+        .header-hint {
+            font-size: .78rem;
+            color: rgba(255, 255, 255, .35)
+        }
+
+        .piano-container {
+            position: relative;
+            z-index: 10;
+            flex: 1;
+            display: flex;
+            align-items: flex-end;
+            justify-content: center;
+            padding: 0 20px
+        }
+
+        .piano {
+            display: flex;
+            position: relative;
+            height: 280px
+        }
+
+        .key {
+            position: relative;
+            cursor: pointer;
+            transition: transform .08s;
+            display: flex;
+            align-items: flex-end;
+            justify-content: center;
+            padding-bottom: 16px
+        }
+
+        .key-label {
+            font-size: .65rem;
+            font-weight: 600;
+            opacity: .4;
+            pointer-events: none
+        }
+
+        .white-key {
+            width: 56px;
+            height: 100%;
+            background: linear-gradient(180deg, #f0f0f5, #e0e0e8);
+            border: 1px solid rgba(0, 0, 0, .12);
+            border-radius: 0 0 10px 10px;
+            z-index: 1;
+            color: #555
+        }
+
+        .white-key:hover {
+            background: linear-gradient(180deg, #fff, #f0f0f5)
+        }
+
+        .white-key.pressed {
+            transform: scaleY(.98);
+            transform-origin: top;
+            background: linear-gradient(180deg, #e8e8f0, #d8d8e0)
+        }
+
+        .black-key {
+            width: 36px;
+            height: 60%;
+            background: linear-gradient(180deg, #2a2a35, #1a1a22);
+            border-radius: 0 0 8px 8px;
+            position: absolute;
+            z-index: 2;
+            color: rgba(255, 255, 255, .3);
+            border: 1px solid rgba(0, 0, 0, .3);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, .4)
+        }
+
+        .black-key:hover {
+            background: linear-gradient(180deg, #353540, #252530)
+        }
+
+        .black-key.pressed {
+            transform: scaleY(.97);
+            transform-origin: top;
+            height: 58%
+        }
+
+        .key.pressed::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 80%;
+            height: 4px;
+            border-radius: 2px;
+            background: var(--key-color, #7c5cff);
+            box-shadow: 0 0 20px var(--key-color), 0 0 60px var(--key-color)
+        }
+
+        .particle {
+            position: fixed;
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 5
+        }
+
+        .keyboard-bar {
+            position: relative;
+            z-index: 10;
+            text-align: center;
+            padding: 16px;
+            font-size: .75rem;
+            color: rgba(255, 255, 255, .2)
+        }
+
+        .keyboard-bar kbd {
+            display: inline-block;
+            padding: 2px 8px;
+            background: rgba(255, 255, 255, .06);
+            border: 1px solid rgba(255, 255, 255, .1);
+            border-radius: 4px;
+            font-family: inherit;
+            font-size: .7rem;
+            margin: 0 2px
+        }
+
+        @media(max-width:900px) {
+            .white-key {
+                width: 40px
+            }
+
+            .black-key {
+                width: 28px
+            }
+
+            .piano {
+                height: 220px
+            }
+        }
+
+        @media(max-width:600px) {
+            .white-key {
+                width: 32px
+            }
+
+            .black-key {
+                width: 22px
+            }
+
+            .piano {
+                height: 180px
+            }
+
+            .key-label {
+                display: none
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <canvas id="bg-canvas"></canvas>
+    <div class="header">
+        <div class="header-left">
+            <div class="header-logo"></div><span class="header-title">Color Piano</span>
+        </div>
+        <span class="header-hint">Click keys or use keyboard</span>
+    </div>
+    <div class="piano-container">
+        <div class="piano" id="piano"></div>
+    </div>
+    <div class="keyboard-bar">Use keys
+        <kbd>A</kbd><kbd>W</kbd><kbd>S</kbd><kbd>E</kbd><kbd>D</kbd><kbd>F</kbd><kbd>T</kbd><kbd>G</kbd><kbd>Y</kbd><kbd>H</kbd><kbd>U</kbd><kbd>J</kbd><kbd>K</kbd>
+    </div>
+    <script>
+        const NOTES = [
+            { note: 'C4', freq: 261.63, color: '#ff4444', hue: 0, type: 'white', key: 'a' },
+            { note: 'C#4', freq: 277.18, color: '#ff6622', hue: 20, type: 'black', key: 'w' },
+            { note: 'D4', freq: 293.66, color: '#ff8800', hue: 35, type: 'white', key: 's' },
+            { note: 'D#4', freq: 311.13, color: '#ffaa00', hue: 45, type: 'black', key: 'e' },
+            { note: 'E4', freq: 329.63, color: '#ffdd00', hue: 55, type: 'white', key: 'd' },
+            { note: 'F4', freq: 349.23, color: '#88ee00', hue: 90, type: 'white', key: 'f' },
+            { note: 'F#4', freq: 369.99, color: '#00cc44', hue: 140, type: 'black', key: 't' },
+            { note: 'G4', freq: 392.00, color: '#00bbcc', hue: 185, type: 'white', key: 'g' },
+            { note: 'G#4', freq: 415.30, color: '#0088ff', hue: 215, type: 'black', key: 'y' },
+            { note: 'A4', freq: 440.00, color: '#4466ff', hue: 235, type: 'white', key: 'h' },
+            { note: 'A#4', freq: 466.16, color: '#7744ff', hue: 260, type: 'black', key: 'u' },
+            { note: 'B4', freq: 493.88, color: '#aa33ff', hue: 280, type: 'white', key: 'j' },
+            { note: 'C5', freq: 523.25, color: '#ff44aa', hue: 330, type: 'white', key: 'k' }
+        ];
+        let audioCtx = null;
+        function getAudioCtx() { if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)(); return audioCtx }
+        function playNote(freq) { const ctx = getAudioCtx(), now = ctx.currentTime; const osc = ctx.createOscillator(); osc.type = 'sine'; osc.frequency.setValueAtTime(freq, now); const osc2 = ctx.createOscillator(); osc2.type = 'triangle'; osc2.frequency.setValueAtTime(freq * 2, now); const g = ctx.createGain(); g.gain.setValueAtTime(0, now); g.gain.linearRampToValueAtTime(.3, now + .02); g.gain.exponentialRampToValueAtTime(.15, now + .2); g.gain.exponentialRampToValueAtTime(.001, now + 1.5); const g2 = ctx.createGain(); g2.gain.setValueAtTime(.05, now); g2.gain.exponentialRampToValueAtTime(.001, now + 1); osc.connect(g); osc2.connect(g2); g.connect(ctx.destination); g2.connect(ctx.destination); osc.start(now); osc2.start(now); osc.stop(now + 1.5); osc2.stop(now + 1) }
+        const pianoEl = document.getElementById('piano');
+        function buildPiano() { pianoEl.innerHTML = ''; let wi = 0; NOTES.forEach((n, i) => { if (n.type === 'white') { const el = document.createElement('div'); el.className = 'key white-key'; el.dataset.index = i; el.style.setProperty('--key-color', n.color); el.innerHTML = `<span class="key-label">${n.key.toUpperCase()}</span>`; pianoEl.appendChild(el); wi++ } }); wi = 0; NOTES.forEach((n, i) => { if (n.type === 'white') { wi++; return } const el = document.createElement('div'); el.className = 'key black-key'; el.dataset.index = i; el.style.setProperty('--key-color', n.color); const ww = pianoEl.querySelector('.white-key')?.offsetWidth || 56; el.style.left = ((wi - 1) * ww + ww * .7) + 'px'; el.innerHTML = `<span class="key-label">${n.key.toUpperCase()}</span>`; pianoEl.appendChild(el) }) }
+        buildPiano(); window.addEventListener('resize', () => setTimeout(buildPiano, 100));
+        function pressKey(i) { const n = NOTES[i]; if (!n) return; playNote(n.freq); triggerVisual(n.color, n.hue); spawnParticles(i, n.color); const el = pianoEl.querySelector(`[data-index="${i}"]`); if (el) { el.classList.add('pressed'); setTimeout(() => el.classList.remove('pressed'), 200) } }
+        pianoEl.addEventListener('mousedown', e => { const k = e.target.closest('.key'); if (k) pressKey(parseInt(k.dataset.index)) });
+        pianoEl.addEventListener('touchstart', e => { e.preventDefault(); const k = e.target.closest('.key'); if (k) pressKey(parseInt(k.dataset.index)) }, { passive: false });
+        const keyMap = {}; NOTES.forEach((n, i) => { keyMap[n.key] = i }); const keysDown = new Set();
+        document.addEventListener('keydown', e => { const k = e.key.toLowerCase(); if (keyMap[k] !== undefined && !keysDown.has(k)) { keysDown.add(k); pressKey(keyMap[k]) } });
+        document.addEventListener('keyup', e => { keysDown.delete(e.key.toLowerCase()) });
+        const bgC = document.getElementById('bg-canvas'), bgCtx = bgC.getContext('2d'); let bgW, bgH;
+        function resizeBg() { bgW = bgC.width = innerWidth; bgH = bgC.height = innerHeight } resizeBg(); window.addEventListener('resize', resizeBg);
+        let ripples = [];
+        function triggerVisual(color, hue) { ripples.push({ x: bgW * (.2 + Math.random() * .6), y: bgH * (.2 + Math.random() * .6), radius: 0, color, hue, alpha: .3, speed: 8 }) }
+        function drawBg() { bgCtx.fillStyle = 'rgba(7,7,16,0.15)'; bgCtx.fillRect(0, 0, bgW, bgH); for (let i = ripples.length - 1; i >= 0; i--) { const r = ripples[i]; r.radius += r.speed; r.alpha *= .985; if (r.alpha < .005) { ripples.splice(i, 1); continue } const grd = bgCtx.createRadialGradient(r.x, r.y, 0, r.x, r.y, r.radius); grd.addColorStop(0, 'transparent'); grd.addColorStop(.6, `hsla(${r.hue},80%,50%,${r.alpha * .3})`); grd.addColorStop(.85, `hsla(${r.hue},80%,50%,${r.alpha})`); grd.addColorStop(1, 'transparent'); bgCtx.fillStyle = grd; bgCtx.beginPath(); bgCtx.arc(r.x, r.y, r.radius, 0, Math.PI * 2); bgCtx.fill() } requestAnimationFrame(drawBg) } drawBg();
+        function spawnParticles(index, color) { const el = pianoEl.querySelector(`[data-index="${index}"]`); if (!el) return; const rect = el.getBoundingClientRect(); const cx = rect.left + rect.width / 2, cy = rect.top; for (let i = 0; i < 8; i++) { const p = document.createElement('div'); p.className = 'particle'; const sz = 4 + Math.random() * 6; p.style.width = sz + 'px'; p.style.height = sz + 'px'; p.style.background = color; p.style.boxShadow = `0 0 12px ${color}`; p.style.left = cx + 'px'; p.style.top = cy + 'px'; document.body.appendChild(p); const angle = -Math.PI / 2 + (Math.random() - .5) * Math.PI; const spd = 2 + Math.random() * 4; let vx = Math.cos(angle) * spd, vy = Math.sin(angle) * spd, x = cx, y = cy, a = 1; (function anim() { x += vx; y += vy + .5; a -= .02; if (a <= 0) { p.remove(); return } p.style.left = x + 'px'; p.style.top = y + 'px'; p.style.opacity = a; requestAnimationFrame(anim) })() } }
+    </script>
+</body>
+
+</html>

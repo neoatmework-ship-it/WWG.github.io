@@ -1,0 +1,1060 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Useless Button Museum</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700;800;900&family=Inter:wght@400;500;600&display=swap"
+        rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #08080f;
+            color: #e0e0e8;
+            min-height: 100vh;
+            overflow-x: hidden
+        }
+
+        canvas#confetti {
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            z-index: 9999
+        }
+
+        /* Counter bar */
+        .counter-bar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 40px;
+            background: rgba(8, 8, 15, .95);
+            backdrop-filter: blur(16px);
+            border-bottom: 1px solid rgba(255, 255, 255, .06);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 20px;
+            z-index: 100;
+            font-size: .72rem
+        }
+
+        .counter-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            color: rgba(255, 255, 255, .3)
+        }
+
+        .counter-item strong {
+            font-weight: 700;
+            font-variant-numeric: tabular-nums
+        }
+
+        .ci-clicks strong {
+            color: #4ade80
+        }
+
+        .ci-regrets strong {
+            color: #ef4444
+        }
+
+        .ci-time strong {
+            color: #f59e0b
+        }
+
+        .ci-ach strong {
+            color: #a78bfa
+        }
+
+        .ach-tab-btn {
+            padding: 4px 12px;
+            background: rgba(167, 139, 250, .12);
+            border: 1px solid rgba(167, 139, 250, .2);
+            border-radius: 6px;
+            color: #a78bfa;
+            font-size: .7rem;
+            font-weight: 600;
+            font-family: inherit;
+            cursor: pointer;
+            transition: all .15s;
+            margin-left: 8px
+        }
+
+        .ach-tab-btn:hover {
+            background: rgba(167, 139, 250, .2)
+        }
+
+        /* Hero */
+        .hero {
+            text-align: center;
+            padding: 60px 24px 24px;
+            position: relative
+        }
+
+        .hero h1 {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: clamp(2rem, 6vw, 3.2rem);
+            font-weight: 900;
+            letter-spacing: -2px;
+            margin-bottom: 6px
+        }
+
+        .hero h1 .rainbow {
+            background: linear-gradient(90deg, #ef4444, #f59e0b, #4ade80, #22d3ee, #a78bfa, #f472b6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            animation: hue 3s linear infinite;
+            background-size: 200%
+        }
+
+        @keyframes hue {
+            0% {
+                background-position: 0%
+            }
+
+            100% {
+                background-position: 200%
+            }
+        }
+
+        .hero p {
+            color: rgba(255, 255, 255, .2);
+            font-size: .85rem;
+            max-width: 500px;
+            margin: 0 auto
+        }
+
+        /* Grid */
+        .grid {
+            max-width: 750px;
+            margin: 0 auto;
+            padding: 0 20px 80px;
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px
+        }
+
+        .exhibit {
+            background: rgba(255, 255, 255, .02);
+            border: 1px solid rgba(255, 255, 255, .06);
+            border-radius: 14px;
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            transition: all .3s
+        }
+
+        .exhibit:hover {
+            background: rgba(255, 255, 255, .04);
+            border-color: rgba(255, 255, 255, .1)
+        }
+
+        .exhibit-label {
+            font-size: .55rem;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            color: rgba(255, 255, 255, .12);
+            margin-bottom: 8px;
+            font-weight: 600
+        }
+
+        .exhibit-desc {
+            font-size: .68rem;
+            color: rgba(255, 255, 255, .18);
+            margin-top: 8px;
+            line-height: 1.4
+        }
+
+        .ubtn {
+            padding: 12px 24px;
+            border-radius: 10px;
+            border: none;
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: .82rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all .15s;
+            position: relative;
+            overflow: hidden;
+            white-space: nowrap
+        }
+
+        .ubtn:active {
+            transform: scale(.95)
+        }
+
+        /* Button styles */
+        .ubtn-do-not {
+            background: #ef4444;
+            color: #fff;
+            animation: pulse 2s infinite
+        }
+
+        @keyframes pulse {
+
+            0%,
+            100% {
+                box-shadow: 0 0 0 0 rgba(239, 68, 68, .4)
+            }
+
+            50% {
+                box-shadow: 0 0 0 10px rgba(239, 68, 68, 0)
+            }
+        }
+
+        .ubtn-nothing {
+            background: linear-gradient(135deg, #1e1e2e, #2a2a3e);
+            color: #666;
+            border: 1px solid rgba(255, 255, 255, .06)
+        }
+
+        .ubtn-spin {
+            background: linear-gradient(135deg, #7c3aed, #a78bfa);
+            color: #fff
+        }
+
+        .ubtn-gravity {
+            background: linear-gradient(135deg, #0891b2, #22d3ee);
+            color: #fff
+        }
+
+        .ubtn-clone {
+            background: linear-gradient(135deg, #059669, #4ade80);
+            color: #fff
+        }
+
+        .ubtn-drama {
+            background: linear-gradient(135deg, #b45309, #f59e0b);
+            color: #000
+        }
+
+        .ubtn-reverse {
+            background: linear-gradient(135deg, #be185d, #f472b6);
+            color: #fff
+        }
+
+        .ubtn-dark {
+            background: #000;
+            color: #fff;
+            border: 2px solid #333
+        }
+
+        .ubtn-age {
+            background: linear-gradient(135deg, #4338ca, #818cf8);
+            color: #fff
+        }
+
+        .ubtn-lie {
+            background: linear-gradient(135deg, #dc2626, #f87171);
+            color: #fff
+        }
+
+        .ubtn-pixel {
+            background: linear-gradient(135deg, #065f46, #10b981);
+            color: #fff
+        }
+
+        .ubtn-translate {
+            background: linear-gradient(135deg, #7e22ce, #c084fc);
+            color: #fff
+        }
+
+        .ubtn-speed {
+            background: linear-gradient(135deg, #c2410c, #fb923c);
+            color: #fff
+        }
+
+        .ubtn-size {
+            background: linear-gradient(135deg, #1d4ed8, #60a5fa);
+            color: #fff
+        }
+
+        .ubtn-confess {
+            background: linear-gradient(135deg, #831843, #f9a8d4);
+            color: #fff
+        }
+
+        .ubtn-count {
+            background: linear-gradient(135deg, #374151, #9ca3af);
+            color: #fff
+        }
+
+        /* Extras */
+        .clone-zone {
+            min-height: 10px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 3px;
+            justify-content: center;
+            margin-top: 6px
+        }
+
+        .mini-btn {
+            padding: 2px 6px;
+            border-radius: 3px;
+            background: #4ade80;
+            border: none;
+            font-size: .5rem;
+            color: #000;
+            font-weight: 700;
+            cursor: pointer;
+            animation: popIn .2s
+        }
+
+        @keyframes popIn {
+            from {
+                transform: scale(0)
+            }
+
+            to {
+                transform: scale(1)
+            }
+        }
+
+        .breaking-news {
+            position: fixed;
+            bottom: -60px;
+            left: 0;
+            right: 0;
+            height: 44px;
+            background: #ef4444;
+            display: flex;
+            align-items: center;
+            z-index: 9998;
+            transition: bottom .4s;
+            overflow: hidden
+        }
+
+        .breaking-news.show {
+            bottom: 0
+        }
+
+        .breaking-label {
+            background: #000;
+            color: #ef4444;
+            padding: 0 14px;
+            font-size: .65rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            white-space: nowrap;
+            flex-shrink: 0
+        }
+
+        .breaking-text {
+            color: #fff;
+            font-size: .75rem;
+            font-weight: 700;
+            white-space: nowrap;
+            animation: scroll 8s linear;
+            padding-left: 100%
+        }
+
+        @keyframes scroll {
+            from {
+                transform: translateX(0)
+            }
+
+            to {
+                transform: translateX(-200%)
+            }
+        }
+
+        .age-display {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 1rem;
+            font-weight: 800;
+            color: #818cf8;
+            margin-top: 6px;
+            min-height: 24px
+        }
+
+        .lie-result {
+            font-size: .72rem;
+            color: #f87171;
+            margin-top: 6px;
+            min-height: 18px;
+            font-weight: 600
+        }
+
+        .darkness-overlay {
+            position: fixed;
+            inset: 0;
+            background: #000;
+            z-index: 10000;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity .5s
+        }
+
+        .darkness-overlay.active {
+            opacity: 1;
+            pointer-events: all
+        }
+
+        .darkness-text {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: #333;
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 1.5rem;
+            font-weight: 800
+        }
+
+        .speed-display {
+            font-size: .72rem;
+            color: #fb923c;
+            margin-top: 6px;
+            min-height: 18px;
+            font-weight: 600
+        }
+
+        .confession-text {
+            font-size: .72rem;
+            color: #f9a8d4;
+            margin-top: 6px;
+            min-height: 18px;
+            font-weight: 500;
+            font-style: italic
+        }
+
+        /* Achievement Panel */
+        .ach-panel {
+            position: fixed;
+            top: 0;
+            right: -380px;
+            width: 380px;
+            height: 100%;
+            background: rgba(8, 8, 15, .97);
+            backdrop-filter: blur(20px);
+            border-left: 1px solid rgba(167, 139, 250, .1);
+            z-index: 10001;
+            transition: right .4s cubic-bezier(.25, .46, .45, .94);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden
+        }
+
+        .ach-panel.open {
+            right: 0
+        }
+
+        .ach-panel-header {
+            padding: 20px;
+            border-bottom: 1px solid rgba(255, 255, 255, .06);
+            display: flex;
+            align-items: center;
+            justify-content: space-between
+        }
+
+        .ach-panel-title {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 1.1rem;
+            font-weight: 800;
+            color: #a78bfa
+        }
+
+        .ach-close {
+            width: 28px;
+            height: 28px;
+            border-radius: 6px;
+            background: rgba(255, 255, 255, .05);
+            border: none;
+            color: #666;
+            font-size: 1rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center
+        }
+
+        .ach-close:hover {
+            background: rgba(255, 255, 255, .1);
+            color: #fff
+        }
+
+        .ach-progress {
+            padding: 16px 20px;
+            border-bottom: 1px solid rgba(255, 255, 255, .04)
+        }
+
+        .ach-progress-bar {
+            height: 6px;
+            background: rgba(255, 255, 255, .06);
+            border-radius: 3px;
+            overflow: hidden;
+            margin-top: 6px
+        }
+
+        .ach-progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #a78bfa, #f472b6);
+            border-radius: 3px;
+            transition: width .4s
+        }
+
+        .ach-progress-text {
+            font-size: .68rem;
+            color: rgba(255, 255, 255, .3);
+            display: flex;
+            justify-content: space-between
+        }
+
+        .ach-list {
+            flex: 1;
+            overflow-y: auto;
+            padding: 12px
+        }
+
+        .ach-item {
+            display: flex;
+            gap: 10px;
+            padding: 10px;
+            border-radius: 10px;
+            margin-bottom: 6px;
+            transition: all .2s
+        }
+
+        .ach-item.locked {
+            opacity: .35
+        }
+
+        .ach-item.unlocked {
+            background: rgba(167, 139, 250, .06);
+            border: 1px solid rgba(167, 139, 250, .1)
+        }
+
+        .ach-item.just-unlocked {
+            animation: achPop .5s
+        }
+
+        @keyframes achPop {
+            0% {
+                transform: scale(1)
+            }
+
+            50% {
+                transform: scale(1.05);
+                background: rgba(167, 139, 250, .15)
+            }
+
+            100% {
+                transform: scale(1)
+            }
+        }
+
+        .ach-icon {
+            width: 36px;
+            height: 36px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            flex-shrink: 0
+        }
+
+        .ach-item.locked .ach-icon {
+            background: rgba(255, 255, 255, .04)
+        }
+
+        .ach-item.unlocked .ach-icon {
+            background: rgba(167, 139, 250, .12)
+        }
+
+        .ach-info {
+            flex: 1;
+            min-width: 0
+        }
+
+        .ach-name {
+            font-size: .78rem;
+            font-weight: 700;
+            margin-bottom: 2px
+        }
+
+        .ach-item.locked .ach-name {
+            color: rgba(255, 255, 255, .3)
+        }
+
+        .ach-item.unlocked .ach-name {
+            color: #c4b5fd
+        }
+
+        .ach-hint {
+            font-size: .65rem;
+            color: rgba(255, 255, 255, .2);
+            line-height: 1.3
+        }
+
+        .ach-item.unlocked .ach-hint {
+            color: rgba(255, 255, 255, .35)
+        }
+
+        .ach-check {
+            font-size: .8rem
+        }
+
+        .ach-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, .4);
+            z-index: 10000;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity .3s
+        }
+
+        .ach-overlay.open {
+            opacity: 1;
+            pointer-events: all
+        }
+
+        /* Toast */
+        .toast-container {
+            position: fixed;
+            top: 50px;
+            right: 16px;
+            z-index: 10002;
+            display: flex;
+            flex-direction: column;
+            gap: 6px
+        }
+
+        .toast {
+            background: rgba(167, 139, 250, .15);
+            backdrop-filter: blur(16px);
+            border: 1px solid rgba(167, 139, 250, .2);
+            border-radius: 10px;
+            padding: 10px 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            animation: toastIn .4s, toastOut .4s 2.6s forwards;
+            font-size: .78rem
+        }
+
+        @keyframes toastIn {
+            from {
+                transform: translateX(100px);
+                opacity: 0
+            }
+
+            to {
+                transform: translateX(0);
+                opacity: 1
+            }
+        }
+
+        @keyframes toastOut {
+            to {
+                transform: translateX(100px);
+                opacity: 0
+            }
+        }
+
+        .toast-icon {
+            font-size: 18px
+        }
+
+        .toast-text {
+            color: #c4b5fd;
+            font-weight: 600
+        }
+
+        @media(max-width:600px) {
+            .grid {
+                grid-template-columns: 1fr
+            }
+
+            .ach-panel {
+                width: 100%
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <canvas id="confetti"></canvas>
+    <div class="darkness-overlay" id="darkness">
+        <div class="darkness-text">You chose this.</div>
+    </div>
+    <div class="ach-overlay" id="ach-overlay"></div>
+    <div class="ach-panel" id="ach-panel">
+        <div class="ach-panel-header"><span class="ach-panel-title">🏆 Achievements</span><button class="ach-close"
+                id="ach-close">✕</button></div>
+        <div class="ach-progress">
+            <div class="ach-progress-text"><span id="ach-count-text">0 / 0 unlocked</span><span id="ach-pct">0%</span>
+            </div>
+            <div class="ach-progress-bar">
+                <div class="ach-progress-fill" id="ach-bar"></div>
+            </div>
+        </div>
+        <div class="ach-list" id="ach-list"></div>
+    </div>
+    <div class="toast-container" id="toasts"></div>
+    <div class="counter-bar">
+        <div class="counter-item ci-clicks">Clicks: <strong id="total-clicks">0</strong></div>
+        <div class="counter-item ci-regrets">Regrets: <strong id="regret-count">0</strong></div>
+        <div class="counter-item ci-time">Wasted: <strong id="time-wasted">0s</strong></div>
+        <div class="counter-item ci-ach">🏆 <strong id="ach-display">0</strong></div>
+        <button class="ach-tab-btn" id="ach-open">Achievements</button>
+    </div>
+    <div class="hero">
+        <h1>The <span class="rainbow">Useless</span> Button Museum</h1>
+        <p>A curated collection of buttons that do absolutely nothing productive. You're welcome.</p>
+    </div>
+    <div class="grid">
+        <div class="exhibit">
+            <div class="exhibit-label">Exhibit A — Forbidden</div><button class="ubtn ubtn-do-not" id="btn-donot">🚫 DO
+                NOT PRESS</button>
+            <div class="exhibit-desc">It clearly says do not press.</div>
+        </div>
+        <div class="exhibit">
+            <div class="exhibit-label">Exhibit B — Existential</div><button class="ubtn ubtn-nothing"
+                id="btn-nothing">Press For Nothing</button>
+            <div class="exhibit-desc" id="nothing-desc">Does absolutely nothing.</div>
+        </div>
+        <div class="exhibit">
+            <div class="exhibit-label">Exhibit C — Vertigo</div><button class="ubtn ubtn-spin" id="btn-spin">🌀 Spin
+                Everything</button>
+            <div class="exhibit-desc">Why would you want the page to spin</div>
+        </div>
+        <div class="exhibit">
+            <div class="exhibit-label">Exhibit D — Physics</div><button class="ubtn ubtn-gravity" id="btn-gravity">🔄
+                Flip Gravity</button>
+            <div class="exhibit-desc">Turns the whole page upside down.</div>
+        </div>
+        <div class="exhibit">
+            <div class="exhibit-label">Exhibit E — Mitosis</div><button class="ubtn ubtn-clone" id="btn-clone">🧬 Clone
+                This Button</button>
+            <div class="clone-zone" id="clone-zone"></div>
+            <div class="exhibit-desc">Every click creates a clone.</div>
+        </div>
+        <div class="exhibit">
+            <div class="exhibit-label">Exhibit F — Breaking</div><button class="ubtn ubtn-drama" id="btn-drama">📺 Make
+                It Dramatic</button>
+            <div class="exhibit-desc">Triggers a breaking news alert.</div>
+        </div>
+        <div class="exhibit">
+            <div class="exhibit-label">Exhibit G — Mirror</div><button class="ubtn ubtn-reverse" id="btn-reverse">🪞
+                Reverse All Text</button>
+            <div class="exhibit-desc">Makes everything backwards</div>
+        </div>
+        <div class="exhibit">
+            <div class="exhibit-label">Exhibit H — Void</div><button class="ubtn ubtn-dark" id="btn-dark">🕳️ Embrace
+                Darkness</button>
+            <div class="exhibit-desc">Click anywhere to return.</div>
+        </div>
+        <div class="exhibit">
+            <div class="exhibit-label">Exhibit I — Time</div><button class="ubtn ubtn-age" id="btn-age">⏳ Button
+                Age</button>
+            <div class="age-display" id="age-display"></div>
+            <div class="exhibit-desc">Ages in real time. Riveting.</div>
+        </div>
+        <div class="exhibit">
+            <div class="exhibit-label">Exhibit J — Truth</div><button class="ubtn ubtn-lie" id="btn-lie">🤥 Am I
+                Productive?</button>
+            <div class="lie-result" id="lie-result"></div>
+            <div class="exhibit-desc">Spoiler: no.</div>
+        </div>
+        <div class="exhibit">
+            <div class="exhibit-label">Exhibit K — Pixel</div><button class="ubtn ubtn-pixel" id="btn-pixel">👾 Pixelate
+                Page</button>
+            <div class="exhibit-desc">Makes the page look like a Game Boy.</div>
+        </div>
+        <div class="exhibit">
+            <div class="exhibit-label">Exhibit L — Babel</div><button class="ubtn ubtn-translate" id="btn-translate">🗣️
+                Translate to Nonsense</button>
+            <div class="exhibit-desc">Replaces words with gibberish.</div>
+        </div>
+        <div class="exhibit">
+            <div class="exhibit-label">Exhibit M — Speedrun</div><button class="ubtn ubtn-speed" id="btn-speed">⚡ Click
+                Speed Test</button>
+            <div class="speed-display" id="speed-display"></div>
+            <div class="exhibit-desc">How fast can you click this?</div>
+        </div>
+        <div class="exhibit">
+            <div class="exhibit-label">Exhibit N — Scale</div><button class="ubtn ubtn-size" id="btn-size">🔍 Make
+                Everything BIG</button>
+            <div class="exhibit-desc">Scales everything up. Then more.</div>
+        </div>
+        <div class="exhibit">
+            <div class="exhibit-label">Exhibit O — Confessions</div><button class="ubtn ubtn-confess"
+                id="btn-confess">💌 Button Confession</button>
+            <div class="confession-text" id="confession-text"></div>
+            <div class="exhibit-desc">Each button has feelings.</div>
+        </div>
+        <div class="exhibit">
+            <div class="exhibit-label">Exhibit P — The Counter</div><button class="ubtn ubtn-count" id="btn-count">🔢
+                Count To Infinity</button>
+            <div class="exhibit-desc" id="count-desc">Current: 0. Only ∞ to go.</div>
+        </div>
+    </div>
+    <div class="breaking-news" id="breaking-news">
+        <div class="breaking-label">⚡ Breaking</div>
+        <div class="breaking-text" id="breaking-text"></div>
+    </div>
+    <script>
+        // ─── Canvas ───
+        const cCanvas = document.getElementById('confetti'), cCtx = cCanvas.getContext('2d');
+        let cW, cH; function cResize() { cW = cCanvas.width = innerWidth; cH = cCanvas.height = innerHeight } cResize(); window.addEventListener('resize', cResize);
+        let confettiArr = [];
+        class Confetto {
+            constructor(x, y) { this.x = x; this.y = y; this.vx = (Math.random() - .5) * 14; this.vy = -Math.random() * 14 - 4; this.r = 3 + Math.random() * 5; this.color = ['#ef4444', '#f59e0b', '#4ade80', '#22d3ee', '#a78bfa', '#f472b6'][Math.floor(Math.random() * 6)]; this.rot = Math.random() * Math.PI * 2; this.rotV = (Math.random() - .5) * .3; this.life = 1 }
+            update() { this.vy += .3; this.x += this.vx; this.y += this.vy; this.vx *= .99; this.rot += this.rotV; this.life -= .008; return this.life > 0 && this.y < cH + 20 }
+            draw(c) { c.save(); c.translate(this.x, this.y); c.rotate(this.rot); c.fillStyle = this.color; c.globalAlpha = this.life; c.fillRect(-this.r, -this.r / 2, this.r * 2, this.r); c.restore() }
+        }
+        function burst(x, y, n = 40) { for (let i = 0; i < n; i++)confettiArr.push(new Confetto(x, y)); animC() }
+        function animC() { cCtx.clearRect(0, 0, cW, cH); confettiArr = confettiArr.filter(c => { c.draw(cCtx); return c.update() }); if (confettiArr.length) requestAnimationFrame(animC) }
+
+        // ─── Audio ───
+        let audioCtx = null;
+        function getAudio() { if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)(); return audioCtx }
+        function boop(f = 400, d = .1) { try { const c = getAudio(), o = c.createOscillator(), g = c.createGain(); o.connect(g); g.connect(c.destination); o.frequency.value = f; o.type = 'sine'; g.gain.setValueAtTime(.15, c.currentTime); g.gain.exponentialRampToValueAtTime(.001, c.currentTime + d); o.start(); o.stop(c.currentTime + d) } catch (e) { } }
+        function fanfare() { try { const c = getAudio();[523, 659, 784, 1047].forEach((f, i) => { const o = c.createOscillator(), g = c.createGain(); o.connect(g); g.connect(c.destination); o.frequency.value = f; o.type = 'triangle'; g.gain.setValueAtTime(0, c.currentTime + i * .1); g.gain.linearRampToValueAtTime(.12, c.currentTime + i * .1 + .04); g.gain.exponentialRampToValueAtTime(.001, c.currentTime + i * .1 + .25); o.start(c.currentTime + i * .1); o.stop(c.currentTime + i * .1 + .25) }) } catch (e) { } }
+        function sad() { try { const c = getAudio(), o = c.createOscillator(), g = c.createGain(); o.connect(g); g.connect(c.destination); o.frequency.setValueAtTime(300, c.currentTime); o.frequency.linearRampToValueAtTime(100, c.currentTime + .4); o.type = 'sawtooth'; g.gain.setValueAtTime(.08, c.currentTime); g.gain.exponentialRampToValueAtTime(.001, c.currentTime + .4); o.start(); o.stop(c.currentTime + .4) } catch (e) { } }
+        function achSound() { try { const c = getAudio();[880, 1108, 1320].forEach((f, i) => { const o = c.createOscillator(), g = c.createGain(); o.connect(g); g.connect(c.destination); o.frequency.value = f; o.type = 'sine'; g.gain.setValueAtTime(0, c.currentTime + i * .08); g.gain.linearRampToValueAtTime(.1, c.currentTime + i * .08 + .03); g.gain.exponentialRampToValueAtTime(.001, c.currentTime + i * .08 + .2); o.start(c.currentTime + i * .08); o.stop(c.currentTime + i * .08 + .2) }) } catch (e) { } }
+
+        // ─── State ───
+        let totalClicks = 0, regrets = 0, startTime = Date.now();
+        let doNotCount = 0, nothingCount = 0, spinDeg = 0, flipped = false, cloneCount = 0, reversed = false;
+        let speedClicks = [], currentZoom = 1, countVal = 0, darkCount = 0, dramaCount = 0;
+        const btnBirthday = Date.now();
+
+        // ─── Achievements ───
+        const ACHIEVEMENTS = [
+            { id: 'first_click', icon: '👆', name: 'Baby Steps', hint: 'Click any button once', check: () => totalClicks >= 1 },
+            { id: 'click_10', icon: '🔟', name: 'Getting Started', hint: 'Click 10 times total', check: () => totalClicks >= 10 },
+            { id: 'click_50', icon: '5️⃣', name: 'Button Enthusiast', hint: 'Click 50 times total', check: () => totalClicks >= 50 },
+            { id: 'click_100', icon: '💯', name: 'Centurion', hint: 'Reach 100 total clicks', check: () => totalClicks >= 100 },
+            { id: 'click_500', icon: '🏅', name: 'Dedicated Clicker', hint: 'Reach 500 total clicks', check: () => totalClicks >= 500 },
+            { id: 'click_1000', icon: '🏆', name: 'Grand Master of Clicking', hint: 'Reach 1000 total clicks. Why.', check: () => totalClicks >= 1000 },
+            { id: 'donot_3', icon: '🚫', name: 'Rule Breaker', hint: 'Press DO NOT PRESS 3 times', check: () => doNotCount >= 3 },
+            { id: 'donot_10', icon: '😈', name: 'Chronic Defiance', hint: 'Press DO NOT PRESS 10 times', check: () => doNotCount >= 10 },
+            { id: 'nothing_10', icon: '🕳️', name: 'Master of Nothing', hint: 'Press Nothing 10 times', check: () => nothingCount >= 10 },
+            { id: 'nothing_50', icon: '🌀', name: 'Void Walker', hint: 'Press Nothing 50 times', check: () => nothingCount >= 50 },
+            { id: 'clone_10', icon: '🧬', name: 'Mitosis', hint: 'Clone a button 10 times', check: () => cloneCount >= 10 },
+            { id: 'clone_50', icon: '🦠', name: 'Colony', hint: 'Clone a button 50 times', check: () => cloneCount >= 50 },
+            { id: 'clone_100', icon: '🌍', name: 'Overpopulation', hint: 'Clone a button 100 times. Lag incoming.', check: () => cloneCount >= 100 },
+            { id: 'spin_3', icon: '🌪️', name: 'Dizzy', hint: 'Spin the page 3 times', check: () => spinDeg >= 1080 },
+            { id: 'spin_10', icon: '🎡', name: 'Tornado Warning', hint: 'Spin the page 10 times', check: () => spinDeg >= 3600 },
+            { id: 'dark_1', icon: '🌑', name: 'Edge Lord', hint: 'Embrace darkness once', check: () => darkCount >= 1 },
+            { id: 'dark_5', icon: '⬛', name: 'Void Enthusiast', hint: 'Embrace darkness 5 times', check: () => darkCount >= 5 },
+            { id: 'drama_5', icon: '📺', name: 'News Anchor', hint: 'Trigger 5 breaking news alerts', check: () => dramaCount >= 5 },
+            { id: 'regret_10', icon: '😭', name: 'Regretful', hint: 'Accumulate 10 regrets', check: () => regrets >= 10 },
+            { id: 'regret_50', icon: '💀', name: 'No Ragrets', hint: 'Accumulate 50 regrets', check: () => regrets >= 50 },
+            { id: 'speed_8', icon: '⚡', name: 'Speed Demon', hint: 'Click the speed button 8+ times in one second', check: () => false },
+            { id: 'zoom_5', icon: '🔍', name: 'Magnifier', hint: 'Make everything BIG 5 times in a row', check: () => currentZoom >= 1 + .15 * 5 },
+            { id: 'count_100', icon: '🔢', name: 'Counter', hint: 'Count to 100', check: () => countVal >= 100 },
+            { id: 'count_1000', icon: '♾️', name: 'Infinity Approacher', hint: 'Count to 1000. Still not infinity.', check: () => countVal >= 1000 },
+            { id: 'time_5', icon: '⏰', name: 'Time Waster', hint: 'Waste 5 minutes on this page', check: () => (Date.now() - startTime) >= 300000 },
+            { id: 'time_15', icon: '🕰️', name: 'Professional Time Waster', hint: 'Waste 15 minutes on this page', check: () => (Date.now() - startTime) >= 900000 },
+            { id: 'all_buttons', icon: '🎯', name: 'Completionist', hint: 'Click every single button at least once', check: () => buttonsClicked.size >= 16 },
+        ];
+        let unlocked = new Set();
+        let buttonsClicked = new Set();
+
+        function checkAchievements() {
+            let newUnlocks = 0;
+            ACHIEVEMENTS.forEach(a => {
+                if (!unlocked.has(a.id) && a.check()) {
+                    unlocked.add(a.id); newUnlocks++;
+                    showToast(a.icon, a.name);
+                    achSound();
+                    burst(cW / 2, 50, 25); animC();
+                }
+            });
+            if (newUnlocks) {
+                document.getElementById('ach-display').textContent = unlocked.size;
+                renderAchPanel();
+            }
+        }
+
+        function showToast(icon, text) {
+            const c = document.getElementById('toasts');
+            const t = document.createElement('div'); t.className = 'toast';
+            t.innerHTML = `<span class="toast-icon">${icon}</span><span class="toast-text">${text}</span>`;
+            c.appendChild(t); setTimeout(() => t.remove(), 3000);
+        }
+
+        function renderAchPanel() {
+            const list = document.getElementById('ach-list'); list.innerHTML = '';
+            const total = ACHIEVEMENTS.length; const done = unlocked.size;
+            document.getElementById('ach-count-text').textContent = `${done} / ${total} unlocked`;
+            document.getElementById('ach-pct').textContent = Math.round(done / total * 100) + '%';
+            document.getElementById('ach-bar').style.width = (done / total * 100) + '%';
+            ACHIEVEMENTS.forEach(a => {
+                const u = unlocked.has(a.id);
+                const div = document.createElement('div'); div.className = 'ach-item ' + (u ? 'unlocked' : 'locked');
+                div.innerHTML = `<div class="ach-icon">${u ? a.icon : '🔒'}</div><div class="ach-info"><div class="ach-name">${u ? a.name : '???'}</div><div class="ach-hint">${a.hint}</div></div>${u ? '<span class="ach-check">✅</span>' : ''}`;
+                list.appendChild(div);
+            });
+        }
+
+        // Achievement panel
+        document.getElementById('ach-open').addEventListener('click', () => { document.getElementById('ach-panel').classList.add('open'); document.getElementById('ach-overlay').classList.add('open'); renderAchPanel() });
+        document.getElementById('ach-close').addEventListener('click', () => { document.getElementById('ach-panel').classList.remove('open'); document.getElementById('ach-overlay').classList.remove('open') });
+        document.getElementById('ach-overlay').addEventListener('click', () => { document.getElementById('ach-panel').classList.remove('open'); document.getElementById('ach-overlay').classList.remove('open') });
+
+        function click(btnId) {
+            totalClicks++; if (btnId) buttonsClicked.add(btnId);
+            document.getElementById('total-clicks').textContent = totalClicks;
+            boop(300 + Math.random() * 400, .06);
+            checkAchievements();
+        }
+
+        // Timer
+        setInterval(() => { const s = Math.floor((Date.now() - startTime) / 1000); const m = Math.floor(s / 60); document.getElementById('time-wasted').textContent = m > 0 ? `${m}m ${s % 60}s` : `${s}s`; checkAchievements() }, 1000);
+
+        // ─── BUTTONS ───
+
+        // A: DO NOT PRESS
+        const doNotMsgs = ['I said DON\'T', 'Why.', 'Seriously stop.', 'You have a problem.', 'I\'m calling the police.', '...fine.', '🎉 YOU WIN NOTHING'];
+        document.getElementById('btn-donot').addEventListener('click', function (e) {
+            click('donot'); doNotCount++; regrets++; document.getElementById('regret-count').textContent = regrets;
+            this.textContent = doNotMsgs[Math.min(doNotCount - 1, doNotMsgs.length - 1)];
+            if (doNotCount === doNotMsgs.length) { burst(e.clientX, e.clientY, 50); animC(); this.style.animation = 'none' }
+            this.style.transform = `scale(${1 + doNotCount * .04})`;
+        });
+
+        // B: Nothing
+        const nothingMsgs = ['Nothing happened.', 'Still nothing.', '...', 'Was something supposed to happen?', 'Nope.', 'This is your life now.', 'The void stares back.', 'Dedication.'];
+        document.getElementById('btn-nothing').addEventListener('click', function () {
+            click('nothing'); nothingCount++;
+            document.getElementById('nothing-desc').textContent = nothingCount < nothingMsgs.length ? nothingMsgs[nothingCount - 1] : `Nothing x${nothingCount}.`;
+        });
+
+        // C: Spin
+        document.getElementById('btn-spin').addEventListener('click', function () { click('spin'); spinDeg += 360; document.body.style.transition = 'transform 1s'; document.body.style.transform = `rotate(${spinDeg}deg)`; });
+
+        // D: Gravity
+        document.getElementById('btn-gravity').addEventListener('click', function () { click('gravity'); flipped = !flipped; document.body.style.transition = 'transform .6s'; document.body.style.transform = flipped ? 'scaleY(-1)' : ''; this.textContent = flipped ? '🔄 Unflip' : '🔄 Flip Gravity'; });
+
+        // E: Clone
+        document.getElementById('btn-clone').addEventListener('click', function () {
+            click('clone'); cloneCount++;
+            const z = document.getElementById('clone-zone'), b = document.createElement('button'); b.className = 'mini-btn'; b.textContent = `#${cloneCount}`;
+            b.style.fontSize = Math.max(.3, (.5 - .003 * cloneCount)) + 'rem';
+            b.addEventListener('click', function () { this.style.transform = 'scale(0)'; setTimeout(() => this.remove(), 200); boop(800, .04) });
+            z.appendChild(b);
+        });
+
+        // F: Drama
+        const headlines = ['PERSON CLICKS BUTTON, WORLD LEADERS REACT', 'SCIENTISTS BAFFLED BY BUTTON CLICK', 'BUTTON PRESSED, STOCK MARKET UNCHANGED', 'LOCAL HUMAN ACCOMPLISHES NOTHING', 'THE BUTTON HAS BEEN PRESSED. WE REPEAT.', 'NASA DELAYS LAUNCH TO OBSERVE BUTTON PRESS', 'HISTORIANS WILL REMEMBER THIS CLICK', 'UN CONVENES EMERGENCY SESSION'];
+        document.getElementById('btn-drama').addEventListener('click', function (e) {
+            click('drama'); dramaCount++;
+            document.getElementById('breaking-text').textContent = headlines[Math.floor(Math.random() * headlines.length)];
+            document.getElementById('breaking-news').classList.add('show'); burst(e.clientX, e.clientY, 25); animC(); fanfare();
+            setTimeout(() => document.getElementById('breaking-news').classList.remove('show'), 5000);
+        });
+
+        // G: Reverse
+        document.getElementById('btn-reverse').addEventListener('click', function () {
+            click('reverse'); reversed = !reversed;
+            function rev(el) {
+                el.childNodes.forEach(n => {
+                    if (n.nodeType === 3 && n.textContent.trim()) n.textContent = n.textContent.split('').reverse().join('');
+                    else if (n.nodeType === 1 && !['SCRIPT', 'STYLE', 'CANVAS'].includes(n.tagName)) rev(n)
+                })
+            } rev(document.body);
+        });
+
+        // H: Darkness
+        document.getElementById('btn-dark').addEventListener('click', function () {
+            click('dark'); darkCount++; regrets++; document.getElementById('regret-count').textContent = regrets;
+            document.getElementById('darkness').classList.add('active'); sad()
+        });
+        document.getElementById('darkness').addEventListener('click', () => { document.getElementById('darkness').classList.remove('active'); boop(600, .08) });
+
+        // I: Age
+        document.getElementById('btn-age').addEventListener('click', function () { click('age') });
+        setInterval(() => {
+            const a = Date.now() - btnBirthday, s = (a / 1000).toFixed(1), m = (a / 60000).toFixed(2);
+            document.getElementById('age-display').textContent = a < 60000 ? `${s}s old` : `${m}m old`;
+        }, 100);
+
+        // J: Lie
+        const lies = ['Absolutely not.', 'LOL no.', 'The button laughs.', 'You are pressing useless buttons.', 'No.', 'Survey says: ❌', 'Your boss would love this.', 'Define "productive"...', 'Negative.', '🤡'];
+        document.getElementById('btn-lie').addEventListener('click', function () {
+            click('lie'); regrets++; document.getElementById('regret-count').textContent = regrets;
+            document.getElementById('lie-result').textContent = lies[Math.floor(Math.random() * lies.length)]; sad()
+        });
+
+        // K: Pixelate
+        let pixelated = false;
+        document.getElementById('btn-pixel').addEventListener('click', function () {
+            click('pixel'); pixelated = !pixelated;
+            document.body.style.filter = pixelated ? 'blur(2px) contrast(1.5)' : '';
+            document.body.style.imageRendering = pixelated ? 'pixelated' : '';
+            this.textContent = pixelated ? '👾 Unpixelate' : '👾 Pixelate Page';
+        });
+
+        // L: Translate to nonsense
+        const gibberish = ['blorpus', 'skrunkly', 'flimflam', 'zazzle', 'wompwomp', 'snorkel', 'blibblob', 'cronch', 'yeetimus', 'skibidi', 'falafel', 'bonk', 'sploinky', 'glorbius', 'narf', 'zoinks', 'bruhhhh', 'OwO'];
+        document.getElementById('btn-translate').addEventListener('click', function () {
+            click('translate');
+            document.querySelectorAll('.exhibit-desc').forEach(d => {
+                const words = d.textContent.split(' ');
+                d.textContent = words.map(() => gibberish[Math.floor(Math.random() * gibberish.length)]).join(' ');
+            });
+        });
+
+        // M: Speed test
+        let speedInterval = null;
+        document.getElementById('btn-speed').addEventListener('click', function () {
+            click('speed');
+            const now = Date.now(); speedClicks.push(now); speedClicks = speedClicks.filter(t => now - t < 1000);
+            const cps = speedClicks.length;
+            document.getElementById('speed-display').textContent = `${cps} clicks/sec`;
+            if (cps >= 8 && !unlocked.has('speed_8')) { unlocked.add('speed_8'); showToast('⚡', 'Speed Demon'); achSound(); burst(cW / 2, 50, 25); animC(); document.getElementById('ach-display').textContent = unlocked.size; renderAchPanel() }
+            this.style.background = `linear-gradient(135deg,hsl(${30 - cps * 3},80%,50%),hsl(${40 - cps * 3},90%,60%))`;
+        });
+
+        // N: Size
+        document.getElementById('btn-size').addEventListener('click', function () {
+            click('size'); currentZoom += .15;
+            document.body.style.transition = 'transform .3s'; document.body.style.transformOrigin = 'top center';
+            document.body.style.transform = `scale(${currentZoom})`;
+            if (currentZoom > 3) { currentZoom = 1; document.body.style.transform = 'scale(1)'; this.textContent = '🔍 Reset (too big)' }
+            else this.textContent = `🔍 ${Math.round(currentZoom * 100)}%`; checkAchievements()
+        });
+
+        // O: Confessions
+        const confessions = ["I don't even know what I do.", "I wish I was the 'Submit' button on an important form.", "Sometimes I pretend people need me. They don't.", "I was almost a link. I think about that a lot.", "My therapist says I need to find my purpose.", "The clone button has 50 children and I have zero.", "I'm afraid of being deprecated.", "I have feelings and nobody cares.", "Do you ever click me and think of me at night? No? Okay.", "I secretly enjoy being pressed. Don't tell anyone.", "The darkness button is my best friend.", "I was designed in 3 minutes. That hurts.", "One day I'll be a real button on a real website.", "I hear the speed button is popular. Must be nice."];
+        document.getElementById('btn-confess').addEventListener('click', function () {
+            click('confess');
+            document.getElementById('confession-text').textContent = '"' + confessions[Math.floor(Math.random() * confessions.length)] + '"'
+        });
+
+        // P: Count
+        document.getElementById('btn-count').addEventListener('click', function () {
+            click('count'); countVal++;
+            document.getElementById('count-desc').textContent = `Current: ${countVal}. Only ${countVal > 999 ? '∞ - ' + countVal : '∞'} to go.`;
+            if (countVal % 100 === 0) { burst(cW / 2, cH / 2, 30); animC(); fanfare() }
+        });
+
+        // Init
+        renderAchPanel();
+    </script>
+</body>
+
+</html>

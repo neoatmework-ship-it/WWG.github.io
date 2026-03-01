@@ -1,0 +1,754 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Story Dice 🎲</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600;700&family=Crimson+Pro:ital,wght@0,400;0,600;1,400&display=swap"
+        rel="stylesheet">
+    <style>
+        :root {
+            --bg: #0a0a12;
+            --card: #12121e;
+            --brd: rgba(255, 255, 255, .06);
+            --accent: #c084fc;
+            --accent2: #e879f9;
+            --text: #f0eef5;
+            --sub: #7a7890;
+            --gold: #fbbf24;
+            --warm: #fef3c7
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box
+        }
+
+        body {
+            font-family: 'Space Grotesk', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            overflow-x: hidden
+        }
+
+        .app {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 30px 20px 60px;
+            text-align: center
+        }
+
+        h1 {
+            font-size: 2.2rem;
+            font-weight: 700;
+            margin-bottom: 4px;
+            background: linear-gradient(135deg, var(--accent), var(--accent2), var(--gold));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text
+        }
+
+        .sub {
+            color: var(--sub);
+            font-size: .85rem;
+            margin-bottom: 30px
+        }
+
+        .dice-tray {
+            display: flex;
+            justify-content: center;
+            gap: 16px;
+            flex-wrap: wrap;
+            margin-bottom: 24px;
+            perspective: 800px
+        }
+
+        .die {
+            width: 110px;
+            height: 100px;
+            background: var(--card);
+            border: 2px solid var(--brd);
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: .8rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all .3s;
+            position: relative;
+            user-select: none;
+            text-align: center;
+            padding: 8px 6px 16px;
+            line-height: 1.2;
+            color: var(--accent)
+        }
+
+        .die:hover {
+            border-color: rgba(192, 132, 252, .3);
+            transform: translateY(-4px);
+            box-shadow: 0 8px 30px rgba(192, 132, 252, .1)
+        }
+
+        .die.rolling {
+            animation: diceRoll .6s ease
+        }
+
+        .die .die-label {
+            position: absolute;
+            bottom: 4px;
+            font-size: .45rem;
+            color: var(--sub);
+            text-transform: uppercase;
+            letter-spacing: .5px;
+            font-weight: 600
+        }
+
+        @keyframes diceRoll {
+            0% {
+                transform: rotateX(0) rotateY(0) scale(1)
+            }
+
+            25% {
+                transform: rotateX(180deg) rotateY(90deg) scale(.8)
+            }
+
+            50% {
+                transform: rotateX(360deg) rotateY(180deg) scale(.9)
+            }
+
+            75% {
+                transform: rotateX(540deg) rotateY(270deg) scale(.85)
+            }
+
+            100% {
+                transform: rotateX(720deg) rotateY(360deg) scale(1)
+            }
+        }
+
+        .controls {
+            margin-bottom: 30px;
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            flex-wrap: wrap
+        }
+
+        .btn {
+            padding: 10px 24px;
+            border-radius: 12px;
+            border: 1px solid var(--brd);
+            background: var(--card);
+            color: var(--text);
+            font-family: inherit;
+            font-size: .85rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all .2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px
+        }
+
+        .btn:hover {
+            background: rgba(255, 255, 255, .05);
+            transform: translateY(-1px)
+        }
+
+        .btn-accent {
+            background: linear-gradient(135deg, rgba(192, 132, 252, .15), rgba(232, 121, 249, .15));
+            border-color: rgba(192, 132, 252, .3);
+            color: var(--accent)
+        }
+
+        .btn-accent:hover {
+            background: linear-gradient(135deg, rgba(192, 132, 252, .25), rgba(232, 121, 249, .25))
+        }
+
+        .btn-gold {
+            background: rgba(251, 191, 36, .1);
+            border-color: rgba(251, 191, 36, .25);
+            color: var(--gold)
+        }
+
+        .dice-count {
+            display: flex;
+            justify-content: center;
+            gap: 6px;
+            margin-bottom: 20px;
+            align-items: center
+        }
+
+        .dice-count span {
+            color: var(--sub);
+            font-size: .75rem
+        }
+
+        .count-btn {
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            border: 1px solid var(--brd);
+            background: var(--card);
+            color: var(--text);
+            font-size: 1rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all .2s
+        }
+
+        .count-btn:hover {
+            background: rgba(255, 255, 255, .05)
+        }
+
+        .count-num {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: var(--accent);
+            min-width: 30px;
+            text-align: center
+        }
+
+        .story-box {
+            background: var(--card);
+            border: 1px solid var(--brd);
+            border-radius: 16px;
+            padding: 30px;
+            text-align: left;
+            position: relative;
+            overflow: hidden;
+            min-height: 120px
+        }
+
+        .story-box::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, var(--accent), var(--accent2), var(--gold))
+        }
+
+        .story-title {
+            font-family: 'Crimson Pro', serif;
+            font-size: 1.4rem;
+            font-weight: 600;
+            color: var(--gold);
+            margin-bottom: 12px;
+            font-style: italic
+        }
+
+        .story-text {
+            font-family: 'Crimson Pro', serif;
+            font-size: 1.15rem;
+            line-height: 1.8;
+            color: rgba(240, 238, 245, .85)
+        }
+
+        .story-text .highlight {
+            color: var(--accent);
+            font-weight: 600;
+            font-style: italic
+        }
+
+        .story-meta {
+            margin-top: 16px;
+            padding-top: 12px;
+            border-top: 1px solid var(--brd);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: .65rem;
+            color: var(--sub)
+        }
+
+        .genre-sel {
+            display: flex;
+            justify-content: center;
+            gap: 6px;
+            margin-bottom: 16px;
+            flex-wrap: wrap
+        }
+
+        .genre-btn {
+            padding: 5px 12px;
+            border-radius: 8px;
+            border: 1px solid var(--brd);
+            background: var(--card);
+            color: var(--sub);
+            font-family: inherit;
+            font-size: .7rem;
+            cursor: pointer;
+            transition: all .2s
+        }
+
+        .genre-btn.active {
+            background: rgba(192, 132, 252, .12);
+            border-color: rgba(192, 132, 252, .25);
+            color: var(--accent)
+        }
+
+        .history {
+            margin-top: 30px;
+            text-align: left
+        }
+
+        .history h3 {
+            font-size: .8rem;
+            color: var(--sub);
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            letter-spacing: 1px
+        }
+
+        .hist-item {
+            background: var(--card);
+            border: 1px solid var(--brd);
+            border-radius: 10px;
+            padding: 12px 16px;
+            margin-bottom: 8px;
+            cursor: pointer;
+            transition: all .2s
+        }
+
+        .hist-item:hover {
+            border-color: rgba(192, 132, 252, .2)
+        }
+
+        .hist-dice {
+            font-size: 1.2rem;
+            margin-bottom: 4px
+        }
+
+        .hist-preview {
+            font-family: 'Crimson Pro', serif;
+            font-size: .8rem;
+            color: var(--sub);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis
+        }
+
+        .placeholder {
+            color: var(--sub);
+            font-family: 'Crimson Pro', serif;
+            font-size: 1.1rem;
+            font-style: italic;
+            text-align: center;
+            padding: 20px
+        }
+    </style>
+</head>
+
+<body>
+    <div class="app">
+        <h1>🎲 Story Dice</h1>
+        <div class="sub">Roll the dice. Let fate write your story.</div>
+
+        <div class="dice-count">
+            <span>Dice:</span>
+            <button class="count-btn" onclick="changeDice(-1)">−</button>
+            <div class="count-num" id="dice-num">5</div>
+            <button class="count-btn" onclick="changeDice(1)">+</button>
+        </div>
+
+        <div class="genre-sel">
+            <button class="genre-btn active" data-g="fantasy">🧙 Fantasy</button>
+            <button class="genre-btn" data-g="scifi">🚀 Sci-Fi</button>
+            <button class="genre-btn" data-g="horror">👻 Horror</button>
+            <button class="genre-btn" data-g="romance">💕 Romance</button>
+            <button class="genre-btn" data-g="comedy">😂 Comedy</button>
+            <button class="genre-btn" data-g="mystery">🔍 Mystery</button>
+            <button class="genre-btn" data-g="western">🤠 Western</button>
+        </div>
+
+        <div class="dice-tray" id="dice-tray"></div>
+
+        <div class="controls">
+            <button class="btn btn-accent" onclick="rollAll()">🎲 Roll All Dice</button>
+            <button class="btn btn-gold" onclick="generateStory()">📖 Tell the Story</button>
+            <button class="btn" onclick="resetAll()">🔄 Reset</button>
+        </div>
+
+        <div class="story-box" id="story-box">
+            <div class="placeholder" id="placeholder">Roll the dice and click "Tell the Story" to begin your tale...
+            </div>
+            <div id="story-content" style="display:none">
+                <div class="story-title" id="story-title"></div>
+                <div class="story-text" id="story-text"></div>
+                <div class="story-meta">
+                    <span id="story-genre"></span>
+                    <span id="story-words"></span>
+                </div>
+            </div>
+        </div>
+
+        <div class="history" id="history-section" style="display:none">
+            <h3>📜 Past Tales</h3>
+            <div id="history-list"></div>
+        </div>
+    </div>
+
+    <script>
+        const FACES = {
+            characters: ['a King', 'a Wizard', 'a Hero', 'a Child', 'an Old Woman', 'a Vampire', 'a Robot', 'a Princess', 'an Elf', 'a Villain', 'a Ghost', 'a Fairy', 'a Dragon', 'a Fox', 'a Wolf', 'an Eagle', 'a Cat', 'a Zombie', 'an Alien', 'a Prince'],
+            places: ['a Castle', 'a Volcano', 'an Island', 'a Forest', 'a Temple', 'a Spaceship', 'a Church', 'a Mountain', 'the Ocean', 'a Ruin', 'a Circus', 'a Desert', 'the Stars', 'a Monument', 'a Shrine', 'a Tower', 'a UFO', 'a Peak', 'a Sunrise', 'a Valley'],
+            objects: ['a Sword', 'a Dagger', 'a Gem', 'a Scroll', 'a Crystal Ball', 'a Key', 'a Ring', 'a Vase', 'a Book', 'a Potion', 'a Wand', 'a Pickaxe', 'a Shield', 'a Mask', 'a Coin', 'an Hourglass', 'a Magnet', 'a Feather', 'a Violin', 'an Amulet'],
+            actions: ['an Explosion', 'Fire', 'Ice', 'Lightning', 'Wind', 'a Tornado', 'a Rainbow', 'Sparkles', 'Starlight', 'Moonlight', 'Sunlight', 'Darkness', 'Death', 'Love', 'Terror', 'Laughter', 'Tears', 'a Handshake', 'a Duel', 'a Bullseye'],
+            moods: ['wicked', 'angelic', 'desperate', 'furious', 'curious', 'confident', 'joyful', 'anxious', 'dazzled', 'silent', 'shy', 'mindblown', 'smug', 'frozen', 'secretive', 'dizzy', 'melting', 'warm', 'nervous', 'upside-down']
+        };
+        const CATS = Object.keys(FACES);
+
+        const STORY_PARTS = {
+            fantasy: {
+                openings: [
+                    "In a realm where {mood} spirits roamed free, {char} discovered {obj} hidden beneath {place}.",
+                    "The ancient prophecy spoke of {char}, who would one day wield {obj} at {place}.",
+                    "When {action} struck {place}, only {char} remained standing, clutching {obj} tightly.",
+                    "Long ago, in the shadow of {place}, {char} made a pact that would change everything.",
+                    "The {mood} winds carried whispers of {char}'s journey to {place}, where {obj} awaited."
+                ],
+                middles: [
+                    "But {char2} had other plans. With {obj2} in hand, they unleashed {action2} upon the land.",
+                    "The journey through {place2} was treacherous. {action2} erupted at every turn, and {char2} lurked in the shadows.",
+                    "Along the way, {char2} appeared — {mood2} and carrying {obj2}. \"We must reach {place2},\" they said.",
+                    "At {place2}, the truth was revealed: {obj2} held the power of {action2}, and {char2} had known all along.",
+                    "The {mood2} creature guarding {place2} demanded {obj2} in exchange for safe passage."
+                ],
+                endings: [
+                    "In the end, {action3} illuminated {place3}, and {char} understood that {obj} was never the answer — it was the journey itself.",
+                    "And so {char} placed {obj} upon the altar of {place3}, as {action3} painted the sky, bringing peace at last.",
+                    "With a {mood3} heart, {char} vanished into {place3}, leaving only {obj} behind as proof it had all been real.",
+                    "The tale of {char} and {obj} became legend, whispered by travelers who passed through {place3} under the {mood3} stars.",
+                    "As {action3} faded and silence returned to {place3}, {char} smiled. The story was far from over."
+                ]
+            },
+            scifi: {
+                openings: [
+                    "In the year 3047, {char} activated {obj} aboard the station orbiting {place}.",
+                    "The signal from {place} was {mood}. {char} had never seen anything like {obj} before.",
+                    "When {action} tore through the hull near {place}, {char} grabbed {obj} and ran.",
+                    "Deep in {place}, the AI known as {char} calculated the probability of {obj} being the key.",
+                    "Humanity's last hope rested with {char}, who discovered {obj} flickering in {place}."
+                ],
+                middles: [
+                    "But {char2}'s transmission from {place2} changed everything: {obj2} was a weapon of {action2}.",
+                    "The hyperdrive malfunction sent them to {place2}, where {char2} waited with {obj2}.",
+                    "Scans revealed {obj2} at {place2}, pulsing with {action2} energy. {char2} said it was too late.",
+                    "At {place2}, {char2} unveiled {obj2} — technology beyond comprehension, radiating {mood2} waves.",
+                    "{char2} emerged from cryo-sleep looking {mood2}, whispering about {obj2} and {place2}."
+                ],
+                endings: [
+                    "As {action3} rippled across {place3}, {char} knew: {obj} had rewritten the laws of physics forever.",
+                    "The coordinates of {place3} were erased from every database. {char} and {obj} became classified {mood3} material.",
+                    "In the {mood3} silence of {place3}, {char} transmitted the final log: \"{obj} was never ours to keep.\"",
+                    "And as {action3} faded into the cosmic background, {char} floated past {place3}, finally free.",
+                    "The universe expanded beyond {place3}, but the signal from {obj} kept repeating. {char} smiled."
+                ]
+            },
+            horror: {
+                openings: [
+                    "Nobody goes to {place} anymore. Not since {char} found {obj} in the basement.",
+                    "The {mood} scratching began the night {char} brought {obj} home from {place}.",
+                    "\"Don't touch {obj},\" the old woman wheezed. But {char} never listened, especially at {place}.",
+                    "The footage from {place} showed {char} reaching for {obj}. Then {action}. Then static.",
+                    "Every mirror in {place} showed {char} holding {obj}, but the reflection was... {mood}."
+                ],
+                middles: [
+                    "{char2} found {obj2} at {place2}, smeared in something {mood2}. {action2} followed.",
+                    "The door to {place2} wouldn't stay closed. {char2} saw {obj2} move on its own. {action2}.",
+                    "In the {mood2} hallway of {place2}, {char2} whispered: \"It uses {obj2} to feed. {action2} means it's close.\"",
+                    "{place2} was wrong. The walls breathed. {char2} clutched {obj2} as {action2} erupted from below.",
+                    "Nobody believed {char2} about {place2}. About {obj2}. Not until {action2} took the others."
+                ],
+                endings: [
+                    "They never found {char}'s body at {place3}. Only {obj}, still {mood3}, still waiting.",
+                    "The case was closed. The {mood3} thing at {place3} was explained away. But {obj} remains.",
+                    "As {action3} consumed {place3}, the last entry in {char}'s journal read: \"{obj} was never the monster. I was.\"",
+                    "{place3} was demolished. {obj} was buried under concrete. But {mood3} laughter still echoes at night.",
+                    "If you visit {place3} on a {mood3} night, they say you can still hear {char} screaming for {obj}."
+                ]
+            },
+            romance: {
+                openings: [
+                    "{char} first saw {obj} glinting in the window of {place}, and felt {mood} flutter in their chest.",
+                    "It was raining at {place} when {char} dropped {obj} — and a stranger picked it up.",
+                    "The {mood} letter inside {obj} led {char} to {place}, where everything changed.",
+                    "Every day at {place}, {char} would hold {obj} and wonder about the person who left it.",
+                    "When {action} brought {char} to {place}, they never expected to find love — or {obj}."
+                ],
+                middles: [
+                    "But {char2} had already claimed {obj2} — and their heart — at {place2}. {mood2} complications arose.",
+                    "At {place2}, {char2} revealed the truth about {obj2}. Tears fell. {action2} shimmered between them.",
+                    "{char2} waited at {place2}, {mood2} and breathless, holding {obj2} like a promise.",
+                    "The {mood2} dance at {place2} brought them together. {char2} offered {obj2} with trembling hands.",
+                    "Love isn't easy. {char2} left {obj2} at {place2}, and walked away into the {action2}."
+                ],
+                endings: [
+                    "Years later, at {place3}, {char} found {obj} again — and with it, {char2}'s {mood3} smile.",
+                    "In the {mood3} glow of {place3}, they held {obj} between them and whispered forever.",
+                    "It was never about {obj}. As {action3} painted {place3} golden, they finally understood.",
+                    "The {mood3} ending they'd feared never came. At {place3}, love proved stronger than {action3}.",
+                    "And so, under the stars of {place3}, {char} gave {obj} back — not as a gift, but as a vow."
+                ]
+            },
+            comedy: {
+                openings: [
+                    "{char} thought bringing {obj} to {place} would be a great idea. It was not.",
+                    "\"What's the worst that could happen?\" said {char}, holding {obj} upside down at {place}.",
+                    "The {mood} look on {char}'s face when {obj} exploded at {place} was absolutely priceless.",
+                    "Nobody told {char} that {obj} was cursed. Or that {place} was haunted. Or both.",
+                    "Day 1 at {place}: {char} lost {obj}. Day 2: {action}. Day 3: things got worse."
+                ],
+                middles: [
+                    "Then {char2} showed up at {place2} wearing {obj2} as a hat. {action2} ensued immediately.",
+                    "\"I can fix this,\" said {char2}, {mood2}. They could not fix this. {obj2} caught fire at {place2}.",
+                    "At {place2}, {char2} accidentally launched {obj2} into {action2}. The crowd went {mood2}.",
+                    "{char2} tried explaining {obj2} to the authorities at {place2}. \"It just... {action2},\" they stammered {mood2}.",
+                    "Plot twist: {char2} had ALSO broken {obj2}. At the SAME {place2}. At the SAME time. {mood2}."
+                ],
+                endings: [
+                    "In the end, {char} and {obj} were banned from {place3}. And {place2}. And most of the continent.",
+                    "The {mood3} truth? Nobody learned anything. {obj} is still broken. {place3} still smells weird.",
+                    "As {action3} settled down at {place3}, {char} looked at the mess and said: \"Worth it.\"",
+                    "To this day, the people of {place3} celebrate the day {char} accidentally launched {obj} into {action3}.",
+                    "And that, kids, is why {obj} is no longer allowed at {place3}. Or anywhere. Ever."
+                ]
+            },
+            mystery: {
+                openings: [
+                    "The only clue at {place} was {obj}, found in {char}'s pocket. {mood}.",
+                    "{char} had been missing for 48 hours. All that remained at {place}: {obj} and {action}.",
+                    "\"Who left {obj} here?\" {char} examined the scene at {place} with {mood} precision.",
+                    "The case file read: {place}. Victim: unknown. Evidence: {obj}. Suspect: {char}. Motive: {mood}.",
+                    "Three witnesses. One {obj}. And {char}, standing at {place}, looking entirely too {mood}."
+                ],
+                middles: [
+                    "{char2} denied everything about {obj2}, but the footage from {place2} showed {action2} clearly.",
+                    "Hidden in {place2}, {char2}'s journal mentioned {obj2} seventeen times. Always with {mood2} intent.",
+                    "\"Follow {obj2},\" {char2} said at {place2}. \"{action2} will lead you to the truth.\"",
+                    "The {mood2} alibi crumbled when {obj2} was found at {place2}, covered in prints matching {char2}.",
+                    "At {place2}, {char2} confessed — not to the crime, but to hiding {obj2} with {mood2} purpose."
+                ],
+                endings: [
+                    "In the end, {obj} revealed what {place3} had hidden: {char} was innocent. The real culprit? {action3}.",
+                    "The {mood3} verdict echoed through {place3}. {obj} was sealed in evidence. Case closed — or was it?",
+                    "As {action3} cleared the fog over {place3}, {char} whispered: \"The real {obj} was destroyed years ago.\"",
+                    "Nobody at {place3} speaks of {obj} anymore. But every night, {action3} reminds them of {char}.",
+                    "The {mood3} file sits in {place3}'s basement. Unsolved. {obj} keeps turning up in new cases."
+                ]
+            },
+            western: {
+                openings: [
+                    "The stranger called {char} rode into {place} at sundown, {obj} slung across their back.",
+                    "Ain't nobody seen {obj} since {char} buried it outside {place}. Not until {action}.",
+                    "They say {char} won {obj} in a card game at {place}. {mood} trouble followed.",
+                    "Dust and {action} greeted {char} at {place}. On the ground lay {obj}, still warm.",
+                    "The wanted poster at {place} showed {char} holding {obj}. Reward: one {mood} fortune."
+                ],
+                middles: [
+                    "Then {char2} arrived at {place2} with {obj2} and a {mood2} score to settle. {action2}.",
+                    "At the saloon in {place2}, {char2} slammed {obj2} on the bar. \"High noon,\" they said {mood2}.",
+                    "The trail through {place2} led to {char2}'s hideout. {obj2} was there, along with {action2}.",
+                    "{char2} drew first at {place2}, but {obj2} jammed. {action2} saved the day — barely.",
+                    "The {mood2} sheriff at {place2} had one rule: no {obj2}. {char2} broke it immediately."
+                ],
+                endings: [
+                    "{char} rode off from {place3} into the {mood3} sunset, {obj} glinting in the last light.",
+                    "The town of {place3} was never the same. {obj} hangs above the bar, a {mood3} warning.",
+                    "As {action3} settled the dust at {place3}, {char} tipped their hat. This wasn't the end.",
+                    "They buried {obj} under the old oak at {place3}. {char} visits every year, {mood3} and silent.",
+                    "Legend has it, on {mood3} nights at {place3}, you can still hear {char}'s spurs and {action3}."
+                ]
+            }
+        };
+
+        let diceCount = 5;
+        let currentDice = [];
+        let genre = 'fantasy';
+        let storyHistory = [];
+        let isRolling = false;
+
+        function getFace(cat) {
+            const faces = FACES[cat];
+            return faces[Math.floor(Math.random() * faces.length)];
+        }
+
+        function createDice() {
+            const tray = document.getElementById('dice-tray');
+            tray.innerHTML = '';
+            currentDice = [];
+            for (let i = 0; i < diceCount; i++) {
+                const cat = CATS[i % CATS.length];
+                const die = document.createElement('div');
+                die.className = 'die';
+                die.id = 'die-' + i;
+                die.innerHTML = '?<div class="die-label">' + cat + '</div>';
+                die.onclick = () => rollOne(i);
+                tray.appendChild(die);
+                currentDice.push({ cat, face: null });
+            }
+        }
+
+        function rollOne(i, fromBulk) {
+            if (!fromBulk && isRolling) return;
+            const die = document.getElementById('die-' + i);
+            const cat = currentDice[i].cat;
+            die.classList.add('rolling');
+            let flickers = 0;
+            const flickerInterval = setInterval(() => {
+                die.innerHTML = getFace(cat) + '<div class="die-label">' + cat + '</div>';
+                flickers++;
+                if (flickers > 8) {
+                    clearInterval(flickerInterval);
+                    const final = getFace(cat);
+                    currentDice[i].face = final;
+                    die.innerHTML = final + '<div class="die-label">' + cat + '</div>';
+                    die.classList.remove('rolling');
+                }
+            }, 60);
+        }
+
+        function rollAll() {
+            if (isRolling) return;
+            isRolling = true;
+            currentDice.forEach((_, i) => {
+                setTimeout(() => {
+                    rollOne(i, true);
+                    if (i === diceCount - 1) setTimeout(() => { isRolling = false }, 600);
+                }, i * 120);
+            });
+        }
+
+        function changeDice(delta) {
+            diceCount = Math.max(3, Math.min(9, diceCount + delta));
+            document.getElementById('dice-num').textContent = diceCount;
+            createDice();
+        }
+
+        // Genre selection
+        document.querySelectorAll('.genre-btn').forEach(b => {
+            b.addEventListener('click', () => {
+                document.querySelectorAll('.genre-btn').forEach(x => x.classList.remove('active'));
+                b.classList.add('active');
+                genre = b.dataset.g;
+            });
+        });
+
+        function pick(arr) { return arr[Math.floor(Math.random() * arr.length)] }
+
+        function generateStory() {
+            const faces = currentDice.map(d => d.face).filter(Boolean);
+            if (faces.length < 3) { alert('Roll at least 3 dice first!'); return; }
+
+            const parts = STORY_PARTS[genre];
+            let opening = pick(parts.openings);
+            let middle = pick(parts.middles);
+            let ending = pick(parts.endings);
+
+            // Assign dice faces to slots
+            const chars = faces.filter((_, i) => currentDice[i].cat === 'characters');
+            const places = faces.filter((_, i) => currentDice[i].cat === 'places');
+            const objects = faces.filter((_, i) => currentDice[i].cat === 'objects');
+            const actions = faces.filter((_, i) => currentDice[i].cat === 'actions');
+            const moods = faces.filter((_, i) => currentDice[i].cat === 'moods');
+
+            // Fallback: just use any faces
+            const all = [...faces];
+            const g = (arr, fallback) => arr.length > 0 ? pick(arr) : pick(fallback || all);
+
+            const replacements = {
+                '{char}': g(chars, all), '{char2}': g(chars, all),
+                '{place}': g(places, all), '{place2}': g(places, all), '{place3}': g(places, all),
+                '{obj}': g(objects, all), '{obj2}': g(objects, all),
+                '{action}': g(actions, all), '{action2}': g(actions, all), '{action3}': g(actions, all),
+                '{mood}': g(moods, all), '{mood2}': g(moods, all), '{mood3}': g(moods, all)
+            };
+
+            let story = opening + ' ' + middle + ' ' + ending;
+            for (const [key, val] of Object.entries(replacements)) {
+                story = story.replaceAll(key, `<span class="highlight">${val}</span>`);
+            }
+
+            const titles = {
+                fantasy: ["The Lost Prophecy", "Embers of Fate", "The Enchanted Quest", "Whispers of the Arcane", "The Dragon's Bargain"],
+                scifi: ["Signal Lost", "The Last Transmission", "Beyond the Void", "Quantum Collapse", "Stellar Remains"],
+                horror: ["Don't Look Back", "The Whispering Walls", "Something Beneath", "It Remembers", "The Last Recording"],
+                romance: ["Written in Stars", "The Second Chance", "Hearts Unspoken", "Love in Ruins", "The Letter"],
+                comedy: ["Well, That Happened", "The Absolute Disaster", "How I Got Banned", "Oops: A Memoir", "The Worst Plan Ever"],
+                mystery: ["Cold Case File #7", "The Missing Piece", "Shadows Don't Lie", "The Silent Witness", "Exhibit A"],
+                western: ["Dust and Thunder", "The Last Showdown", "Sundown Reckoning", "No Law Out Here", "The Drifter's Gamble"]
+            };
+
+            const title = pick(titles[genre]);
+            document.getElementById('placeholder').style.display = 'none';
+            document.getElementById('story-content').style.display = 'block';
+            document.getElementById('story-title').textContent = '✦ ' + title;
+
+            // Typewriter effect
+            const textEl = document.getElementById('story-text');
+            textEl.innerHTML = '';
+            let charIdx = 0;
+            const tempDiv = document.createElement('div');
+            tempDiv.innerHTML = story;
+            const plainText = tempDiv.textContent;
+
+            // Just set it directly with HTML for highlights
+            textEl.innerHTML = story;
+            textEl.style.opacity = '0';
+            textEl.style.transform = 'translateY(10px)';
+            setTimeout(() => {
+                textEl.style.transition = 'all 0.5s ease';
+                textEl.style.opacity = '1';
+                textEl.style.transform = 'translateY(0)';
+            }, 50);
+
+            const genreLabels = { fantasy: '🧙 Fantasy', scifi: '🚀 Sci-Fi', horror: '👻 Horror', romance: '💕 Romance', comedy: '😂 Comedy', mystery: '🔍 Mystery', western: '🤠 Western' };
+            document.getElementById('story-genre').textContent = genreLabels[genre];
+            document.getElementById('story-words').textContent = plainText.split(' ').length + ' words';
+
+            // Save to history
+            storyHistory.unshift({ dice: faces.join(''), title, preview: plainText.substring(0, 80), genre, full: story });
+            if (storyHistory.length > 10) storyHistory.pop();
+            renderHistory();
+        }
+
+        function renderHistory() {
+            if (storyHistory.length === 0) return;
+            document.getElementById('history-section').style.display = 'block';
+            const list = document.getElementById('history-list');
+            list.innerHTML = '';
+            storyHistory.forEach((h, i) => {
+                const div = document.createElement('div');
+                div.className = 'hist-item';
+                div.innerHTML = `<div class="hist-dice">${h.dice}</div><div class="hist-preview">${h.title} — ${h.preview}...</div>`;
+                div.onclick = () => {
+                    document.getElementById('placeholder').style.display = 'none';
+                    document.getElementById('story-content').style.display = 'block';
+                    document.getElementById('story-title').textContent = '✦ ' + h.title;
+                    document.getElementById('story-text').innerHTML = h.full;
+                    const gl = { fantasy: '🧙 Fantasy', scifi: '🚀 Sci-Fi', horror: '👻 Horror', romance: '💕 Romance', comedy: '😂 Comedy', mystery: '🔍 Mystery', western: '🤠 Western' };
+                    document.getElementById('story-genre').textContent = gl[h.genre];
+                };
+                list.appendChild(div);
+            });
+        }
+
+        function resetAll() {
+            createDice();
+            document.getElementById('placeholder').style.display = 'block';
+            document.getElementById('story-content').style.display = 'none';
+        }
+
+        createDice();
+    </script>
+</body>
+
+</html>

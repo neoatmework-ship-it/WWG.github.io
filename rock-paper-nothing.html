@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rock Paper Nothing ✊</title>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box
+        }
+
+        body {
+            font-family: 'Fredoka', sans-serif;
+            background: linear-gradient(135deg, #0f172a, #1e1b4b);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            color: #fff;
+            overflow: hidden
+        }
+
+        h1 {
+            font-size: 1.8rem;
+            margin-top: 30px;
+            font-weight: 700
+        }
+
+        h1 span {
+            color: #f59e0b
+        }
+
+        .sub {
+            color: rgba(255, 255, 255, .4);
+            font-size: .75rem;
+            margin: 4px 0 20px
+        }
+
+        .arena {
+            display: flex;
+            gap: 60px;
+            align-items: center;
+            margin: 30px 0
+        }
+
+        .side {
+            text-align: center
+        }
+
+        .side-label {
+            font-size: .7rem;
+            color: rgba(255, 255, 255, .4);
+            margin-bottom: 8px
+        }
+
+        .side-choice {
+            width: 120px;
+            height: 120px;
+            border-radius: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 3.5rem;
+            transition: all .3s
+        }
+
+        .player-choice {
+            background: rgba(139, 92, 246, .15);
+            border: 2px solid rgba(139, 92, 246, .3)
+        }
+
+        .cpu-choice {
+            background: rgba(239, 68, 68, .1);
+            border: 2px solid rgba(239, 68, 68, .2)
+        }
+
+        .vs {
+            font-size: 1.5rem;
+            color: rgba(255, 255, 255, .2);
+            font-weight: 700
+        }
+
+        .choices {
+            display: flex;
+            gap: 12px;
+            margin: 20px 0
+        }
+
+        .choice-btn {
+            width: 90px;
+            height: 90px;
+            border-radius: 20px;
+            border: 2px solid rgba(255, 255, 255, .1);
+            background: rgba(255, 255, 255, .05);
+            font-size: 2.5rem;
+            cursor: pointer;
+            transition: all .2s;
+            display: flex;
+            align-items: center;
+            justify-content: center
+        }
+
+        .choice-btn:hover {
+            background: rgba(255, 255, 255, .12);
+            border-color: rgba(255, 255, 255, .3);
+            transform: translateY(-4px)
+        }
+
+        .choice-btn:active {
+            transform: translateY(0)
+        }
+
+        .result {
+            font-size: 1.3rem;
+            font-weight: 700;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all .3s
+        }
+
+        .result.win {
+            color: #4ade80
+        }
+
+        .result.confused {
+            color: #f59e0b
+        }
+
+        .score-board {
+            display: flex;
+            gap: 40px;
+            margin-top: 20px;
+            font-size: .8rem;
+            color: rgba(255, 255, 255, .5)
+        }
+
+        .score-board div {
+            text-align: center
+        }
+
+        .score-board span {
+            display: block;
+            font-size: 2rem;
+            font-weight: 700;
+            color: #fff;
+            margin-top: 4px
+        }
+
+        .score-board .wins span {
+            color: #4ade80
+        }
+
+        .score-board .losses span {
+            color: #ef4444
+        }
+
+        .commentary {
+            max-width: 500px;
+            text-align: center;
+            color: rgba(255, 255, 255, .3);
+            font-size: .7rem;
+            margin-top: 20px;
+            min-height: 40px;
+            transition: all .3s
+        }
+
+        .streak-banner {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(0);
+            font-size: 2rem;
+            font-weight: 700;
+            color: #fbbf24;
+            text-shadow: 0 0 30px rgba(251, 191, 36, .5);
+            z-index: 10;
+            pointer-events: none;
+            transition: transform .3s;
+            white-space: nowrap
+        }
+
+        .streak-banner.show {
+            transform: translate(-50%, -50%) scale(1);
+            animation: streak-pop .5s ease-out
+        }
+
+        @keyframes streak-pop {
+            0% {
+                transform: translate(-50%, -50%) scale(0) rotate(-10deg)
+            }
+
+            60% {
+                transform: translate(-50%, -50%) scale(1.2) rotate(3deg)
+            }
+
+            100% {
+                transform: translate(-50%, -50%) scale(1) rotate(0)
+            }
+        }
+
+        .confetti {
+            position: fixed;
+            pointer-events: none;
+            z-index: 8;
+            animation: confetti-fall 2s ease-in forwards
+        }
+
+        @keyframes confetti-fall {
+            0% {
+                opacity: 1;
+                transform: translateY(0) rotate(0)
+            }
+
+            100% {
+                opacity: 0;
+                transform: translateY(100vh) rotate(720deg)
+            }
+        }
+
+        .shake {
+            animation: shake .3s ease
+        }
+
+        @keyframes shake {
+
+            0%,
+            100% {
+                transform: translateX(0)
+            }
+
+            25% {
+                transform: translateX(-5px)
+            }
+
+            75% {
+                transform: translateX(5px)
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <h1>✊ Rock Paper <span>Nothing</span></h1>
+    <div class="sub">A fair and balanced game of skill</div>
+
+    <div class="arena">
+        <div class="side">
+            <div class="side-label">YOU (the champion)</div>
+            <div class="side-choice player-choice" id="p-display">❓</div>
+        </div>
+        <div class="vs">VS</div>
+        <div class="side">
+            <div class="side-label">CPU (the challenger)</div>
+            <div class="side-choice cpu-choice" id="c-display">❓</div>
+        </div>
+    </div>
+
+    <div class="result" id="result">&nbsp;</div>
+
+    <div class="choices">
+        <button class="choice-btn" data-choice="rock" title="Rock">✊</button>
+        <button class="choice-btn" data-choice="paper" title="Paper">✋</button>
+        <button class="choice-btn" data-choice="scissors" title="Scissors">✌️</button>
+    </div>
+
+    <div class="score-board">
+        <div class="wins">Wins<span id="wins">0</span></div>
+        <div class="losses">Losses<span id="losses">0</span></div>
+        <div>Win Rate<span id="rate">--</span></div>
+        <div>Streak<span id="streak">0</span></div>
+    </div>
+
+    <div class="commentary" id="commentary">Choose your weapon to begin the most fair game ever created.</div>
+    <div class="streak-banner" id="streak-banner"></div>
+
+    <script>
+        const choices = { rock: '✊', paper: '✋', scissors: '✌️' };
+        const beats = { rock: 'scissors', paper: 'rock', scissors: 'paper' };
+        let wins = 0, losses = 0, streak = 0, rounds = 0;
+
+        const cpuNothings = [
+            { emoji: '🫥', name: 'Nothing' },
+            { emoji: '👻', name: 'Ghost of a Chance' },
+            { emoji: '💨', name: 'Air' },
+            { emoji: '🕳️', name: 'A Hole' },
+            { emoji: '🫧', name: 'A Bubble' },
+            { emoji: '😶', name: 'Silence' },
+            { emoji: '🌫️', name: 'Fog' },
+            { emoji: '✨', name: 'The Concept of Hope' },
+            { emoji: '🤷', name: 'A Shrug' },
+            { emoji: '😴', name: 'A Nap' },
+            { emoji: '🧠', name: 'A Thought' },
+            { emoji: '💭', name: 'A Dream' },
+            { emoji: '🌈', name: 'Yesterday\'s Rainbow' },
+            { emoji: '🫠', name: 'Melting' },
+            { emoji: '👁️', name: 'Just Watching' },
+        ];
+
+        const winCommentary = [
+            "Wow, you beat nothing! Here's your trophy: 🏆",
+            "Incredible strategy! Nothing never saw it coming.",
+            "The crowd goes WILD! 👏👏👏",
+            "That was the most dominant victory in RPS history.",
+            "Scientists are baffled by your skill.",
+            "ESPN wants to interview you about this win.",
+            "Your technique was flawless against literally nothing.",
+            "They'll write legends about this battle.",
+            "You showed nothing who's boss. Literally.",
+            "Peak human performance achieved.",
+            "This will be studied in universities for decades.",
+            "The computer threw nothing. You threw something. Math checks out. ✅",
+            "Your parents are so proud right now.",
+            "This is going on your resume.",
+            "Let's not talk about what the computer threw...",
+        ];
+
+        const streakMessages = {
+            5: "🔥 5 WIN STREAK!",
+            10: "⚡ 10 WINS! UNSTOPPABLE!",
+            15: "🌟 15 WINS! LEGENDARY!",
+            20: "👑 20 WINS! GODLIKE!",
+            25: "💀 25 WINS! IS THIS FAIR?",
+            50: "🤯 50 WINS! TOUCH GRASS!",
+            100: "🏆 100 WINS! YOU WIN LIFE!",
+        };
+
+        function play(choice) {
+            rounds++;
+            const cpu = cpuNothings[Math.floor(Math.random() * cpuNothings.length)];
+
+            // Animate
+            document.getElementById('p-display').textContent = choices[choice];
+            document.getElementById('c-display').textContent = cpu.emoji;
+
+            // The CPU always plays "nothing" so you always win
+            wins++;
+            streak++;
+
+            document.getElementById('result').textContent = `✅ YOU WIN! ${choice} beats ${cpu.name}!`;
+            document.getElementById('result').className = 'result win';
+
+            document.getElementById('wins').textContent = wins;
+            document.getElementById('losses').textContent = losses;
+            document.getElementById('rate').textContent = '100%';
+            document.getElementById('streak').textContent = streak;
+
+            document.getElementById('commentary').textContent = winCommentary[Math.floor(Math.random() * winCommentary.length)];
+
+            // Streak banners
+            if (streakMessages[streak]) {
+                const banner = document.getElementById('streak-banner');
+                banner.textContent = streakMessages[streak];
+                banner.classList.add('show');
+                setTimeout(() => banner.classList.remove('show'), 2000);
+            }
+
+            // Confetti on every 5th win
+            if (streak % 5 === 0) {
+                for (let i = 0; i < 20; i++) {
+                    const c = document.createElement('div');
+                    c.className = 'confetti';
+                    c.style.left = Math.random() * 100 + '%';
+                    c.style.top = '-20px';
+                    c.style.width = (6 + Math.random() * 8) + 'px';
+                    c.style.height = (6 + Math.random() * 8) + 'px';
+                    c.style.background = ['#ec4899', '#8b5cf6', '#06b6d4', '#10b981', '#f59e0b', '#ef4444'][Math.floor(Math.random() * 6)];
+                    c.style.borderRadius = Math.random() > .5 ? '50%' : '2px';
+                    c.style.animationDuration = (1 + Math.random()) + 's';
+                    c.style.animationDelay = (Math.random() * .5) + 's';
+                    document.body.appendChild(c);
+                    setTimeout(() => c.remove(), 3000);
+                }
+            }
+
+            // CPU side shakes in defeat
+            document.querySelector('.cpu-choice').classList.add('shake');
+            setTimeout(() => document.querySelector('.cpu-choice').classList.remove('shake'), 300);
+        }
+
+        document.querySelectorAll('.choice-btn').forEach(btn => {
+            btn.addEventListener('click', () => play(btn.dataset.choice));
+        });
+    </script>
+</body>
+
+</html>

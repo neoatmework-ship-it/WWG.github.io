@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Catch The Button 🖱️</title>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box
+        }
+
+        body {
+            font-family: 'Fredoka', sans-serif;
+            background: linear-gradient(135deg, #0a0a1a, #1a0a2e);
+            min-height: 100vh;
+            overflow: hidden;
+            cursor: crosshair
+        }
+
+        .hud {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 10;
+            background: rgba(0, 0, 0, .3);
+            backdrop-filter: blur(8px)
+        }
+
+        .hud-left h1 {
+            font-size: 1.2rem;
+            color: #fff;
+            font-weight: 700
+        }
+
+        .hud-left h1 span {
+            color: #f59e0b
+        }
+
+        .hud-left p {
+            font-size: .65rem;
+            color: rgba(255, 255, 255, .4)
+        }
+
+        .hud-right {
+            display: flex;
+            gap: 20px;
+            font-size: .8rem;
+            color: rgba(255, 255, 255, .5)
+        }
+
+        .hud-right span {
+            color: #f59e0b;
+            font-weight: 700
+        }
+
+        .catch-btn {
+            position: absolute;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: none;
+            border-radius: 14px;
+            font-family: inherit;
+            font-weight: 700;
+            cursor: pointer;
+            transition: box-shadow .1s;
+            z-index: 5;
+            user-select: none
+        }
+
+        .catch-btn:hover {
+            box-shadow: 0 0 30px rgba(245, 158, 11, .3)
+        }
+
+        .catch-btn::after {
+            content: '';
+            position: absolute;
+            inset: -20px;
+            z-index: -1
+        }
+
+        .taunt {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: rgba(255, 255, 255, .3);
+            font-size: .8rem;
+            z-index: 10;
+            text-align: center;
+            transition: all .3s
+        }
+
+        .particle {
+            position: absolute;
+            pointer-events: none;
+            border-radius: 50%;
+            z-index: 4;
+            animation: pop .6s ease-out forwards
+        }
+
+        @keyframes pop {
+            0% {
+                transform: scale(1);
+                opacity: .8
+            }
+
+            100% {
+                transform: scale(0);
+                opacity: 0
+            }
+        }
+
+        .catch-flash {
+            position: fixed;
+            inset: 0;
+            background: rgba(74, 222, 128, .1);
+            z-index: 20;
+            pointer-events: none;
+            animation: cflash .3s ease-out forwards
+        }
+
+        @keyframes cflash {
+            from {
+                opacity: 1
+            }
+
+            to {
+                opacity: 0
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="hud">
+        <div class="hud-left">
+            <h1>🖱️ Catch The <span>Button</span></h1>
+            <p>It really doesn't want to be clicked</p>
+        </div>
+        <div class="hud-right">
+            Caught: <span id="caught">0</span> &nbsp;|&nbsp; Escaped: <span id="escaped">0</span> &nbsp;|&nbsp; Buttons:
+            <span id="btn-count">1</span>
+        </div>
+    </div>
+
+    <div class="taunt" id="taunt">Go ahead. Try to click it. 😏</div>
+
+    <script>
+        let caught = 0, escaped = 0;
+        const taunts = [
+            "Too slow! 😂", "Nice try!", "Almost! ...not really", "You'll never catch me!",
+            "Haha, over here!", "🏃‍♂️💨", "Missed!", "Was that your best?",
+            "I have 4ms reflexes", "Try harder?", "Yawn... 😴", "Getting warmer... NOT",
+            "*dodge*", "Catch me outside", "Button 1 - You 0", "👋 See ya!",
+            "I'm built different", "Error 404: click not found", "git gud", "Skill issue tbh"
+        ];
+        const catchTaunts = [
+            "Wait... you actually caught me?!", "NOOOO! 😱", "How?!", "This is unprecedented",
+            "Fine, you win THIS one", "*surprised pikachu*", "Impossible!", "Reported for hacking"
+        ];
+
+        const colors = ['#f59e0b', '#ec4899', '#8b5cf6', '#06b6d4', '#10b981', '#ef4444', '#f472b6'];
+        let buttons = [];
+
+        function createButton(x, y, size) {
+            const btn = document.createElement('button');
+            btn.className = 'catch-btn';
+            const color = colors[Math.floor(Math.random() * colors.length)];
+            const sz = size || 50 + Math.random() * 30;
+            btn.style.width = sz + 'px';
+            btn.style.height = sz + 'px';
+            btn.style.background = color;
+            btn.style.color = '#fff';
+            btn.style.fontSize = (sz * 0.35) + 'px';
+            btn.textContent = ['Click', 'Catch', 'Me', 'Try', 'No', 'Run'][Math.floor(Math.random() * 6)];
+            btn.style.left = (x || Math.random() * (window.innerWidth - sz)) + 'px';
+            btn.style.top = (y || 80 + Math.random() * (window.innerHeight - 150)) + 'px';
+
+            let evadeSpeed = 100 + caught * 20;
+            let evasions = 0;
+
+            btn.addEventListener('mouseenter', () => {
+                // Run away!
+                evasions++;
+                const nx = Math.random() * (window.innerWidth - sz);
+                const ny = 80 + Math.random() * (window.innerHeight - 150);
+                btn.style.left = nx + 'px';
+                btn.style.top = ny + 'px';
+                btn.style.transition = 'left .15s, top .15s';
+
+                // Spawn particles at old position
+                for (let i = 0; i < 5; i++) {
+                    const p = document.createElement('div');
+                    p.className = 'particle';
+                    p.style.left = (parseFloat(btn.style.left) + sz / 2) + 'px';
+                    p.style.top = (parseFloat(btn.style.top) + sz / 2) + 'px';
+                    p.style.width = p.style.height = (4 + Math.random() * 8) + 'px';
+                    p.style.background = color;
+                    const angle = Math.random() * Math.PI * 2;
+                    const dist = 20 + Math.random() * 40;
+                    p.style.transform = `translate(${Math.cos(angle) * dist}px, ${Math.sin(angle) * dist}px)`;
+                    document.body.appendChild(p);
+                    setTimeout(() => p.remove(), 600);
+                }
+
+                if (evasions > 8) {
+                    escaped++;
+                    document.getElementById('escaped').textContent = escaped;
+                }
+
+                document.getElementById('taunt').textContent = taunts[Math.floor(Math.random() * taunts.length)];
+            });
+
+            btn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                caught++;
+                document.getElementById('caught').textContent = caught;
+                document.getElementById('taunt').textContent = catchTaunts[Math.floor(Math.random() * catchTaunts.length)];
+
+                // Flash
+                const flash = document.createElement('div');
+                flash.className = 'catch-flash';
+                document.body.appendChild(flash);
+                setTimeout(() => flash.remove(), 300);
+
+                // Remove this button
+                btn.remove();
+                buttons = buttons.filter(b => b !== btn);
+
+                // Spawn 2 new ones!
+                const b1 = createButton();
+                const b2 = createButton();
+                buttons.push(b1, b2);
+                document.getElementById('btn-count').textContent = buttons.length;
+            });
+
+            document.body.appendChild(btn);
+            return btn;
+        }
+
+        // Start with one button in the center
+        const firstBtn = createButton(window.innerWidth / 2 - 35, window.innerHeight / 2 - 35, 70);
+        buttons.push(firstBtn);
+
+        // Random movement for all buttons every few seconds
+        setInterval(() => {
+            buttons.forEach(btn => {
+                if (Math.random() < 0.3) {
+                    const sz = parseFloat(btn.style.width);
+                    btn.style.transition = 'left 1s ease, top 1s ease';
+                    btn.style.left = Math.random() * (window.innerWidth - sz) + 'px';
+                    btn.style.top = (80 + Math.random() * (window.innerHeight - 150)) + 'px';
+                }
+            });
+        }, 3000);
+    </script>
+</body>
+
+</html>

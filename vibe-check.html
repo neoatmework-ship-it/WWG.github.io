@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vibe Check 🫠</title>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box
+        }
+
+        body {
+            font-family: 'Fredoka', sans-serif;
+            background: #0a0a1a;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+            overflow: hidden
+        }
+
+        .container {
+            text-align: center;
+            max-width: 500px;
+            padding: 20px
+        }
+
+        h1 {
+            font-size: 2rem;
+            margin-bottom: 4px
+        }
+
+        h1 span {
+            color: #8b5cf6
+        }
+
+        .sub {
+            color: rgba(255, 255, 255, .4);
+            font-size: .75rem;
+            margin-bottom: 30px
+        }
+
+        .scan-area {
+            width: 300px;
+            height: 300px;
+            border: 2px dashed rgba(139, 92, 246, .2);
+            border-radius: 50%;
+            margin: 0 auto 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            transition: all .3s
+        }
+
+        .scan-area.scanning {
+            border-color: rgba(139, 92, 246, .5);
+            box-shadow: 0 0 40px rgba(139, 92, 246, .1)
+        }
+
+        .scan-area.done {
+            border-color: rgba(74, 222, 128, .5);
+            box-shadow: 0 0 40px rgba(74, 222, 128, .1)
+        }
+
+        .scan-text {
+            font-size: .8rem;
+            color: rgba(255, 255, 255, .3)
+        }
+
+        .scan-emoji {
+            font-size: 4rem;
+            display: none
+        }
+
+        .scan-area.done .scan-text {
+            display: none
+        }
+
+        .scan-area.done .scan-emoji {
+            display: block
+        }
+
+        .trail {
+            position: fixed;
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: #8b5cf6;
+            pointer-events: none;
+            z-index: 100;
+            opacity: .5;
+            transition: opacity 1s
+        }
+
+        .progress {
+            width: 300px;
+            height: 6px;
+            border-radius: 3px;
+            background: rgba(255, 255, 255, .05);
+            margin: 0 auto 20px;
+            overflow: hidden
+        }
+
+        .progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, #8b5cf6, #ec4899);
+            border-radius: 3px;
+            transition: width .3s;
+            width: 0
+        }
+
+        .status {
+            color: rgba(255, 255, 255, .4);
+            font-size: .7rem;
+            margin-bottom: 20px;
+            min-height: 20px
+        }
+
+        .result-card {
+            background: rgba(255, 255, 255, .05);
+            border: 1px solid rgba(255, 255, 255, .08);
+            border-radius: 16px;
+            padding: 20px;
+            margin: 20px auto;
+            max-width: 400px;
+            display: none;
+            text-align: left
+        }
+
+        .result-card.show {
+            display: block;
+            animation: fade-in .5s ease
+        }
+
+        @keyframes fade-in {
+            from {
+                opacity: 0;
+                transform: translateY(10px)
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0)
+            }
+        }
+
+        .result-card h3 {
+            font-size: 1rem;
+            margin-bottom: 10px;
+            color: #c4b5fd
+        }
+
+        .vibe-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 12px
+        }
+
+        .stat-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 6px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, .05);
+            font-size: .75rem;
+            color: rgba(255, 255, 255, .5)
+        }
+
+        .stat-row span:last-child {
+            color: #c4b5fd;
+            font-weight: 600
+        }
+
+        .vibe-desc {
+            color: rgba(255, 255, 255, .4);
+            font-size: .75rem;
+            margin-top: 12px;
+            line-height: 1.5
+        }
+
+        .retry-btn {
+            margin-top: 16px;
+            padding: 10px 24px;
+            border-radius: 12px;
+            border: none;
+            background: #8b5cf6;
+            color: #fff;
+            font-family: inherit;
+            font-size: .8rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all .2s
+        }
+
+        .retry-btn:hover {
+            background: #7c3aed;
+            transform: translateY(-1px)
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>🫠 Vibe <span>Check</span></h1>
+        <div class="sub">Move your mouse around. We will judge you.</div>
+
+        <div class="scan-area" id="scan-area">
+            <span class="scan-text" id="scan-text">Move your mouse to begin scanning...</span>
+            <span class="scan-emoji" id="scan-emoji"></span>
+        </div>
+
+        <div class="progress">
+            <div class="progress-bar" id="progress-bar"></div>
+        </div>
+        <div class="status" id="status"></div>
+
+        <div class="result-card" id="result-card">
+            <h3>📊 Vibe Analysis Complete</h3>
+            <div class="vibe-title" id="vibe-title"></div>
+            <div id="stats"></div>
+            <div class="vibe-desc" id="vibe-desc"></div>
+            <button class="retry-btn" onclick="location.reload()">🔄 Check Again</button>
+        </div>
+    </div>
+
+    <script>
+        const scanArea = document.getElementById('scan-area');
+        const progressBar = document.getElementById('progress-bar');
+        const statusEl = document.getElementById('status');
+
+        let positions = [];
+        let scanning = false;
+        let done = false;
+        const SAMPLES = 200;
+
+        const scanMessages = [
+            "Analyzing cursor energy...",
+            "Reading digital aura...",
+            "Consulting the algorithm...",
+            "Measuring chaos levels...",
+            "Calibrating vibe sensors...",
+            "Detecting mouse personality...",
+            "Calculating existential drift...",
+            "Scanning for main character energy...",
+        ];
+
+        const vibes = [
+            { emoji: '😎', title: 'Certified Chill', desc: 'Your cursor moves like a gentle breeze. You probably listen to lofi and have a plant named Gerald. Top 3% most relaxed cursors on the internet.' },
+            { emoji: '🏃', title: 'Chaotic Gremlin Energy', desc: 'Your mouse is EVERYWHERE. You probably have 47 browser tabs open and forgot why you opened half of them. Pure unhinged energy.' },
+            { emoji: '🧘', title: 'Zen Master', desc: 'Smooth, deliberate movements. You either do yoga or you\'re a robot. Either way, your cursor has inner peace.' },
+            { emoji: '🐿️', title: 'Squirrel Brain', desc: 'Lots of small, frantic movements. You got distracted 3 times while reading this. There\'s a 90% chance you just forgot what site you\'re on.' },
+            { emoji: '🎭', title: 'Main Character', desc: 'Your cursor moves with DRAMA. Every pixel travelled was intentional and cinematic. Someone should film your mouse movements.' },
+            { emoji: '👻', title: 'Ghost Mode', desc: 'You barely moved. Are you even there? Blink twice if you need help. Your cursor is technically classified as "missing."' },
+            { emoji: '🌪️', title: 'Natural Disaster', desc: 'Your mouse movement data looks like a hurricane path forecast. FEMA has been notified. Please evacuate in an orderly fashion.' },
+            { emoji: '🎪', title: 'Circus Performer', desc: 'Loops! Circles! Figure eights! Your cursor is doing a whole routine. The judges give you a 9.2 for artistic expression.' },
+            { emoji: '🧊', title: 'Ice Cold', desc: 'Slow, steady, methodical. You\'re either incredibly patient or plotting something. Your cursor has the energy of a chess grandmaster.' },
+            { emoji: '🎸', title: 'Rock Star Energy', desc: 'Your mouse movements have RHYTHM. Left-right-left-right like you\'re headbanging. We can hear the guitar solo from here.' },
+        ];
+
+        document.addEventListener('mousemove', e => {
+            if (done) return;
+
+            if (!scanning) {
+                scanning = true;
+                scanArea.classList.add('scanning');
+            }
+
+            positions.push({ x: e.clientX, y: e.clientY, t: Date.now() });
+
+            // Trail effect
+            const trail = document.createElement('div');
+            trail.className = 'trail';
+            trail.style.left = e.clientX + 'px';
+            trail.style.top = e.clientY + 'px';
+            document.body.appendChild(trail);
+            setTimeout(() => { trail.style.opacity = '0'; setTimeout(() => trail.remove(), 1000); }, 100);
+
+            // Progress
+            const pct = Math.min(100, (positions.length / SAMPLES) * 100);
+            progressBar.style.width = pct + '%';
+
+            if (positions.length % 30 === 0) {
+                statusEl.textContent = scanMessages[Math.floor(Math.random() * scanMessages.length)];
+            }
+
+            if (positions.length >= SAMPLES) {
+                done = true;
+                analyzeVibe();
+            }
+        });
+
+        function analyzeVibe() {
+            scanArea.classList.remove('scanning');
+            scanArea.classList.add('done');
+            statusEl.textContent = 'Analysis complete!';
+            progressBar.style.width = '100%';
+
+            // Calculate "stats" from mouse data
+            let totalDist = 0, speeds = [], angles = [];
+            for (let i = 1; i < positions.length; i++) {
+                const dx = positions[i].x - positions[i - 1].x;
+                const dy = positions[i].y - positions[i - 1].y;
+                const dt = Math.max(1, positions[i].t - positions[i - 1].t);
+                const dist = Math.sqrt(dx * dx + dy * dy);
+                totalDist += dist;
+                speeds.push(dist / dt * 1000);
+                angles.push(Math.atan2(dy, dx));
+            }
+
+            const avgSpeed = speeds.reduce((a, b) => a + b, 0) / speeds.length;
+            const maxSpeed = Math.max(...speeds);
+            let directionChanges = 0;
+            for (let i = 1; i < angles.length; i++) {
+                if (Math.abs(angles[i] - angles[i - 1]) > 0.5) directionChanges++;
+            }
+
+            // Pick vibe based on movement characteristics
+            let vibeIndex;
+            if (avgSpeed < 200 && directionChanges < 30) vibeIndex = 5; // Ghost
+            else if (avgSpeed < 400 && directionChanges < 50) vibeIndex = 2; // Zen
+            else if (avgSpeed < 400) vibeIndex = 8; // Ice Cold
+            else if (avgSpeed > 1200 && directionChanges > 100) vibeIndex = 1; // Chaotic
+            else if (avgSpeed > 1000 && directionChanges > 120) vibeIndex = 6; // Natural Disaster
+            else if (directionChanges > 100) vibeIndex = 3; // Squirrel
+            else if (directionChanges > 70) vibeIndex = 7; // Circus
+            else if (avgSpeed > 800) vibeIndex = 9; // Rock Star
+            else if (avgSpeed > 500) vibeIndex = 4; // Main Character
+            else vibeIndex = 0; // Chill
+
+            const vibe = vibes[vibeIndex];
+
+            document.getElementById('scan-emoji').textContent = vibe.emoji;
+            document.getElementById('vibe-title').textContent = vibe.emoji + ' ' + vibe.title;
+
+            const statsEl = document.getElementById('stats');
+            const fakeStats = [
+                ['Chaos Level', (directionChanges / 1.5).toFixed(0) + '%'],
+                ['Cursor Speed', avgSpeed.toFixed(0) + ' px/s'],
+                ['Total Distance', (totalDist / 1000).toFixed(1) + 'km (probably)'],
+                ['Max Speed', maxSpeed.toFixed(0) + ' px/s'],
+                ['Direction Changes', directionChanges],
+                ['Vibe Confidence', (70 + Math.random() * 30).toFixed(1) + '%'],
+                ['Aura Color', ['Purple', 'Teal', 'Sunset', 'Midnight', 'Neon'][Math.floor(Math.random() * 5)]],
+                ['Spirit Animal', ['Cat', 'Hummingbird', 'Sloth', 'Ferret', 'Eagle'][Math.floor(Math.random() * 5)]],
+            ];
+
+            statsEl.innerHTML = fakeStats.map(s => `<div class="stat-row"><span>${s[0]}</span><span>${s[1]}</span></div>`).join('');
+            document.getElementById('vibe-desc').textContent = vibe.desc;
+            document.getElementById('result-card').classList.add('show');
+        }
+    </script>
+</body>
+
+</html>

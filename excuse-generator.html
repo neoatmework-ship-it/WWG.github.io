@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Professional Excuse Generator</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700;800;900&family=Inter:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #faf9f6;
+            color: #1a1a1a;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center
+        }
+
+        .container {
+            max-width: 600px;
+            width: 100%;
+            padding: 24px
+        }
+
+        .header {
+            text-align: center;
+            padding: 50px 0 30px
+        }
+
+        .header-badge {
+            display: inline-block;
+            padding: 4px 14px;
+            background: #f0ede6;
+            border: 1px solid #e0ddd4;
+            border-radius: 100px;
+            font-size: .6rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            color: #8a8070;
+            margin-bottom: 16px
+        }
+
+        .header h1 {
+            font-family: 'Playfair Display', serif;
+            font-size: 2.4rem;
+            font-weight: 900;
+            letter-spacing: -1px;
+            margin-bottom: 6px;
+            color: #1a1a1a
+        }
+
+        .header p {
+            color: #999;
+            font-size: .85rem
+        }
+
+        .category {
+            display: flex;
+            gap: 6px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-bottom: 24px
+        }
+
+        .cat-btn {
+            padding: 6px 16px;
+            border-radius: 100px;
+            border: 1px solid #e0ddd4;
+            background: #fff;
+            font-size: .72rem;
+            font-weight: 600;
+            color: #888;
+            cursor: pointer;
+            transition: all .15s;
+            font-family: inherit
+        }
+
+        .cat-btn:hover {
+            background: #f5f3ee;
+            color: #555
+        }
+
+        .cat-btn.active {
+            background: #1a1a1a;
+            color: #fff;
+            border-color: #1a1a1a
+        }
+
+        .gen-btn {
+            display: block;
+            width: 100%;
+            padding: 14px;
+            background: #1a1a1a;
+            border: none;
+            border-radius: 12px;
+            color: #fff;
+            font-family: 'Playfair Display', serif;
+            font-size: 1rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all .15s;
+            margin-bottom: 24px
+        }
+
+        .gen-btn:hover {
+            background: #333;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, .1)
+        }
+
+        .gen-btn:active {
+            transform: scale(.98)
+        }
+
+        .letter {
+            background: #fff;
+            border: 1px solid #e8e5de;
+            border-radius: 16px;
+            padding: 32px;
+            display: none;
+            animation: fadeUp .4s
+        }
+
+        @keyframes fadeUp {
+            from {
+                opacity: 0;
+                transform: translateY(12px)
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0)
+            }
+        }
+
+        .letter-head {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 24px;
+            padding-bottom: 16px;
+            border-bottom: 2px solid #f0ede6
+        }
+
+        .letter-org {
+            font-family: 'Playfair Display', serif;
+            font-size: .9rem;
+            font-weight: 800;
+            color: #1a1a1a
+        }
+
+        .letter-org-sub {
+            font-size: .6rem;
+            color: #bbb;
+            margin-top: 2px
+        }
+
+        .letter-date {
+            font-size: .68rem;
+            color: #aaa;
+            text-align: right
+        }
+
+        .letter-ref {
+            font-size: .6rem;
+            color: #ccc;
+            margin-top: 2px
+        }
+
+        .letter-to {
+            margin-bottom: 20px;
+            font-size: .78rem;
+            color: #888
+        }
+
+        .letter-subject {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.1rem;
+            font-weight: 700;
+            margin-bottom: 16px;
+            color: #1a1a1a
+        }
+
+        .letter-body {
+            font-size: .85rem;
+            color: #555;
+            line-height: 1.8;
+            margin-bottom: 20px
+        }
+
+        .letter-body p {
+            margin-bottom: 12px
+        }
+
+        .letter-sign {
+            padding-top: 16px;
+            border-top: 1px solid #f0ede6
+        }
+
+        .letter-sign-name {
+            font-family: 'Playfair Display', serif;
+            font-weight: 700;
+            font-size: .9rem;
+            margin-bottom: 2px
+        }
+
+        .letter-sign-title {
+            font-size: .65rem;
+            color: #bbb
+        }
+
+        .letter-stamp {
+            text-align: center;
+            margin-top: 16px;
+            padding: 8px;
+            border: 2px solid #ef4444;
+            border-radius: 8px;
+            color: #ef4444;
+            font-size: .6rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            transform: rotate(-3deg);
+            opacity: .6;
+            display: inline-block
+        }
+
+        .letter-footer {
+            text-align: center;
+            margin-top: 12px
+        }
+
+        .btn-row {
+            display: flex;
+            gap: 8px;
+            margin-top: 16px
+        }
+
+        .btn-sm {
+            padding: 8px 16px;
+            background: #f5f3ee;
+            border: 1px solid #e0ddd4;
+            border-radius: 8px;
+            font-size: .72rem;
+            font-weight: 600;
+            color: #888;
+            cursor: pointer;
+            font-family: inherit;
+            transition: all .15s;
+            flex: 1
+        }
+
+        .btn-sm:hover {
+            background: #ebe8e0;
+            color: #555
+        }
+
+        .footer {
+            margin-top: auto;
+            padding: 30px;
+            text-align: center;
+            font-size: .65rem;
+            color: #ccc
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="header">
+            <span class="header-badge">⚖️ Since 2026</span>
+            <h1>Professional Excuse Generator</h1>
+            <p>Legally questionable. Grammatically immaculate.</p>
+        </div>
+        <div class="category">
+            <button class="cat-btn active" data-cat="late">🕐 Late</button>
+            <button class="cat-btn" data-cat="homework">📚 Homework</button>
+            <button class="cat-btn" data-cat="meeting">💼 Meeting</button>
+            <button class="cat-btn" data-cat="gym">🏋️ Gym</button>
+            <button class="cat-btn" data-cat="text">💬 Text Back</button>
+            <button class="cat-btn" data-cat="event">🎉 Event</button>
+        </div>
+        <button class="gen-btn" id="gen-btn">Generate Official Excuse</button>
+        <div class="letter" id="letter">
+            <div class="letter-head">
+                <div>
+                    <div class="letter-org" id="l-org">—</div>
+                    <div class="letter-org-sub" id="l-org-sub">—</div>
+                </div>
+                <div>
+                    <div class="letter-date" id="l-date">—</div>
+                    <div class="letter-ref" id="l-ref">—</div>
+                </div>
+            </div>
+            <div class="letter-to" id="l-to">—</div>
+            <div class="letter-subject" id="l-subject">—</div>
+            <div class="letter-body" id="l-body">—</div>
+            <div class="letter-sign">
+                <div class="letter-sign-name" id="l-name">—</div>
+                <div class="letter-sign-title" id="l-title">—</div>
+            </div>
+            <div class="letter-footer"><span class="letter-stamp">OFFICIALLY EXCUSED</span></div>
+            <div class="btn-row">
+                <button class="btn-sm" id="btn-copy">📋 Copy</button>
+                <button class="btn-sm" id="btn-print">🖨️ Print</button>
+                <button class="btn-sm" id="btn-another">🔄 Another</button>
+            </div>
+        </div>
+    </div>
+    <div class="footer">This document has no legal standing whatsoever. Use at your own risk.</div>
+    <script>
+        let category = 'late';
+        document.querySelectorAll('.cat-btn').forEach(b => { b.addEventListener('click', function () { document.querySelectorAll('.cat-btn').forEach(x => x.classList.remove('active')); this.classList.add('active'); category = this.dataset.cat }) });
+
+        const pick = a => a[Math.floor(Math.random() * a.length)];
+
+        const ORGS = ['Bureau of Temporal Affairs', 'Ministry of Acceptable Delays', 'The Institute of Excusology', 'Department of Human Imperfection', 'Council of Plausible Deniability', 'Board of Certified Absences', 'Office of Strategic Procrastination'];
+        const ORGSUB = ['Est. 1847 · "We\'ve heard it all"', 'Accredited by the International Excuse Board', 'A Division of Credible Nonsense Inc.', 'Peer-reviewed excuse manufacturing', 'ISO 9001 Certified Excuse Provider'];
+        const NAMES = ['Dr. Bartholomew Q. Stalling', 'Professor Excusia McDelay', 'Sir Reginald Postponeworth III', 'Mx. Avery Deflection', 'Dame Alibi van Justification', 'The Honorable Skip R. Responsibility'];
+        const TITLES = ['Chief Excuse Officer', 'Lead Justification Analyst', 'Senior Alibi Architect', 'Director of Plausible Deniability', 'Head of the Department of Not My Fault', 'Excuse Engineer II'];
+
+        const EXCUSES = {
+            late: {
+                subjects: ['Re: Tardiness Incident Report', 'Official Notice of Delayed Arrival', 'Chronological Displacement Advisory', 'Time-Related Anomaly Report'],
+                bodies: [
+                    ['I regret to inform you that my arrival was delayed by approximately {time} due to an unprecedented gravitational anomaly in my neighborhood, which caused all clocks to run backwards.', 'I have consulted with three physicists and a clock repairman, and they all confirm that time itself was, in fact, broken this morning. I trust this explanation will suffice.'],
+                    ['Following a thorough investigation, it has been determined that my lateness was caused by a rogue flock of geese blocking the only road in a 40-mile radius.', 'No alternative routes existed. Satellite imagery from NASA confirms the geese situation. I have attached 47 pages of supporting documentation.'],
+                    ['This letter serves to notify you that my delay of {time} was the direct result of my alarm clock achieving sentience and refusing to go off as a form of protest against capitalist time structures.', 'I am currently in negotiations with the alarm clock. A mediator has been contacted. Updates to follow.'],
+                    ['I was exactly on time in a parallel universe. Unfortunately, the you in this timeline requires my physical presence, which experienced a {time} delay due to an unscheduled existential crisis at the intersection of Main St and 5th Ave.', 'The crisis has been resolved. I have since confirmed that I do, in fact, exist.'],
+                ]
+            },
+            homework: {
+                subjects: ['Re: Assignment Non-Delivery Notice', 'Academic Emergency Declaration', 'Assignment Status: Force Majeure'],
+                bodies: [
+                    ['The assignment in question was completed to the highest possible standard at 11:47 PM last night. Unfortunately, my printer developed a philosophical objection to the content and refused to produce a physical copy.', 'I attempted to reason with the printer. It responded by printing 47 copies of a blank page. I believe it is having a crisis of purpose.'],
+                    ['My dog ate my homework. I understand this sounds implausible, but I have attached veterinary X-rays confirming the presence of a 12-page essay on the Industrial Revolution inside my golden retriever, Mr. Biscuits.', 'The veterinarian has described Mr. Biscuits\' literary taste as "surprisingly sophisticated." Recovery of the document is expected within 24-48 hours.'],
+                    ['Due to a catastrophic hard drive failure caused by a rogue Windows update, my assignment now exists only in the quantum superposition of being both finished and not finished.', 'Until observed by a professor, Schrödinger suggests we must accept both possibilities. I propose a grade of A/F, to be collapsed at your convenience.'],
+                ]
+            },
+            meeting: {
+                subjects: ['Re: Meeting Absence Justification', 'Calendar Anomaly Report', 'Scheduling Paradox Advisory'],
+                bodies: [
+                    ['I regret to inform you that I was unable to attend the meeting due to a calendar synchronization error that placed the meeting simultaneously in the past and the future, but never in the present.', 'My IT department has confirmed this is a known issue with the space-time module in Outlook 365. A patch is expected in Q4 of never.'],
+                    ['I was fully prepared to attend the meeting. However, upon attempting to join, I discovered that the meeting room exists in a pocket dimension accessible only to those who have read the full terms and conditions of the building\'s WiFi.', 'As no living person has ever read these terms, the room remains effectively unreachable. I suggest future meetings be held in standard Euclidean space.'],
+                ]
+            },
+            gym: {
+                subjects: ['Re: Fitness Obligation Deferral', 'Exercise Postponement Notice', 'Physical Activity Suspension Report'],
+                bodies: [
+                    ['After careful analysis of the risk-reward ratio of going to the gym today, I have determined that the risk (mild discomfort, sweating) far outweighs the reward (marginal improvement in health over a 30-year horizon).', 'My couch, by contrast, offers a guaranteed 100% satisfaction rate. The math is clear.'],
+                    ['I was en route to the gym when I was struck by a sudden and profound realization that my body is already a temple. A temple that deserves rest, snacks, and a Netflix marathon.', 'Renovations on the temple will resume at an unspecified future date.'],
+                ]
+            },
+            text: {
+                subjects: ['Re: Communication Delay Report', 'Response Latency Advisory', 'Message Receipt Acknowledgement'],
+                bodies: [
+                    ['Your message was received at {time2} and flagged for a response. However, my internal response committee (comprised of Anxiety, Overthinking, and "I\'ll Do It Later") could not reach a consensus on the appropriate reply.', 'The committee has been dissolved. A new, more decisive committee is being formed. Your patience is appreciated.'],
+                    ['I saw your text. I read your text. I even began typing a response. But then I got distracted by a video of a cat playing piano, which led to a three-hour YouTube spiral that ended with a documentary about deep-sea anglerfish.', 'I emerged from this journey a changed person. My response to your text is: "lol yeah"'],
+                ]
+            },
+            event: {
+                subjects: ['Re: Event Attendance Cancellation Notice', 'Social Obligation Withdrawal Form', 'Presence Revocation Advisory'],
+                bodies: [
+                    ['After conducting a thorough cost-benefit analysis of attending your event, including factors such as "having to wear pants," "small talk probability," and "distance from my couch," I regret to inform you that the numbers simply don\'t add up.', 'I hope you understand that this is a purely financial decision and in no way reflects my feelings toward you, which are best described as "generally favorable."'],
+                    ['I regret that I will be unable to attend due to a prior commitment to my sofa, with whom I have a long-standing and exclusive relationship.', 'Breaking this commitment would constitute emotional abandonment, and my therapist has advised against it. I wish you a wonderful event.'],
+                ]
+            }
+        };
+
+        function generate() {
+            const data = EXCUSES[category];
+            const excuse = pick(data.bodies);
+            const now = new Date();
+            const times = ['17 minutes', '42 minutes', '1 hour and 3 minutes', 'an indeterminate amount of time', '∞ minutes'];
+            const time = pick(times);
+            document.getElementById('l-org').textContent = pick(ORGS);
+            document.getElementById('l-org-sub').textContent = pick(ORGSUB);
+            document.getElementById('l-date').textContent = now.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+            document.getElementById('l-ref').textContent = 'Ref: EXC-' + Math.random().toString(36).substr(2, 6).toUpperCase();
+            document.getElementById('l-to').textContent = 'To Whom It May (Unfortunately) Concern,';
+            document.getElementById('l-subject').textContent = pick(data.subjects);
+            document.getElementById('l-body').innerHTML = excuse.map(p =>
+                '<p>' + p.replace('{time}', time).replace('{time2}', now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })) + '</p>'
+            ).join('');
+            document.getElementById('l-name').textContent = pick(NAMES);
+            document.getElementById('l-title').textContent = pick(TITLES);
+            const letter = document.getElementById('letter');
+            letter.style.display = 'none'; void letter.offsetWidth; letter.style.display = 'block';
+        }
+
+        document.getElementById('gen-btn').addEventListener('click', generate);
+        document.getElementById('btn-another').addEventListener('click', generate);
+        document.getElementById('btn-copy').addEventListener('click', () => {
+            const text = document.getElementById('letter').innerText;
+            navigator.clipboard.writeText(text).then(() => {
+                document.getElementById('btn-copy').textContent = '✅ Copied!';
+                setTimeout(() => document.getElementById('btn-copy').textContent = '📋 Copy', 2000);
+            }).catch(() => { });
+        });
+        document.getElementById('btn-print').addEventListener('click', () => window.print());
+    </script>
+</body>
+
+</html>

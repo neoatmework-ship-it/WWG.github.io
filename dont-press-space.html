@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Don't Press Space 🚫</title>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box
+        }
+
+        body {
+            font-family: 'Fredoka', sans-serif;
+            background: #0a0a1a;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+            overflow: hidden;
+            transition: all .3s
+        }
+
+        .container {
+            text-align: center;
+            padding: 20px;
+            z-index: 2;
+            position: relative
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 6px;
+            transition: all .3s
+        }
+
+        .timer {
+            font-size: 4rem;
+            font-weight: 700;
+            color: #8b5cf6;
+            margin: 20px 0;
+            font-variant-numeric: tabular-nums
+        }
+
+        .spacebar {
+            width: 300px;
+            height: 60px;
+            background: rgba(255, 255, 255, .06);
+            border: 2px solid rgba(255, 255, 255, .15);
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 20px;
+            font-size: .9rem;
+            color: rgba(255, 255, 255, .3);
+            transition: all .3s;
+            position: relative;
+            overflow: hidden
+        }
+
+        .spacebar .fill {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 0;
+            background: linear-gradient(0deg, rgba(239, 68, 68, .2), transparent);
+            transition: height .5s
+        }
+
+        .spacebar.tempting {
+            border-color: rgba(239, 68, 68, .5);
+            box-shadow: 0 0 20px rgba(239, 68, 68, .2)
+        }
+
+        .spacebar.shaking {
+            animation: shake .1s infinite
+        }
+
+        @keyframes shake {
+
+            0%,
+            100% {
+                transform: translateX(0)
+            }
+
+            25% {
+                transform: translateX(-3px)
+            }
+
+            75% {
+                transform: translateX(3px)
+            }
+        }
+
+        .taunt {
+            font-size: 1rem;
+            color: rgba(255, 255, 255, .4);
+            min-height: 30px;
+            transition: all .3s;
+            margin-bottom: 15px
+        }
+
+        .high-score {
+            color: rgba(255, 255, 255, .3);
+            font-size: .7rem;
+            margin-top: 10px
+        }
+
+        .high-score span {
+            color: #fbbf24;
+            font-weight: 700
+        }
+
+        .result {
+            display: none;
+            text-align: center
+        }
+
+        .result.show {
+            display: block;
+            animation: pop .5s ease
+        }
+
+        @keyframes pop {
+            from {
+                transform: scale(.5);
+                opacity: 0
+            }
+
+            to {
+                transform: scale(1);
+                opacity: 1
+            }
+        }
+
+        .result h2 {
+            font-size: 2rem;
+            margin-bottom: 10px
+        }
+
+        .result p {
+            color: rgba(255, 255, 255, .5);
+            font-size: .85rem;
+            margin-bottom: 20px
+        }
+
+        .btn {
+            padding: 10px 24px;
+            border-radius: 12px;
+            border: none;
+            background: #8b5cf6;
+            color: #fff;
+            font-family: inherit;
+            font-size: .85rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all .15s
+        }
+
+        .btn:hover {
+            background: #7c3aed;
+            transform: translateY(-2px)
+        }
+
+        .particle {
+            position: fixed;
+            pointer-events: none;
+            z-index: 10;
+            border-radius: 50%;
+            animation: explode 1s ease-out forwards
+        }
+
+        @keyframes explode {
+            0% {
+                transform: scale(1);
+                opacity: 1
+            }
+
+            100% {
+                transform: scale(0);
+                opacity: 0
+            }
+        }
+
+        .bg-text {
+            position: fixed;
+            font-size: 15vw;
+            color: rgba(255, 255, 255, .02);
+            font-weight: 700;
+            pointer-events: none;
+            z-index: 0;
+            transition: all 1s
+        }
+
+        .bg-text.visible {
+            color: rgba(239, 68, 68, .06)
+        }
+    </style>
+</head>
+
+<body>
+    <div class="bg-text" id="bg-text">PRESS IT</div>
+    <div class="container">
+        <div id="game">
+            <h1 id="title">🚫 Don't Press Space</h1>
+            <div class="timer" id="timer">0.0</div>
+            <div class="taunt" id="taunt">Simple. Just don't press the spacebar.</div>
+            <div class="spacebar" id="spacebar">
+                <div class="fill" id="fill"></div>
+                <span>S P A C E B A R</span>
+            </div>
+            <div class="high-score">Best: <span id="best">0.0</span>s</div>
+        </div>
+        <div class="result" id="result">
+            <h2 id="result-title"></h2>
+            <p id="result-text"></p>
+            <p id="result-time" style="font-size:1.5rem;font-weight:700;color:#8b5cf6;margin-bottom:20px"></p>
+            <button class="btn" onclick="resetGame()">Try Not To Press Again</button>
+        </div>
+    </div>
+    <script>
+        let startTime = Date.now();
+        let timerInterval;
+        let best = parseFloat(localStorage.getItem('dps-best') || '0');
+        let pressed = false;
+        let phase = 0;
+
+        document.getElementById('best').textContent = best.toFixed(1);
+
+        const taunts = [
+            // 0-3s
+            ["Easy, right?", "Just don't press it.", "You got this.", "Simple game, simple rules."],
+            // 3-7s
+            ["The spacebar looks lonely...", "It's RIGHT there...", "What would happen if you pressed it?", "You're thinking about it."],
+            // 7-12s
+            ["Most people press it by now.", "Your finger is twitching, isn't it?", "Just a little tap...", "The spacebar WANTS you to press it."],
+            // 12-20s
+            ["PRESS IT PRESS IT PRESS IT", "You're sweating.", "One press. Nobody will know.", "The spacebar is BEGGING."],
+            // 20-30s
+            ["Okay you're actually good at this.", "This is getting uncomfortable.", "I'm running out of things to say.", "Press it and I'll shut up."],
+            // 30s+
+            ["...are you still here?", "Fine. You win. But do you REALLY win?", "This is the most boring game ever and you're EXCELLING.", "Touch grass. But first, press space."],
+        ];
+
+        const results = [
+            { time: 1, title: "💨 Speedrun!", text: "You lasted less than 1 second. Were you even trying to NOT press it?" },
+            { time: 3, title: "😅 Weak", text: "3 seconds? That's it? The spacebar barely felt your presence." },
+            { time: 5, title: "🤷 Average", text: "Most people last about this long. You are statistically boring." },
+            { time: 10, title: "💪 Not Bad", text: "10 seconds of resistance! That's more willpower than most." },
+            { time: 20, title: "🏆 Impressive", text: "20 seconds! Your self-control puts monks to shame." },
+            { time: 30, title: "🧘 Zen Master", text: "30 SECONDS?! You either have incredible discipline or fell asleep." },
+            { time: 60, title: "👑 Legend", text: "Over a minute?! The spacebar filed a restraining order against your willpower." },
+            { time: Infinity, title: "🤯 Impossible", text: "How long did you last? This shouldn't be happening. Are you a robot?" },
+        ];
+
+        function updateTimer() {
+            if (pressed) return;
+            const elapsed = (Date.now() - startTime) / 1000;
+            document.getElementById('timer').textContent = elapsed.toFixed(1);
+
+            // Phase-based effects
+            const spacebar = document.getElementById('spacebar');
+            const fill = document.getElementById('fill');
+
+            if (elapsed > 3 && phase < 1) { phase = 1; }
+            if (elapsed > 7 && phase < 2) { phase = 2; spacebar.classList.add('tempting'); }
+            if (elapsed > 12 && phase < 3) { phase = 3; spacebar.classList.add('shaking'); document.getElementById('bg-text').classList.add('visible'); }
+            if (elapsed > 20 && phase < 4) { phase = 4; document.body.style.background = '#1a0505'; }
+            if (elapsed > 30 && phase < 5) { phase = 5; document.getElementById('title').style.color = '#ef4444'; }
+
+            // Fill bar rises with time
+            fill.style.height = Math.min(100, elapsed * 2) + '%';
+
+            // Random taunts
+            if (Math.random() < 0.02) {
+                const p = Math.min(5, Math.floor(elapsed / 5));
+                const list = taunts[p];
+                document.getElementById('taunt').textContent = list[Math.floor(Math.random() * list.length)];
+            }
+        }
+
+        timerInterval = setInterval(updateTimer, 50);
+
+        document.addEventListener('keydown', e => {
+            if (e.code === 'Space' && !pressed) {
+                e.preventDefault();
+                pressed = true;
+                clearInterval(timerInterval);
+                const elapsed = (Date.now() - startTime) / 1000;
+
+                // Update best
+                if (elapsed > best) {
+                    best = elapsed;
+                    localStorage.setItem('dps-best', best.toFixed(1));
+                }
+
+                // Show result
+                let result = results[results.length - 1];
+                for (const r of results) {
+                    if (elapsed < r.time) { result = r; break; }
+                }
+
+                document.getElementById('game').style.display = 'none';
+                const resultEl = document.getElementById('result');
+                resultEl.classList.add('show');
+                document.getElementById('result-title').textContent = result.title;
+                document.getElementById('result-text').textContent = result.text;
+                document.getElementById('result-time').textContent = `You lasted ${elapsed.toFixed(1)} seconds`;
+
+                // Explosion
+                for (let i = 0; i < 40; i++) {
+                    const p = document.createElement('div');
+                    p.className = 'particle';
+                    p.style.width = p.style.height = (4 + Math.random() * 12) + 'px';
+                    p.style.background = ['#8b5cf6', '#ec4899', '#f59e0b', '#ef4444', '#10b981'][Math.floor(Math.random() * 5)];
+                    p.style.left = (window.innerWidth / 2 + (Math.random() - .5) * 400) + 'px';
+                    p.style.top = (window.innerHeight / 2 + (Math.random() - .5) * 400) + 'px';
+                    document.body.appendChild(p);
+                    setTimeout(() => p.remove(), 1000);
+                }
+
+                document.body.style.background = '#0a0a1a';
+            }
+        });
+
+        function resetGame() {
+            pressed = false;
+            phase = 0;
+            startTime = Date.now();
+            document.getElementById('game').style.display = 'block';
+            document.getElementById('result').classList.remove('show');
+            document.getElementById('result').style.display = 'none';
+            document.getElementById('best').textContent = best.toFixed(1);
+            document.getElementById('taunt').textContent = "Simple. Just don't press the spacebar.";
+            document.getElementById('spacebar').classList.remove('tempting', 'shaking');
+            document.getElementById('fill').style.height = '0';
+            document.getElementById('bg-text').classList.remove('visible');
+            document.getElementById('title').style.color = '';
+            document.body.style.background = '#0a0a1a';
+            timerInterval = setInterval(updateTimer, 50);
+            setTimeout(() => document.getElementById('result').style.display = '', 100);
+        }
+    </script>
+</body>
+
+</html>

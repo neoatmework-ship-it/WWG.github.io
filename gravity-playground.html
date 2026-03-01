@@ -1,0 +1,594 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gravity Playground — Create Your Own Universe</title>
+    <meta name="description"
+        content="An interactive gravity simulator. Place stars and planets, watch them orbit, collide, and form cosmic systems.">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        *,
+        *::before,
+        *::after {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #000;
+            color: #fff;
+            overflow: hidden;
+            height: 100vh;
+            cursor: crosshair;
+        }
+
+        canvas {
+            display: block;
+            position: fixed;
+            top: 0;
+            left: 0;
+        }
+
+        /* ── UI Overlay ── */
+        .ui-panel {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 100;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .panel-card {
+            background: rgba(10, 10, 20, 0.85);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 14px;
+            padding: 16px;
+        }
+
+        .panel-title {
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            color: rgba(255, 255, 255, 0.4);
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+
+        .body-types {
+            display: flex;
+            gap: 6px;
+        }
+
+        .body-btn {
+            padding: 8px 14px;
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 10px;
+            color: #ccc;
+            font-size: 0.8rem;
+            font-family: inherit;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .body-btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .body-btn.active {
+            background: rgba(124, 92, 255, 0.2);
+            border-color: rgba(124, 92, 255, 0.4);
+            color: #b8a4ff;
+        }
+
+        .slider-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-top: 8px;
+        }
+
+        .slider-label {
+            font-size: 0.75rem;
+            color: rgba(255, 255, 255, 0.5);
+            min-width: 50px;
+        }
+
+        .slider-row input[type="range"] {
+            flex: 1;
+            -webkit-appearance: none;
+            height: 4px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 2px;
+            outline: none;
+        }
+
+        .slider-row input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            background: #7c5cff;
+            cursor: pointer;
+        }
+
+        .action-row {
+            display: flex;
+            gap: 6px;
+            margin-top: 8px;
+        }
+
+        .action-btn {
+            padding: 8px 14px;
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 10px;
+            color: #ccc;
+            font-size: 0.78rem;
+            font-family: inherit;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .action-btn:hover {
+            background: rgba(255, 255, 255, 0.12);
+        }
+
+        .action-btn.danger {
+            border-color: rgba(255, 80, 80, 0.2);
+            color: #ff6b6b;
+        }
+
+        .action-btn.danger:hover {
+            background: rgba(255, 80, 80, 0.1);
+        }
+
+        /* ── Stats ── */
+        .stats-panel {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            z-index: 100;
+        }
+
+        .stats-row {
+            display: flex;
+            gap: 16px;
+        }
+
+        .stat {
+            font-size: 0.75rem;
+            color: rgba(255, 255, 255, 0.35);
+        }
+
+        .stat strong {
+            color: rgba(255, 255, 255, 0.6);
+        }
+
+        /* ── Instructions Overlay ── */
+        .instructions {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            z-index: 50;
+            pointer-events: none;
+            transition: opacity 0.8s;
+        }
+
+        .instructions h2 {
+            font-size: 1.6rem;
+            font-weight: 600;
+            margin-bottom: 8px;
+            letter-spacing: -0.5px;
+        }
+
+        .instructions p {
+            color: rgba(255, 255, 255, 0.4);
+            font-size: 0.9rem;
+        }
+
+        .instructions.hidden {
+            opacity: 0;
+        }
+
+        /* ── Drag Preview ── */
+        .drag-line {
+            position: fixed;
+            pointer-events: none;
+            z-index: 90;
+        }
+    </style>
+</head>
+
+<body>
+
+    <canvas id="canvas"></canvas>
+
+    <div class="ui-panel">
+        <div class="panel-card">
+            <div class="panel-title">Body Type</div>
+            <div class="body-types">
+                <button class="body-btn active" data-type="star">⭐ Star</button>
+                <button class="body-btn" data-type="planet">🪐 Planet</button>
+                <button class="body-btn" data-type="moon">🌙 Moon</button>
+                <button class="body-btn" data-type="blackhole">🕳️ Black Hole</button>
+            </div>
+        </div>
+
+        <div class="panel-card">
+            <div class="panel-title">Settings</div>
+            <div class="slider-row">
+                <span class="slider-label">Gravity</span>
+                <input type="range" id="gravity-slider" min="0.1" max="5" step="0.1" value="1">
+            </div>
+            <div class="slider-row">
+                <span class="slider-label">Time</span>
+                <input type="range" id="time-slider" min="0.1" max="3" step="0.1" value="1">
+            </div>
+            <div class="slider-row">
+                <span class="slider-label">Trails</span>
+                <input type="range" id="trail-slider" min="0" max="200" step="10" value="80">
+            </div>
+            <div class="action-row">
+                <button class="action-btn" id="btn-pause">⏸ Pause</button>
+                <button class="action-btn danger" id="btn-clear">✕ Clear All</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="stats-panel panel-card">
+        <div class="stats-row">
+            <span class="stat">Bodies: <strong id="stat-bodies">0</strong></span>
+            <span class="stat">FPS: <strong id="stat-fps">60</strong></span>
+        </div>
+    </div>
+
+    <div class="instructions" id="instructions">
+        <h2>🌌 Click to place · Drag to launch</h2>
+        <p>Click anywhere to create a celestial body. Drag to give it velocity.</p>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+
+        let W, H;
+        function resize() {
+            W = canvas.width = window.innerWidth;
+            H = canvas.height = window.innerHeight;
+        }
+        resize();
+        window.addEventListener('resize', resize);
+
+        // ── Config ──
+        let selectedType = 'star';
+        let G = 1;
+        let timeScale = 1;
+        let trailLength = 80;
+        let paused = false;
+
+        const BODY_CONFIG = {
+            star: { mass: 800, radius: 16, colors: ['#ffdd57', '#ffaa00', '#ff8800'] },
+            planet: { mass: 80, radius: 8, colors: ['#4fc3f7', '#42a5f5', '#1e88e5'] },
+            moon: { mass: 10, radius: 4, colors: ['#b0bec5', '#90a4ae', '#78909c'] },
+            blackhole: { mass: 5000, radius: 20, colors: ['#1a1a2e', '#16213e', '#0f3460'] }
+        };
+
+        let bodies = [];
+        let dragging = false;
+        let dragStart = null;
+        let dragEnd = null;
+
+        // ── Body Class ──
+        class Body {
+            constructor(x, y, vx, vy, type) {
+                const cfg = BODY_CONFIG[type];
+                this.x = x;
+                this.y = y;
+                this.vx = vx;
+                this.vy = vy;
+                this.mass = cfg.mass * (0.8 + Math.random() * 0.4);
+                this.radius = cfg.radius * (0.85 + Math.random() * 0.3);
+                this.type = type;
+                this.colors = cfg.colors;
+                this.trail = [];
+                this.alive = true;
+                this.age = 0;
+                this.glow = 0;
+            }
+
+            update(dt) {
+                if (!this.alive) return;
+                this.age += dt;
+                this.x += this.vx * dt;
+                this.y += this.vy * dt;
+
+                this.trail.push({ x: this.x, y: this.y });
+                if (this.trail.length > trailLength) this.trail.shift();
+
+                // Wrap around edges
+                const margin = 100;
+                if (this.x < -margin) this.x = W + margin;
+                if (this.x > W + margin) this.x = -margin;
+                if (this.y < -margin) this.y = H + margin;
+                if (this.y > H + margin) this.y = -margin;
+            }
+
+            draw() {
+                if (!this.alive) return;
+
+                // Trail
+                if (this.trail.length > 1) {
+                    ctx.beginPath();
+                    ctx.moveTo(this.trail[0].x, this.trail[0].y);
+                    for (let i = 1; i < this.trail.length; i++) {
+                        ctx.lineTo(this.trail[i].x, this.trail[i].y);
+                    }
+                    ctx.strokeStyle = this.colors[0];
+                    ctx.lineWidth = this.radius * 0.3;
+                    ctx.globalAlpha = 0.15;
+                    ctx.stroke();
+                    ctx.globalAlpha = 1;
+                }
+
+                // Glow
+                if (this.type === 'star' || this.type === 'blackhole') {
+                    const glowSize = this.radius * (this.type === 'blackhole' ? 4 : 3);
+                    const grd = ctx.createRadialGradient(this.x, this.y, 0, this.x, this.y, glowSize);
+                    if (this.type === 'blackhole') {
+                        grd.addColorStop(0, 'rgba(100, 0, 200, 0.15)');
+                        grd.addColorStop(0.5, 'rgba(60, 0, 120, 0.05)');
+                        grd.addColorStop(1, 'transparent');
+                    } else {
+                        grd.addColorStop(0, 'rgba(255, 200, 50, 0.2)');
+                        grd.addColorStop(0.5, 'rgba(255, 150, 0, 0.05)');
+                        grd.addColorStop(1, 'transparent');
+                    }
+                    ctx.fillStyle = grd;
+                    ctx.beginPath();
+                    ctx.arc(this.x, this.y, glowSize, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+
+                // Body
+                const grd = ctx.createRadialGradient(
+                    this.x - this.radius * 0.3, this.y - this.radius * 0.3, 0,
+                    this.x, this.y, this.radius
+                );
+                grd.addColorStop(0, this.colors[0]);
+                grd.addColorStop(0.6, this.colors[1]);
+                grd.addColorStop(1, this.colors[2]);
+
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+                ctx.fillStyle = grd;
+                ctx.fill();
+
+                // Black hole ring
+                if (this.type === 'blackhole') {
+                    ctx.beginPath();
+                    ctx.arc(this.x, this.y, this.radius * 1.5, 0, Math.PI * 2);
+                    ctx.strokeStyle = 'rgba(180, 100, 255, 0.4)';
+                    ctx.lineWidth = 2;
+                    ctx.stroke();
+                }
+            }
+        }
+
+        // ── Physics ──
+        function applyGravity(dt) {
+            for (let i = 0; i < bodies.length; i++) {
+                for (let j = i + 1; j < bodies.length; j++) {
+                    const a = bodies[i], b = bodies[j];
+                    if (!a.alive || !b.alive) continue;
+
+                    const dx = b.x - a.x;
+                    const dy = b.y - a.y;
+                    const distSq = dx * dx + dy * dy;
+                    const dist = Math.sqrt(distSq);
+
+                    // Collision
+                    if (dist < a.radius + b.radius) {
+                        if (a.mass >= b.mass) {
+                            a.mass += b.mass * 0.3;
+                            a.radius = Math.min(a.radius * 1.05, 50);
+                            b.alive = false;
+                        } else {
+                            b.mass += a.mass * 0.3;
+                            b.radius = Math.min(b.radius * 1.05, 50);
+                            a.alive = false;
+                        }
+                        continue;
+                    }
+
+                    const force = (G * a.mass * b.mass) / (distSq + 100);
+                    const fx = force * dx / dist;
+                    const fy = force * dy / dist;
+
+                    a.vx += (fx / a.mass) * dt;
+                    a.vy += (fy / a.mass) * dt;
+                    b.vx -= (fx / b.mass) * dt;
+                    b.vy -= (fy / b.mass) * dt;
+                }
+            }
+        }
+
+        // ── Star field background ──
+        const stars = [];
+        for (let i = 0; i < 300; i++) {
+            stars.push({
+                x: Math.random(),
+                y: Math.random(),
+                r: Math.random() * 1.2,
+                a: Math.random() * 0.5 + 0.1
+            });
+        }
+
+        function drawStarfield() {
+            ctx.fillStyle = '#000';
+            ctx.fillRect(0, 0, W, H);
+
+            for (const s of stars) {
+                ctx.beginPath();
+                ctx.arc(s.x * W, s.y * H, s.r, 0, Math.PI * 2);
+                ctx.fillStyle = `rgba(255,255,255,${s.a})`;
+                ctx.fill();
+            }
+        }
+
+        // ── Main Loop ──
+        let lastTime = 0;
+        let frameCount = 0;
+        let lastFps = 0;
+
+        function loop(time) {
+            const dt = Math.min((time - lastTime) / 16, 3) * timeScale;
+            lastTime = time;
+
+            frameCount++;
+            if (frameCount % 30 === 0) {
+                lastFps = Math.round(1000 / ((time - (lastTime - dt * 16)) || 16));
+            }
+
+            drawStarfield();
+
+            if (!paused) {
+                applyGravity(dt);
+                bodies = bodies.filter(b => b.alive);
+                for (const b of bodies) b.update(dt);
+            }
+
+            for (const b of bodies) b.draw();
+
+            // Drag preview
+            if (dragging && dragStart && dragEnd) {
+                ctx.beginPath();
+                ctx.moveTo(dragStart.x, dragStart.y);
+                ctx.lineTo(dragEnd.x, dragEnd.y);
+                ctx.strokeStyle = 'rgba(124, 92, 255, 0.5)';
+                ctx.lineWidth = 2;
+                ctx.setLineDash([6, 6]);
+                ctx.stroke();
+                ctx.setLineDash([]);
+
+                // Preview body
+                const cfg = BODY_CONFIG[selectedType];
+                ctx.beginPath();
+                ctx.arc(dragStart.x, dragStart.y, cfg.radius, 0, Math.PI * 2);
+                ctx.fillStyle = cfg.colors[0];
+                ctx.globalAlpha = 0.5;
+                ctx.fill();
+                ctx.globalAlpha = 1;
+
+                // Arrow head
+                const angle = Math.atan2(dragEnd.y - dragStart.y, dragEnd.x - dragStart.x);
+                const arrowLen = 10;
+                ctx.beginPath();
+                ctx.moveTo(dragEnd.x, dragEnd.y);
+                ctx.lineTo(dragEnd.x - arrowLen * Math.cos(angle - 0.4), dragEnd.y - arrowLen * Math.sin(angle - 0.4));
+                ctx.moveTo(dragEnd.x, dragEnd.y);
+                ctx.lineTo(dragEnd.x - arrowLen * Math.cos(angle + 0.4), dragEnd.y - arrowLen * Math.sin(angle + 0.4));
+                ctx.strokeStyle = 'rgba(124, 92, 255, 0.6)';
+                ctx.lineWidth = 2;
+                ctx.stroke();
+            }
+
+            document.getElementById('stat-bodies').textContent = bodies.length;
+            document.getElementById('stat-fps').textContent = lastFps || 60;
+
+            requestAnimationFrame(loop);
+        }
+        requestAnimationFrame(loop);
+
+        // ── Input ──
+        canvas.addEventListener('mousedown', e => {
+            dragging = true;
+            dragStart = { x: e.clientX, y: e.clientY };
+            dragEnd = { x: e.clientX, y: e.clientY };
+            document.getElementById('instructions').classList.add('hidden');
+        });
+
+        canvas.addEventListener('mousemove', e => {
+            if (dragging) {
+                dragEnd = { x: e.clientX, y: e.clientY };
+            }
+        });
+
+        canvas.addEventListener('mouseup', e => {
+            if (!dragging) return;
+            dragging = false;
+
+            const vx = (dragEnd.x - dragStart.x) * 0.05;
+            const vy = (dragEnd.y - dragStart.y) * 0.05;
+
+            bodies.push(new Body(dragStart.x, dragStart.y, vx, vy, selectedType));
+            dragStart = null;
+            dragEnd = null;
+        });
+
+        // Touch support
+        canvas.addEventListener('touchstart', e => {
+            e.preventDefault();
+            const t = e.touches[0];
+            dragging = true;
+            dragStart = { x: t.clientX, y: t.clientY };
+            dragEnd = { x: t.clientX, y: t.clientY };
+            document.getElementById('instructions').classList.add('hidden');
+        }, { passive: false });
+
+        canvas.addEventListener('touchmove', e => {
+            e.preventDefault();
+            if (dragging) {
+                const t = e.touches[0];
+                dragEnd = { x: t.clientX, y: t.clientY };
+            }
+        }, { passive: false });
+
+        canvas.addEventListener('touchend', e => {
+            if (!dragging) return;
+            dragging = false;
+            const vx = (dragEnd.x - dragStart.x) * 0.05;
+            const vy = (dragEnd.y - dragStart.y) * 0.05;
+            bodies.push(new Body(dragStart.x, dragStart.y, vx, vy, selectedType));
+            dragStart = null;
+            dragEnd = null;
+        });
+
+        // ── UI Controls ──
+        document.querySelectorAll('.body-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.body-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                selectedType = btn.dataset.type;
+            });
+        });
+
+        document.getElementById('gravity-slider').addEventListener('input', e => { G = parseFloat(e.target.value); });
+        document.getElementById('time-slider').addEventListener('input', e => { timeScale = parseFloat(e.target.value); });
+        document.getElementById('trail-slider').addEventListener('input', e => { trailLength = parseInt(e.target.value); });
+
+        document.getElementById('btn-pause').addEventListener('click', function () {
+            paused = !paused;
+            this.textContent = paused ? '▶ Play' : '⏸ Pause';
+        });
+
+        document.getElementById('btn-clear').addEventListener('click', () => {
+            bodies = [];
+        });
+    </script>
+
+</body>
+
+</html>

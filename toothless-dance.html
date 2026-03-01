@@ -1,0 +1,1385 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Toothless Dance Party 🐉</title>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box
+        }
+
+        body {
+            font-family: 'Fredoka', sans-serif;
+            background: #0a0a1a;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden
+        }
+
+        /* Stars */
+        .stars {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            pointer-events: none;
+            z-index: 0
+        }
+
+        .star {
+            position: absolute;
+            background: #fff;
+            border-radius: 50%;
+            animation: twinkle var(--d) ease-in-out infinite
+        }
+
+        @keyframes twinkle {
+
+            0%,
+            100% {
+                opacity: .2
+            }
+
+            50% {
+                opacity: 1
+            }
+        }
+
+        /* Disco floor */
+        .floor {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 120px;
+            background: linear-gradient(180deg, transparent, rgba(0, 0, 0, .5));
+            z-index: 1
+        }
+
+        .floor-tiles {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 80px;
+            display: flex;
+            z-index: 1;
+            perspective: 400px;
+            transform: rotateX(60deg);
+            transform-origin: bottom center
+        }
+
+        .tile {
+            flex: 1;
+            min-width: 60px;
+            height: 80px;
+            animation: disco-tile 2s ease-in-out infinite;
+            opacity: .4
+        }
+
+        @keyframes disco-tile {
+            0% {
+                background: #ec4899
+            }
+
+            25% {
+                background: #8b5cf6
+            }
+
+            50% {
+                background: #06b6d4
+            }
+
+            75% {
+                background: #10b981
+            }
+
+            100% {
+                background: #ec4899
+            }
+        }
+
+        /* Disco ball */
+        .disco-ball {
+            position: fixed;
+            top: -20px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 60px;
+            height: 60px;
+            background: radial-gradient(circle at 30% 30%, #fff, #9ca3af);
+            border-radius: 50%;
+            z-index: 5;
+            animation: spin-ball 4s linear infinite
+        }
+
+        .disco-ball::before {
+            content: '';
+            position: absolute;
+            top: -30px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 2px;
+            height: 30px;
+            background: #9ca3af
+        }
+
+        .disco-ball::after {
+            content: '';
+            position: absolute;
+            inset: 4px;
+            border-radius: 50%;
+            background: repeating-conic-gradient(rgba(255, 255, 255, .3) 0deg 10deg, transparent 10deg 20deg)
+        }
+
+        @keyframes spin-ball {
+            from {
+                transform: translateX(-50%) rotate(0)
+            }
+
+            to {
+                transform: translateX(-50%) rotate(360deg)
+            }
+        }
+
+        /* Light rays */
+        .rays {
+            position: fixed;
+            top: 40px;
+            left: 50%;
+            width: 0;
+            height: 0;
+            z-index: 0;
+            pointer-events: none
+        }
+
+        .ray {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 4px;
+            height: 100vh;
+            transform-origin: top center;
+            opacity: .08;
+            animation: ray-pulse 3s ease-in-out infinite
+        }
+
+        @keyframes ray-pulse {
+
+            0%,
+            100% {
+                opacity: .04
+            }
+
+            50% {
+                opacity: .12
+            }
+        }
+
+        /* Title */
+        .title {
+            position: fixed;
+            top: 15px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 10;
+            text-align: center
+        }
+
+        .title h1 {
+            font-size: 1.6rem;
+            font-weight: 700;
+            background: linear-gradient(90deg, #ec4899, #8b5cf6, #06b6d4, #10b981, #ec4899);
+            background-size: 200%;
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: shimmer 3s linear infinite
+        }
+
+        @keyframes shimmer {
+            from {
+                background-position: 0%
+            }
+
+            to {
+                background-position: 200%
+            }
+        }
+
+        .title p {
+            color: rgba(255, 255, 255, .4);
+            font-size: .7rem;
+            margin-top: 2px
+        }
+
+        .counter {
+            position: fixed;
+            top: 62px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: rgba(255, 255, 255, .3);
+            font-size: .6rem;
+            z-index: 10
+        }
+
+        .counter span {
+            color: #fbbf24
+        }
+
+        /* Spawn area */
+        #spawn-area {
+            position: fixed;
+            inset: 0;
+            z-index: 3;
+            pointer-events: none;
+            overflow: hidden
+        }
+
+        /* TOOTHLESS */
+        .dragon {
+            position: absolute;
+            width: 200px;
+            height: 260px;
+            pointer-events: auto;
+            cursor: pointer;
+            transition: filter .2s
+        }
+
+        .dragon:hover {
+            filter: brightness(1.2)
+        }
+
+        .dragon.selected {
+            filter: brightness(1.3) drop-shadow(0 0 10px rgba(255, 255, 255, .3))
+        }
+
+        /* Dance animations */
+        .dance-bounce {
+            animation: dance-bounce 1s ease-in-out infinite
+        }
+
+        @keyframes dance-bounce {
+
+            0%,
+            100% {
+                transform: translateY(0) rotate(0deg)
+            }
+
+            25% {
+                transform: translateY(-20px) rotate(-3deg)
+            }
+
+            50% {
+                transform: translateY(0) rotate(0deg)
+            }
+
+            75% {
+                transform: translateY(-20px) rotate(3deg)
+            }
+        }
+
+        .dance-wiggle {
+            animation: dance-wiggle .8s ease-in-out infinite
+        }
+
+        @keyframes dance-wiggle {
+
+            0%,
+            100% {
+                transform: translateX(0) rotate(0)
+            }
+
+            25% {
+                transform: translateX(-15px) rotate(-5deg)
+            }
+
+            75% {
+                transform: translateX(15px) rotate(5deg)
+            }
+        }
+
+        .dance-spin {
+            animation: dance-spin 2s linear infinite
+        }
+
+        @keyframes dance-spin {
+            from {
+                transform: rotate(0deg)
+            }
+
+            to {
+                transform: rotate(360deg)
+            }
+        }
+
+        .dance-jump {
+            animation: dance-jump .6s ease-in-out infinite
+        }
+
+        @keyframes dance-jump {
+
+            0%,
+            100% {
+                transform: translateY(0) scaleY(1)
+            }
+
+            30% {
+                transform: translateY(-35px) scaleY(1.1)
+            }
+
+            60% {
+                transform: translateY(0) scaleY(.9)
+            }
+
+            80% {
+                transform: translateY(0) scaleY(1)
+            }
+        }
+
+        .dance-headbang {
+            animation: dance-headbang .4s ease-in-out infinite
+        }
+
+        @keyframes dance-headbang {
+
+            0%,
+            100% {
+                transform: rotate(0)
+            }
+
+            50% {
+                transform: rotate(8deg) translateY(5px)
+            }
+        }
+
+        .dance-sway {
+            animation: dance-sway 1.5s ease-in-out infinite
+        }
+
+        @keyframes dance-sway {
+
+            0%,
+            100% {
+                transform: rotate(-5deg)
+            }
+
+            50% {
+                transform: rotate(5deg)
+            }
+        }
+
+        .dance-floss {
+            animation: dance-floss .7s ease-in-out infinite
+        }
+
+        @keyframes dance-floss {
+
+            0%,
+            100% {
+                transform: translateX(0) scaleX(1)
+            }
+
+            25% {
+                transform: translateX(-10px) scaleX(.95)
+            }
+
+            50% {
+                transform: translateX(0) scaleX(1)
+            }
+
+            75% {
+                transform: translateX(10px) scaleX(.95)
+            }
+        }
+
+        /* Body */
+        .d-body {
+            position: absolute;
+            bottom: 20px;
+            left: 40px;
+            width: 120px;
+            height: 110px;
+            background: #1a1a2e;
+            border-radius: 60px 60px 25px 25px
+        }
+
+        .d-belly {
+            position: absolute;
+            bottom: 5px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 60px;
+            height: 30px;
+            background: #2a2a4a;
+            border-radius: 30px 30px 10px 10px
+        }
+
+        /* Head */
+        .d-head {
+            position: absolute;
+            bottom: 100px;
+            left: 30px;
+            width: 140px;
+            height: 110px;
+            background: #1a1a2e;
+            border-radius: 70px 70px 50px 50px;
+            z-index: 3
+        }
+
+        .d-ear {
+            position: absolute;
+            width: 20px;
+            height: 30px;
+            background: #1a1a2e;
+            border-radius: 10px 10px 5px 5px;
+            top: -10px;
+            z-index: 2
+        }
+
+        .d-ear.L {
+            left: 25px;
+            transform: rotate(-20deg)
+        }
+
+        .d-ear.R {
+            right: 25px;
+            transform: rotate(20deg)
+        }
+
+        .d-plate {
+            position: absolute;
+            width: 12px;
+            height: 14px;
+            background: #12122a;
+            border-radius: 6px;
+            top: -5px
+        }
+
+        .d-plate.L {
+            left: 40px
+        }
+
+        .d-plate.R {
+            right: 40px
+        }
+
+        .d-eye {
+            position: absolute;
+            width: 36px;
+            height: 36px;
+            background: #1a1a1a;
+            border-radius: 50%;
+            top: 28px;
+            z-index: 4;
+            overflow: hidden
+        }
+
+        .d-eye.L {
+            left: 20px
+        }
+
+        .d-eye.R {
+            right: 20px
+        }
+
+        .d-iris {
+            position: absolute;
+            width: 30px;
+            height: 30px;
+            background: #4ade80;
+            border-radius: 50%;
+            top: 3px;
+            left: 3px
+        }
+
+        .d-iris::after {
+            content: '';
+            position: absolute;
+            width: 16px;
+            height: 28px;
+            background: #1a1a1a;
+            border-radius: 8px;
+            top: 1px;
+            left: 7px
+        }
+
+        .d-pupil {
+            position: absolute;
+            width: 6px;
+            height: 24px;
+            background: #4ade80;
+            border-radius: 3px;
+            top: 4px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 1;
+            animation: pupil-dilate 2s ease-in-out infinite
+        }
+
+        @keyframes pupil-dilate {
+
+            0%,
+            100% {
+                width: 6px
+            }
+
+            50% {
+                width: 10px
+            }
+        }
+
+        .d-shine {
+            position: absolute;
+            width: 8px;
+            height: 8px;
+            background: rgba(255, 255, 255, .7);
+            border-radius: 50%;
+            top: 6px;
+            left: 6px;
+            z-index: 2
+        }
+
+        .d-nose {
+            position: absolute;
+            bottom: 22px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 12px;
+            z-index: 4
+        }
+
+        .d-nostril {
+            width: 8px;
+            height: 6px;
+            background: #0a0a1a;
+            border-radius: 50%
+        }
+
+        .d-mouth {
+            position: absolute;
+            bottom: 12px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 30px;
+            height: 10px;
+            border-bottom: 3px solid #0a0a1a;
+            border-radius: 0 0 15px 15px;
+            z-index: 4
+        }
+
+        /* Wings */
+        .d-wing {
+            position: absolute;
+            bottom: 60px;
+            width: 65px;
+            height: 90px;
+            background: #12122a;
+            z-index: 0
+        }
+
+        .d-wing.L {
+            left: -20px;
+            border-radius: 40px 10px 5px 30px;
+            transform-origin: right center;
+            animation: wing-left 1s ease-in-out infinite
+        }
+
+        .d-wing.R {
+            right: -20px;
+            border-radius: 10px 40px 30px 5px;
+            transform-origin: left center;
+            animation: wing-right 1s ease-in-out infinite
+        }
+
+        @keyframes wing-left {
+
+            0%,
+            100% {
+                transform: rotate(0deg) scaleY(1)
+            }
+
+            25% {
+                transform: rotate(-15deg) scaleY(.9)
+            }
+
+            50% {
+                transform: rotate(5deg) scaleY(1.05)
+            }
+
+            75% {
+                transform: rotate(-10deg) scaleY(.95)
+            }
+        }
+
+        @keyframes wing-right {
+
+            0%,
+            100% {
+                transform: rotate(0deg) scaleY(1)
+            }
+
+            25% {
+                transform: rotate(15deg) scaleY(.9)
+            }
+
+            50% {
+                transform: rotate(-5deg) scaleY(1.05)
+            }
+
+            75% {
+                transform: rotate(10deg) scaleY(.95)
+            }
+        }
+
+        .d-wing::before {
+            content: '';
+            position: absolute;
+            bottom: 10px;
+            width: 80%;
+            height: 2px;
+            background: rgba(255, 255, 255, .05)
+        }
+
+        .d-wing::after {
+            content: '';
+            position: absolute;
+            bottom: 25px;
+            width: 60%;
+            height: 2px;
+            background: rgba(255, 255, 255, .05)
+        }
+
+        .d-wing.L::before,
+        .d-wing.L::after {
+            right: 5px
+        }
+
+        .d-wing.R::before,
+        .d-wing.R::after {
+            left: 5px
+        }
+
+        /* Legs */
+        .d-leg {
+            position: absolute;
+            bottom: 2px;
+            width: 34px;
+            height: 30px;
+            background: #1a1a2e;
+            border-radius: 6px 6px 14px 14px;
+            z-index: 2
+        }
+
+        .d-leg.L {
+            left: 42px;
+            animation: leg-left 1s ease-in-out infinite
+        }
+
+        .d-leg.R {
+            right: 42px;
+            animation: leg-right 1s ease-in-out infinite
+        }
+
+        @keyframes leg-left {
+
+            0%,
+            100% {
+                transform: translateX(0) rotate(0)
+            }
+
+            25% {
+                transform: translateX(-5px) rotate(-5deg)
+            }
+
+            75% {
+                transform: translateX(5px) rotate(5deg)
+            }
+        }
+
+        @keyframes leg-right {
+
+            0%,
+            100% {
+                transform: translateX(0) rotate(0)
+            }
+
+            25% {
+                transform: translateX(5px) rotate(5deg)
+            }
+
+            75% {
+                transform: translateX(-5px) rotate(-5deg)
+            }
+        }
+
+        .d-paw {
+            position: absolute;
+            bottom: 0;
+            width: 34px;
+            height: 8px;
+            background: #12122a;
+            border-radius: 0 0 16px 16px;
+            left: -2px
+        }
+
+        .d-paw::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 4px;
+            width: 6px;
+            height: 4px;
+            background: #0a0a1a;
+            border-radius: 0 0 3px 3px;
+            box-shadow: 8px 0 0 #0a0a1a, 16px 0 0 #0a0a1a
+        }
+
+        /* Tail */
+        .d-tail {
+            position: absolute;
+            bottom: 40px;
+            right: -10px;
+            width: 50px;
+            height: 16px;
+            background: #1a1a2e;
+            border-radius: 8px 16px 16px 8px;
+            z-index: 0;
+            transform-origin: left center;
+            animation: tail-wag .8s ease-in-out infinite alternate
+        }
+
+        .d-tail-fin {
+            position: absolute;
+            right: -8px;
+            top: -4px;
+            width: 16px;
+            height: 24px;
+            background: #12122a;
+            border-radius: 8px;
+            transform: rotate(15deg)
+        }
+
+        @keyframes tail-wag {
+            from {
+                transform: rotate(-10deg)
+            }
+
+            to {
+                transform: rotate(15deg)
+            }
+        }
+
+        /* Arms */
+        .d-arm {
+            position: absolute;
+            bottom: 80px;
+            width: 20px;
+            height: 45px;
+            background: #1a1a2e;
+            border-radius: 10px;
+            z-index: 5
+        }
+
+        .d-arm.L {
+            left: 30px;
+            transform-origin: top center;
+            animation: arm-left .5s ease-in-out infinite alternate
+        }
+
+        .d-arm.R {
+            right: 30px;
+            transform-origin: top center;
+            animation: arm-right .5s ease-in-out infinite alternate
+        }
+
+        @keyframes arm-left {
+            0% {
+                transform: rotate(-40deg)
+            }
+
+            100% {
+                transform: rotate(20deg)
+            }
+        }
+
+        @keyframes arm-right {
+            0% {
+                transform: rotate(40deg)
+            }
+
+            100% {
+                transform: rotate(-20deg)
+            }
+        }
+
+        .d-arm::after {
+            content: '';
+            position: absolute;
+            bottom: -2px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 14px;
+            height: 10px;
+            background: #12122a;
+            border-radius: 0 0 7px 7px
+        }
+
+        /* Golden variant */
+        .dragon.golden .d-body,
+        .dragon.golden .d-head,
+        .dragon.golden .d-ear,
+        .dragon.golden .d-leg,
+        .dragon.golden .d-arm,
+        .dragon.golden .d-tail {
+            background: #fef3c7
+        }
+
+        .dragon.golden .d-belly,
+        .dragon.golden .d-wing,
+        .dragon.golden .d-plate,
+        .dragon.golden .d-paw,
+        .dragon.golden .d-tail-fin,
+        .dragon.golden .d-arm::after {
+            background: #fde68a
+        }
+
+        .dragon.golden .d-iris,
+        .dragon.golden .d-pupil {
+            background: #60a5fa
+        }
+
+        .dragon.golden .d-nostril {
+            background: #d4a574
+        }
+
+        .dragon.golden .d-mouth {
+            border-bottom-color: #d4a574
+        }
+
+        .dragon.golden .d-wing::before,
+        .dragon.golden .d-wing::after {
+            background: rgba(0, 0, 0, .05)
+        }
+
+        .dragon.golden .d-paw::before {
+            background: #e8c9a0;
+            box-shadow: 8px 0 0 #e8c9a0, 16px 0 0 #e8c9a0
+        }
+
+        /* Settings panel */
+        .settings {
+            position: fixed;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 180px;
+            background: rgba(10, 10, 26, .9);
+            border: 1px solid rgba(255, 255, 255, .1);
+            border-radius: 16px;
+            padding: 14px;
+            z-index: 20;
+            backdrop-filter: blur(10px);
+            display: none;
+            pointer-events: auto
+        }
+
+        .settings.show {
+            display: block
+        }
+
+        .settings h3 {
+            color: #fff;
+            font-size: .8rem;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 6px
+        }
+
+        .settings h3 .golden-badge {
+            background: #fbbf24;
+            color: #78350f;
+            padding: 1px 6px;
+            border-radius: 6px;
+            font-size: .55rem
+        }
+
+        .s-label {
+            color: rgba(255, 255, 255, .5);
+            font-size: .6rem;
+            margin-top: 8px;
+            margin-bottom: 4px;
+            display: block
+        }
+
+        .s-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 4px
+        }
+
+        .s-btn {
+            padding: 4px 8px;
+            border-radius: 8px;
+            border: 1px solid rgba(255, 255, 255, .1);
+            background: rgba(255, 255, 255, .05);
+            color: rgba(255, 255, 255, .6);
+            font-family: inherit;
+            font-size: .55rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all .15s
+        }
+
+        .s-btn:hover {
+            background: rgba(255, 255, 255, .12);
+            color: #fff
+        }
+
+        .s-btn.active {
+            background: rgba(139, 92, 246, .3);
+            border-color: #8b5cf6;
+            color: #c4b5fd
+        }
+
+        .s-close {
+            position: absolute;
+            top: 8px;
+            right: 10px;
+            background: none;
+            border: none;
+            color: rgba(255, 255, 255, .4);
+            font-size: 1rem;
+            cursor: pointer;
+            font-family: inherit
+        }
+
+        .s-close:hover {
+            color: #fff
+        }
+
+        .s-slider {
+            width: 100%;
+            accent-color: #8b5cf6;
+            cursor: pointer
+        }
+
+        .s-delete {
+            width: 100%;
+            padding: 6px;
+            border-radius: 8px;
+            border: 1px solid rgba(239, 68, 68, .3);
+            background: rgba(239, 68, 68, .1);
+            color: #ef4444;
+            font-family: inherit;
+            font-size: .6rem;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 10px;
+            transition: all .15s
+        }
+
+        .s-delete:hover {
+            background: rgba(239, 68, 68, .2)
+        }
+
+        /* BPM & controls */
+        .bpm {
+            position: fixed;
+            bottom: 15px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: rgba(255, 255, 255, .3);
+            font-size: .6rem;
+            z-index: 10
+        }
+
+        .bpm span {
+            color: #ec4899
+        }
+
+        .controls {
+            position: fixed;
+            bottom: 40px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 6px;
+            z-index: 10
+        }
+
+        .speed-btn {
+            padding: 6px 14px;
+            border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, .15);
+            background: rgba(255, 255, 255, .05);
+            color: rgba(255, 255, 255, .6);
+            font-family: inherit;
+            font-size: .65rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all .2s;
+            backdrop-filter: blur(8px)
+        }
+
+        .speed-btn:hover {
+            background: rgba(255, 255, 255, .12);
+            color: #fff
+        }
+
+        .speed-btn.active {
+            background: rgba(236, 72, 153, .2);
+            border-color: #ec4899;
+            color: #ec4899
+        }
+
+        /* Music notes */
+        .note {
+            position: fixed;
+            font-size: 1.2rem;
+            pointer-events: none;
+            z-index: 8;
+            animation: note-rise 3s ease-out forwards;
+            opacity: 0
+        }
+
+        @keyframes note-rise {
+            0% {
+                opacity: 0;
+                transform: translateY(0) rotate(0deg)
+            }
+
+            10% {
+                opacity: .8
+            }
+
+            80% {
+                opacity: .6
+            }
+
+            100% {
+                opacity: 0;
+                transform: translateY(-200px) rotate(20deg)
+            }
+        }
+
+        /* Golden flash */
+        .golden-flash {
+            position: fixed;
+            inset: 0;
+            background: rgba(251, 191, 36, .15);
+            z-index: 100;
+            pointer-events: none;
+            animation: gflash .4s ease-out forwards
+        }
+
+        @keyframes gflash {
+            from {
+                opacity: 1
+            }
+
+            to {
+                opacity: 0
+            }
+        }
+
+        /* Tip */
+        .tip {
+            position: fixed;
+            bottom: 70px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: rgba(255, 255, 255, .2);
+            font-size: .55rem;
+            z-index: 10
+        }
+    </style>
+</head>
+
+<body>
+    <div class="stars" id="stars"></div>
+    <div class="rays" id="rays"></div>
+    <div class="disco-ball"></div>
+
+    <div class="title">
+        <h1>🐉 Toothless Dance Party 🐉</h1>
+        <p>click to summon · click a dragon to customize</p>
+    </div>
+    <div class="counter">🐉 <span id="dragon-count">1</span> dragons · ✨ <span id="golden-count">0</span> golden</div>
+
+    <div id="spawn-area"></div>
+
+    <!-- Settings panel -->
+    <div class="settings" id="settings">
+        <button class="s-close" id="s-close">✕</button>
+        <h3>🐉 Dragon #<span id="s-id">1</span> <span class="golden-badge" id="s-golden" style="display:none">GOLDEN
+                ✨</span></h3>
+
+        <span class="s-label">Dance Style</span>
+        <div class="s-row" id="s-dances"></div>
+
+        <span class="s-label">Speed</span>
+        <input type="range" class="s-slider" id="s-speed" min="0.3" max="3" step="0.1" value="1">
+
+        <span class="s-label">Size</span>
+        <input type="range" class="s-slider" id="s-size" min="0.3" max="1.5" step="0.05" value="1">
+
+        <button class="s-delete" id="s-delete">🗑️ Remove Dragon</button>
+    </div>
+
+    <div class="controls">
+        <button class="speed-btn" data-speed="0.5">🐢 Chill</button>
+        <button class="speed-btn active" data-speed="1">🕺 Normal</button>
+        <button class="speed-btn" data-speed="1.8">⚡ Hype</button>
+        <button class="speed-btn" data-speed="3">🔥 CHAOS</button>
+    </div>
+    <div class="tip">click empty space to spawn · click a dragon to customize · 15% chance golden</div>
+    <div class="bpm">Dancing at <span id="bpm-val">120</span> BPM since the dawn of time</div>
+
+    <div class="floor"></div>
+    <div class="floor-tiles" id="floor-tiles"></div>
+
+    <script>
+        const DRAGON_HTML = `
+<div class="d-wing L"></div><div class="d-wing R"></div>
+<div class="d-body"><div class="d-belly"></div></div>
+<div class="d-head">
+<div class="d-ear L"></div><div class="d-ear R"></div>
+<div class="d-plate L"></div><div class="d-plate R"></div>
+<div class="d-eye L"><div class="d-iris"><div class="d-pupil"></div></div><div class="d-shine"></div></div>
+<div class="d-eye R"><div class="d-iris"><div class="d-pupil"></div></div><div class="d-shine"></div></div>
+<div class="d-nose"><div class="d-nostril"></div><div class="d-nostril"></div></div>
+<div class="d-mouth"></div>
+</div>
+<div class="d-arm L"></div><div class="d-arm R"></div>
+<div class="d-leg L"><div class="d-paw"></div></div>
+<div class="d-leg R"><div class="d-paw"></div></div>
+<div class="d-tail"><div class="d-tail-fin"></div></div>`;
+
+        const DANCES = [
+            { name: 'Bounce', cls: 'dance-bounce' },
+            { name: 'Wiggle', cls: 'dance-wiggle' },
+            { name: 'Spin', cls: 'dance-spin' },
+            { name: 'Jump', cls: 'dance-jump' },
+            { name: 'Headbang', cls: 'dance-headbang' },
+            { name: 'Sway', cls: 'dance-sway' },
+            { name: 'Floss', cls: 'dance-floss' },
+        ];
+
+        const spawnArea = document.getElementById('spawn-area');
+        const settingsEl = document.getElementById('settings');
+        let dragons = [];
+        let selectedDragon = null;
+        let nextId = 1;
+
+        function createDragon(x, bottomPx, scale, isGolden, dance) {
+            const el = document.createElement('div');
+            el.className = 'dragon ' + dance;
+            if (isGolden) el.classList.add('golden');
+            el.innerHTML = DRAGON_HTML;
+            el.style.left = x + '%';
+            el.style.bottom = bottomPx + 'px';
+            el.style.transform = `translateX(-50%) scale(${scale})`;
+            el.style.zIndex = Math.floor(200 - bottomPx); // farther back (higher bottom) = lower z-index
+            el.style.animationDelay = (Math.random() * -2) + 's';
+            // Depth effect: farther back = slightly transparent
+            el.style.opacity = 0.5 + (1 - bottomPx / 250) * 0.5;
+
+            const id = nextId++;
+            el.dataset.dragonId = id;
+
+            const data = { id, el, x, bottom: bottomPx, scale, isGolden, dance, speed: 1 };
+            dragons.push(data);
+
+            el.addEventListener('click', (e) => {
+                e.stopPropagation();
+                selectDragon(data);
+            });
+
+            spawnArea.appendChild(el);
+            sortDragons();
+            updateCounters();
+            return data;
+        }
+
+        function sortDragons() {
+            // Sort by bottom position: higher bottom = farther back = rendered first
+            const sorted = [...spawnArea.children].sort((a, b) => {
+                return parseInt(b.style.bottom) - parseInt(a.style.bottom);
+            });
+            sorted.forEach(el => spawnArea.appendChild(el));
+        }
+
+        function selectDragon(data) {
+            // Deselect previous
+            document.querySelectorAll('.dragon.selected').forEach(d => d.classList.remove('selected'));
+            selectedDragon = data;
+            data.el.classList.add('selected');
+
+            // Show settings
+            settingsEl.classList.add('show');
+            document.getElementById('s-id').textContent = data.id;
+            document.getElementById('s-golden').style.display = data.isGolden ? 'inline' : 'none';
+            document.getElementById('s-speed').value = data.speed;
+            document.getElementById('s-size').value = data.scale;
+
+            // Dance buttons
+            const dancesEl = document.getElementById('s-dances');
+            dancesEl.innerHTML = '';
+            DANCES.forEach(d => {
+                const btn = document.createElement('button');
+                btn.className = 's-btn' + (data.dance === d.cls ? ' active' : '');
+                btn.textContent = d.name;
+                btn.addEventListener('click', () => {
+                    // Remove old dance class, add new
+                    DANCES.forEach(dd => data.el.classList.remove(dd.cls));
+                    data.el.classList.add(d.cls);
+                    data.dance = d.cls;
+                    dancesEl.querySelectorAll('.s-btn').forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                });
+                dancesEl.appendChild(btn);
+            });
+        }
+
+        // Close settings
+        document.getElementById('s-close').addEventListener('click', () => {
+            settingsEl.classList.remove('show');
+            document.querySelectorAll('.dragon.selected').forEach(d => d.classList.remove('selected'));
+            selectedDragon = null;
+        });
+
+        // Speed slider
+        document.getElementById('s-speed').addEventListener('input', function () {
+            if (!selectedDragon) return;
+            const speed = parseFloat(this.value);
+            selectedDragon.speed = speed;
+            selectedDragon.el.style.animationDuration = (1 / speed) + 's';
+        });
+
+        // Size slider
+        document.getElementById('s-size').addEventListener('input', function () {
+            if (!selectedDragon) return;
+            const size = parseFloat(this.value);
+            selectedDragon.scale = size;
+            selectedDragon.el.style.transform = `translateX(-50%) scale(${size})`;
+        });
+
+        // Delete
+        document.getElementById('s-delete').addEventListener('click', () => {
+            if (!selectedDragon) return;
+            if (dragons.length <= 1) return; // keep at least one
+            selectedDragon.el.remove();
+            dragons = dragons.filter(d => d !== selectedDragon);
+            settingsEl.classList.remove('show');
+            selectedDragon = null;
+            updateCounters();
+        });
+
+        function updateCounters() {
+            document.getElementById('dragon-count').textContent = dragons.length;
+            document.getElementById('golden-count').textContent = dragons.filter(d => d.isGolden).length;
+        }
+
+        // Stars
+        const starsEl = document.getElementById('stars');
+        for (let i = 0; i < 80; i++) {
+            const s = document.createElement('div'); s.className = 'star';
+            s.style.cssText = `left:${Math.random() * 100}%;top:${Math.random() * 70}%;width:${1 + Math.random() * 2}px;height:${1 + Math.random() * 2}px;--d:${1 + Math.random() * 3}s;animation-delay:${Math.random() * 3}s`;
+            starsEl.appendChild(s);
+        }
+
+        // Light rays
+        const raysEl = document.getElementById('rays');
+        const colors = ['#ec4899', '#8b5cf6', '#06b6d4', '#10b981', '#f59e0b', '#ef4444'];
+        for (let i = 0; i < 12; i++) {
+            const r = document.createElement('div'); r.className = 'ray';
+            r.style.cssText = `transform:rotate(${i * 30}deg);background:${colors[i % colors.length]};animation-delay:${i * .2}s`;
+            raysEl.appendChild(r);
+        }
+
+        // Floor tiles
+        const tilesEl = document.getElementById('floor-tiles');
+        for (let i = 0; i < 20; i++) {
+            const t = document.createElement('div'); t.className = 'tile';
+            t.style.animationDelay = `${i * .15}s`;
+            tilesEl.appendChild(t);
+        }
+
+        // Global speed control
+        document.querySelectorAll('.speed-btn').forEach(btn => {
+            btn.addEventListener('click', function (e) {
+                e.stopPropagation();
+                document.querySelectorAll('.speed-btn').forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+                const speed = parseFloat(this.dataset.speed);
+                dragons.forEach(d => {
+                    d.speed = speed;
+                    d.el.style.animationDuration = (1 / speed) + 's';
+                });
+                document.getElementById('bpm-val').textContent = Math.round(120 * speed);
+            });
+        });
+
+        // Music notes
+        function spawnNote() {
+            const n = document.createElement('div'); n.className = 'note';
+            n.textContent = ['♪', '♫', '♬', '🎵', '🎶'][Math.floor(Math.random() * 5)];
+            n.style.left = Math.random() * 100 + '%';
+            n.style.bottom = '100px';
+            n.style.fontSize = (1 + Math.random()) + 'rem';
+            document.body.appendChild(n);
+            setTimeout(() => n.remove(), 3000);
+        }
+        setInterval(spawnNote, 800);
+
+        // Eyes follow cursor
+        document.addEventListener('mousemove', e => {
+            document.querySelectorAll('.d-iris').forEach(iris => {
+                const rect = iris.parentElement.getBoundingClientRect();
+                const cx = rect.left + rect.width / 2, cy = rect.top + rect.height / 2;
+                const dx = e.clientX - cx, dy = e.clientY - cy;
+                const dist = Math.min(Math.sqrt(dx * dx + dy * dy), 4);
+                const angle = Math.atan2(dy, dx);
+                iris.style.transform = `translate(${Math.cos(angle) * dist}px,${Math.sin(angle) * dist}px)`;
+            });
+        });
+
+        // Click to spawn
+        document.addEventListener('click', (e) => {
+            if (e.target.closest('.controls') || e.target.closest('.speed-btn') || e.target.closest('.settings') || e.target.closest('.dragon')) return;
+
+            const isGolden = Math.random() < 0.15;
+            const x = 5 + Math.random() * 90;
+            const bottom = 80 + Math.random() * 150; // 80-230px
+            const scale = 0.4 + (1 - (bottom - 80) / 150) * 0.7; // farther back = smaller
+
+            if (isGolden) {
+                const flash = document.createElement('div');
+                flash.className = 'golden-flash';
+                document.body.appendChild(flash);
+                setTimeout(() => flash.remove(), 400);
+            }
+
+            const dance = DANCES[Math.floor(Math.random() * DANCES.length)].cls;
+            createDragon(x, bottom, scale, isGolden, dance);
+            for (let i = 0; i < 3; i++) setTimeout(spawnNote, i * 100);
+        });
+
+        // Create the first dragon centered
+        createDragon(50, 100, 0.85, false, 'dance-bounce');
+    </script>
+</body>
+
+</html>

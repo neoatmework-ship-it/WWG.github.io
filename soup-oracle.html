@@ -1,0 +1,560 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Soup Oracle — What Shall You Brew?</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700;800;900&family=Inter:wght@300;400;500;600&display=swap"
+        rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #0c0905;
+            color: #f5e6d0;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            overflow-x: hidden
+        }
+
+        .bg-glow {
+            position: fixed;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 800px;
+            height: 600px;
+            background: radial-gradient(ellipse, rgba(180, 120, 40, .08) 0%, transparent 70%);
+            pointer-events: none
+        }
+
+        .container {
+            max-width: 600px;
+            width: 100%;
+            padding: 24px;
+            position: relative;
+            z-index: 1
+        }
+
+        .header {
+            text-align: center;
+            padding: 60px 0 40px
+        }
+
+        .header-icon {
+            font-size: 64px;
+            margin-bottom: 16px;
+            display: block;
+            animation: float 3s ease-in-out infinite
+        }
+
+        @keyframes float {
+
+            0%,
+            100% {
+                transform: translateY(0)
+            }
+
+            50% {
+                transform: translateY(-8px)
+            }
+        }
+
+        .header h1 {
+            font-family: 'Playfair Display', serif;
+            font-size: 2.8rem;
+            font-weight: 800;
+            letter-spacing: -1px;
+            margin-bottom: 8px;
+            background: linear-gradient(135deg, #f5d090, #c8956a, #f5d090);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text
+        }
+
+        .header p {
+            color: rgba(245, 230, 208, .35);
+            font-size: .9rem;
+            font-style: italic;
+            line-height: 1.5
+        }
+
+        .quote {
+            text-align: center;
+            padding: 16px 24px;
+            margin-bottom: 32px;
+            border-left: 2px solid rgba(200, 149, 106, .2);
+            border-right: 2px solid rgba(200, 149, 106, .2);
+            color: rgba(245, 230, 208, .3);
+            font-size: .78rem;
+            font-style: italic;
+            line-height: 1.6
+        }
+
+        .quote strong {
+            color: rgba(245, 230, 208, .5)
+        }
+
+        .brew-btn {
+            display: block;
+            width: 100%;
+            padding: 18px;
+            background: linear-gradient(135deg, #8b5e3c, #c8956a);
+            border: none;
+            border-radius: 14px;
+            color: #fff;
+            font-family: 'Playfair Display', serif;
+            font-size: 1.15rem;
+            font-weight: 700;
+            letter-spacing: .5px;
+            cursor: pointer;
+            transition: all .3s;
+            position: relative;
+            overflow: hidden
+        }
+
+        .brew-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 40px rgba(200, 149, 106, .25)
+        }
+
+        .brew-btn:active {
+            transform: scale(.98)
+        }
+
+        .brew-btn .steam {
+            position: absolute;
+            top: -20px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 24px;
+            opacity: 0;
+            transition: all .4s
+        }
+
+        .brew-btn:hover .steam {
+            opacity: .6;
+            top: -30px
+        }
+
+        .soup-card {
+            margin-top: 28px;
+            background: rgba(245, 230, 208, .03);
+            border: 1px solid rgba(200, 149, 106, .12);
+            border-radius: 18px;
+            padding: 28px;
+            display: none;
+            animation: fadeUp .5s ease-out
+        }
+
+        .soup-card.show {
+            display: block
+        }
+
+        @keyframes fadeUp {
+            from {
+                opacity: 0;
+                transform: translateY(16px)
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0)
+            }
+        }
+
+        .soup-name {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.6rem;
+            font-weight: 800;
+            text-align: center;
+            margin-bottom: 4px;
+            color: #f5d090
+        }
+
+        .soup-subtitle {
+            text-align: center;
+            color: rgba(245, 230, 208, .3);
+            font-size: .75rem;
+            margin-bottom: 20px;
+            font-style: italic
+        }
+
+        .soup-divider {
+            width: 60px;
+            height: 1px;
+            background: rgba(200, 149, 106, .2);
+            margin: 0 auto 20px
+        }
+
+        .section-title {
+            font-size: .65rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: rgba(200, 149, 106, .4);
+            margin-bottom: 10px;
+            font-weight: 600
+        }
+
+        .ingredients {
+            list-style: none;
+            margin-bottom: 24px
+        }
+
+        .ingredients li {
+            padding: 6px 0;
+            font-size: .88rem;
+            color: rgba(245, 230, 208, .65);
+            border-bottom: 1px solid rgba(200, 149, 106, .06);
+            display: flex;
+            justify-content: space-between
+        }
+
+        .ingredients li:last-child {
+            border: none
+        }
+
+        .ing-name {
+            display: flex;
+            align-items: center;
+            gap: 8px
+        }
+
+        .ing-emoji {
+            font-size: 1rem
+        }
+
+        .ing-amount {
+            color: rgba(200, 149, 106, .4);
+            font-size: .78rem
+        }
+
+        .method {
+            color: rgba(245, 230, 208, .5);
+            font-size: .85rem;
+            line-height: 1.7;
+            font-style: italic;
+            text-align: center;
+            padding: 16px;
+            background: rgba(200, 149, 106, .04);
+            border-radius: 12px;
+            margin-bottom: 20px
+        }
+
+        .soup-stats {
+            display: flex;
+            justify-content: center;
+            gap: 24px;
+            margin-top: 16px
+        }
+
+        .stat {
+            text-align: center
+        }
+
+        .stat-val {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: #c8956a
+        }
+
+        .stat-label {
+            font-size: .6rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: rgba(245, 230, 208, .25);
+            margin-top: 2px
+        }
+
+        .history {
+            margin-top: 40px;
+            padding-top: 24px;
+            border-top: 1px solid rgba(200, 149, 106, .08)
+        }
+
+        .history-title {
+            font-size: .65rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: rgba(200, 149, 106, .25);
+            margin-bottom: 12px;
+            text-align: center
+        }
+
+        .history-list {
+            display: flex;
+            flex-direction: column;
+            gap: 6px
+        }
+
+        .history-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 8px 12px;
+            background: rgba(245, 230, 208, .02);
+            border-radius: 8px;
+            font-size: .78rem;
+            color: rgba(245, 230, 208, .35);
+            cursor: pointer;
+            transition: all .2s
+        }
+
+        .history-item:hover {
+            background: rgba(245, 230, 208, .05)
+        }
+
+        .history-item .h-num {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: rgba(200, 149, 106, .1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: .6rem;
+            color: rgba(200, 149, 106, .4);
+            flex-shrink: 0
+        }
+
+        .history-item .h-name {
+            flex: 1;
+            font-weight: 500
+        }
+
+        .history-item .h-time {
+            font-size: .65rem;
+            color: rgba(200, 149, 106, .2)
+        }
+
+        footer {
+            margin-top: auto;
+            padding: 40px 24px;
+            text-align: center;
+            color: rgba(245, 230, 208, .15);
+            font-size: .72rem;
+            font-style: italic
+        }
+    </style>
+</head>
+
+<body>
+    <div class="bg-glow"></div>
+    <div class="container">
+        <div class="header">
+            <span class="header-icon">🍲</span>
+            <h1>Soup Oracle</h1>
+            <p>"Soup. Glorious, wonderful soup."</p>
+        </div>
+        <div class="quote">
+            "The world is dark, and light is precious. Come closer, dear reader. <strong>Let me tell you a story about
+                soup.</strong>"
+            <br>— The Tale of Despereaux
+        </div>
+        <button class="brew-btn" id="brew-btn">
+            <span class="steam">♨️</span>
+            Brew a Random Soup
+        </button>
+        <div class="soup-card" id="soup-card">
+            <div class="soup-name" id="soup-name"></div>
+            <div class="soup-subtitle" id="soup-subtitle"></div>
+            <div class="soup-divider"></div>
+            <div class="section-title">Ingredients</div>
+            <ul class="ingredients" id="ingredients"></ul>
+            <div class="section-title">The Method</div>
+            <div class="method" id="method"></div>
+            <div class="soup-stats">
+                <div class="stat">
+                    <div class="stat-val" id="stat-time"></div>
+                    <div class="stat-label">Minutes</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-val" id="stat-serves"></div>
+                    <div class="stat-label">Serves</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-val" id="stat-warmth"></div>
+                    <div class="stat-label">Warmth</div>
+                </div>
+            </div>
+        </div>
+        <div class="history" id="history-section" style="display:none">
+            <div class="history-title">Previously Brewed</div>
+            <div class="history-list" id="history-list"></div>
+        </div>
+    </div>
+    <footer>"Reader, you must know that an interesting fate awaits the brave."</footer>
+    <script>
+        const BASES = [
+            { name: 'Chicken Broth', emoji: '🐔', flavor: 'savory and golden' },
+            { name: 'Beef Stock', emoji: '🐄', flavor: 'rich and deep' },
+            { name: 'Vegetable Broth', emoji: '🥕', flavor: 'light and earthy' },
+            { name: 'Mushroom Stock', emoji: '🍄', flavor: 'umami and woodsy' },
+            { name: 'Fish Stock', emoji: '🐟', flavor: 'delicate and briny' },
+            { name: 'Bone Broth', emoji: '🦴', flavor: 'hearty and nourishing' },
+            { name: 'Miso Broth', emoji: '🫘', flavor: 'warm and fermented' },
+            { name: 'Coconut Milk', emoji: '🥥', flavor: 'creamy and tropical' },
+            { name: 'Tomato Base', emoji: '🍅', flavor: 'tangy and vibrant' },
+            { name: 'Pumpkin Purée', emoji: '🎃', flavor: 'sweet and velvety' }
+        ];
+        const PROTEINS = [
+            { name: 'Chicken', emoji: '🍗', amount: '2 thighs, shredded' },
+            { name: 'Beef Chunks', emoji: '🥩', amount: '300g, cubed' },
+            { name: 'Shrimp', emoji: '🦐', amount: '200g, deveined' },
+            { name: 'White Beans', emoji: '🫘', amount: '1 can, drained' },
+            { name: 'Lentils', emoji: '🟤', amount: '1 cup, rinsed' },
+            { name: 'Tofu', emoji: '🧈', amount: '1 block, cubed' },
+            { name: 'Sausage', emoji: '🌭', amount: '2 links, sliced' },
+            { name: 'Egg', emoji: '🥚', amount: '2, whisked and drizzled' },
+            { name: 'Pulled Pork', emoji: '🐷', amount: '250g, shredded' },
+            { name: 'Crab Meat', emoji: '🦀', amount: '150g, flaked' }
+        ];
+        const VEGGIES = [
+            { name: 'Watercress', emoji: '🌿', amount: '2 big handfuls' },
+            { name: 'Potatoes', emoji: '🥔', amount: '3 medium, diced' },
+            { name: 'Carrots', emoji: '🥕', amount: '2, sliced into coins' },
+            { name: 'Celery', emoji: '🌿', amount: '3 stalks, chopped' },
+            { name: 'Onion', emoji: '🧅', amount: '1 large, diced' },
+            { name: 'Leeks', emoji: '🥬', amount: '2, sliced thin' },
+            { name: 'Spinach', emoji: '🍃', amount: '3 cups, wilted' },
+            { name: 'Corn', emoji: '🌽', amount: '2 ears, kernels cut' },
+            { name: 'Mushrooms', emoji: '🍄', amount: '200g, quartered' },
+            { name: 'Kale', emoji: '🥬', amount: '1 bunch, torn' },
+            { name: 'Cabbage', emoji: '🥬', amount: '¼ head, shredded' },
+            { name: 'Peas', emoji: '🟢', amount: '1 cup, fresh or frozen' },
+            { name: 'Sweet Potato', emoji: '🍠', amount: '1 large, cubed' },
+            { name: 'Zucchini', emoji: '🥒', amount: '2, half-moons' },
+            { name: 'Bell Pepper', emoji: '', amount: '1, diced' },
+            { name: 'Broccoli', emoji: '🥦', amount: '1 head, in florets' },
+            { name: 'Turnip', emoji: '🥔', amount: '2, peeled and cubed' },
+            { name: 'Green Beans', emoji: '', amount: '1 cup, trimmed' }
+        ];
+        const AROMATICS = [
+            { name: 'Garlic', emoji: '🧄', amount: '4 cloves, minced' },
+            { name: 'Ginger', emoji: '🧊', amount: '1 inch, grated' },
+            { name: 'Bay Leaves', emoji: '🍃', amount: '2 leaves' },
+            { name: 'Thyme', emoji: '🌿', amount: '3 sprigs, fresh' },
+            { name: 'Rosemary', emoji: '🌿', amount: '1 sprig' },
+            { name: 'Lemongrass', emoji: '🌾', amount: '1 stalk, bruised' },
+            { name: 'Star Anise', emoji: '⭐', amount: '2 pieces' },
+            { name: 'Cumin Seeds', emoji: '🟤', amount: '1 tsp, toasted' },
+            { name: 'Black Pepper', emoji: '⚫', amount: 'freshly cracked' },
+            { name: 'Chili Flakes', emoji: '🌶️', amount: '½ tsp' },
+            { name: 'Turmeric', emoji: '🟡', amount: '1 tsp, ground' },
+            { name: 'Paprika', emoji: '🔴', amount: '1 tsp, smoked' },
+            { name: 'Nutmeg', emoji: '🟤', amount: 'a pinch, grated' },
+            { name: 'Saffron', emoji: '🟠', amount: 'a few threads' }
+        ];
+        const FINISHES = [
+            { name: 'Fresh Parsley', emoji: '🌿', amount: 'chopped, on top' },
+            { name: 'Crusty Bread', emoji: '🍞', amount: 'served alongside' },
+            { name: 'Parmesan Rind', emoji: '🧀', amount: 'simmered in, removed' },
+            { name: 'Cream Swirl', emoji: '🥛', amount: 'a generous drizzle' },
+            { name: 'Lemon Juice', emoji: '🍋', amount: 'a bright squeeze' },
+            { name: 'Olive Oil Drizzle', emoji: '🫒', amount: 'extra virgin, finishing' },
+            { name: 'Crispy Croutons', emoji: '🍞', amount: 'golden, scattered' },
+            { name: 'Sesame Oil', emoji: '🥜', amount: 'a few drops' },
+            { name: 'Hot Sauce', emoji: '🌶️', amount: 'to taste' },
+            { name: 'Fresh Dill', emoji: '🌿', amount: 'fronds, on top' },
+            { name: 'Crispy Bacon Bits', emoji: '🥓', amount: 'crumbled on top' },
+            { name: 'Toasted Seeds', emoji: '🌻', amount: 'pumpkin & sunflower' }
+        ];
+        const ADJECTIVES = ['Enchanted', 'Rustic', 'Grandmother\'s', 'Midnight', 'Golden', 'Velvet', 'Mystic', 'Tavern', 'Harvest', 'Secret', 'Royal', 'Ancient', 'Hearth', 'Twilight', 'Morning', 'Wanderer\'s'];
+        const METHODS = [
+            'Simmer the broth low and slow, letting each ingredient whisper its story to the others.',
+            'Build layers of flavor: sauté the aromatics until fragrant, then let everything meld in gentle heat.',
+            'The secret is patience. Let time do the work while the kitchen fills with an impossible warmth.',
+            'Start with cold water and bring everything up together — the slow awakening makes all the difference.',
+            'Toast the spices first until the air hums with their song, then add the broth like rain on warm stone.',
+            'Cook it the old way: one pot, low flame, and the kind of attention that is itself a form of love.',
+            'Let it bubble and murmur on the back burner while you tend to other things. Good soup waits for no one, but rewards all who wait.',
+        ];
+
+        function pick(arr) { return arr[Math.floor(Math.random() * arr.length)] }
+        function pickN(arr, n) { const s = [...arr]; const r = []; for (let i = 0; i < Math.min(n, s.length); i++) { const idx = Math.floor(Math.random() * s.length); r.push(s.splice(idx, 1)[0]) } return r }
+
+        let history = [];
+
+        function generateSoup() {
+            const base = pick(BASES);
+            const protein = pick(PROTEINS);
+            const vegs = pickN(VEGGIES, 2 + Math.floor(Math.random() * 3));
+            const arom = pickN(AROMATICS, 2 + Math.floor(Math.random() * 2));
+            const finish = pickN(FINISHES, 1 + Math.floor(Math.random() * 2));
+            const adj = pick(ADJECTIVES);
+            const method = pick(METHODS);
+
+            // Build name
+            const mainVeg = vegs[0].name;
+            const soupName = `${adj} ${mainVeg} & ${protein.name} Soup`;
+            const subtitle = `A ${base.flavor} soup to warm the coldest heart`;
+
+            const allIngredients = [
+                { ...base, amount: '6 cups' },
+                protein,
+                ...vegs,
+                ...arom,
+                ...finish
+            ];
+
+            const time = 20 + Math.floor(Math.random() * 40);
+            const serves = 2 + Math.floor(Math.random() * 5);
+            const warmths = ['☀️', '☀️☀️', '☀️☀️☀️', '🔥', '🔥🔥'];
+            const warmth = warmths[Math.floor(Math.random() * warmths.length)];
+
+            // Render
+            document.getElementById('soup-name').textContent = soupName;
+            document.getElementById('soup-subtitle').textContent = subtitle;
+            const list = document.getElementById('ingredients');
+            list.innerHTML = '';
+            allIngredients.forEach(ing => {
+                const li = document.createElement('li');
+                li.innerHTML = `<span class="ing-name"><span class="ing-emoji">${ing.emoji}</span>${ing.name}</span><span class="ing-amount">${ing.amount}</span>`;
+                list.appendChild(li);
+            });
+            document.getElementById('method').textContent = method;
+            document.getElementById('stat-time').textContent = time;
+            document.getElementById('stat-serves').textContent = serves;
+            document.getElementById('stat-warmth').textContent = warmth;
+
+            const card = document.getElementById('soup-card');
+            card.classList.remove('show');
+            void card.offsetWidth;
+            card.classList.add('show');
+
+            // History
+            history.unshift({ name: soupName, time: new Date() });
+            if (history.length > 8) history.pop();
+            renderHistory();
+        }
+
+        function renderHistory() {
+            if (history.length < 2) { document.getElementById('history-section').style.display = 'none'; return }
+            document.getElementById('history-section').style.display = 'block';
+            const list = document.getElementById('history-list');
+            list.innerHTML = '';
+            history.slice(1).forEach((h, i) => {
+                const div = document.createElement('div'); div.className = 'history-item';
+                const ago = Math.floor((Date.now() - h.time.getTime()) / 60000);
+                const timeStr = ago < 1 ? 'just now' : ago + 'm ago';
+                div.innerHTML = `<span class="h-num">${i + 2}</span><span class="h-name">${h.name}</span><span class="h-time">${timeStr}</span>`;
+                list.appendChild(div);
+            });
+        }
+
+        document.getElementById('brew-btn').addEventListener('click', generateSoup);
+        generateSoup();
+    </script>
+</body>
+
+</html>

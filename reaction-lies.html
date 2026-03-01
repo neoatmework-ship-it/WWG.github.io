@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reaction Test (It Lies) ⚡</title>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box
+        }
+
+        body {
+            font-family: 'Fredoka', sans-serif;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+            cursor: pointer;
+            user-select: none;
+            transition: background .3s
+        }
+
+        .container {
+            text-align: center;
+            padding: 20px;
+            max-width: 500px
+        }
+
+        h1 {
+            font-size: 1.8rem;
+            margin-bottom: 4px
+        }
+
+        h1 span {
+            color: #06b6d4
+        }
+
+        .sub {
+            color: rgba(255, 255, 255, .4);
+            font-size: .7rem;
+            margin-bottom: 30px
+        }
+
+        .circle {
+            width: 200px;
+            height: 200px;
+            border-radius: 50%;
+            margin: 0 auto 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1rem;
+            font-weight: 600;
+            transition: all .3s
+        }
+
+        .instruction {
+            font-size: 1.1rem;
+            color: rgba(255, 255, 255, .6);
+            margin-bottom: 20px;
+            min-height: 30px
+        }
+
+        .result-box {
+            background: rgba(255, 255, 255, .05);
+            border: 1px solid rgba(255, 255, 255, .08);
+            border-radius: 16px;
+            padding: 20px;
+            margin: 10px 0;
+            display: none
+        }
+
+        .result-box.show {
+            display: block;
+            animation: pop .3s ease
+        }
+
+        @keyframes pop {
+            from {
+                opacity: 0;
+                transform: scale(.9)
+            }
+
+            to {
+                opacity: 1;
+                transform: scale(1)
+            }
+        }
+
+        .real-time {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #06b6d4
+        }
+
+        .fake-time {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #ef4444;
+            text-decoration: line-through;
+            opacity: .4;
+            margin-top: 4px
+        }
+
+        .lie-label {
+            color: #f59e0b;
+            font-size: .7rem;
+            font-weight: 600;
+            margin: 6px 0
+        }
+
+        .rating {
+            font-size: 1rem;
+            margin: 10px 0
+        }
+
+        .history {
+            margin-top: 15px;
+            font-size: .7rem;
+            color: rgba(255, 255, 255, .3)
+        }
+
+        .history div {
+            padding: 3px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, .03)
+        }
+
+        .disclaimer {
+            position: fixed;
+            bottom: 10px;
+            color: rgba(255, 255, 255, .15);
+            font-size: .5rem
+        }
+    </style>
+</head>
+
+<body style="background:#0a0a1a">
+    <div class="container">
+        <h1>⚡ Reaction <span>Test</span></h1>
+        <div class="sub">100% accurate* (*it lies every time)</div>
+
+        <div class="circle" id="circle" style="background:rgba(255,255,255,.05);border:2px solid rgba(255,255,255,.1)">
+            <span id="circle-text">Click to start</span>
+        </div>
+        <div class="instruction" id="instruction">Test your reaction time!</div>
+
+        <div class="result-box" id="result-box">
+            <div class="lie-label" id="lie-label"></div>
+            <div class="real-time">Your time: <span id="real-time">0</span>ms</div>
+            <div class="fake-time" id="fake-time"></div>
+            <div class="rating" id="rating"></div>
+        </div>
+
+        <div class="history" id="history"></div>
+    </div>
+
+    <div class="disclaimer">* This test is scientifically inaccurate. All results are fabricated. Do not cite in
+        academic papers.</div>
+
+    <script>
+        let state = 'idle'; // idle, waiting, ready, done
+        let readyTime = 0;
+        let clickTime = 0;
+        let round = 0;
+        let history = [];
+
+        const lies = [
+            // Each lie modifies the displayed time and gives a funny rating
+            t => ({ fake: Math.max(1, t - 200), label: '⚡ SUPERHUMAN DETECTED', rating: 'Your reflexes are faster than light. NASA wants to hire you.', color: '#4ade80' }),
+            t => ({ fake: t + 3000, label: '🐌 CLINICALLY SLOW', rating: 'A sleeping sloth just beat your score. While sleeping.', color: '#ef4444' }),
+            t => ({ fake: 69, label: '😏 NICE', rating: 'Haha. Nice.', color: '#f59e0b' }),
+            t => ({ fake: t * 10, label: '📊 MATH ERROR', rating: 'We accidentally multiplied your time by 10. Or did we? Yes.', color: '#ec4899' }),
+            t => ({ fake: 0, label: '🤯 IMPOSSIBLE', rating: 'You clicked before the screen changed. You broke time itself.', color: '#8b5cf6' }),
+            t => ({ fake: -t, label: '⏳ NEGATIVE TIME', rating: 'You somehow clicked in the past. Congrats, you invented time travel.', color: '#06b6d4' }),
+            t => ({ fake: 99999, label: '💀 CONNECTION TIMEOUT', rating: 'Your reaction was so slow the server gave up waiting.', color: '#ef4444' }),
+            t => ({ fake: 42, label: '🌌 THE ANSWER', rating: 'Your reaction time is the meaning of life, the universe, and everything.', color: '#8b5cf6' }),
+            t => ({ fake: t + 500, label: '🏃 BELOW AVERAGE', rating: 'A grandma with arthritis just texted "L" to your score.', color: '#f97316' }),
+            t => ({ fake: Math.PI * 100, label: '🥧 PI TIME', rating: 'Your reaction is exactly π × 100 ms. That\'s either beautiful or we made it up. (We made it up.)', color: '#10b981' }),
+            t => ({ fake: 1337, label: '💻 H4CK3R', rating: 'You\'ve been identified as a 1337 gamer. Authorities notified.', color: '#22c55e' }),
+            t => ({ fake: t / 100, label: '🦸 ARE YOU OKAY?', rating: `${(t / 100).toFixed(1)}ms? That's not humanly possible. Please report to your nearest lab.`, color: '#4ade80' }),
+            t => ({ fake: 404, label: '🔍 404 NOT FOUND', rating: 'Your reaction time could not be found. Please try again in a different dimension.', color: '#9ca3af' }),
+            t => ({ fake: 911, label: '🚨 EMERGENCY', rating: 'Your reaction time triggered an emergency alert. Please remain calm.', color: '#ef4444' }),
+            t => ({ fake: Math.round(t * 1.01), label: '📏 ALMOST REAL', rating: 'This is suspiciously close to your real time. Don\'t trust it.', color: '#f59e0b' }),
+        ];
+
+        const circle = document.getElementById('circle');
+        const circleText = document.getElementById('circle-text');
+        const instruction = document.getElementById('instruction');
+        const resultBox = document.getElementById('result-box');
+
+        document.body.addEventListener('click', () => {
+            if (state === 'idle') {
+                // Start waiting
+                state = 'waiting';
+                circle.style.background = '#ef4444';
+                circle.style.borderColor = '#ef4444';
+                circleText.textContent = 'Wait...';
+                instruction.textContent = "Wait for green...";
+                resultBox.classList.remove('show');
+
+                const delay = 1500 + Math.random() * 3500;
+                setTimeout(() => {
+                    if (state === 'waiting') {
+                        state = 'ready';
+                        readyTime = Date.now();
+                        circle.style.background = '#22c55e';
+                        circle.style.borderColor = '#22c55e';
+                        circleText.textContent = 'CLICK!';
+                        instruction.textContent = "NOW! CLICK!";
+                    }
+                }, delay);
+            }
+            else if (state === 'waiting') {
+                // Too early!
+                state = 'idle';
+                circle.style.background = '#f59e0b';
+                circle.style.borderColor = '#f59e0b';
+                circleText.textContent = 'Too early! 😅';
+                instruction.textContent = "Click to try again";
+                setTimeout(() => {
+                    circle.style.background = 'rgba(255,255,255,.05)';
+                    circle.style.borderColor = 'rgba(255,255,255,.1)';
+                    circleText.textContent = 'Click to start';
+                }, 1500);
+            }
+            else if (state === 'ready') {
+                // Got it!
+                clickTime = Date.now();
+                const realTime = clickTime - readyTime;
+                round++;
+
+                // Pick a random lie
+                const lie = lies[Math.floor(Math.random() * lies.length)](realTime);
+
+                state = 'idle';
+                circle.style.background = lie.color;
+                circle.style.borderColor = lie.color;
+                circleText.textContent = `${realTime}ms`;
+                instruction.textContent = "Click to try again";
+
+                // Show results
+                document.getElementById('real-time').textContent = realTime;
+                document.getElementById('fake-time').textContent = `"Official" result: ${typeof lie.fake === 'number' ? lie.fake.toFixed(0) : lie.fake}ms`;
+                document.getElementById('lie-label').textContent = lie.label;
+                document.getElementById('rating').textContent = lie.rating;
+                resultBox.classList.add('show');
+
+                // History
+                history.unshift({ round, real: realTime, fake: lie.fake, label: lie.label });
+                if (history.length > 5) history.pop();
+                document.getElementById('history').innerHTML = '<strong>History (all lies)</strong>' +
+                    history.map(h => `<div>#${h.round}: Real: ${h.real}ms → "Official": ${typeof h.fake === 'number' ? h.fake.toFixed(0) : h.fake}ms ${h.label}</div>`).join('');
+
+                // Reset circle after delay
+                setTimeout(() => {
+                    circle.style.background = 'rgba(255,255,255,.05)';
+                    circle.style.borderColor = 'rgba(255,255,255,.1)';
+                    circleText.textContent = 'Click to start';
+                }, 2000);
+            }
+        });
+    </script>
+</body>
+
+</html>

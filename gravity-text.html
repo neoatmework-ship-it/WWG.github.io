@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gravity Text — Letters With Physics</title>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap"
+        rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box
+        }
+
+        body {
+            font-family: 'Space Grotesk', sans-serif;
+            background: #08080f;
+            color: #eee;
+            height: 100vh;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column
+        }
+
+        canvas {
+            flex: 1;
+            display: block;
+            cursor: grab
+        }
+
+        canvas:active {
+            cursor: grabbing
+        }
+
+        .topbar {
+            height: 52px;
+            background: rgba(8, 8, 15, .95);
+            backdrop-filter: blur(16px);
+            border-bottom: 1px solid rgba(255, 255, 255, .06);
+            display: flex;
+            align-items: center;
+            padding: 0 16px;
+            gap: 12px;
+            z-index: 10
+        }
+
+        .topbar-title {
+            font-weight: 700;
+            font-size: .9rem;
+            background: linear-gradient(135deg, #a78bfa, #22d3ee);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent
+        }
+
+        .topbar input {
+            flex: 1;
+            max-width: 400px;
+            padding: 8px 14px;
+            background: rgba(255, 255, 255, .06);
+            border: 1px solid rgba(255, 255, 255, .08);
+            border-radius: 8px;
+            color: #fff;
+            font-family: inherit;
+            font-size: .85rem;
+            outline: none
+        }
+
+        .topbar input:focus {
+            border-color: rgba(167, 139, 250, .4)
+        }
+
+        .topbar input::placeholder {
+            color: rgba(255, 255, 255, .2)
+        }
+
+        .btn {
+            padding: 6px 14px;
+            background: rgba(255, 255, 255, .06);
+            border: 1px solid rgba(255, 255, 255, .08);
+            border-radius: 8px;
+            color: #aaa;
+            font-size: .78rem;
+            font-family: inherit;
+            cursor: pointer;
+            transition: all .15s
+        }
+
+        .btn:hover {
+            background: rgba(255, 255, 255, .1);
+            color: #fff
+        }
+
+        .btn.accent {
+            background: rgba(167, 139, 250, .15);
+            border-color: rgba(167, 139, 250, .2);
+            color: #a78bfa
+        }
+
+        .hint {
+            position: fixed;
+            bottom: 16px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: .72rem;
+            color: rgba(255, 255, 255, .2);
+            z-index: 10;
+            pointer-events: none
+        }
+    </style>
+</head>
+
+<body>
+    <div class="topbar">
+        <span class="topbar-title">🔤 Gravity Text</span>
+        <input type="text" id="text-input" placeholder="Type something and press Enter..." autofocus>
+        <button class="btn accent" id="btn-drop">⬇ Drop</button>
+        <button class="btn" id="btn-explode">💥 Explode All</button>
+        <button class="btn" id="btn-shake">🫨 Shake</button>
+        <button class="btn" id="btn-clear">✕ Clear</button>
+    </div>
+    <canvas id="canvas"></canvas>
+    <div class="hint">Click letters to explode words · Drag to fling · Type & Enter to add text</div>
+    <script>
+        const canvas = document.getElementById('canvas'), ctx = canvas.getContext('2d');
+        let W, H; function resize() { W = canvas.width = canvas.offsetWidth; H = canvas.height = canvas.offsetHeight } resize(); window.addEventListener('resize', resize);
+
+        const GRAVITY = 0.4, BOUNCE = 0.6, FRICTION = 0.99, COLORS = ['#a78bfa', '#22d3ee', '#f472b6', '#4ade80', '#f59e0b', '#ef4444', '#818cf8', '#fb7185'];
+        let letters = [], dragging = null, dragOffX = 0, dragOffY = 0, prevDragX = 0, prevDragY = 0;
+
+        class Letter {
+            constructor(char, x, y, size, color, wordId) {
+                this.char = char; this.x = x; this.y = y;
+                this.vx = (Math.random() - .5) * 2; this.vy = -2 - Math.random() * 3;
+                this.size = size; this.color = color; this.wordId = wordId;
+                this.rotation = 0; this.rotVel = (Math.random() - .5) * .1;
+                this.grounded = false; this.life = 1; this.exploding = false;
+                this.width = 0; this.height = size;
+                // Measure
+                ctx.font = `700 ${size}px 'Space Grotesk',sans-serif`;
+                this.width = ctx.measureText(char).width;
+            }
+            update() {
+                if (this === dragging) return;
+                this.vy += GRAVITY;
+                this.vx *= FRICTION;
+                this.x += this.vx; this.y += this.vy;
+                this.rotation += this.rotVel;
+                this.rotVel *= .98;
+                // Floor
+                if (this.y + this.height / 2 > H - 5) {
+                    this.y = H - 5 - this.height / 2;
+                    this.vy *= -BOUNCE;
+                    this.rotVel *= .8;
+                    if (Math.abs(this.vy) < 1) { this.vy = 0; this.grounded = true; this.rotVel *= .9 }
+                }
+                // Walls
+                if (this.x - this.width / 2 < 0) { this.x = this.width / 2; this.vx *= -BOUNCE }
+                if (this.x + this.width / 2 > W) { this.x = W - this.width / 2; this.vx *= -BOUNCE }
+                // Ceiling
+                if (this.y - this.height / 2 < 0) { this.y = this.height / 2; this.vy *= -BOUNCE }
+                // Exploding
+                if (this.exploding) { this.life -= .015; if (this.life <= 0) return false }
+                return true;
+            }
+            draw() {
+                ctx.save(); ctx.translate(this.x, this.y); ctx.rotate(this.rotation);
+                ctx.font = `700 ${this.size}px 'Space Grotesk',sans-serif`;
+                ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+                // Glow
+                if (!this.grounded || this.exploding) {
+                    ctx.shadowColor = this.color; ctx.shadowBlur = this.exploding ? 30 * this.life : 15;
+                }
+                ctx.globalAlpha = this.life;
+                ctx.fillStyle = this.color;
+                ctx.fillText(this.char, 0, 0);
+                ctx.restore();
+            }
+        }
+
+        function addText(text, x, y) {
+            const size = 36 + Math.floor(Math.random() * 24);
+            const color = COLORS[Math.floor(Math.random() * COLORS.length)];
+            const wordId = Date.now() + Math.random();
+            ctx.font = `700 ${size}px 'Space Grotesk',sans-serif`;
+            let totalW = 0;
+            const chars = text.split('');
+            chars.forEach(c => { totalW += ctx.measureText(c).width + 4 });
+            let cx = x - totalW / 2;
+            chars.forEach(c => {
+                const w = ctx.measureText(c).width;
+                letters.push(new Letter(c, cx + w / 2, y, size, color, wordId));
+                cx += w + 4;
+            });
+        }
+
+        function explodeWord(wordId) {
+            letters.forEach(l => {
+                if (l.wordId === wordId && !l.exploding) {
+                    l.exploding = true;
+                    l.vx = (Math.random() - .5) * 15;
+                    l.vy = -5 - Math.random() * 10;
+                    l.rotVel = (Math.random() - .5) * .5;
+                    l.grounded = false;
+                }
+            });
+        }
+
+        // Input
+        document.getElementById('text-input').addEventListener('keydown', e => {
+            if (e.key === 'Enter' && e.target.value.trim()) {
+                addText(e.target.value.trim(), W / 2, 80);
+                e.target.value = '';
+            }
+        });
+        document.getElementById('btn-drop').addEventListener('click', () => {
+            const v = document.getElementById('text-input').value.trim();
+            if (v) { addText(v, W / 2, 80); document.getElementById('text-input').value = '' }
+            else addText('Hello World!', W / 2, 80);
+        });
+        document.getElementById('btn-explode').addEventListener('click', () => {
+            const ids = new Set(letters.map(l => l.wordId));
+            ids.forEach(id => explodeWord(id));
+        });
+        document.getElementById('btn-shake').addEventListener('click', () => {
+            letters.forEach(l => { l.vx += (Math.random() - .5) * 20; l.vy -= 5 + Math.random() * 10; l.grounded = false; l.rotVel = (Math.random() - .5) * .3 });
+        });
+        document.getElementById('btn-clear').addEventListener('click', () => { letters = [] });
+
+        // Drag
+        canvas.addEventListener('mousedown', e => {
+            const mx = e.offsetX, my = e.offsetY;
+            for (let i = letters.length - 1; i >= 0; i--) {
+                const l = letters[i];
+                if (Math.abs(mx - l.x) < l.width / 2 + 8 && Math.abs(my - l.y) < l.height / 2 + 8) {
+                    dragging = l; dragOffX = mx - l.x; dragOffY = my - l.y; prevDragX = mx; prevDragY = my; l.grounded = false;
+                    canvas.style.cursor = 'grabbing'; break;
+                }
+            }
+        });
+        canvas.addEventListener('mousemove', e => {
+            if (!dragging) return;
+            const mx = e.offsetX, my = e.offsetY;
+            dragging.x = mx - dragOffX; dragging.y = my - dragOffY;
+            dragging.vx = (mx - prevDragX) * .5; dragging.vy = (my - prevDragY) * .5;
+            prevDragX = mx; prevDragY = my;
+        });
+        canvas.addEventListener('mouseup', () => { if (dragging) { canvas.style.cursor = 'grab' } dragging = null });
+
+        // Click to explode
+        canvas.addEventListener('dblclick', e => {
+            const mx = e.offsetX, my = e.offsetY;
+            for (let i = letters.length - 1; i >= 0; i--) {
+                const l = letters[i];
+                if (Math.abs(mx - l.x) < l.width / 2 + 8 && Math.abs(my - l.y) < l.height / 2 + 8) {
+                    explodeWord(l.wordId); break;
+                }
+            }
+        });
+
+        // Initial text
+        setTimeout(() => {
+            addText('Type Something!', W / 2, H / 3);
+            addText('Then Watch It Fall', W / 2, H / 3 + 70);
+        }, 100);
+
+        function loop() {
+            ctx.fillStyle = 'rgba(8,8,15,.3)'; ctx.fillRect(0, 0, W, H);
+            letters = letters.filter(l => l.update());
+            letters.forEach(l => l.draw());
+            requestAnimationFrame(loop);
+        }
+        loop();
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,926 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Ghost Workshop 👻</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Inter:wght@400;500;600;700&display=swap"
+        rel="stylesheet">
+    <style>
+        :root {
+            --bg: #09090b;
+            --surface: #18181b;
+            --surface2: #27272a;
+            --border: #3f3f46;
+            --text: #fafafa;
+            --text2: #a1a1aa;
+            --accent: #8b5cf6;
+            --accent2: #a78bfa;
+            --green: #22c55e;
+            --red: #ef4444;
+            --blue: #3b82f6;
+            --orange: #f59e0b
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            overflow: hidden
+        }
+
+        .app {
+            display: flex;
+            flex-direction: column;
+            height: 100vh
+        }
+
+        .topbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 16px;
+            height: 44px;
+            background: var(--surface);
+            border-bottom: 1px solid var(--border);
+            flex-shrink: 0
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: .85rem;
+            font-weight: 700
+        }
+
+        .logo span {
+            color: var(--accent)
+        }
+
+        .topbar-right {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: .65rem;
+            color: var(--text2)
+        }
+
+        .status-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: var(--green);
+            animation: pulse 2s infinite
+        }
+
+        @keyframes pulse {
+
+            0%,
+            100% {
+                opacity: 1
+            }
+
+            50% {
+                opacity: .4
+            }
+        }
+
+        .tabs {
+            display: flex;
+            background: var(--surface);
+            border-bottom: 1px solid var(--border);
+            flex-shrink: 0
+        }
+
+        .tab {
+            padding: 10px 20px;
+            font-size: .75rem;
+            font-weight: 600;
+            color: var(--text2);
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+            transition: all .15s;
+            display: flex;
+            align-items: center;
+            gap: 6px
+        }
+
+        .tab:hover {
+            color: var(--text);
+            background: rgba(255, 255, 255, .02)
+        }
+
+        .tab.active {
+            color: var(--accent2);
+            border-bottom-color: var(--accent);
+            background: rgba(139, 92, 246, .05)
+        }
+
+        .workspace {
+            flex: 1;
+            overflow: hidden;
+            position: relative
+        }
+
+        .panel {
+            display: none;
+            width: 100%;
+            height: 100%;
+            position: absolute;
+            inset: 0
+        }
+
+        .panel.active {
+            display: flex
+        }
+
+        .sidebar {
+            width: 260px;
+            background: var(--surface);
+            border-right: 1px solid var(--border);
+            padding: 12px;
+            overflow-y: auto;
+            flex-shrink: 0
+        }
+
+        .sidebar h3 {
+            font-size: .7rem;
+            font-weight: 600;
+            color: var(--text2);
+            text-transform: uppercase;
+            letter-spacing: .5px;
+            margin: 12px 0 6px;
+            display: flex;
+            align-items: center;
+            gap: 4px
+        }
+
+        .sidebar h3:first-child {
+            margin-top: 0
+        }
+
+        .control {
+            margin-bottom: 8px
+        }
+
+        .control label {
+            display: block;
+            font-size: .65rem;
+            color: var(--text2);
+            margin-bottom: 3px
+        }
+
+        .control input[type=range] {
+            width: 100%;
+            accent-color: var(--accent);
+            height: 4px;
+            cursor: pointer
+        }
+
+        .control input[type=number],
+        .control input[type=text],
+        .control select {
+            width: 100%;
+            padding: 5px 8px;
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            color: var(--text);
+            font-family: inherit;
+            font-size: .7rem
+        }
+
+        .control .value {
+            float: right;
+            color: var(--accent2);
+            font-family: 'JetBrains Mono', monospace;
+            font-size: .6rem
+        }
+
+        .btn {
+            padding: 6px 12px;
+            border-radius: 6px;
+            border: 1px solid var(--border);
+            background: var(--surface2);
+            color: var(--text);
+            font-family: inherit;
+            font-size: .65rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all .1s;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px
+        }
+
+        .btn:hover {
+            background: rgba(255, 255, 255, .08)
+        }
+
+        .btn-accent {
+            background: rgba(139, 92, 246, .15);
+            border-color: rgba(139, 92, 246, .3);
+            color: var(--accent2)
+        }
+
+        .btn-accent:hover {
+            background: rgba(139, 92, 246, .25)
+        }
+
+        .btn-row {
+            display: flex;
+            gap: 4px;
+            flex-wrap: wrap
+        }
+
+        .canvas-area {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--bg);
+            position: relative;
+            overflow: hidden
+        }
+
+        canvas {
+            border-radius: 4px
+        }
+
+        .overlay-stats {
+            position: absolute;
+            top: 8px;
+            left: 8px;
+            background: rgba(0, 0, 0, .6);
+            backdrop-filter: blur(6px);
+            padding: 6px 10px;
+            border-radius: 6px;
+            font-size: .6rem;
+            font-family: 'JetBrains Mono', monospace;
+            color: var(--text2);
+            line-height: 1.6
+        }
+
+        .overlay-stats span {
+            color: var(--accent2)
+        }
+
+        .badge {
+            padding: 1px 6px;
+            border-radius: 4px;
+            font-size: .55rem;
+            font-weight: 600
+        }
+
+        .badge-green {
+            background: rgba(34, 197, 94, .15);
+            color: var(--green)
+        }
+
+        .badge-orange {
+            background: rgba(245, 158, 11, .15);
+            color: var(--orange)
+        }
+
+        .badge-red {
+            background: rgba(239, 68, 68, .15);
+            color: var(--red)
+        }
+
+        .gen-list {
+            max-height: 200px;
+            overflow-y: auto;
+            font-size: .6rem;
+            font-family: 'JetBrains Mono', monospace
+        }
+
+        .gen-item {
+            padding: 3px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, .03);
+            color: var(--text2);
+            display: flex;
+            justify-content: space-between
+        }
+
+        .gen-item span:last-child {
+            color: var(--accent2)
+        }
+
+        .node-panel {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            margin: 6px 0
+        }
+
+        .synth-node {
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 8px;
+            font-size: .65rem
+        }
+
+        .synth-node .node-title {
+            font-weight: 600;
+            color: var(--accent2);
+            margin-bottom: 4px;
+            display: flex;
+            align-items: center;
+            gap: 4px
+        }
+
+        .footer-bar {
+            height: 28px;
+            background: var(--surface);
+            border-top: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 12px;
+            font-size: .55rem;
+            color: var(--text2);
+            flex-shrink: 0
+        }
+    </style>
+</head>
+
+<body>
+    <div class="app">
+        <div class="topbar">
+            <div class="logo">👻 <span>Ghost Workshop</span> <span
+                    style="color:var(--text2);font-weight:400;font-size:.6rem">v1.0</span></div>
+            <div class="topbar-right">
+                <div class="status-dot"></div>Offline Engine · No Internet Required · Pure Mathematics
+            </div>
+        </div>
+        <div class="tabs">
+            <div class="tab active" data-tab="world">🌍 World Gen</div>
+            <div class="tab" data-tab="evolve">🧬 Evolution</div>
+            <div class="tab" data-tab="synth">🎵 Synth</div>
+            <div class="tab" data-tab="fractal">🌀 Fractals</div>
+        </div>
+        <div class="workspace">
+            <!-- WORLD GEN -->
+            <div class="panel active" id="panel-world">
+                <div class="sidebar" id="world-sidebar">
+                    <h3>🌱 Seed</h3>
+                    <div class="control"><label>World Seed <span class="value" id="seed-val">42</span></label><input
+                            type="range" id="seed" min="1" max="9999" value="42"></div>
+                    <div class="btn-row"><button class="btn btn-accent" onclick="randomSeed()">🎲 Random</button><button
+                            class="btn" onclick="generateWorld()">⚡ Generate</button></div>
+                    <h3>🏔️ Terrain</h3>
+                    <div class="control"><label>Scale <span class="value" id="scale-val">0.02</span></label><input
+                            type="range" id="noise-scale" min="5" max="80" value="20"></div>
+                    <div class="control"><label>Octaves <span class="value" id="oct-val">6</span></label><input
+                            type="range" id="octaves" min="1" max="8" value="6"></div>
+                    <div class="control"><label>Persistence <span class="value" id="pers-val">0.5</span></label><input
+                            type="range" id="persistence" min="20" max="80" value="50"></div>
+                    <div class="control"><label>Lacunarity <span class="value" id="lac-val">2.0</span></label><input
+                            type="range" id="lacunarity" min="10" max="40" value="20"></div>
+                    <div class="control"><label>Height <span class="value" id="height-val">1.0</span></label><input
+                            type="range" id="heightMul" min="20" max="200" value="100"></div>
+                    <h3>🎨 Rendering</h3>
+                    <div class="control"><label>Water Level <span class="value" id="water-val">0.35</span></label><input
+                            type="range" id="waterLevel" min="0" max="100" value="35"></div>
+                    <div class="control"><label>Rotation <span class="value" id="rot-val">0</span></label><input
+                            type="range" id="rotation" min="0" max="360" value="0"></div>
+                    <div class="control"><label>Tilt <span class="value" id="tilt-val">55</span></label><input
+                            type="range" id="tilt" min="20" max="80" value="55"></div>
+                    <div class="btn-row"><button class="btn" onclick="toggleAutoRotate()">🔄 Auto-Rotate</button></div>
+                </div>
+                <div class="canvas-area">
+                    <canvas id="world-canvas"></canvas>
+                    <div class="overlay-stats" id="world-stats">Seed: <span>42</span> | Vertices: <span>0</span> | FPS:
+                        <span>0</span>
+                    </div>
+                </div>
+            </div>
+            <!-- EVOLUTION -->
+            <div class="panel" id="panel-evolve">
+                <div class="sidebar" id="evo-sidebar">
+                    <h3>🧬 Population</h3>
+                    <div class="control"><label>Population Size <span class="value" id="pop-val">30</span></label><input
+                            type="range" id="popSize" min="10" max="100" value="30"></div>
+                    <div class="control"><label>Mutation Rate <span class="value" id="mut-val">0.1</span></label><input
+                            type="range" id="mutRate" min="1" max="50" value="10"></div>
+                    <div class="control"><label>Sim Speed <span class="value" id="simspd-val">1</span></label><input
+                            type="range" id="simSpeed" min="1" max="10" value="1"></div>
+                    <div class="btn-row">
+                        <button class="btn btn-accent" onclick="startEvolution()">▶ Start</button>
+                        <button class="btn" onclick="stopEvolution()">⏸ Pause</button>
+                        <button class="btn" onclick="resetEvolution()">🔄 Reset</button>
+                    </div>
+                    <h3>📊 Stats</h3>
+                    <div id="evo-stats-panel"
+                        style="font-size:.6rem;font-family:'JetBrains Mono',monospace;color:var(--text2);line-height:1.8">
+                        Generation: <span id="gen-num" style="color:var(--accent2)">0</span><br>
+                        Best Fitness: <span id="best-fit" style="color:var(--green)">0</span><br>
+                        Avg Fitness: <span id="avg-fit" style="color:var(--orange)">0</span><br>
+                        Mutations: <span id="mut-count" style="color:var(--red)">0</span>
+                    </div>
+                    <h3>📈 Leaderboard</h3>
+                    <div class="gen-list" id="leaderboard"></div>
+                </div>
+                <div class="canvas-area">
+                    <canvas id="evo-canvas"></canvas>
+                    <div class="overlay-stats" id="evo-overlay">Gen: <span>0</span> | Alive: <span>0</span> | Best:
+                        <span>0</span>
+                    </div>
+                </div>
+            </div>
+            <!-- SYNTH -->
+            <div class="panel" id="panel-synth">
+                <div class="sidebar" id="synth-sidebar">
+                    <h3>🔊 Oscillator</h3>
+                    <div class="control"><label>Waveform</label><select id="wave">
+                            <option>sine</option>
+                            <option>square</option>
+                            <option selected>sawtooth</option>
+                            <option>triangle</option>
+                        </select></div>
+                    <div class="control"><label>Frequency <span class="value" id="freq-val">220</span>Hz</label><input
+                            type="range" id="freq" min="20" max="2000" value="220"></div>
+                    <div class="control"><label>Detune <span class="value" id="detune-val">0</span></label><input
+                            type="range" id="detune" min="-100" max="100" value="0"></div>
+                    <h3>🎛️ Filter</h3>
+                    <div class="control"><label>Type</label><select id="filterType">
+                            <option selected>lowpass</option>
+                            <option>highpass</option>
+                            <option>bandpass</option>
+                            <option>notch</option>
+                        </select></div>
+                    <div class="control"><label>Cutoff <span class="value" id="cutoff-val">2000</span>Hz</label><input
+                            type="range" id="cutoff" min="20" max="10000" value="2000"></div>
+                    <div class="control"><label>Resonance <span class="value" id="reso-val">1</span></label><input
+                            type="range" id="resonance" min="0" max="30" value="1"></div>
+                    <h3>📦 Envelope</h3>
+                    <div class="control"><label>Attack <span class="value" id="atk-val">0.1</span>s</label><input
+                            type="range" id="attack" min="0" max="200" value="10"></div>
+                    <div class="control"><label>Decay <span class="value" id="dec-val">0.3</span>s</label><input
+                            type="range" id="decay" min="0" max="200" value="30"></div>
+                    <div class="control"><label>Sustain <span class="value" id="sus-val">0.7</span></label><input
+                            type="range" id="sustain" min="0" max="100" value="70"></div>
+                    <div class="control"><label>Release <span class="value" id="rel-val">0.5</span>s</label><input
+                            type="range" id="release" min="0" max="300" value="50"></div>
+                    <h3>🌊 Effects</h3>
+                    <div class="control"><label>Delay <span class="value" id="delay-val">0.3</span>s</label><input
+                            type="range" id="delayTime" min="0" max="100" value="30"></div>
+                    <div class="control"><label>Reverb <span class="value" id="reverb-val">0.3</span></label><input
+                            type="range" id="reverbMix" min="0" max="100" value="30"></div>
+                    <div class="control"><label>LFO Rate <span class="value" id="lfo-val">5</span>Hz</label><input
+                            type="range" id="lfoRate" min="1" max="30" value="5"></div>
+                </div>
+                <div class="canvas-area" style="flex-direction:column;gap:10px;padding:20px">
+                    <div style="color:var(--text2);font-size:.7rem;text-align:center">Press keys <strong>A S D F G H J K
+                            L</strong> to play · Row above for sharps</div>
+                    <canvas id="synth-canvas" style="cursor:pointer"></canvas>
+                    <canvas id="viz-canvas"></canvas>
+                </div>
+            </div>
+            <!-- FRACTALS -->
+            <div class="panel" id="panel-fractal">
+                <div class="sidebar" id="frac-sidebar">
+                    <h3>🌀 Fractal Type</h3>
+                    <div class="control"><label>Type</label><select id="fracType">
+                            <option value="mandelbrot">Mandelbrot</option>
+                            <option value="julia">Julia Set</option>
+                            <option value="burningship">Burning Ship</option>
+                            <option value="tricorn">Tricorn</option>
+                        </select></div>
+                    <h3>📐 Parameters</h3>
+                    <div class="control"><label>Max Iterations <span class="value"
+                                id="iter-val">200</span></label><input type="range" id="maxIter" min="50" max="1000"
+                            value="200"></div>
+                    <div class="control"><label>Julia Real <span class="value" id="jr-val">-0.7</span></label><input
+                            type="range" id="juliaR" min="-200" max="200" value="-70"></div>
+                    <div class="control"><label>Julia Imag <span class="value" id="ji-val">0.27</span></label><input
+                            type="range" id="juliaI" min="-200" max="200" value="27"></div>
+                    <h3>🎨 Color</h3>
+                    <div class="control"><label>Palette</label><select id="palette">
+                            <option value="0">Electric</option>
+                            <option value="1">Fire</option>
+                            <option value="2">Ocean</option>
+                            <option value="3">Psychedelic</option>
+                            <option value="4">Grayscale</option>
+                        </select></div>
+                    <div class="control"><label>Color Shift <span class="value" id="cshift-val">0</span></label><input
+                            type="range" id="colorShift" min="0" max="360" value="0"></div>
+                    <div class="btn-row"><button class="btn btn-accent" onclick="resetFractalView()">🔄 Reset
+                            View</button><button class="btn" onclick="toggleJuliaAnim()">🎬 Animate Julia</button></div>
+                    <h3>📍 Navigation</h3>
+                    <div
+                        style="font-size:.6rem;font-family:'JetBrains Mono',monospace;color:var(--text2);line-height:1.6">
+                        Scroll to zoom · Click to center<br>
+                        X: <span id="frac-x">0</span><br>
+                        Y: <span id="frac-y">0</span><br>
+                        Zoom: <span id="frac-zoom">1</span>x
+                    </div>
+                </div>
+                <div class="canvas-area"><canvas id="frac-canvas"></canvas>
+                    <div class="overlay-stats" id="frac-stats">Iterations: <span>200</span> | Zoom: <span>1x</span> |
+                        Render: <span>0</span>ms</div>
+                </div>
+            </div>
+        </div>
+        <div class="footer-bar">
+            <span>👻 Ghost Workshop · All computations run locally · Zero network requests</span>
+            <span id="fps-counter">FPS: 60</span>
+        </div>
+    </div>
+    <script>
+        // === TAB SWITCHING ===
+        document.querySelectorAll('.tab').forEach(t => {
+            t.addEventListener('click', () => {
+                document.querySelectorAll('.tab').forEach(x => x.classList.remove('active'));
+                t.classList.add('active');
+                document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+                document.getElementById('panel-' + t.dataset.tab).classList.add('active');
+                // Resize canvases when tab becomes visible
+                setTimeout(() => {
+                    if (t.dataset.tab === 'evolve') { resizeEvoCanvas(); }
+                    if (t.dataset.tab === 'fractal') { resizeFracCanvas(); renderFractal(); }
+                    if (t.dataset.tab === 'synth') { resizeSynthCanvas(); }
+                    if (t.dataset.tab === 'world') { resizeWorldCanvas(); generateWorld(); }
+                }, 50);
+            });
+        });
+
+        // === SIMPLEX NOISE ===
+        class SimplexNoise {
+            constructor(s = 0) { this.p = new Uint8Array(512); const p = new Uint8Array(256); for (let i = 0; i < 256; i++)p[i] = i; let n = s; for (let i = 255; i > 0; i--) { n = (n * 16807) % 2147483647; const j = n % (i + 1);[p[i], p[j]] = [p[j], p[i]]; } for (let i = 0; i < 512; i++)this.p[i] = p[i & 255]; }
+            noise2D(x, y) { const F2 = .5 * (Math.sqrt(3) - 1), G2 = (3 - Math.sqrt(3)) / 6; const s = (x + y) * F2; let i = Math.floor(x + s), j = Math.floor(y + s); const t = (i + j) * G2; const x0 = x - (i - t), y0 = y - (j - t); let i1, j1; if (x0 > y0) { i1 = 1; j1 = 0 } else { i1 = 0; j1 = 1 } const x1 = x0 - i1 + G2, y1 = y0 - j1 + G2, x2 = x0 - 1 + 2 * G2, y2 = y0 - 1 + 2 * G2; i &= 255; j &= 255; const gi0 = this.p[i + this.p[j]] % 12, gi1 = this.p[i + i1 + this.p[j + j1]] % 12, gi2 = this.p[i + 1 + this.p[j + 1]] % 12; const g = [[1, 1], [-1, 1], [1, -1], [-1, -1], [1, 0], [-1, 0], [0, 1], [0, -1], [1, 1], [-1, 1], [1, -1], [-1, -1]]; let n0 = 0, n1 = 0, n2 = 0; let t0 = .5 - x0 * x0 - y0 * y0; if (t0 >= 0) { t0 *= t0; n0 = t0 * t0 * (g[gi0][0] * x0 + g[gi0][1] * y0) } let t1 = .5 - x1 * x1 - y1 * y1; if (t1 >= 0) { t1 *= t1; n1 = t1 * t1 * (g[gi1][0] * x1 + g[gi1][1] * y1) } let t2 = .5 - x2 * x2 - y2 * y2; if (t2 >= 0) { t2 *= t2; n2 = t2 * t2 * (g[gi2][0] * x2 + g[gi2][1] * y2) } return 70 * (n0 + n1 + n2); }
+        }
+
+        // === WORLD GENERATOR ===
+        const wc = document.getElementById('world-canvas'), wctx = wc.getContext('2d');
+        let worldNoise, autoRotate = false, worldFrame = 0;
+        function resizeWorldCanvas() { const a = wc.parentElement; wc.width = a.clientWidth; wc.height = a.clientHeight }
+        resizeWorldCanvas(); window.addEventListener('resize', () => { resizeWorldCanvas(); generateWorld() });
+        function getV(id) { return parseFloat(document.getElementById(id).value) }
+        function randomSeed() { const s = Math.floor(Math.random() * 9999) + 1; document.getElementById('seed').value = s; document.getElementById('seed-val').textContent = s; generateWorld() }
+        function generateWorld() {
+            const seed = getV('seed'), sc = getV('noise-scale') / 1000, oct = getV('octaves'), pers = getV('persistence') / 100, lac = getV('lacunarity') / 10, hMul = getV('heightMul') / 100, water = getV('waterLevel') / 100, rot = getV('rotation') * Math.PI / 180, tilt = getV('tilt') / 100;
+            worldNoise = new SimplexNoise(seed);
+            const W = wc.width, H = wc.height, img = wctx.createImageData(W, H), d = img.data;
+            const cx = W / 2, cy = H / 2, gridW = 200, gridH = 200;
+            // Generate heightmap
+            const hmap = [];
+            for (let gy = 0; gy < gridH; gy++) { hmap[gy] = []; for (let gx = 0; gx < gridW; gx++) { let v = 0, amp = 1, freq = 1, maxAmp = 0; for (let o = 0; o < oct; o++) { v += worldNoise.noise2D(gx * sc * freq, gy * sc * freq) * amp; maxAmp += amp; amp *= pers; freq *= lac } hmap[gy][gx] = (v / maxAmp + 1) / 2 * hMul; } }
+            // Render isometric
+            const cosR = Math.cos(rot), sinR = Math.sin(rot);
+            for (let gy = 0; gy < gridH - 1; gy++) {
+                for (let gx = 0; gx < gridW - 1; gx++) {
+                    const h = hmap[gy][gx];
+                    const rx = (gx - gridW / 2) * cosR - (gy - gridH / 2) * sinR;
+                    const ry = (gx - gridW / 2) * sinR + (gy - gridH / 2) * cosR;
+                    const sx = cx + rx * 3;
+                    const sy = cy + ry * 3 * tilt - h * 80;
+                    if (sx < 0 || sx >= W || sy < 0 || sy >= H) continue;
+                    const idx = (Math.floor(sy) * W + Math.floor(sx)) * 4;
+                    let r, g, b;
+                    if (h < water) { r = 30; g = 80; b = 180; const depth = 1 - (h / water); r -= depth * 20; g -= depth * 30; b += depth * 40; }
+                    else if (h < water + 0.05) { r = 194; g = 178; b = 128; }
+                    else if (h < 0.55) { const t = (h - water - 0.05) / 0.3; r = 34 + t * 20; g = 139 - t * 40; b = 34 - t * 10; }
+                    else if (h < 0.75) { r = 100; g = 90; b = 70; }
+                    else { r = 200 + h * 50; g = 200 + h * 50; b = 210 + h * 40; }
+                    // Shading
+                    const nx = gx < gridW - 1 ? hmap[gy][gx + 1] - h : 0;
+                    const ny = gy < gridH - 1 ? hmap[gy + 1][gx] - h : 0;
+                    const shade = Math.max(0.3, Math.min(1, 0.7 + nx * 3 - ny * 2));
+                    d[idx] = Math.min(255, r * shade); d[idx + 1] = Math.min(255, g * shade); d[idx + 2] = Math.min(255, b * shade); d[idx + 3] = 255;
+                }
+            }
+            wctx.putImageData(img, 0, 0);
+            document.getElementById('world-stats').innerHTML = `Seed: <span>${seed}</span> | Points: <span>${gridW * gridH}</span> | Octaves: <span>${oct}</span>`;
+        }
+        function toggleAutoRotate() { autoRotate = !autoRotate }
+        // Bind sliders
+        ['seed', 'noise-scale', 'octaves', 'persistence', 'lacunarity', 'heightMul', 'waterLevel', 'rotation', 'tilt'].forEach(id => {
+            const el = document.getElementById(id); el.addEventListener('input', () => {
+                const valMap = { 'seed': 'seed-val', 'noise-scale': 'scale-val', 'octaves': 'oct-val', 'persistence': 'pers-val', 'lacunarity': 'lac-val', 'heightMul': 'height-val', 'waterLevel': 'water-val', 'rotation': 'rot-val', 'tilt': 'tilt-val' };
+                const display = document.getElementById(valMap[id]);
+                if (id === 'noise-scale') display.textContent = (el.value / 1000).toFixed(3);
+                else if (id === 'persistence') display.textContent = (el.value / 100).toFixed(2);
+                else if (id === 'lacunarity') display.textContent = (el.value / 10).toFixed(1);
+                else if (id === 'heightMul') display.textContent = (el.value / 100).toFixed(1);
+                else if (id === 'waterLevel') display.textContent = (el.value / 100).toFixed(2);
+                else display.textContent = el.value;
+                generateWorld();
+            });
+        });
+        generateWorld();
+
+        // Auto-rotate loop
+        setInterval(() => { if (autoRotate) { const r = document.getElementById('rotation'); r.value = (parseInt(r.value) + 1) % 360; document.getElementById('rot-val').textContent = r.value; generateWorld(); } }, 50);
+
+        // === GENETIC ALGORITHM EVOLUTION ===
+        const ec = document.getElementById('evo-canvas'), ectx = ec.getContext('2d');
+        function resizeEvoCanvas() { const a = ec.parentElement; ec.width = a.clientWidth; ec.height = a.clientHeight }
+        resizeEvoCanvas(); window.addEventListener('resize', resizeEvoCanvas);
+        let creatures = [], evoRunning = false, evoGen = 0, evoInterval = null, totalMutations = 0, bestEver = 0;
+        const GENE_LEN = 10; // leg angles, speeds, lengths
+        class Creature {
+            constructor(dna) {
+                this.dna = dna || Array.from({ length: GENE_LEN }, () => Math.random() * 2 - 1);
+                this.x = 50; this.y = 0; this.vx = 0; this.vy = 0; this.angle = 0; this.fitness = 0; this.alive = true; this.age = 0;
+                this.legPhase = 0; this.bodyH = 8 + this.dna[0] * 4; this.legLen = 10 + this.dna[1] * 8; this.speed = 1 + this.dna[2] * 2;
+                this.legFreq = 2 + this.dna[3] * 3; this.color = `hsl(${(this.dna[4] + 1) * 180},70%,60%)`;
+            }
+            update() {
+                if (!this.alive) return;
+                this.age++;
+                this.legPhase += this.legFreq * 0.05 * this.speed;
+                this.vx = this.speed * Math.max(0.1, Math.abs(this.dna[5]));
+                // Balance check - if dna makes it unstable, it falls
+                const balance = Math.sin(this.legPhase) * this.dna[6] + this.dna[7] * 0.5;
+                if (Math.abs(balance) > 2) { this.alive = false; this.vy = 3; }
+                this.x += this.vx;
+                this.y += this.vy;
+                this.fitness = Math.max(0, this.x - 50);
+                if (this.age > 300) this.alive = false;
+            }
+            draw(ctx, groundY) {
+                const gx = this.x, gy = groundY - 10;
+                if (!this.alive) { ctx.globalAlpha = 0.3; }
+                ctx.fillStyle = this.color;
+                // Body
+                ctx.fillRect(gx - this.bodyH / 2, gy - this.bodyH, this.bodyH, this.bodyH);
+                // Head
+                ctx.beginPath(); ctx.arc(gx, gy - this.bodyH - 4, 4, 0, Math.PI * 2); ctx.fill();
+                // Legs
+                ctx.strokeStyle = this.color; ctx.lineWidth = 2;
+                const l1 = Math.sin(this.legPhase) * this.legLen * 0.5;
+                const l2 = Math.sin(this.legPhase + Math.PI) * this.legLen * 0.5;
+                ctx.beginPath(); ctx.moveTo(gx - 2, gy); ctx.lineTo(gx - 2 + l1 * 0.3, gy + this.legLen); ctx.stroke();
+                ctx.beginPath(); ctx.moveTo(gx + 2, gy); ctx.lineTo(gx + 2 + l2 * 0.3, gy + this.legLen); ctx.stroke();
+                ctx.globalAlpha = 1;
+            }
+        }
+        function createPopulation(size) {
+            creatures = []; for (let i = 0; i < size; i++)creatures.push(new Creature());
+        }
+        function crossover(a, b) {
+            const child = []; const split = Math.floor(Math.random() * GENE_LEN);
+            for (let i = 0; i < GENE_LEN; i++)child.push(i < split ? a.dna[i] : b.dna[i]);
+            return child;
+        }
+        function mutate(dna, rate) {
+            return dna.map(g => Math.random() < rate ? g + (Math.random() - .5) * .5 : g);
+        }
+        function evolve() {
+            creatures.sort((a, b) => b.fitness - a.fitness);
+            const best = creatures[0];
+            if (best.fitness > bestEver) bestEver = best.fitness;
+            const avgFit = creatures.reduce((s, c) => s + c.fitness, 0) / creatures.length;
+            evoGen++;
+            document.getElementById('gen-num').textContent = evoGen;
+            document.getElementById('best-fit').textContent = best.fitness.toFixed(1);
+            document.getElementById('avg-fit').textContent = avgFit.toFixed(1);
+            // Leaderboard
+            const lb = document.getElementById('leaderboard');
+            const entry = document.createElement('div'); entry.className = 'gen-item';
+            entry.innerHTML = `<span>Gen ${evoGen}</span><span>${best.fitness.toFixed(1)}</span>`;
+            lb.prepend(entry); if (lb.children.length > 30) lb.lastChild.remove();
+            // Selection & breeding
+            const popSize = parseInt(document.getElementById('popSize').value);
+            const mutRate = getV('mutRate') / 100;
+            const top = creatures.slice(0, Math.ceil(popSize * 0.3));
+            const newPop = [];
+            newPop.push(new Creature([...best.dna])); // Elitism
+            while (newPop.length < popSize) {
+                const p1 = top[Math.floor(Math.random() * top.length)];
+                const p2 = top[Math.floor(Math.random() * top.length)];
+                let childDna = crossover(p1, p2);
+                childDna = mutate(childDna, mutRate);
+                totalMutations++;
+                newPop.push(new Creature(childDna));
+            }
+            creatures = newPop;
+            document.getElementById('mut-count').textContent = totalMutations;
+        }
+        function simStep() {
+            const speed = parseInt(document.getElementById('simSpeed').value);
+            for (let s = 0; s < speed; s++) { creatures.forEach(c => c.update()); }
+            if (creatures.every(c => !c.alive)) evolve();
+            // Draw
+            const W = ec.width, H = ec.height, groundY = H * 0.75;
+            ectx.fillStyle = '#0a0a1a'; ectx.fillRect(0, 0, W, H);
+            ectx.strokeStyle = 'rgba(255,255,255,0.05)'; ectx.lineWidth = 1;
+            for (let x = 0; x < W; x += 40) { ectx.beginPath(); ectx.moveTo(x, 0); ectx.lineTo(x, H); ectx.stroke(); }
+            ectx.fillStyle = '#1a1a2e'; ectx.fillRect(0, groundY, W, H - groundY);
+            ectx.strokeStyle = 'rgba(139,92,246,0.3)'; ectx.beginPath(); ectx.moveTo(0, groundY); ectx.lineTo(W, groundY); ectx.stroke();
+            // Camera follows best alive creature
+            const bestAlive = creatures.filter(c => c.alive).sort((a, b) => b.x - a.x)[0];
+            const camX = bestAlive ? bestAlive.x - W / 3 : 0;
+            ectx.save(); ectx.translate(-camX, 0);
+            creatures.forEach(c => c.draw(ectx, groundY));
+            // Distance markers
+            ectx.fillStyle = 'rgba(255,255,255,0.1)'; ectx.font = '10px JetBrains Mono';
+            for (let d = 100; d < 2000; d += 100) { ectx.fillText(d + 'm', d + 50, groundY + 15); }
+            ectx.restore();
+            const alive = creatures.filter(c => c.alive).length;
+            document.getElementById('evo-overlay').innerHTML = `Gen: <span>${evoGen}</span> | Alive: <span>${alive}</span> | Best Ever: <span>${bestEver.toFixed(0)}</span>`;
+        }
+        function startEvolution() { if (!evoRunning) { evoRunning = true; if (creatures.length === 0) createPopulation(getV('popSize')); evoInterval = setInterval(simStep, 16); } }
+        function stopEvolution() { evoRunning = false; clearInterval(evoInterval); }
+        function resetEvolution() { stopEvolution(); evoGen = 0; totalMutations = 0; bestEver = 0; creatures = []; document.getElementById('leaderboard').innerHTML = ''; document.getElementById('gen-num').textContent = 0; document.getElementById('best-fit').textContent = 0; document.getElementById('avg-fit').textContent = 0; document.getElementById('mut-count').textContent = 0; ectx.clearRect(0, 0, ec.width, ec.height); }
+
+        // === WEB AUDIO SYNTH ===
+        let audioCtx = null, masterGain, synthFilter, delayNode, delayFeedback, analyser;
+        const activeNotes = {};
+        function initAudio() {
+            if (audioCtx) return;
+            audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            masterGain = audioCtx.createGain(); masterGain.gain.value = 0.3;
+            synthFilter = audioCtx.createBiquadFilter();
+            delayNode = audioCtx.createDelay(1); delayFeedback = audioCtx.createGain(); delayFeedback.gain.value = 0.3;
+            analyser = audioCtx.createAnalyser(); analyser.fftSize = 2048;
+            synthFilter.connect(masterGain); masterGain.connect(delayNode); delayNode.connect(delayFeedback); delayFeedback.connect(delayNode);
+            masterGain.connect(analyser); delayNode.connect(analyser); analyser.connect(audioCtx.destination);
+        }
+        const NOTE_MAP = { 'a': 261.63, 'w': 277.18, 's': 293.66, 'e': 311.13, 'd': 329.63, 'f': 349.23, 't': 369.99, 'g': 392, 'y': 415.3, 'h': 440, 'u': 466.16, 'j': 493.88, 'k': 523.25 };
+        function playNote(freq) {
+            initAudio();
+            if (activeNotes[freq]) return;
+            const osc = audioCtx.createOscillator(); const gain = audioCtx.createGain();
+            osc.type = document.getElementById('wave').value;
+            osc.frequency.value = freq;
+            osc.detune.value = getV('detune');
+            const atk = getV('attack') / 100, dec = getV('decay') / 100, sus = getV('sustain') / 100;
+            gain.gain.setValueAtTime(0, audioCtx.currentTime);
+            gain.gain.linearRampToValueAtTime(0.5, audioCtx.currentTime + atk);
+            gain.gain.linearRampToValueAtTime(sus * 0.5, audioCtx.currentTime + atk + dec);
+            synthFilter.type = document.getElementById('filterType').value;
+            synthFilter.frequency.value = getV('cutoff');
+            synthFilter.Q.value = getV('resonance');
+            delayNode.delayTime.value = getV('delayTime') / 100;
+            osc.connect(gain); gain.connect(synthFilter);
+            osc.start();
+            activeNotes[freq] = { osc, gain };
+        }
+        function stopNote(freq) {
+            if (!activeNotes[freq]) return;
+            const { osc, gain } = activeNotes[freq];
+            const rel = getV('release') / 100;
+            gain.gain.linearRampToValueAtTime(0, audioCtx.currentTime + rel);
+            setTimeout(() => { osc.stop(); osc.disconnect(); }, rel * 1000 + 50);
+            delete activeNotes[freq];
+        }
+        document.addEventListener('keydown', e => { if (e.repeat) return; const f = NOTE_MAP[e.key.toLowerCase()]; if (f) playNote(f); });
+        document.addEventListener('keyup', e => { const f = NOTE_MAP[e.key.toLowerCase()]; if (f) stopNote(f); });
+        // Synth slider bindings
+        ['freq', 'detune', 'cutoff', 'resonance', 'attack', 'decay', 'sustain', 'release', 'delayTime', 'reverbMix', 'lfoRate'].forEach(id => {
+            const el = document.getElementById(id); if (!el) return;
+            el.addEventListener('input', () => {
+                const vm = { 'freq': 'freq-val', 'detune': 'detune-val', 'cutoff': 'cutoff-val', 'resonance': 'reso-val', 'attack': 'atk-val', 'decay': 'dec-val', 'sustain': 'sus-val', 'release': 'rel-val', 'delayTime': 'delay-val', 'reverbMix': 'reverb-val', 'lfoRate': 'lfo-val' };
+                const d = document.getElementById(vm[id]);
+                if (['attack', 'decay', 'release', 'delayTime'].includes(id)) d.textContent = (el.value / 100).toFixed(1);
+                else if (['sustain', 'reverbMix'].includes(id)) d.textContent = (el.value / 100).toFixed(1);
+                else d.textContent = el.value;
+            });
+        });
+        // Visualizer
+        const sc = document.getElementById('synth-canvas'), sctx = sc.getContext('2d');
+        const vc = document.getElementById('viz-canvas'), vctx = vc.getContext('2d');
+        function resizeSynthCanvas() { const a = sc.parentElement; sc.width = Math.min(700, a.clientWidth - 40); sc.height = 80; vc.width = sc.width; vc.height = 150; }
+        resizeSynthCanvas(); window.addEventListener('resize', resizeSynthCanvas);
+        // Draw keyboard
+        function drawKeyboard() {
+            const W = sc.width, H = sc.height; sctx.clearRect(0, 0, W, H);
+            const whiteKeys = ['a', 's', 'd', 'f', 'g', 'h', 'j', 'k'];
+            const blackKeys = [{ k: 'w', p: 0.7 }, { k: 'e', p: 1.7 }, { k: 't', p: 3.7 }, { k: 'y', p: 4.7 }, { k: 'u', p: 5.7 }];
+            const kw = W / whiteKeys.length;
+            whiteKeys.forEach((k, i) => {
+                const active = activeNotes[NOTE_MAP[k]];
+                sctx.fillStyle = active ? 'rgba(139,92,246,0.3)' : 'rgba(255,255,255,0.06)';
+                sctx.strokeStyle = 'rgba(255,255,255,0.1)';
+                sctx.fillRect(i * kw + 1, 0, kw - 2, H); sctx.strokeRect(i * kw + 1, 0, kw - 2, H);
+                sctx.fillStyle = active ? '#c4b5fd' : 'rgba(255,255,255,0.3)'; sctx.font = '11px Inter';
+                sctx.fillText(k.toUpperCase(), i * kw + kw / 2 - 4, H - 8);
+            });
+            blackKeys.forEach(({ k, p }) => {
+                const active = activeNotes[NOTE_MAP[k]];
+                sctx.fillStyle = active ? '#8b5cf6' : '#1a1a2e';
+                sctx.fillRect(p * kw - kw * 0.15, 0, kw * 0.6, H * 0.6);
+                sctx.fillStyle = active ? '#fff' : 'rgba(255,255,255,0.4)'; sctx.font = '9px Inter';
+                sctx.fillText(k.toUpperCase(), p * kw + kw * 0.1, H * 0.5);
+            });
+        }
+        function drawViz() {
+            if (!analyser) return;
+            const buf = new Uint8Array(analyser.frequencyBinCount);
+            analyser.getByteTimeDomainData(buf);
+            const W = vc.width, H = vc.height;
+            vctx.fillStyle = 'rgba(10,10,26,0.3)'; vctx.fillRect(0, 0, W, H);
+            vctx.strokeStyle = '#8b5cf6'; vctx.lineWidth = 2; vctx.beginPath();
+            const sl = W / buf.length; let x = 0;
+            for (let i = 0; i < buf.length; i++) { const v = buf[i] / 128; const y = v * H / 2; if (i === 0) vctx.moveTo(x, y); else vctx.lineTo(x, y); x += sl; }
+            vctx.stroke();
+            // Frequency bars
+            analyser.getByteFrequencyData(buf);
+            vctx.fillStyle = 'rgba(139,92,246,0.1)';
+            const barW = W / 64;
+            for (let i = 0; i < 64; i++) { const bh = buf[i * 2] / 255 * H; vctx.fillRect(i * barW, H - bh, barW - 1, bh); }
+        }
+        setInterval(() => { drawKeyboard(); drawViz(); }, 30);
+
+        // === FRACTAL RENDERER ===
+        const fc = document.getElementById('frac-canvas'), fctx = fc.getContext('2d');
+        let fracX = -0.5, fracY = 0, fracZoom = 1, juliaAnim = false;
+        function resizeFracCanvas() { const a = fc.parentElement; fc.width = a.clientWidth; fc.height = a.clientHeight }
+        resizeFracCanvas(); window.addEventListener('resize', () => { resizeFracCanvas(); renderFractal() });
+        const PALETTES = [
+            (t, s) => { const h = (t * 360 + s) % 360; return `hsl(${h},90%,${50 + t * 30}%)` },
+            (t, s) => { const r = Math.min(255, t * 600), g = Math.min(255, t * 200), b = Math.min(255, t * 50); return `rgb(${r},${g},${b})` },
+            (t, s) => { const h = (200 + t * 160 + s) % 360; return `hsl(${h},80%,${20 + t * 50}%)` },
+            (t, s) => { const h = (t * 720 + s) % 360; return `hsl(${h},100%,50%)` },
+            (t, s) => { const v = Math.floor(t * 255); return `rgb(${v},${v},${v})` },
+        ];
+        function renderFractal() {
+            const t0 = performance.now();
+            const W = fc.width, H = fc.height;
+            if (W === 0 || H === 0) return;
+            const img = fctx.createImageData(W, H), d = img.data;
+            const type = document.getElementById('fracType').value;
+            const maxI = getV('maxIter'), jr = getV('juliaR') / 100, ji = getV('juliaI') / 100;
+            const palIdx = parseInt(document.getElementById('palette').value);
+            const cShift = getV('colorShift');
+            const aspect = W / H, scale = 4 / fracZoom;
+            for (let py = 0; py < H; py += 2) {
+                for (let px = 0; px < W; px += 2) {
+                    let x0 = fracX + (px / W - 0.5) * scale * aspect, y0 = fracY + (py / H - 0.5) * scale;
+                    let zr, zi, cr, ci;
+                    if (type === 'julia') { zr = x0; zi = y0; cr = jr; ci = ji; }
+                    else { zr = 0; zi = 0; cr = x0; ci = y0; }
+                    let iter = 0;
+                    while (zr * zr + zi * zi < 4 && iter < maxI) {
+                        let tr, ti;
+                        if (type === 'burningship') { tr = zr * zr - zi * zi + cr; ti = Math.abs(2 * zr * zi) + ci; }
+                        else if (type === 'tricorn') { tr = zr * zr - zi * zi + cr; ti = -2 * zr * zi + ci; }
+                        else { tr = zr * zr - zi * zi + cr; ti = 2 * zr * zi + ci; }
+                        zr = tr; zi = ti; iter++;
+                    }
+                    const idx = (py * W + px) * 4;
+                    if (iter === maxI) { d[idx] = d[idx + 1] = d[idx + 2] = 0; }
+                    else {
+                        const t = iter / maxI; const h = (t * 360 * 3 + cShift) % 360; const s = 80, l = 10 + t * 60;
+                        const c2 = (1 - Math.abs(2 * l / 100 - 1)) * s / 100, x2 = c2 * (1 - Math.abs((h / 60) % 2 - 1)), m = l / 100 - c2 / 2;
+                        let r, g, b; const sec = Math.floor(h / 60) % 6;
+                        if (sec === 0) { r = c2; g = x2; b = 0 } else if (sec === 1) { r = x2; g = c2; b = 0 } else if (sec === 2) { r = 0; g = c2; b = x2 }
+                        else if (sec === 3) { r = 0; g = x2; b = c2 } else if (sec === 4) { r = x2; g = 0; b = c2 } else { r = c2; g = 0; b = x2 }
+                        d[idx] = Math.floor((r + m) * 255); d[idx + 1] = Math.floor((g + m) * 255); d[idx + 2] = Math.floor((b + m) * 255);
+                    }
+                    d[idx + 3] = 255;
+                    // Fill 2x2 block
+                    if (px + 1 < W) { d[idx + 4] = d[idx]; d[idx + 5] = d[idx + 1]; d[idx + 6] = d[idx + 2]; d[idx + 7] = 255; }
+                    if (py + 1 < H) {
+                        const i2 = ((py + 1) * W + px) * 4; d[i2] = d[idx]; d[i2 + 1] = d[idx + 1]; d[i2 + 2] = d[idx + 2]; d[i2 + 3] = 255;
+                        if (px + 1 < W) { d[i2 + 4] = d[idx]; d[i2 + 5] = d[idx + 1]; d[i2 + 6] = d[idx + 2]; d[i2 + 7] = 255; }
+                    }
+                }
+            }
+            fctx.putImageData(img, 0, 0);
+            const ms = (performance.now() - t0).toFixed(0);
+            document.getElementById('frac-stats').innerHTML = `Iterations: <span>${maxI}</span> | Zoom: <span>${fracZoom.toFixed(1)}x</span> | Render: <span>${ms}</span>ms`;
+            document.getElementById('frac-x').textContent = fracX.toFixed(6);
+            document.getElementById('frac-y').textContent = fracY.toFixed(6);
+            document.getElementById('frac-zoom').textContent = fracZoom.toFixed(1);
+        }
+        fc.addEventListener('wheel', e => { e.preventDefault(); const z = e.deltaY < 0 ? 1.3 : 0.77; fracZoom *= z; renderFractal() });
+        fc.addEventListener('click', e => { const r = fc.getBoundingClientRect(); const aspect = fc.width / fc.height; const scale = 4 / fracZoom; fracX += (e.clientX - r.left - fc.width / 2) / fc.width * scale * aspect; fracY += (e.clientY - r.top - fc.height / 2) / fc.height * scale; renderFractal() });
+        function resetFractalView() { fracX = -0.5; fracY = 0; fracZoom = 1; renderFractal() }
+        function toggleJuliaAnim() { juliaAnim = !juliaAnim }
+        ['maxIter', 'juliaR', 'juliaI', 'colorShift', 'fracType', 'palette'].forEach(id => {
+            const el = document.getElementById(id); if (!el) return;
+            el.addEventListener('input', () => {
+                if (id === 'juliaR') document.getElementById('jr-val').textContent = (el.value / 100).toFixed(2);
+                if (id === 'juliaI') document.getElementById('ji-val').textContent = (el.value / 100).toFixed(2);
+                if (id === 'maxIter') document.getElementById('iter-val').textContent = el.value;
+                if (id === 'colorShift') document.getElementById('cshift-val').textContent = el.value;
+                renderFractal();
+            });
+            el.addEventListener('change', renderFractal);
+        });
+        // renderFractal() deferred to tab switch
+        // Julia animation loop
+        setInterval(() => { if (juliaAnim) { const t = Date.now() / 3000; document.getElementById('juliaR').value = Math.sin(t) * 100; document.getElementById('juliaI').value = Math.cos(t * 0.7) * 80; document.getElementById('jr-val').textContent = (Math.sin(t)).toFixed(2); document.getElementById('ji-val').textContent = (Math.cos(t * 0.7) * 0.8).toFixed(2); renderFractal(); } }, 50);
+
+        // FPS counter
+        let lastT = performance.now(), frames = 0;
+        function fpsLoop() { frames++; const now = performance.now(); if (now - lastT > 1000) { document.getElementById('fps-counter').textContent = 'FPS: ' + frames; frames = 0; lastT = now; } requestAnimationFrame(fpsLoop); }
+        fpsLoop();
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Draw But Badly 🎨</title>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box
+        }
+
+        body {
+            font-family: 'Fredoka', sans-serif;
+            background: #0a0a1a;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            color: #fff
+        }
+
+        .hud {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 10px 0;
+            flex-wrap: wrap;
+            justify-content: center
+        }
+
+        h1 {
+            font-size: 1.2rem
+        }
+
+        h1 span {
+            color: #ec4899
+        }
+
+        .curse {
+            background: rgba(239, 68, 68, .1);
+            border: 1px solid rgba(239, 68, 68, .2);
+            border-radius: 8px;
+            padding: 3px 10px;
+            font-size: .6rem;
+            color: #fca5a5;
+            display: flex;
+            align-items: center;
+            gap: 4px
+        }
+
+        canvas {
+            border: 2px solid rgba(255, 255, 255, .1);
+            border-radius: 12px;
+            cursor: crosshair;
+            background: #111
+        }
+
+        .tools {
+            display: flex;
+            gap: 6px;
+            padding: 8px 0;
+            flex-wrap: wrap;
+            justify-content: center
+        }
+
+        .tool-btn {
+            padding: 5px 12px;
+            border-radius: 8px;
+            border: 1px solid rgba(255, 255, 255, .1);
+            background: rgba(255, 255, 255, .05);
+            color: rgba(255, 255, 255, .5);
+            font-family: inherit;
+            font-size: .6rem;
+            cursor: pointer;
+            transition: all .15s
+        }
+
+        .tool-btn:hover {
+            background: rgba(255, 255, 255, .1);
+            color: #fff
+        }
+
+        .tool-btn.active {
+            background: rgba(236, 72, 153, .2);
+            border-color: #ec4899;
+            color: #ec4899
+        }
+
+        .colors {
+            display: flex;
+            gap: 4px;
+            padding: 4px 0
+        }
+
+        .color-btn {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            border: 2px solid transparent;
+            cursor: pointer;
+            transition: all .1s
+        }
+
+        .color-btn:hover {
+            transform: scale(1.2)
+        }
+
+        .color-btn.active {
+            border-color: #fff;
+            transform: scale(1.1)
+        }
+
+        .info {
+            color: rgba(255, 255, 255, .2);
+            font-size: .55rem;
+            margin: 4px 0
+        }
+    </style>
+</head>
+
+<body>
+    <div class="hud">
+        <h1>🎨 Draw But <span>Badly</span></h1>
+        <div class="curse" id="curse">🎲 Curse: Normal (for now...)</div>
+        <button class="tool-btn" onclick="clearCanvas()">🗑️ Clear</button>
+        <button class="tool-btn" onclick="shuffleCurse()">🎲 New Curse</button>
+    </div>
+    <canvas id="canvas"></canvas>
+    <div class="tools">
+        <button class="tool-btn active" data-size="3" onclick="setBrush(this,3)">Fine</button>
+        <button class="tool-btn" data-size="8" onclick="setBrush(this,8)">Medium</button>
+        <button class="tool-btn" data-size="16" onclick="setBrush(this,16)">Thick</button>
+        <button class="tool-btn" data-size="30" onclick="setBrush(this,30)">Chonk</button>
+    </div>
+    <div class="colors" id="colors"></div>
+    <div class="info">Your drawing tools are cursed. Good luck.</div>
+
+    <script>
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        canvas.width = Math.min(800, window.innerWidth - 20);
+        canvas.height = Math.min(500, window.innerHeight - 160);
+
+        let drawing = false;
+        let brushSize = 3;
+        let brushColor = '#ec4899';
+        let lastX = 0, lastY = 0;
+        let currentCurse = 0;
+
+        const curseColors = ['#ef4444', '#f59e0b', '#22c55e', '#3b82f6', '#ec4899', '#8b5cf6', '#06b6d4', '#fff', '#000', '#f97316'];
+        const colorsEl = document.getElementById('colors');
+        curseColors.forEach((c, i) => {
+            const btn = document.createElement('div');
+            btn.className = 'color-btn' + (i === 4 ? ' active' : '');
+            btn.style.background = c;
+            btn.onclick = () => {
+                document.querySelectorAll('.color-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                brushColor = c;
+            };
+            colorsEl.appendChild(btn);
+        });
+
+        const curses = [
+            { name: "🐍 Spaghetti", desc: "Your lines wiggle like snakes", fn: (x, y) => [x + Math.sin(Date.now() / 50) * 15, y + Math.cos(Date.now() / 40) * 15] },
+            { name: "🫨 Earthquake", desc: "Everything shakes violently", fn: (x, y) => [x + (Math.random() - .5) * 30, y + (Math.random() - .5) * 30] },
+            { name: "🪞 Mirror", desc: "Draws mirrored on the other side too", fn: (x, y) => [x, y], mirror: true },
+            { name: "⏰ Delay", desc: "Your strokes appear 500ms late", fn: (x, y) => [x, y], delay: 500 },
+            { name: "🌀 Drunk", desc: "Cursor drifts in circles", fn: (x, y) => { const t = Date.now() / 200; return [x + Math.sin(t) * 25, y + Math.cos(t) * 25] } },
+            { name: "📏 Snap", desc: "Only draws in straight lines", fn: (x, y) => [Math.round(x / 30) * 30, Math.round(y / 30) * 30] },
+            { name: "🎨 Rainbow", desc: "Color changes constantly", fn: (x, y) => [x, y], rainbow: true },
+            { name: "👻 Fade", desc: "Your drawings slowly disappear", fn: (x, y) => [x, y], fade: true },
+            { name: "🔄 Spin", desc: "Canvas rotates while you draw", fn: (x, y) => [x, y], spin: true },
+            { name: "💥 Splatter", desc: "Every stroke explodes into dots", fn: (x, y) => [x, y], splatter: true },
+            { name: "🤏 Shrink", desc: "Your brush shrinks the more you draw", fn: (x, y) => [x, y], shrink: true },
+            { name: "🎯 Normal", desc: "Just kidding, it's still bad", fn: (x, y) => [x + (Math.random() - .5) * 5, y + (Math.random() - .5) * 5] },
+        ];
+
+        let curse = curses[0];
+        let drawCount = 0;
+        let pendingStrokes = [];
+
+        function shuffleCurse() {
+            currentCurse = Math.floor(Math.random() * curses.length);
+            curse = curses[currentCurse];
+            document.getElementById('curse').innerHTML = `${curse.name} <span style="opacity:.5">— ${curse.desc}</span>`;
+            drawCount = 0;
+        }
+        shuffleCurse();
+
+        canvas.addEventListener('mousedown', e => { drawing = true;[lastX, lastY] = getPos(e); drawCount = 0; });
+        canvas.addEventListener('mouseup', () => drawing = false);
+        canvas.addEventListener('mouseleave', () => drawing = false);
+
+        canvas.addEventListener('mousemove', e => {
+            if (!drawing) return;
+            drawCount++;
+            const [rawX, rawY] = getPos(e);
+            const [x, y] = curse.fn(rawX, rawY);
+
+            const doStroke = () => {
+                let size = brushSize;
+                let color = brushColor;
+
+                if (curse.rainbow) {
+                    color = `hsl(${Date.now() / 5 % 360}, 80%, 60%)`;
+                }
+                if (curse.shrink) {
+                    size = Math.max(1, brushSize - drawCount * 0.1);
+                }
+
+                ctx.beginPath();
+                ctx.strokeStyle = color;
+                ctx.lineWidth = size;
+                ctx.lineCap = 'round';
+                ctx.lineJoin = 'round';
+                ctx.moveTo(lastX, lastY);
+                ctx.lineTo(x, y);
+                ctx.stroke();
+
+                if (curse.mirror) {
+                    ctx.beginPath();
+                    ctx.moveTo(canvas.width - lastX, lastY);
+                    ctx.lineTo(canvas.width - x, y);
+                    ctx.stroke();
+                }
+
+                if (curse.splatter) {
+                    for (let i = 0; i < 5; i++) {
+                        ctx.beginPath();
+                        ctx.arc(x + (Math.random() - .5) * 40, y + (Math.random() - .5) * 40, Math.random() * 4, 0, Math.PI * 2);
+                        ctx.fillStyle = color;
+                        ctx.fill();
+                    }
+                }
+
+                lastX = x; lastY = y;
+            };
+
+            if (curse.delay) {
+                const lx = lastX, ly = lastY;
+                setTimeout(() => {
+                    const oldLast = [lastX, lastY];
+                    lastX = lx; lastY = ly;
+                    doStroke();
+                    [lastX, lastY] = oldLast;
+                }, curse.delay);
+                [lastX, lastY] = [rawX, rawY];
+            } else {
+                doStroke();
+            }
+        });
+
+        function getPos(e) {
+            const rect = canvas.getBoundingClientRect();
+            return [e.clientX - rect.left, e.clientY - rect.top];
+        }
+
+        function setBrush(btn, size) {
+            brushSize = size;
+            document.querySelectorAll('.tool-btn[data-size]').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+        }
+
+        function clearCanvas() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+        }
+
+        // Fade curse effect
+        setInterval(() => {
+            if (curse.fade) {
+                ctx.fillStyle = 'rgba(17,17,17,0.02)';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+            }
+        }, 100);
+
+        // Spin curse
+        setInterval(() => {
+            if (curse.spin) {
+                canvas.style.transform = `rotate(${Math.sin(Date.now() / 2000) * 5}deg)`;
+            } else {
+                canvas.style.transform = '';
+            }
+        }, 50);
+
+        // Auto-shuffle curse every 30s
+        setInterval(shuffleCurse, 30000);
+    </script>
+</body>
+
+</html>

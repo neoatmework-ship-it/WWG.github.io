@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Invisible Maze 👻</title>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box
+        }
+
+        body {
+            font-family: 'Fredoka', sans-serif;
+            background: #0a0a1a;
+            color: #fff;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            overflow: hidden
+        }
+
+        h1 {
+            font-size: 1.6rem;
+            margin-top: 20px;
+            font-weight: 700
+        }
+
+        h1 span {
+            color: #8b5cf6
+        }
+
+        .sub {
+            color: rgba(255, 255, 255, .4);
+            font-size: .75rem;
+            margin: 4px 0 12px
+        }
+
+        .stats {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 10px;
+            font-size: .75rem;
+            color: rgba(255, 255, 255, .5)
+        }
+
+        .stats span {
+            color: #8b5cf6;
+            font-weight: 700
+        }
+
+        #maze-container {
+            position: relative;
+            border: 2px solid rgba(255, 255, 255, .1);
+            border-radius: 8px;
+            overflow: hidden;
+            cursor: none
+        }
+
+        canvas {
+            display: block
+        }
+
+        #player {
+            position: absolute;
+            width: 16px;
+            height: 16px;
+            background: #8b5cf6;
+            border-radius: 50%;
+            box-shadow: 0 0 12px rgba(139, 92, 246, .5);
+            transition: transform .05s;
+            pointer-events: none;
+            z-index: 5
+        }
+
+        #goal {
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            z-index: 4;
+            animation: goal-pulse 1.5s ease-in-out infinite
+        }
+
+        @keyframes goal-pulse {
+
+            0%,
+            100% {
+                background: rgba(74, 222, 128, .6);
+                box-shadow: 0 0 15px rgba(74, 222, 128, .4)
+            }
+
+            50% {
+                background: rgba(74, 222, 128, .9);
+                box-shadow: 0 0 25px rgba(74, 222, 128, .6)
+            }
+        }
+
+        .bump {
+            animation: bump .15s ease
+        }
+
+        @keyframes bump {
+
+            0%,
+            100% {
+                transform: translate(0, 0)
+            }
+
+            25% {
+                transform: translate(-3px, -3px)
+            }
+
+            75% {
+                transform: translate(3px, 3px)
+            }
+        }
+
+        .wall-reveal {
+            position: absolute;
+            pointer-events: none;
+            z-index: 3
+        }
+
+        .win-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, .7);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 10;
+            display: none
+        }
+
+        .win-overlay.show {
+            display: flex
+        }
+
+        .win-overlay h2 {
+            font-size: 2rem;
+            color: #4ade80;
+            margin-bottom: 10px
+        }
+
+        .win-overlay p {
+            color: rgba(255, 255, 255, .6);
+            font-size: .85rem;
+            margin-bottom: 20px
+        }
+
+        .btn {
+            padding: 10px 24px;
+            border-radius: 12px;
+            border: none;
+            background: #8b5cf6;
+            color: #fff;
+            font-family: inherit;
+            font-size: .85rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all .15s
+        }
+
+        .btn:hover {
+            background: #7c3aed;
+            transform: translateY(-1px)
+        }
+
+        .hint {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            padding: 4px 10px;
+            border-radius: 8px;
+            background: rgba(255, 255, 255, .05);
+            color: rgba(255, 255, 255, .3);
+            font-size: .55rem;
+            z-index: 6
+        }
+
+        .level-badge {
+            background: rgba(139, 92, 246, .2);
+            color: #c4b5fd;
+            padding: 2px 10px;
+            border-radius: 6px;
+            font-size: .65rem;
+            font-weight: 600
+        }
+    </style>
+</head>
+
+<body>
+    <h1>👻 Invisible <span>Maze</span></h1>
+    <div class="sub">Navigate the maze you can't see. Walls reveal on contact.</div>
+    <div class="stats">
+        Level: <span id="level">1</span> &nbsp;|&nbsp; Bumps: <span id="bumps">0</span> &nbsp;|&nbsp; Time: <span
+            id="timer">0.0</span>s
+    </div>
+    <div id="maze-container">
+        <canvas id="maze-canvas"></canvas>
+        <div id="player"></div>
+        <div id="goal"></div>
+        <div class="hint">Use arrow keys or WASD</div>
+    </div>
+    <div class="win-overlay" id="win-overlay">
+        <h2>🎉 You escaped!</h2>
+        <p>Level <span id="win-level">1</span> · <span id="win-bumps">0</span> bumps · <span id="win-time">0</span>s</p>
+        <button class="btn" id="next-btn">Next Level →</button>
+    </div>
+
+    <script>
+        const CELL = 40;
+        const canvas = document.getElementById('maze-canvas');
+        const ctx = canvas.getContext('2d');
+        const container = document.getElementById('maze-container');
+        const playerEl = document.getElementById('player');
+        const goalEl = document.getElementById('goal');
+        const winOverlay = document.getElementById('win-overlay');
+
+        let level = 1;
+        let cols, rows, grid, px, py, bumps, startTime, timerInterval;
+        let revealedWalls = new Set();
+
+        function initLevel() {
+            cols = 6 + Math.floor(level * 1.5);
+            rows = 6 + Math.floor(level * 1.2);
+            if (cols > 18) cols = 18;
+            if (rows > 14) rows = 14;
+
+            canvas.width = cols * CELL;
+            canvas.height = rows * CELL;
+            container.style.width = canvas.width + 'px';
+            container.style.height = canvas.height + 'px';
+
+            grid = generateMaze(cols, rows);
+            px = 0; py = 0;
+            bumps = 0;
+            revealedWalls = new Set();
+
+            updatePlayer();
+            goalEl.style.left = ((cols - 1) * CELL + CELL / 2 - 10) + 'px';
+            goalEl.style.top = ((rows - 1) * CELL + CELL / 2 - 10) + 'px';
+
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            // Draw maze invisibly (transparent)
+            // We'll only draw walls when player bumps them
+
+            document.getElementById('level').textContent = level;
+            document.getElementById('bumps').textContent = 0;
+            document.getElementById('timer').textContent = '0.0';
+
+            winOverlay.classList.remove('show');
+
+            startTime = Date.now();
+            clearInterval(timerInterval);
+            timerInterval = setInterval(() => {
+                document.getElementById('timer').textContent = ((Date.now() - startTime) / 1000).toFixed(1);
+            }, 100);
+        }
+
+        function generateMaze(w, h) {
+            // DFS maze generation
+            const cells = [];
+            for (let y = 0; y < h; y++) {
+                cells[y] = [];
+                for (let x = 0; x < w; x++) {
+                    cells[y][x] = { x, y, walls: { top: true, right: true, bottom: true, left: true }, visited: false };
+                }
+            }
+
+            const stack = [];
+            const start = cells[0][0];
+            start.visited = true;
+            stack.push(start);
+
+            while (stack.length > 0) {
+                const current = stack[stack.length - 1];
+                const neighbors = [];
+                const { x, y } = current;
+
+                if (y > 0 && !cells[y - 1][x].visited) neighbors.push(cells[y - 1][x]);
+                if (x < w - 1 && !cells[y][x + 1].visited) neighbors.push(cells[y][x + 1]);
+                if (y < h - 1 && !cells[y + 1][x].visited) neighbors.push(cells[y + 1][x]);
+                if (x > 0 && !cells[y][x - 1].visited) neighbors.push(cells[y][x - 1]);
+
+                if (neighbors.length === 0) {
+                    stack.pop();
+                } else {
+                    const next = neighbors[Math.floor(Math.random() * neighbors.length)];
+                    // Remove wall between current and next
+                    if (next.y < current.y) { current.walls.top = false; next.walls.bottom = false; }
+                    if (next.x > current.x) { current.walls.right = false; next.walls.left = false; }
+                    if (next.y > current.y) { current.walls.bottom = false; next.walls.top = false; }
+                    if (next.x < current.x) { current.walls.left = false; next.walls.right = false; }
+                    next.visited = true;
+                    stack.push(next);
+                }
+            }
+            return cells;
+        }
+
+        function updatePlayer() {
+            playerEl.style.left = (px * CELL + CELL / 2 - 8) + 'px';
+            playerEl.style.top = (py * CELL + CELL / 2 - 8) + 'px';
+        }
+
+        function revealWall(cx, cy, side) {
+            const key = `${cx},${cy},${side}`;
+            if (revealedWalls.has(key)) return;
+            revealedWalls.add(key);
+
+            ctx.strokeStyle = 'rgba(239, 68, 68, 0.6)';
+            ctx.lineWidth = 3;
+            ctx.shadowColor = '#ef4444';
+            ctx.shadowBlur = 8;
+
+            const x = cx * CELL, y = cy * CELL;
+            ctx.beginPath();
+            if (side === 'top') { ctx.moveTo(x, y); ctx.lineTo(x + CELL, y); }
+            if (side === 'right') { ctx.moveTo(x + CELL, y); ctx.lineTo(x + CELL, y + CELL); }
+            if (side === 'bottom') { ctx.moveTo(x, y + CELL); ctx.lineTo(x + CELL, y + CELL); }
+            if (side === 'left') { ctx.moveTo(x, y); ctx.lineTo(x, y + CELL); }
+            ctx.stroke();
+            ctx.shadowBlur = 0;
+        }
+
+        function tryMove(dx, dy) {
+            const cell = grid[py][px];
+            let blocked = false;
+
+            if (dx === 0 && dy === -1 && cell.walls.top) { revealWall(px, py, 'top'); blocked = true; }
+            if (dx === 1 && dy === 0 && cell.walls.right) { revealWall(px, py, 'right'); blocked = true; }
+            if (dx === 0 && dy === 1 && cell.walls.bottom) { revealWall(px, py, 'bottom'); blocked = true; }
+            if (dx === -1 && dy === 0 && cell.walls.left) { revealWall(px, py, 'left'); blocked = true; }
+
+            if (blocked) {
+                bumps++;
+                document.getElementById('bumps').textContent = bumps;
+                container.classList.remove('bump');
+                void container.offsetWidth;
+                container.classList.add('bump');
+                return;
+            }
+
+            px += dx;
+            py += dy;
+            updatePlayer();
+
+            // Check win
+            if (px === cols - 1 && py === rows - 1) {
+                clearInterval(timerInterval);
+                const time = ((Date.now() - startTime) / 1000).toFixed(1);
+                document.getElementById('win-level').textContent = level;
+                document.getElementById('win-bumps').textContent = bumps;
+                document.getElementById('win-time').textContent = time;
+                winOverlay.classList.add('show');
+            }
+        }
+
+        document.addEventListener('keydown', e => {
+            if (winOverlay.classList.contains('show')) return;
+            switch (e.key) {
+                case 'ArrowUp': case 'w': case 'W': tryMove(0, -1); break;
+                case 'ArrowDown': case 's': case 'S': tryMove(0, 1); break;
+                case 'ArrowLeft': case 'a': case 'A': tryMove(-1, 0); break;
+                case 'ArrowRight': case 'd': case 'D': tryMove(1, 0); break;
+            }
+            e.preventDefault();
+        });
+
+        document.getElementById('next-btn').addEventListener('click', () => {
+            level++;
+            initLevel();
+        });
+
+        initLevel();
+    </script>
+</body>
+
+</html>

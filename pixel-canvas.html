@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pixel Canvas — Draw Pixel Art</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #0d0d14;
+            color: #eee;
+            min-height: 100vh;
+            display: flex;
+            overflow: hidden
+        }
+
+        .sidebar {
+            width: 72px;
+            background: #0a0a10;
+            border-right: 1px solid rgba(255, 255, 255, .06);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 12px 0;
+            gap: 4px;
+            z-index: 10
+        }
+
+        .tool-btn {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            border: none;
+            background: transparent;
+            color: rgba(255, 255, 255, .5);
+            font-size: 18px;
+            cursor: pointer;
+            transition: all .2s;
+            display: flex;
+            align-items: center;
+            justify-content: center
+        }
+
+        .tool-btn:hover {
+            background: rgba(255, 255, 255, .06)
+        }
+
+        .tool-btn.active {
+            background: rgba(124, 92, 255, .2);
+            color: #b8a4ff
+        }
+
+        .tool-sep {
+            width: 36px;
+            height: 1px;
+            background: rgba(255, 255, 255, .06);
+            margin: 4px 0
+        }
+
+        .main-area {
+            flex: 1;
+            display: flex;
+            flex-direction: column
+        }
+
+        .topbar {
+            height: 48px;
+            background: rgba(10, 10, 16, .9);
+            border-bottom: 1px solid rgba(255, 255, 255, .06);
+            display: flex;
+            align-items: center;
+            padding: 0 16px;
+            gap: 12px;
+            justify-content: space-between
+        }
+
+        .topbar-left {
+            display: flex;
+            align-items: center;
+            gap: 12px
+        }
+
+        .topbar-title {
+            font-weight: 700;
+            font-size: .85rem
+        }
+
+        .size-controls {
+            display: flex;
+            align-items: center;
+            gap: 6px
+        }
+
+        .size-btn {
+            padding: 4px 10px;
+            background: rgba(255, 255, 255, .06);
+            border: 1px solid rgba(255, 255, 255, .08);
+            border-radius: 6px;
+            color: #ccc;
+            font-size: .75rem;
+            font-family: inherit;
+            cursor: pointer
+        }
+
+        .size-btn:hover {
+            background: rgba(255, 255, 255, .1)
+        }
+
+        .size-btn.active {
+            background: rgba(124, 92, 255, .2);
+            border-color: rgba(124, 92, 255, .3);
+            color: #b8a4ff
+        }
+
+        .topbar-right {
+            display: flex;
+            gap: 8px
+        }
+
+        .action-btn {
+            padding: 6px 14px;
+            background: rgba(255, 255, 255, .06);
+            border: 1px solid rgba(255, 255, 255, .08);
+            border-radius: 8px;
+            color: #ccc;
+            font-size: .78rem;
+            font-family: inherit;
+            cursor: pointer;
+            transition: all .2s
+        }
+
+        .action-btn:hover {
+            background: rgba(255, 255, 255, .12)
+        }
+
+        .action-btn.danger {
+            border-color: rgba(255, 80, 80, .2);
+            color: #ff6b6b
+        }
+
+        .canvas-area {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: auto;
+            padding: 20px
+        }
+
+        #pixel-canvas {
+            border: 1px solid rgba(255, 255, 255, .1);
+            cursor: crosshair;
+            image-rendering: pixelated;
+            border-radius: 4px
+        }
+
+        .color-palette {
+            height: 56px;
+            background: #0a0a10;
+            border-top: 1px solid rgba(255, 255, 255, .06);
+            display: flex;
+            align-items: center;
+            padding: 0 16px;
+            gap: 6px;
+            overflow-x: auto
+        }
+
+        .color-swatch {
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            border: 2px solid transparent;
+            cursor: pointer;
+            transition: all .15s;
+            flex-shrink: 0
+        }
+
+        .color-swatch:hover {
+            transform: scale(1.1)
+        }
+
+        .color-swatch.active {
+            border-color: #fff;
+            box-shadow: 0 0 12px rgba(255, 255, 255, .2)
+        }
+
+        .color-input-wrap {
+            margin-left: auto;
+            display: flex;
+            align-items: center;
+            gap: 8px
+        }
+
+        .color-input-wrap label {
+            font-size: .7rem;
+            color: rgba(255, 255, 255, .35)
+        }
+
+        #color-picker {
+            width: 32px;
+            height: 32px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            background: transparent;
+            padding: 0
+        }
+
+        @media(max-width:768px) {
+            .sidebar {
+                width: 56px
+            }
+
+            .tool-btn {
+                width: 40px;
+                height: 40px;
+                font-size: 15px
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="sidebar">
+        <button class="tool-btn active" data-tool="pen" title="Pen">✏️</button>
+        <button class="tool-btn" data-tool="eraser" title="Eraser">🧹</button>
+        <button class="tool-btn" data-tool="fill" title="Fill">🪣</button>
+        <button class="tool-btn" data-tool="picker" title="Color Picker">💉</button>
+        <div class="tool-sep"></div>
+        <button class="tool-btn" data-tool="line" title="Line">📏</button>
+        <button class="tool-btn" data-tool="rect" title="Rectangle">⬜</button>
+        <button class="tool-btn" data-tool="circle" title="Circle">⭕</button>
+    </div>
+    <div class="main-area">
+        <div class="topbar">
+            <div class="topbar-left">
+                <span class="topbar-title">🎨 Pixel Canvas</span>
+                <div class="size-controls">
+                    <button class="size-btn" data-size="16">16×16</button>
+                    <button class="size-btn active" data-size="32">32×32</button>
+                    <button class="size-btn" data-size="64">64×64</button>
+                </div>
+            </div>
+            <div class="topbar-right">
+                <button class="action-btn" id="btn-undo">↩ Undo</button>
+                <button class="action-btn" id="btn-download">💾 Save PNG</button>
+                <button class="action-btn danger" id="btn-clear">✕ Clear</button>
+            </div>
+        </div>
+        <div class="canvas-area">
+            <canvas id="pixel-canvas"></canvas>
+        </div>
+        <div class="color-palette" id="palette"></div>
+    </div>
+    <script>
+        const COLORS = ['#000000', '#ffffff', '#ff4444', '#ff8844', '#ffcc00', '#88ee22', '#44cc44', '#22ccaa', '#44aaff', '#4466ff', '#8844ff', '#cc44cc', '#ff66aa', '#884422', '#ddaa77', '#88888', '#cccccc', '#555555', '#ff6666', '#ffaa66', '#ffee66', '#aaffaa', '#66ffcc', '#66ccff', '#aaaaff', '#ff88ff', '#334455'];
+        let gridSize = 32, tool = 'pen', currentColor = '#ff4444', drawing = false, history = [];
+        const canvas = document.getElementById('pixel-canvas'), ctx = canvas.getContext('2d');
+        let pixelSize, grid;
+
+        function initGrid(size) {
+            gridSize = size; grid = []; for (let y = 0; y < gridSize; y++) { grid[y] = []; for (let x = 0; x < gridSize; x++)grid[y][x] = null }
+            const maxDim = Math.min(window.innerWidth - 120, window.innerHeight - 160, 600);
+            pixelSize = Math.floor(maxDim / gridSize);
+            canvas.width = gridSize * pixelSize; canvas.height = gridSize * pixelSize;
+            history = []; drawGrid();
+        }
+
+        function drawGrid() {
+            ctx.fillStyle = '#1a1a26'; ctx.fillRect(0, 0, canvas.width, canvas.height);
+            for (let y = 0; y < gridSize; y++)for (let x = 0; x < gridSize; x++) {
+                if (grid[y][x]) { ctx.fillStyle = grid[y][x]; ctx.fillRect(x * pixelSize, y * pixelSize, pixelSize, pixelSize) }
+            }
+            // Grid lines
+            ctx.strokeStyle = 'rgba(255,255,255,.04)'; ctx.lineWidth = 1;
+            for (let i = 0; i <= gridSize; i++) { ctx.beginPath(); ctx.moveTo(i * pixelSize, 0); ctx.lineTo(i * pixelSize, canvas.height); ctx.stroke(); ctx.beginPath(); ctx.moveTo(0, i * pixelSize); ctx.lineTo(canvas.width, i * pixelSize); ctx.stroke() }
+        }
+
+        function getGridPos(e) { const r = canvas.getBoundingClientRect(); return { x: Math.floor((e.clientX - r.left) / pixelSize), y: Math.floor((e.clientY - r.top) / pixelSize) } }
+
+        function setPixel(x, y, color) {
+            if (x < 0 || x >= gridSize || y < 0 || y >= gridSize) return;
+            grid[y][x] = color; drawGrid();
+        }
+
+        function saveState() { history.push(JSON.parse(JSON.stringify(grid))) }
+
+        function floodFill(x, y, target, replacement) {
+            if (x < 0 || x >= gridSize || y < 0 || y >= gridSize) return;
+            if (grid[y][x] !== target || grid[y][x] === replacement) return;
+            grid[y][x] = replacement;
+            floodFill(x + 1, y, target, replacement); floodFill(x - 1, y, target, replacement);
+            floodFill(x, y + 1, target, replacement); floodFill(x, y - 1, target, replacement);
+        }
+
+        canvas.addEventListener('mousedown', e => {
+            const p = getGridPos(e); drawing = true; saveState();
+            if (tool === 'pen') setPixel(p.x, p.y, currentColor);
+            else if (tool === 'eraser') setPixel(p.x, p.y, null);
+            else if (tool === 'fill') { const target = grid[p.y]?.[p.x] || null; if (target !== currentColor) { floodFill(p.x, p.y, target, currentColor); drawGrid() } }
+            else if (tool === 'picker' && grid[p.y]?.[p.x]) { currentColor = grid[p.y][p.x]; updatePaletteActive() }
+        });
+        canvas.addEventListener('mousemove', e => {
+            if (!drawing) return; const p = getGridPos(e);
+            if (tool === 'pen') setPixel(p.x, p.y, currentColor);
+            else if (tool === 'eraser') setPixel(p.x, p.y, null);
+        });
+        canvas.addEventListener('mouseup', () => { drawing = false });
+        canvas.addEventListener('mouseleave', () => { drawing = false });
+
+        // Touch
+        canvas.addEventListener('touchstart', e => { e.preventDefault(); const t = e.touches[0]; const p = getGridPos(t); drawing = true; saveState(); if (tool === 'pen') setPixel(p.x, p.y, currentColor); else if (tool === 'eraser') setPixel(p.x, p.y, null) }, { passive: false });
+        canvas.addEventListener('touchmove', e => { e.preventDefault(); if (!drawing) return; const t = e.touches[0]; const p = getGridPos(t); if (tool === 'pen') setPixel(p.x, p.y, currentColor); else if (tool === 'eraser') setPixel(p.x, p.y, null) }, { passive: false });
+        canvas.addEventListener('touchend', () => { drawing = false });
+
+        // Tools
+        document.querySelectorAll('.tool-btn').forEach(btn => { btn.addEventListener('click', () => { document.querySelectorAll('.tool-btn').forEach(b => b.classList.remove('active')); btn.classList.add('active'); tool = btn.dataset.tool }) });
+
+        // Sizes
+        document.querySelectorAll('.size-btn').forEach(btn => { btn.addEventListener('click', () => { document.querySelectorAll('.size-btn').forEach(b => b.classList.remove('active')); btn.classList.add('active'); initGrid(parseInt(btn.dataset.size)) }) });
+
+        // Palette
+        const palette = document.getElementById('palette');
+        function buildPalette() {
+            palette.innerHTML = '';
+            COLORS.forEach(c => { const s = document.createElement('div'); s.className = 'color-swatch' + (c === currentColor ? ' active' : ''); s.style.background = c; s.addEventListener('click', () => { currentColor = c; updatePaletteActive() }); palette.appendChild(s) });
+            const wrap = document.createElement('div'); wrap.className = 'color-input-wrap'; wrap.innerHTML = '<label>Custom</label><input type="color" id="color-picker" value="' + currentColor + '">'; palette.appendChild(wrap);
+            wrap.querySelector('#color-picker').addEventListener('input', e => { currentColor = e.target.value; updatePaletteActive() });
+        }
+        function updatePaletteActive() { document.querySelectorAll('.color-swatch').forEach(s => { s.classList.toggle('active', s.style.background === currentColor || rgbToHex(s.style.background) === currentColor) }) }
+        function rgbToHex(rgb) { if (rgb.startsWith('#')) return rgb; const m = rgb.match(/\d+/g); if (!m) return ''; return '#' + m.slice(0, 3).map(x => (+x).toString(16).padStart(2, '0')).join('') }
+        buildPalette();
+
+        // Actions
+        document.getElementById('btn-undo').addEventListener('click', () => { if (history.length) { grid = history.pop(); drawGrid() } });
+        document.getElementById('btn-clear').addEventListener('click', () => { saveState(); for (let y = 0; y < gridSize; y++)for (let x = 0; x < gridSize; x++)grid[y][x] = null; drawGrid() });
+        document.getElementById('btn-download').addEventListener('click', () => {
+            const exportCanvas = document.createElement('canvas'); exportCanvas.width = gridSize; exportCanvas.height = gridSize;
+            const ectx = exportCanvas.getContext('2d');
+            for (let y = 0; y < gridSize; y++)for (let x = 0; x < gridSize; x++) { if (grid[y][x]) { ectx.fillStyle = grid[y][x]; ectx.fillRect(x, y, 1, 1) } }
+            const link = document.createElement('a'); link.download = 'pixel-art.png'; link.href = exportCanvas.toDataURL(); link.click();
+        });
+
+        initGrid(32);
+    </script>
+</body>
+
+</html>

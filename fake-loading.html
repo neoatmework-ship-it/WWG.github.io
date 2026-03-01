@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fake Loading Screen ⏳</title>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box
+        }
+
+        body {
+            font-family: 'Fredoka', sans-serif;
+            background: #0a0a1a;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: #fff
+        }
+
+        .loader {
+            text-align: center;
+            max-width: 500px;
+            padding: 20px
+        }
+
+        h1 {
+            font-size: 1.5rem;
+            margin-bottom: 20px;
+            color: rgba(255, 255, 255, .8)
+        }
+
+        .bar-container {
+            width: 400px;
+            max-width: 90vw;
+            height: 20px;
+            background: rgba(255, 255, 255, .05);
+            border-radius: 10px;
+            overflow: hidden;
+            margin: 0 auto 12px;
+            border: 1px solid rgba(255, 255, 255, .08)
+        }
+
+        .bar {
+            height: 100%;
+            background: linear-gradient(90deg, #8b5cf6, #06b6d4);
+            border-radius: 10px;
+            transition: width .5s;
+            width: 0
+        }
+
+        .percent {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #8b5cf6;
+            margin-bottom: 8px;
+            font-variant-numeric: tabular-nums
+        }
+
+        .message {
+            color: rgba(255, 255, 255, .4);
+            font-size: .8rem;
+            min-height: 25px;
+            transition: all .3s
+        }
+
+        .sub-message {
+            color: rgba(255, 255, 255, .2);
+            font-size: .6rem;
+            margin-top: 8px;
+            min-height: 20px
+        }
+
+        .spinner {
+            width: 30px;
+            height: 30px;
+            border: 3px solid rgba(255, 255, 255, .1);
+            border-top: 3px solid #8b5cf6;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 20px auto 0
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg)
+            }
+        }
+
+        .tip {
+            position: fixed;
+            bottom: 15px;
+            color: rgba(255, 255, 255, .15);
+            font-size: .5rem;
+            text-align: center;
+            max-width: 300px
+        }
+
+        .error {
+            display: none;
+            text-align: center;
+            margin-top: 20px
+        }
+
+        .error.show {
+            display: block;
+            animation: pop .3s ease
+        }
+
+        @keyframes pop {
+            from {
+                opacity: 0;
+                transform: scale(.9)
+            }
+
+            to {
+                opacity: 1;
+                transform: scale(1)
+            }
+        }
+
+        .error-box {
+            background: rgba(239, 68, 68, .1);
+            border: 1px solid rgba(239, 68, 68, .2);
+            border-radius: 12px;
+            padding: 16px;
+            color: rgba(255, 255, 255, .5);
+            font-size: .75rem;
+            margin-bottom: 12px
+        }
+
+        .btn {
+            padding: 10px 24px;
+            border-radius: 12px;
+            border: none;
+            background: #8b5cf6;
+            color: #fff;
+            font-family: inherit;
+            font-size: .8rem;
+            font-weight: 600;
+            cursor: pointer
+        }
+
+        .btn:hover {
+            background: #7c3aed
+        }
+    </style>
+</head>
+
+<body>
+    <div class="loader" id="loader">
+        <h1 id="title">Loading Something Important...</h1>
+        <div class="percent" id="percent">0%</div>
+        <div class="bar-container">
+            <div class="bar" id="bar"></div>
+        </div>
+        <div class="message" id="message">Initializing...</div>
+        <div class="sub-message" id="sub-message"></div>
+        <div class="spinner" id="spinner"></div>
+    </div>
+
+    <div class="error" id="error">
+        <div class="error-box" id="error-text"></div>
+        <button class="btn" onclick="location.reload()">🔄 Try Again (it won't work)</button>
+    </div>
+
+    <div class="tip" id="tip"></div>
+
+    <script>
+        const messages = [
+            [0, "Initializing...", "Starting the initialization initializer"],
+            [2, "Loading assets...", "Downloading 47,000 important pixels"],
+            [4, "Reticulating splines...", "Whatever that means"],
+            [6, "Warming up the internet...", "It's cold out there"],
+            [8, "Convincing bits to become bytes...", "They're shy"],
+            [10, "Loading loading screen...", "Yo dawg, I heard you like loading"],
+            [13, "Downloading more RAM...", "Just kidding. Unless...?"],
+            [15, "Consulting the cloud...", "☁️ The cloud says 'no'"],
+            [17, "Untangling the world wide web...", "It's very tangled"],
+            [20, "Polishing pixels...", "Each one individually"],
+            [23, "Teaching AI to load...", "It's learning very slowly"],
+            [25, "Compressing time and space...", "Einstein would NOT approve"],
+            [28, "Buffering the buffer...", "Buffer²"],
+            [30, "Loading bar is loading...", "How meta"],
+            [33, "Asking the server nicely...", "Please? Pretty please?"],
+            [35, "Converting coffee to code...", "☕ → 💻"],
+            [38, "Counting to infinity...", "We're at 47 so far"],
+            [40, "Overthinking this loading screen...", "Should I use a different font?"],
+            [42, "Finding the meaning of life...", "It's 42. Moving on."],
+            [44, "Negotiating with firewall...", "It's being unreasonable"],
+            [46, "Googling how to load faster...", "Stack Overflow says no"],
+            [48, "Loading motivational quotes...", "'Just do it' — Loading Screen"],
+            [50, "Halfway there!", "...or are we?"],
+            [52, "Recalculating estimated time...", "∞ minutes remaining"],
+            [54, "Defragmenting the mainframe...", "Beep boop"],
+            [56, "Syncing with parallel universe...", "The other you finished loading already"],
+            [58, "Converting to dark mode...", "Everything is dark mode now"],
+            [60, "Debugging the loading screen...", "Found 99 bugs. Fixed 1. 137 remaining."],
+            [62, "Rendering invisible elements...", "You can't see them but they're THERE"],
+            [64, "Feeding the hamsters...", "🐹 They power the server"],
+            [66, "Calculating tip for the server...", "15% or 20%?"],
+            [68, "Dusting off old code...", "*achoo* 🤧"],
+            [70, "Loading is 70% done!", "The last 30% takes 70% of the time"],
+            [73, "Almost there...", "(That's what we said at 50%)"],
+            [75, "Three quarters loaded!", "The final quarter is the hardest"],
+            [78, "Wrapping up loose ends...", "There are so many loose ends"],
+            [80, "Preparing to prepare to finish...", "Pre-preparation complete"],
+            [82, "We're in the endgame now...", "*dramatic music*"],
+            [84, "Just a few more seconds...", "(Narrator: it was not a few seconds)"],
+            [86, "Finalizing the finalization...", "Almost done almostly"],
+            [88, "Checking if we missed anything...", "We definitely missed something"],
+            [90, "90%! So close!", "Don't get your hopes up"],
+            [92, "Running final checks...", "Final check 1 of 847"],
+            [94, "Saving your progress...", "Wait, there IS no progress"],
+            [96, "Almost almost done...", "The almostness is almost complete"],
+            [98, "99% chance of completion!", "1% chance of total failure"],
+        ];
+
+        const tips = [
+            "💡 Tip: Close your eyes and count to 10. Nothing will change.",
+            "💡 Tip: This loading screen is the content. There is nothing else.",
+            "💡 Fun fact: You've wasted exactly this many seconds reading this.",
+            "💡 Tip: Try pressing F5. It will NOT help.",
+            "💡 Did you know? Loading screens were invented to test human patience.",
+            "💡 Tip: Touch grass while you wait. Come back in 2-3 business days.",
+            "💡 Fun fact: This page weighs less than 3KB. It's not ACTUALLY loading anything.",
+        ];
+
+        const errors = [
+            "Error: Success not found. Expected: progress. Got: nothing.",
+            "Error 418: I'm a teapot. Loading has been replaced with tea. 🫖",
+            "Error: Task 'finish loading' exceeded maximum attempts (∞).",
+            "FATAL: The loading screen has become self-aware and refuses to continue.",
+            "Error: Ran out of loading to do. Started loading the loading again.",
+            "Error 503: Service Temporarily Unavailable. Service Permanently Unnecessary.",
+        ];
+
+        let progress = 0;
+        let messageIndex = 0;
+        let willError = Math.random() < 0.3; // 30% chance of "error" at 99%
+
+        function update() {
+            // Progress: fast at first, painfully slow near the end
+            let increment;
+            if (progress < 50) increment = 0.3 + Math.random() * 0.8;
+            else if (progress < 80) increment = 0.1 + Math.random() * 0.3;
+            else if (progress < 95) increment = 0.02 + Math.random() * 0.08;
+            else if (progress < 99) increment = 0.005 + Math.random() * 0.02;
+            else increment = 0; // Never reaches 100!
+
+            // Sometimes go backwards slightly
+            if (progress > 30 && Math.random() < 0.03) {
+                increment = -(1 + Math.random() * 3);
+            }
+
+            progress = Math.max(0, Math.min(99.9, progress + increment));
+
+            document.getElementById('percent').textContent = progress.toFixed(1) + '%';
+            document.getElementById('bar').style.width = progress + '%';
+
+            // Messages
+            while (messageIndex < messages.length && progress >= messages[messageIndex][0]) {
+                document.getElementById('message').textContent = messages[messageIndex][1];
+                document.getElementById('sub-message').textContent = messages[messageIndex][2];
+                messageIndex++;
+            }
+
+            // Random tips
+            if (Math.random() < 0.005) {
+                document.getElementById('tip').textContent = tips[Math.floor(Math.random() * tips.length)];
+            }
+
+            // "Error" at 99%
+            if (progress > 99 && willError) {
+                willError = false;
+                progress = 73; // Reset!
+                document.getElementById('message').textContent = "ERROR! Rolling back...";
+                document.getElementById('sub-message').textContent = "All progress has been lost. Starting over from 73%.";
+                messageIndex = 20;
+            }
+
+            // Never actually finish — freeze at 99.9%
+            if (progress >= 99.8) {
+                document.getElementById('message').textContent = "So close... just a tiny bit more...";
+                document.getElementById('sub-message').textContent = "The last 0.1% is the hardest 0.1%";
+                // Randomly "crash"
+                if (Math.random() < 0.002) {
+                    document.getElementById('loader').style.display = 'none';
+                    document.getElementById('error').classList.add('show');
+                    document.getElementById('error-text').textContent = errors[Math.floor(Math.random() * errors.length)];
+                    return;
+                }
+            }
+
+            setTimeout(update, 100 + Math.random() * 300);
+        }
+
+        // Title changes
+        setInterval(() => {
+            const titles = [
+                "Loading Something Important...",
+                "Loading Something...",
+                "Still Loading...",
+                "Loading... Probably...",
+                "Is This Even Loading?",
+                "Loading Loading Loading...",
+                "Please Wait Forever...",
+                "Loading (Don't Hold Your Breath)...",
+            ];
+            document.getElementById('title').textContent = titles[Math.floor(Math.random() * titles.length)];
+        }, 8000);
+
+        update();
+    </script>
+</body>
+
+</html>

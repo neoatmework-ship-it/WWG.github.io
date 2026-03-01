@@ -1,0 +1,598 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dessert Oracle — What Shall You Bake?</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700;800;900&family=Inter:wght@300;400;500;600&display=swap"
+        rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #0a050a;
+            color: #f0dce8;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            overflow-x: hidden
+        }
+
+        .bg-glow {
+            position: fixed;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 800px;
+            height: 600px;
+            background: radial-gradient(ellipse, rgba(180, 60, 120, .08) 0%, transparent 70%);
+            pointer-events: none
+        }
+
+        .container {
+            max-width: 600px;
+            width: 100%;
+            padding: 24px;
+            position: relative;
+            z-index: 1
+        }
+
+        .header {
+            text-align: center;
+            padding: 60px 0 40px
+        }
+
+        .header-icon {
+            font-size: 64px;
+            margin-bottom: 16px;
+            display: block;
+            animation: float 3s ease-in-out infinite
+        }
+
+        @keyframes float {
+
+            0%,
+            100% {
+                transform: translateY(0) rotate(0deg)
+            }
+
+            50% {
+                transform: translateY(-8px) rotate(3deg)
+            }
+        }
+
+        .header h1 {
+            font-family: 'Playfair Display', serif;
+            font-size: 2.8rem;
+            font-weight: 800;
+            letter-spacing: -1px;
+            margin-bottom: 8px;
+            background: linear-gradient(135deg, #f0a0c0, #d070a0, #f0a0c0);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text
+        }
+
+        .header p {
+            color: rgba(240, 220, 232, .35);
+            font-size: .9rem;
+            font-style: italic;
+            line-height: 1.5
+        }
+
+        .quote {
+            text-align: center;
+            padding: 16px 24px;
+            margin-bottom: 32px;
+            border-left: 2px solid rgba(208, 112, 160, .2);
+            border-right: 2px solid rgba(208, 112, 160, .2);
+            color: rgba(240, 220, 232, .3);
+            font-size: .78rem;
+            font-style: italic;
+            line-height: 1.6
+        }
+
+        .quote strong {
+            color: rgba(240, 220, 232, .5)
+        }
+
+        .bake-btn {
+            display: block;
+            width: 100%;
+            padding: 18px;
+            background: linear-gradient(135deg, #a04070, #d070a0);
+            border: none;
+            border-radius: 14px;
+            color: #fff;
+            font-family: 'Playfair Display', serif;
+            font-size: 1.15rem;
+            font-weight: 700;
+            letter-spacing: .5px;
+            cursor: pointer;
+            transition: all .3s;
+            position: relative;
+            overflow: hidden
+        }
+
+        .bake-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 40px rgba(208, 112, 160, .25)
+        }
+
+        .bake-btn:active {
+            transform: scale(.98)
+        }
+
+        .sparkles {
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+            overflow: hidden
+        }
+
+        .sparkle {
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            background: #fff;
+            border-radius: 50%;
+            opacity: 0;
+            animation: sparkle 1.5s infinite
+        }
+
+        @keyframes sparkle {
+            0% {
+                opacity: 0;
+                transform: scale(0)
+            }
+
+            50% {
+                opacity: .8;
+                transform: scale(1)
+            }
+
+            100% {
+                opacity: 0;
+                transform: scale(0) translateY(-20px)
+            }
+        }
+
+        .dessert-card {
+            margin-top: 28px;
+            background: rgba(240, 220, 232, .03);
+            border: 1px solid rgba(208, 112, 160, .12);
+            border-radius: 18px;
+            padding: 28px;
+            display: none;
+            animation: fadeUp .5s ease-out
+        }
+
+        .dessert-card.show {
+            display: block
+        }
+
+        @keyframes fadeUp {
+            from {
+                opacity: 0;
+                transform: translateY(16px)
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0)
+            }
+        }
+
+        .dessert-name {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.6rem;
+            font-weight: 800;
+            text-align: center;
+            margin-bottom: 4px;
+            color: #f0a0c0
+        }
+
+        .dessert-subtitle {
+            text-align: center;
+            color: rgba(240, 220, 232, .3);
+            font-size: .75rem;
+            margin-bottom: 20px;
+            font-style: italic
+        }
+
+        .dessert-divider {
+            width: 60px;
+            height: 1px;
+            background: rgba(208, 112, 160, .2);
+            margin: 0 auto 20px
+        }
+
+        .section-title {
+            font-size: .65rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: rgba(208, 112, 160, .4);
+            margin-bottom: 10px;
+            font-weight: 600
+        }
+
+        .ingredients {
+            list-style: none;
+            margin-bottom: 24px
+        }
+
+        .ingredients li {
+            padding: 6px 0;
+            font-size: .88rem;
+            color: rgba(240, 220, 232, .65);
+            border-bottom: 1px solid rgba(208, 112, 160, .06);
+            display: flex;
+            justify-content: space-between
+        }
+
+        .ingredients li:last-child {
+            border: none
+        }
+
+        .ing-name {
+            display: flex;
+            align-items: center;
+            gap: 8px
+        }
+
+        .ing-emoji {
+            font-size: 1rem
+        }
+
+        .ing-amount {
+            color: rgba(208, 112, 160, .4);
+            font-size: .78rem
+        }
+
+        .method {
+            color: rgba(240, 220, 232, .5);
+            font-size: .85rem;
+            line-height: 1.7;
+            font-style: italic;
+            text-align: center;
+            padding: 16px;
+            background: rgba(208, 112, 160, .04);
+            border-radius: 12px;
+            margin-bottom: 20px
+        }
+
+        .dessert-stats {
+            display: flex;
+            justify-content: center;
+            gap: 24px;
+            margin-top: 16px
+        }
+
+        .stat {
+            text-align: center
+        }
+
+        .stat-val {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: #d070a0
+        }
+
+        .stat-label {
+            font-size: .6rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: rgba(240, 220, 232, .25);
+            margin-top: 2px
+        }
+
+        .vibes {
+            display: flex;
+            gap: 6px;
+            justify-content: center;
+            margin-top: 16px;
+            flex-wrap: wrap
+        }
+
+        .vibe-tag {
+            padding: 4px 12px;
+            background: rgba(208, 112, 160, .06);
+            border: 1px solid rgba(208, 112, 160, .1);
+            border-radius: 100px;
+            font-size: .68rem;
+            color: rgba(240, 220, 232, .4)
+        }
+
+        .history {
+            margin-top: 40px;
+            padding-top: 24px;
+            border-top: 1px solid rgba(208, 112, 160, .08)
+        }
+
+        .history-title {
+            font-size: .65rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: rgba(208, 112, 160, .25);
+            margin-bottom: 12px;
+            text-align: center
+        }
+
+        .history-list {
+            display: flex;
+            flex-direction: column;
+            gap: 6px
+        }
+
+        .history-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 8px 12px;
+            background: rgba(240, 220, 232, .02);
+            border-radius: 8px;
+            font-size: .78rem;
+            color: rgba(240, 220, 232, .35)
+        }
+
+        .history-item .h-num {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: rgba(208, 112, 160, .1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: .6rem;
+            color: rgba(208, 112, 160, .4);
+            flex-shrink: 0
+        }
+
+        .history-item .h-name {
+            flex: 1;
+            font-weight: 500
+        }
+
+        .history-item .h-time {
+            font-size: .65rem;
+            color: rgba(208, 112, 160, .2)
+        }
+
+        footer {
+            margin-top: auto;
+            padding: 40px 24px;
+            text-align: center;
+            color: rgba(240, 220, 232, .15);
+            font-size: .72rem;
+            font-style: italic
+        }
+    </style>
+</head>
+
+<body>
+    <div class="bg-glow"></div>
+    <div class="container">
+        <div class="header">
+            <span class="header-icon">🧁</span>
+            <h1>Dessert Oracle</h1>
+            <p>"Life is uncertain. Eat dessert first."</p>
+        </div>
+        <div class="quote">
+            "One cannot think well, love well, sleep well, if one has not <strong>dined well</strong> — and by dined, we
+            mean dessert."
+            <br>— adapted from Virginia Woolf
+        </div>
+        <button class="bake-btn" id="bake-btn">
+            <div class="sparkles" id="sparkles"></div>
+            ✨ Conjure a Random Dessert
+        </button>
+        <div class="dessert-card" id="dessert-card">
+            <div class="dessert-name" id="dessert-name"></div>
+            <div class="dessert-subtitle" id="dessert-subtitle"></div>
+            <div class="dessert-divider"></div>
+            <div class="section-title">Ingredients</div>
+            <ul class="ingredients" id="ingredients"></ul>
+            <div class="section-title">The Method</div>
+            <div class="method" id="method"></div>
+            <div class="dessert-stats">
+                <div class="stat">
+                    <div class="stat-val" id="stat-time"></div>
+                    <div class="stat-label">Minutes</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-val" id="stat-serves"></div>
+                    <div class="stat-label">Serves</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-val" id="stat-sweet"></div>
+                    <div class="stat-label">Sweetness</div>
+                </div>
+            </div>
+            <div class="vibes" id="vibes"></div>
+        </div>
+        <div class="history" id="history-section" style="display:none">
+            <div class="history-title">Previously Conjured</div>
+            <div class="history-list" id="history-list"></div>
+        </div>
+    </div>
+    <footer>"A party without cake is just a meeting." — Julia Child</footer>
+
+    <script>
+        const TYPES = [
+            { name: 'Cake', emoji: '🎂', form: 'layered and frosted' },
+            { name: 'Pie', emoji: '🥧', form: 'golden-crusted' },
+            { name: 'Tart', emoji: '🍰', form: 'delicate and elegant' },
+            { name: 'Crumble', emoji: '🍪', form: 'rustic and crumbly' },
+            { name: 'Pudding', emoji: '🍮', form: 'silky and creamy' },
+            { name: 'Mousse', emoji: '🍫', form: 'airy and cloud-like' },
+            { name: 'Ice Cream', emoji: '🍨', form: 'frozen and dreamy' },
+            { name: 'Pavlova', emoji: '🍓', form: 'crisp-shelled and marshmallowy' },
+            { name: 'Soufflé', emoji: '🧁', form: 'impossibly risen' },
+            { name: 'Crêpes', emoji: '🥞', form: 'paper-thin and folded' },
+            { name: 'Brownie Stack', emoji: '🍫', form: 'fudgy and towering' },
+            { name: 'Panna Cotta', emoji: '🍮', form: 'wobbly and set just right' },
+        ];
+        const FLAVORS = [
+            { name: 'Dark Chocolate', emoji: '🍫', amount: '200g, 70% cacao' },
+            { name: 'Vanilla Bean', emoji: '🍦', amount: '1 pod, seeds scraped' },
+            { name: 'Lemon', emoji: '🍋', amount: 'zest of 2, juice of 1' },
+            { name: 'Strawberry', emoji: '🍓', amount: '300g, hulled' },
+            { name: 'Salted Caramel', emoji: '🍯', amount: '½ cup, homemade' },
+            { name: 'Raspberry', emoji: '🔴', amount: '2 cups, fresh' },
+            { name: 'Pistachio', emoji: '🟢', amount: '100g, ground fine' },
+            { name: 'Espresso', emoji: '☕', amount: '2 shots, cooled' },
+            { name: 'Mango', emoji: '🥭', amount: '2 ripe, puréed' },
+            { name: 'Rose Water', emoji: '🌹', amount: '1 tsp, Persian' },
+            { name: 'Matcha', emoji: '🍵', amount: '2 tbsp, ceremonial grade' },
+            { name: 'Passion Fruit', emoji: '🟡', amount: '4, pulp scooped' },
+            { name: 'Coconut', emoji: '🥥', amount: '1 cup, toasted flakes' },
+            { name: 'Blood Orange', emoji: '🍊', amount: 'juice and zest of 3' },
+            { name: 'Lavender', emoji: '💜', amount: '1 tbsp, dried culinary' },
+            { name: 'Cinnamon', emoji: '🟤', amount: '2 sticks + 1 tsp ground' },
+        ];
+        const BASES = [
+            { name: 'Butter', emoji: '🧈', amount: '225g, room temperature' },
+            { name: 'Heavy Cream', emoji: '🥛', amount: '2 cups, cold' },
+            { name: 'Eggs', emoji: '🥚', amount: '4 large, separated' },
+            { name: 'Flour', emoji: '🌾', amount: '2 cups, sifted' },
+            { name: 'Sugar', emoji: '🍬', amount: '1 cup, fine caster' },
+            { name: 'Cream Cheese', emoji: '🧀', amount: '250g, softened' },
+            { name: 'Mascarpone', emoji: '🧈', amount: '250g, chilled' },
+            { name: 'Greek Yogurt', emoji: '🥛', amount: '1 cup, full-fat' },
+            { name: 'Almond Flour', emoji: '🥜', amount: '1½ cups' },
+            { name: 'Condensed Milk', emoji: '🥛', amount: '1 can, sweetened' },
+            { name: 'Ricotta', emoji: '🧀', amount: '250g, drained' },
+            { name: 'Brown Sugar', emoji: '🟤', amount: '¾ cup, packed' },
+        ];
+        const TOPPINGS = [
+            { name: 'Whipped Cream', emoji: '🍦', amount: 'generous clouds' },
+            { name: 'Fresh Berries', emoji: '🍓', amount: 'scattered on top' },
+            { name: 'Chocolate Shavings', emoji: '🍫', amount: 'curled with a peeler' },
+            { name: 'Caramel Drizzle', emoji: '🍯', amount: 'zigzagged artfully' },
+            { name: 'Powdered Sugar', emoji: '⬜', amount: 'dusted like snow' },
+            { name: 'Toasted Almonds', emoji: '🥜', amount: 'roughly chopped' },
+            { name: 'Edible Flowers', emoji: '🌸', amount: 'for beauty' },
+            { name: 'Mint Leaves', emoji: '🌿', amount: '2 perfect sprigs' },
+            { name: 'Honeycomb', emoji: '🍯', amount: 'shards, golden' },
+            { name: 'Meringue Kisses', emoji: '☁️', amount: 'tiny, torched' },
+            { name: 'Gold Leaf', emoji: '✨', amount: 'a single sheet, because why not' },
+            { name: 'Sea Salt Flakes', emoji: '🧂', amount: 'a dramatic pinch' },
+            { name: 'Candied Pecans', emoji: '🥜', amount: 'warm and crunchy' },
+            { name: 'Cookie Crumble', emoji: '🍪', amount: 'crushed on top' },
+        ];
+        const EXTRAS = [
+            { name: 'Vanilla Extract', emoji: '🫘', amount: '2 tsp, real please' },
+            { name: 'Pinch of Salt', emoji: '🧂', amount: 'to make it sing' },
+            { name: 'Dark Rum', emoji: '🥃', amount: 'a splash, for the adults' },
+            { name: 'Orange Liqueur', emoji: '🍊', amount: '2 tbsp' },
+            { name: 'Honey', emoji: '🍯', amount: '3 tbsp, wildflower' },
+            { name: 'Maple Syrup', emoji: '🍁', amount: '2 tbsp, grade A' },
+            { name: 'Nutmeg', emoji: '🟤', amount: 'freshly grated' },
+            { name: 'Cardamom', emoji: '💚', amount: '3 pods, crushed' },
+            { name: 'Gelatin', emoji: '🧊', amount: '2 sheets, bloomed' },
+            { name: 'Baking Powder', emoji: '⬜', amount: '1 tsp' },
+        ];
+        const ADJECTIVES = ['Midnight', 'Velvet', 'Grandma\'s Secret', 'Cloud Nine', 'Enchanted', 'Golden', 'Forbidden', 'Sunday Morning', 'Moonlit', 'Whimsical', 'Decadent', 'Heavenly', 'Blushing', 'Dreamy', 'Stolen', 'After-Midnight'];
+        const METHODS = [
+            'Fold the batter with the patience of someone who knows that the best things in life cannot be rushed.',
+            'Whip the cream until it holds peaks like tiny snow-capped mountains, then fold it in like a lullaby.',
+            'Let everything come together in a bowl warmed by your hands. This is alchemy, not chemistry.',
+            'The oven does the real work. Your job is to resist opening the door. Trust the process.',
+            'Layer with care — each stratum a love letter to the one who will taste it. No shortcuts.',
+            'Chill overnight. The hardest part is waiting. But patience is the secret ingredient no recipe ever prints.',
+            'Torch the top until it cracks like a stained-glass window. The sound alone is worth the effort.',
+            'Mix until just combined — over-mixing is the enemy of joy. A few lumps are a sign of character.',
+        ];
+        const VIBES_LIST = ['date night', 'cozy sunday', 'fancy dinner party', 'midnight craving', 'grandma\'s kitchen', 'afternoon tea', 'celebration', 'self-care', 'impress someone', 'breakfast in bed', 'no reason needed', 'because you deserve it'];
+
+        function pick(a) { return a[Math.floor(Math.random() * a.length)] }
+        function pickN(a, n) { const s = [...a], r = []; for (let i = 0; i < Math.min(n, s.length); i++) { const idx = Math.floor(Math.random() * s.length); r.push(s.splice(idx, 1)[0]) } return r }
+
+        let history = [];
+
+        function generate() {
+            const type = pick(TYPES);
+            const flavor = pick(FLAVORS);
+            const bases = pickN(BASES, 2 + Math.floor(Math.random() * 2));
+            const toppings = pickN(TOPPINGS, 1 + Math.floor(Math.random() * 3));
+            const extras = pickN(EXTRAS, 1 + Math.floor(Math.random() * 2));
+            const adj = pick(ADJECTIVES);
+            const method = pick(METHODS);
+            const vibes = pickN(VIBES_LIST, 2 + Math.floor(Math.random() * 2));
+
+            const name = `${adj} ${flavor.name} ${type.name}`;
+            const subtitle = `A ${type.form} creation to make hearts flutter`;
+
+            const allIng = [flavor, ...bases, ...extras, ...toppings];
+
+            const time = 15 + Math.floor(Math.random() * 50);
+            const serves = 2 + Math.floor(Math.random() * 6);
+            const sweets = ['🍬', '🍬🍬', '🍬🍬🍬', '💀'];
+            const sweet = sweets[Math.floor(Math.random() * sweets.length)];
+
+            document.getElementById('dessert-name').textContent = name;
+            document.getElementById('dessert-subtitle').textContent = subtitle;
+            const list = document.getElementById('ingredients');
+            list.innerHTML = '';
+            allIng.forEach(ing => {
+                const li = document.createElement('li');
+                li.innerHTML = `<span class="ing-name"><span class="ing-emoji">${ing.emoji}</span>${ing.name}</span><span class="ing-amount">${ing.amount}</span>`;
+                list.appendChild(li);
+            });
+            document.getElementById('method').textContent = method;
+            document.getElementById('stat-time').textContent = time;
+            document.getElementById('stat-serves').textContent = serves;
+            document.getElementById('stat-sweet').textContent = sweet;
+
+            const vibesEl = document.getElementById('vibes');
+            vibesEl.innerHTML = '';
+            vibes.forEach(v => { const span = document.createElement('span'); span.className = 'vibe-tag'; span.textContent = v; vibesEl.appendChild(span) });
+
+            const card = document.getElementById('dessert-card');
+            card.classList.remove('show'); void card.offsetWidth; card.classList.add('show');
+
+            // Sparkle burst
+            const sparkles = document.getElementById('sparkles');
+            sparkles.innerHTML = '';
+            for (let i = 0; i < 12; i++) {
+                const s = document.createElement('div'); s.className = 'sparkle';
+                s.style.left = Math.random() * 100 + '%'; s.style.top = Math.random() * 100 + '%';
+                s.style.animationDelay = Math.random() * .5 + 's';
+                sparkles.appendChild(s);
+                setTimeout(() => s.remove(), 1500);
+            }
+
+            history.unshift({ name, time: new Date() });
+            if (history.length > 8) history.pop();
+            renderHistory();
+        }
+
+        function renderHistory() {
+            if (history.length < 2) { document.getElementById('history-section').style.display = 'none'; return }
+            document.getElementById('history-section').style.display = 'block';
+            const list = document.getElementById('history-list');
+            list.innerHTML = '';
+            history.slice(1).forEach((h, i) => {
+                const div = document.createElement('div'); div.className = 'history-item';
+                const ago = Math.floor((Date.now() - h.time.getTime()) / 60000);
+                const timeStr = ago < 1 ? 'just now' : ago + 'm ago';
+                div.innerHTML = `<span class="h-num">${i + 2}</span><span class="h-name">${h.name}</span><span class="h-time">${timeStr}</span>`;
+                list.appendChild(div);
+            });
+        }
+
+        document.getElementById('bake-btn').addEventListener('click', generate);
+        generate();
+    </script>
+</body>
+
+</html>

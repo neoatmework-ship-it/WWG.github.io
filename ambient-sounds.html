@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ambient — Sounds of Nature</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #080810;
+            color: #eee;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 24px
+        }
+
+        .container {
+            max-width: 600px;
+            width: 100%;
+            text-align: center
+        }
+
+        .header {
+            margin-bottom: 48px
+        }
+
+        .logo {
+            font-size: 2rem;
+            font-weight: 800;
+            letter-spacing: -1px;
+            margin-bottom: 6px;
+            background: linear-gradient(135deg, #22d3ee, #4ade80);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text
+        }
+
+        .sub {
+            color: rgba(255, 255, 255, .3);
+            font-size: .85rem
+        }
+
+        .sounds-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 14px;
+            margin-bottom: 32px
+        }
+
+        .sound-card {
+            background: rgba(255, 255, 255, .03);
+            border: 1px solid rgba(255, 255, 255, .06);
+            border-radius: 16px;
+            padding: 20px 12px;
+            cursor: pointer;
+            transition: all .3s;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+            user-select: none
+        }
+
+        .sound-card:hover {
+            background: rgba(255, 255, 255, .06);
+            transform: translateY(-2px)
+        }
+
+        .sound-card.active {
+            background: rgba(34, 211, 238, .08);
+            border-color: rgba(34, 211, 238, .25);
+            box-shadow: 0 0 24px rgba(34, 211, 238, .1)
+        }
+
+        .sound-icon {
+            font-size: 32px
+        }
+
+        .sound-name {
+            font-size: .78rem;
+            font-weight: 600;
+            color: rgba(255, 255, 255, .6)
+        }
+
+        .sound-vol {
+            width: 100%;
+            margin-top: 4px
+        }
+
+        .sound-vol input {
+            width: 100%;
+            -webkit-appearance: none;
+            height: 3px;
+            background: rgba(255, 255, 255, .1);
+            border-radius: 2px;
+            outline: none;
+            opacity: 0;
+            transition: opacity .2s
+        }
+
+        .sound-card.active .sound-vol input {
+            opacity: 1
+        }
+
+        .sound-vol input::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #22d3ee;
+            cursor: pointer
+        }
+
+        .master-vol {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            justify-content: center;
+            margin-top: 24px;
+            padding: 16px;
+            background: rgba(255, 255, 255, .03);
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, .06)
+        }
+
+        .master-vol label {
+            font-size: .75rem;
+            color: rgba(255, 255, 255, .35)
+        }
+
+        .master-vol input {
+            width: 150px;
+            -webkit-appearance: none;
+            height: 4px;
+            background: rgba(255, 255, 255, .1);
+            border-radius: 2px;
+            outline: none
+        }
+
+        .master-vol input::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: #22d3ee;
+            cursor: pointer;
+            box-shadow: 0 2px 8px rgba(34, 211, 238, .3)
+        }
+
+        .timer-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            justify-content: center;
+            margin-top: 16px
+        }
+
+        .timer-btn {
+            padding: 6px 14px;
+            background: rgba(255, 255, 255, .06);
+            border: 1px solid rgba(255, 255, 255, .08);
+            border-radius: 8px;
+            color: #aaa;
+            font-size: .75rem;
+            font-family: inherit;
+            cursor: pointer;
+            transition: all .2s
+        }
+
+        .timer-btn:hover {
+            background: rgba(255, 255, 255, .1)
+        }
+
+        .timer-btn.active {
+            background: rgba(34, 211, 238, .12);
+            border-color: rgba(34, 211, 238, .25);
+            color: #22d3ee
+        }
+
+        @media(max-width:480px) {
+            .sounds-grid {
+                grid-template-columns: repeat(2, 1fr)
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="logo">🌿 Ambient</div>
+            <div class="sub">Mix nature sounds for focus, sleep, or relaxation</div>
+        </div>
+        <div class="sounds-grid" id="sounds-grid"></div>
+        <div class="master-vol">
+            <label>Master</label>
+            <input type="range" id="master-vol" min="0" max="100" value="70">
+        </div>
+        <div class="timer-row">
+            <span style="font-size:.75rem;color:rgba(255,255,255,.3)">Timer:</span>
+            <button class="timer-btn" data-min="0">Off</button>
+            <button class="timer-btn" data-min="15">15m</button>
+            <button class="timer-btn" data-min="30">30m</button>
+            <button class="timer-btn" data-min="60">1h</button>
+            <button class="timer-btn" data-min="120">2h</button>
+        </div>
+    </div>
+    <script>
+        const SOUNDS = [
+            { name: 'Rain', icon: '🌧️', freq: [200, 400], type: 'rain' },
+            { name: 'Thunder', icon: '⛈️', freq: [60, 120], type: 'rumble' },
+            { name: 'Ocean', icon: '🌊', freq: [150, 350], type: 'ocean' },
+            { name: 'Wind', icon: '💨', freq: [300, 600], type: 'wind' },
+            { name: 'Fire', icon: '🔥', freq: [250, 500], type: 'fire' },
+            { name: 'Birds', icon: '🐦', freq: [800, 2000], type: 'birds' },
+            { name: 'Creek', icon: '💧', freq: [400, 800], type: 'creek' },
+            { name: 'Forest', icon: '🌲', freq: [100, 300], type: 'forest' },
+            { name: 'Night', icon: '🦗', freq: [2000, 4000], type: 'night' },
+        ];
+
+        let audioCtx = null, masterGain = null, activeSounds = {}, timer = null;
+
+        function getCtx() {
+            if (!audioCtx) { audioCtx = new (window.AudioContext || window.webkitAudioContext)(); masterGain = audioCtx.createGain(); masterGain.gain.value = .7; masterGain.connect(audioCtx.destination) }
+            return audioCtx;
+        }
+
+        function createNoise(sound) {
+            const ctx = getCtx();
+            const bufferSize = 2 * ctx.sampleRate;
+            const buffer = ctx.createBuffer(2, bufferSize, ctx.sampleRate);
+
+            for (let ch = 0; ch < 2; ch++) {
+                const data = buffer.getChannelData(ch);
+                for (let i = 0; i < bufferSize; i++) {
+                    data[i] = (Math.random() * 2 - 1);
+                    // Shape noise based on type
+                    if (sound.type === 'rain') data[i] *= Math.random() > .7 ? 1 : .3;
+                    else if (sound.type === 'ocean') data[i] *= Math.sin(i / ctx.sampleRate * 0.15) * 0.5 + 0.5;
+                    else if (sound.type === 'wind') data[i] *= Math.sin(i / ctx.sampleRate * 0.08) * 0.5 + 0.5;
+                    else if (sound.type === 'fire') data[i] *= Math.random() > .5 ? 1 : .2;
+                    else if (sound.type === 'birds') { data[i] *= Math.random() > .95 ? 1 : 0; data[i] *= Math.sin(i / (ctx.sampleRate / 1500)) }
+                    else if (sound.type === 'night') { data[i] *= Math.random() > .97 ? 1 : 0; data[i] *= Math.sin(i / (ctx.sampleRate / 3000)) * 0.3 }
+                    else if (sound.type === 'creek') data[i] *= Math.sin(i / ctx.sampleRate * 2) * 0.5 + 0.5;
+                }
+            }
+
+            const source = ctx.createBufferSource(); source.buffer = buffer; source.loop = true;
+
+            const filter = ctx.createBiquadFilter(); filter.type = 'bandpass'; filter.frequency.value = (sound.freq[0] + sound.freq[1]) / 2; filter.Q.value = 0.5;
+
+            const gain = ctx.createGain(); gain.gain.value = .5;
+
+            source.connect(filter); filter.connect(gain); gain.connect(masterGain);
+            source.start();
+
+            return { source, gain, filter };
+        }
+
+        const grid = document.getElementById('sounds-grid');
+        SOUNDS.forEach((s, i) => {
+            const card = document.createElement('div'); card.className = 'sound-card'; card.dataset.index = i;
+            card.innerHTML = `<span class="sound-icon">${s.icon}</span><span class="sound-name">${s.name}</span><div class="sound-vol"><input type="range" min="0" max="100" value="50"></div>`;
+            card.addEventListener('click', e => {
+                if (e.target.type === 'range') return;
+                if (activeSounds[i]) { activeSounds[i].source.stop(); delete activeSounds[i]; card.classList.remove('active') }
+                else { activeSounds[i] = createNoise(s); card.classList.add('active') }
+            });
+            card.querySelector('input').addEventListener('input', e => { if (activeSounds[i]) activeSounds[i].gain.gain.value = e.target.value / 100 });
+            grid.appendChild(card);
+        });
+
+        document.getElementById('master-vol').addEventListener('input', e => { if (masterGain) masterGain.gain.value = e.target.value / 100 });
+
+        document.querySelectorAll('.timer-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.timer-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                clearTimeout(timer);
+                const min = parseInt(btn.dataset.min);
+                if (min > 0) { timer = setTimeout(() => { Object.keys(activeSounds).forEach(k => { activeSounds[k].source.stop(); delete activeSounds[k] }); document.querySelectorAll('.sound-card').forEach(c => c.classList.remove('active')) }, min * 60000) }
+            });
+        });
+    </script>
+</body>
+
+</html>

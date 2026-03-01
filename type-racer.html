@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Type Racer — Test Your Speed</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap"
+        rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #0a0a12;
+            color: #eee;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 24px
+        }
+
+        .container {
+            max-width: 700px;
+            width: 100%
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px
+        }
+
+        .logo {
+            font-size: 2rem;
+            font-weight: 800;
+            letter-spacing: -1px;
+            margin-bottom: 6px;
+            background: linear-gradient(135deg, #f59e0b, #ef4444);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text
+        }
+
+        .sub {
+            color: rgba(255, 255, 255, .35);
+            font-size: .85rem
+        }
+
+        .stats-bar {
+            display: flex;
+            gap: 24px;
+            justify-content: center;
+            margin-bottom: 32px
+        }
+
+        .stat-box {
+            text-align: center
+        }
+
+        .stat-value {
+            font-size: 1.8rem;
+            font-weight: 800;
+            color: #f59e0b
+        }
+
+        .stat-label {
+            font-size: .7rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: rgba(255, 255, 255, .3);
+            margin-top: 2px
+        }
+
+        .text-display {
+            background: rgba(255, 255, 255, .04);
+            border: 1px solid rgba(255, 255, 255, .08);
+            border-radius: 16px;
+            padding: 28px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 1.15rem;
+            line-height: 2;
+            margin-bottom: 24px;
+            min-height: 140px;
+            position: relative;
+            user-select: none
+        }
+
+        .char {
+            transition: color .1s
+        }
+
+        .char.correct {
+            color: #4ade80
+        }
+
+        .char.incorrect {
+            color: #ef4444;
+            text-decoration: underline
+        }
+
+        .char.current {
+            background: rgba(245, 158, 11, .25);
+            border-radius: 2px
+        }
+
+        .char.pending {
+            color: rgba(255, 255, 255, .35)
+        }
+
+        .input-area {
+            position: relative
+        }
+
+        .input-area input {
+            width: 100%;
+            padding: 16px 20px;
+            background: rgba(255, 255, 255, .06);
+            border: 2px solid rgba(255, 255, 255, .1);
+            border-radius: 14px;
+            color: #fff;
+            font-size: 1rem;
+            font-family: 'JetBrains Mono', monospace;
+            outline: none;
+            transition: border-color .2s
+        }
+
+        .input-area input:focus {
+            border-color: rgba(245, 158, 11, .5)
+        }
+
+        .input-area input:disabled {
+            opacity: .4
+        }
+
+        .restart-btn {
+            display: block;
+            margin: 20px auto 0;
+            padding: 12px 28px;
+            background: linear-gradient(135deg, #f59e0b, #ef4444);
+            border: none;
+            border-radius: 12px;
+            color: #fff;
+            font-weight: 700;
+            font-family: inherit;
+            font-size: .9rem;
+            cursor: pointer;
+            transition: transform .2s
+        }
+
+        .restart-btn:hover {
+            transform: translateY(-2px)
+        }
+
+        .result-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, .75);
+            z-index: 100;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column
+        }
+
+        .result-overlay.show {
+            display: flex
+        }
+
+        .result-card {
+            background: #12121a;
+            border: 1px solid rgba(255, 255, 255, .1);
+            border-radius: 20px;
+            padding: 40px;
+            text-align: center;
+            max-width: 400px
+        }
+
+        .result-card h2 {
+            font-size: 1.8rem;
+            font-weight: 800;
+            margin-bottom: 20px;
+            background: linear-gradient(135deg, #f59e0b, #ef4444);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent
+        }
+
+        .result-stats {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            margin-bottom: 24px
+        }
+
+        .r-stat {
+            background: rgba(255, 255, 255, .04);
+            border-radius: 12px;
+            padding: 14px
+        }
+
+        .r-stat-val {
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: #f59e0b
+        }
+
+        .r-stat-label {
+            font-size: .7rem;
+            color: rgba(255, 255, 255, .35);
+            text-transform: uppercase;
+            letter-spacing: .5px;
+            margin-top: 4px
+        }
+
+        .progress-bar {
+            height: 4px;
+            background: rgba(255, 255, 255, .06);
+            border-radius: 2px;
+            margin-bottom: 24px;
+            overflow: hidden
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #f59e0b, #ef4444);
+            border-radius: 2px;
+            transition: width .15s;
+            width: 0
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="logo">⌨️ Type Racer</div>
+            <div class="sub">How fast can you type?</div>
+        </div>
+        <div class="stats-bar">
+            <div class="stat-box">
+                <div class="stat-value" id="wpm">0</div>
+                <div class="stat-label">WPM</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-value" id="accuracy">100%</div>
+                <div class="stat-label">Accuracy</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-value" id="timer">0s</div>
+                <div class="stat-label">Time</div>
+            </div>
+        </div>
+        <div class="progress-bar">
+            <div class="progress-fill" id="progress"></div>
+        </div>
+        <div class="text-display" id="text-display"></div>
+        <div class="input-area">
+            <input type="text" id="input" placeholder="Start typing here..." autocomplete="off" autofocus>
+        </div>
+        <button class="restart-btn" id="btn-restart">↻ New Quote</button>
+    </div>
+    <div class="result-overlay" id="result-overlay">
+        <div class="result-card">
+            <h2>Race Complete!</h2>
+            <div class="result-stats">
+                <div class="r-stat">
+                    <div class="r-stat-val" id="r-wpm">0</div>
+                    <div class="r-stat-label">WPM</div>
+                </div>
+                <div class="r-stat">
+                    <div class="r-stat-val" id="r-acc">0%</div>
+                    <div class="r-stat-label">Accuracy</div>
+                </div>
+                <div class="r-stat">
+                    <div class="r-stat-val" id="r-time">0s</div>
+                    <div class="r-stat-label">Time</div>
+                </div>
+                <div class="r-stat">
+                    <div class="r-stat-val" id="r-chars">0</div>
+                    <div class="r-stat-label">Characters</div>
+                </div>
+            </div>
+            <button class="restart-btn" id="btn-retry">Try Again →</button>
+        </div>
+    </div>
+    <script>
+        const QUOTES = [
+            "The only way to do great work is to love what you do. If you haven't found it yet, keep looking.",
+            "In the middle of difficulty lies opportunity. Every challenge is a chance to grow stronger.",
+            "The future belongs to those who believe in the beauty of their dreams and work to make them real.",
+            "Life is what happens when you're busy making other plans. Enjoy every moment as it comes.",
+            "It does not matter how slowly you go as long as you do not stop moving forward toward your goal.",
+            "Success is not final, failure is not fatal. It is the courage to continue that truly counts.",
+            "The best time to plant a tree was twenty years ago. The second best time is right now.",
+            "Be yourself; everyone else is already taken. Authenticity is the greatest gift you can offer.",
+            "Two things are infinite: the universe and human stupidity. I am not sure about the universe.",
+            "A room without books is like a body without a soul. Fill your world with knowledge and wonder.",
+            "Not all those who wander are lost. Sometimes the journey itself is the destination we seek.",
+            "Do what you can, with what you have, where you are. That is always more than enough.",
+            "The greatest glory in living lies not in never falling, but in rising every time we fall.",
+            "Imagination is more important than knowledge. Knowledge is limited but imagination encircles the world."
+
+        ];
+
+        let text = '', pos = 0, errors = 0, started = false, startTime = 0, totalTyped = 0, timerInterval;
+        const display = document.getElementById('text-display'), input = document.getElementById('input');
+
+        function init() {
+            text = QUOTES[Math.floor(Math.random() * QUOTES.length)];
+            pos = 0; errors = 0; started = false; totalTyped = 0;
+            clearInterval(timerInterval);
+            document.getElementById('wpm').textContent = '0';
+            document.getElementById('accuracy').textContent = '100%';
+            document.getElementById('timer').textContent = '0s';
+            document.getElementById('progress').style.width = '0%';
+            document.getElementById('result-overlay').classList.remove('show');
+            input.value = ''; input.disabled = false; input.focus();
+            renderText();
+        }
+
+        function renderText() {
+            display.innerHTML = text.split('').map((c, i) => {
+                let cls = 'pending';
+                if (i < pos) { cls = input.value[i] === c ? 'correct' : 'incorrect' }
+                else if (i === pos) { cls = 'current pending' }
+                return `<span class="char ${cls}">${c === '' ? '&nbsp;' : c.replace(/</g, '&lt;')}</span>`;
+            }).join('');
+        }
+
+        input.addEventListener('input', () => {
+            if (!started) { started = true; startTime = Date.now(); timerInterval = setInterval(updateStats, 100) }
+            const val = input.value;
+            totalTyped++;
+            pos = val.length;
+            errors = 0;
+            for (let i = 0; i < val.length; i++) { if (val[i] !== text[i]) errors++ }
+            document.getElementById('progress').style.width = (pos / text.length * 100) + '%';
+            renderText();
+            if (pos >= text.length) finish();
+        });
+
+        function updateStats() {
+            const elapsed = (Date.now() - startTime) / 1000;
+            const words = pos / 5;
+            const wpm = Math.round(words / (elapsed / 60)) || 0;
+            const acc = totalTyped > 0 ? Math.round(((totalTyped - errors) / totalTyped) * 100) : 100;
+            document.getElementById('wpm').textContent = wpm;
+            document.getElementById('accuracy').textContent = acc + '%';
+            document.getElementById('timer').textContent = Math.round(elapsed) + 's';
+        }
+
+        function finish() {
+            clearInterval(timerInterval);
+            input.disabled = true;
+            const elapsed = (Date.now() - startTime) / 1000;
+            const words = text.length / 5;
+            const wpm = Math.round(words / (elapsed / 60));
+            const acc = Math.round(((totalTyped - errors) / totalTyped) * 100);
+            document.getElementById('r-wpm').textContent = wpm;
+            document.getElementById('r-acc').textContent = acc + '%';
+            document.getElementById('r-time').textContent = Math.round(elapsed) + 's';
+            document.getElementById('r-chars').textContent = text.length;
+            document.getElementById('result-overlay').classList.add('show');
+        }
+
+        document.getElementById('btn-restart').addEventListener('click', init);
+        document.getElementById('btn-retry').addEventListener('click', init);
+        init();
+    </script>
+</body>
+
+</html>

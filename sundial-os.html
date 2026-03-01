@@ -1,0 +1,855 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Digital Sundial OS ☀️</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Cinzel:wght@400;700&family=Inter:wght@400;600;700&display=swap"
+        rel="stylesheet">
+    <style>
+        :root {
+            --bg: #0c0a09;
+            --brass: #c9a84c;
+            --brass2: #a67c2e;
+            --dark-brass: #3d2e0f;
+            --panel: #1c1917;
+            --panel2: #292524;
+            --brd: #44403c;
+            --t: #fafaf9;
+            --t2: #a8a29e;
+            --grn: #4ade80;
+            --red: #f87171;
+            --cyan: #22d3ee
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg);
+            color: var(--t);
+            min-height: 100vh;
+            overflow-x: hidden
+        }
+
+        .app {
+            display: flex;
+            flex-direction: column;
+            height: 100vh
+        }
+
+        .top {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 8px 16px;
+            background: var(--panel);
+            border-bottom: 1px solid var(--brd)
+        }
+
+        .logo {
+            font-family: 'Cinzel', serif;
+            font-size: 1rem;
+            color: var(--brass);
+            display: flex;
+            align-items: center;
+            gap: 8px
+        }
+
+        .logo small {
+            font-family: 'Inter', sans-serif;
+            font-size: .5rem;
+            color: var(--t2);
+            font-weight: 400
+        }
+
+        .top-r {
+            font-size: .55rem;
+            color: var(--t2);
+            font-family: 'JetBrains Mono', monospace
+        }
+
+        .tabs {
+            display: flex;
+            background: var(--panel);
+            border-bottom: 1px solid var(--brd)
+        }
+
+        .tab {
+            padding: 8px 16px;
+            font-size: .7rem;
+            font-weight: 600;
+            color: var(--t2);
+            cursor: pointer;
+            border-bottom: 2px solid transparent
+        }
+
+        .tab:hover {
+            color: var(--t)
+        }
+
+        .tab.active {
+            color: var(--brass);
+            border-color: var(--brass)
+        }
+
+        .main {
+            flex: 1;
+            overflow: auto;
+            display: flex
+        }
+
+        .panel {
+            display: none;
+            width: 100%;
+            height: 100%
+        }
+
+        .panel.active {
+            display: flex
+        }
+
+        .side {
+            width: 280px;
+            background: var(--panel);
+            border-right: 1px solid var(--brd);
+            padding: 12px;
+            overflow-y: auto;
+            flex-shrink: 0
+        }
+
+        .side h3 {
+            font-size: .65rem;
+            color: var(--brass);
+            text-transform: uppercase;
+            letter-spacing: .5px;
+            margin: 10px 0 4px;
+            font-family: 'Cinzel', serif
+        }
+
+        .side h3:first-child {
+            margin-top: 0
+        }
+
+        .ctl {
+            margin-bottom: 6px
+        }
+
+        .ctl label {
+            display: block;
+            font-size: .6rem;
+            color: var(--t2);
+            margin-bottom: 2px
+        }
+
+        .ctl .v {
+            float: right;
+            color: var(--brass);
+            font-family: 'JetBrains Mono', monospace;
+            font-size: .55rem
+        }
+
+        .ctl input[type=range] {
+            width: 100%;
+            accent-color: var(--brass)
+        }
+
+        .ctl select,
+        .ctl input[type=number] {
+            width: 100%;
+            padding: 4px 6px;
+            background: var(--bg);
+            border: 1px solid var(--brd);
+            border-radius: 4px;
+            color: var(--t);
+            font-size: .65rem;
+            font-family: inherit
+        }
+
+        .area {
+            flex: 1;
+            position: relative;
+            overflow: hidden;
+            background: var(--bg)
+        }
+
+        .btn {
+            padding: 5px 12px;
+            border-radius: 6px;
+            border: 1px solid var(--brd);
+            background: var(--panel2);
+            color: var(--t);
+            font-family: inherit;
+            font-size: .6rem;
+            font-weight: 600;
+            cursor: pointer
+        }
+
+        .btn:hover {
+            background: rgba(255, 255, 255, .05)
+        }
+
+        .btn-b {
+            background: rgba(201, 168, 76, .1);
+            border-color: var(--brass2);
+            color: var(--brass)
+        }
+
+        .btn-row {
+            display: flex;
+            gap: 4px;
+            flex-wrap: wrap;
+            margin: 6px 0
+        }
+
+        .stat {
+            font-size: .58rem;
+            font-family: 'JetBrains Mono', monospace;
+            color: var(--t2);
+            line-height: 1.9
+        }
+
+        .stat span {
+            color: var(--brass);
+            font-weight: 600
+        }
+
+        .stat .g {
+            color: var(--grn)
+        }
+
+        .stat .r {
+            color: var(--red)
+        }
+
+        .stat .c {
+            color: var(--cyan)
+        }
+
+        canvas {
+            display: block
+        }
+
+        .astrolabe {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center
+        }
+
+        .footer {
+            height: 24px;
+            background: var(--panel);
+            border-top: 1px solid var(--brd);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 12px;
+            font-size: .5rem;
+            color: var(--t2)
+        }
+
+        .vid-wrap {
+            width: 100%;
+            max-width: 400px;
+            border-radius: 8px;
+            overflow: hidden;
+            border: 1px solid var(--brd);
+            background: #000;
+            position: relative
+        }
+
+        .vid-wrap video,
+        .vid-wrap canvas {
+            width: 100%;
+            display: block
+        }
+
+        .crosshair {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 40px;
+            height: 40px;
+            transform: translate(-50%, -50%);
+            border: 1px solid rgba(201, 168, 76, .4);
+            border-radius: 50%;
+            pointer-events: none
+        }
+
+        .crosshair::before,
+        .crosshair::after {
+            content: '';
+            position: absolute;
+            background: rgba(201, 168, 76, .3)
+        }
+
+        .crosshair::before {
+            width: 1px;
+            height: 100%;
+            left: 50%;
+            top: 0
+        }
+
+        .crosshair::after {
+            height: 1px;
+            width: 100%;
+            top: 50%;
+            left: 0
+        }
+
+        .reading {
+            position: absolute;
+            bottom: 8px;
+            left: 8px;
+            right: 8px;
+            background: rgba(0, 0, 0, .7);
+            padding: 6px 8px;
+            border-radius: 6px;
+            font-size: .55rem;
+            font-family: 'JetBrains Mono', monospace;
+            color: var(--brass);
+            backdrop-filter: blur(4px)
+        }
+
+        .star-info {
+            position: absolute;
+            color: var(--brass);
+            font-size: .5rem;
+            font-family: 'JetBrains Mono', monospace;
+            pointer-events: none;
+            text-shadow: 0 0 4px rgba(0, 0, 0, .8)
+        }
+    </style>
+</head>
+
+<body>
+    <div class="app">
+        <div class="top">
+            <div class="logo">☀️ Digital Sundial OS <small>v1.0 · Zero-Internet Astronomical Computer</small></div>
+            <div class="top-r">⚡ OFFLINE · NO GPS · NO NTP · PURE MATH</div>
+        </div>
+        <div class="tabs">
+            <div class="tab active" data-t="shadow">☀️ Shadow Tracker</div>
+            <div class="tab" data-t="astro">🔭 Astrolabe</div>
+            <div class="tab" data-t="stars">⭐ Star Map</div>
+            <div class="tab" data-t="calc">📐 Solar Calculator</div>
+        </div>
+        <div class="main">
+            <!-- SHADOW TRACKER -->
+            <div class="panel active" id="p-shadow">
+                <div class="side">
+                    <h3>☀️ Shadow Analysis</h3>
+                    <div class="btn-row">
+                        <button class="btn btn-b" onclick="startCamera()">📷 Start Camera</button>
+                        <button class="btn" onclick="stopCamera()">⏹ Stop</button>
+                    </div>
+                    <div class="ctl"><label>Threshold <span class="v" id="thr-v">80</span></label><input type="range"
+                            id="thr" min="20" max="200" value="80"
+                            oninput="document.getElementById('thr-v').textContent=this.value"></div>
+                    <div class="ctl"><label>Sensitivity <span class="v" id="sen-v">50</span></label><input type="range"
+                            id="sen" min="10" max="100" value="50"
+                            oninput="document.getElementById('sen-v').textContent=this.value"></div>
+                    <h3>📊 Measurements</h3>
+                    <div class="stat" id="meas">
+                        Shadow Angle: <span>—°</span><br>
+                        Shadow Length: <span>— px</span><br>
+                        Sun Altitude: <span>—°</span><br>
+                        Sun Azimuth: <span>—°</span><br>
+                        Confidence: <span>—%</span>
+                    </div>
+                    <h3>📍 Computed Position</h3>
+                    <div class="stat" id="pos-stat">
+                        Latitude: <span>—°</span><br>
+                        Longitude: <span>—°</span><br>
+                        UTC Time: <span>—</span><br>
+                        Local Solar Time: <span>—</span><br>
+                        Day of Year: <span>—</span>
+                    </div>
+                    <h3>📈 Shadow Log</h3>
+                    <div class="btn-row">
+                        <button class="btn btn-b" onclick="markShadow()">📌 Mark Point</button>
+                        <button class="btn" onclick="clearLog()">🗑 Clear</button>
+                        <button class="btn" onclick="computePosition()">📐 Compute</button>
+                    </div>
+                    <div id="shlog"
+                        style="max-height:120px;overflow-y:auto;font-size:.5rem;font-family:'JetBrains Mono',monospace;color:var(--t2);margin-top:4px">
+                    </div>
+                </div>
+                <div class="area"
+                    style="flex-direction:column;align-items:center;justify-content:center;display:flex;gap:8px;padding:12px">
+                    <div class="vid-wrap" id="vid-wrap">
+                        <video id="cam" autoplay playsinline muted></video>
+                        <canvas id="shadow-cv" style="position:absolute;top:0;left:0;pointer-events:none"></canvas>
+                        <div class="crosshair"></div>
+                        <div class="reading" id="shadow-read">Point camera at a vertical object's shadow under sunlight
+                        </div>
+                    </div>
+                    <canvas id="angle-hist" width="400" height="80"
+                        style="border-radius:6px;border:1px solid var(--brd)"></canvas>
+                </div>
+            </div>
+            <!-- ASTROLABE -->
+            <div class="panel" id="p-astro">
+                <div class="side">
+                    <h3>⚙️ Astrolabe Settings</h3>
+                    <div class="ctl"><label>Latitude <span class="v" id="lat-v">45.0</span>°</label><input type="range"
+                            id="lat" min="-90" max="90" value="45"
+                            oninput="document.getElementById('lat-v').textContent=this.value+'.0';drawAstrolabe()">
+                    </div>
+                    <div class="ctl"><label>Hour Angle <span class="v" id="ha-v">0</span>°</label><input type="range"
+                            id="ha" min="-180" max="180" value="0"
+                            oninput="document.getElementById('ha-v').textContent=this.value;drawAstrolabe()"></div>
+                    <div class="ctl"><label>Day of Year <span class="v" id="doy-v">80</span></label><input type="range"
+                            id="doy" min="1" max="365" value="80"
+                            oninput="document.getElementById('doy-v').textContent=this.value;drawAstrolabe()"></div>
+                    <h3>📊 Solar Data</h3>
+                    <div class="stat" id="astro-stat">
+                        Declination: <span>—°</span><br>
+                        Equation of Time: <span>— min</span><br>
+                        Sunrise: <span>—</span><br>
+                        Sunset: <span>—</span><br>
+                        Day Length: <span>—h</span>
+                    </div>
+                </div>
+                <div class="area">
+                    <div class="astrolabe"><canvas id="astro-cv"></canvas></div>
+                </div>
+            </div>
+            <!-- STAR MAP -->
+            <div class="panel" id="p-stars">
+                <div class="side">
+                    <h3>⭐ Star Map</h3>
+                    <div class="ctl"><label>Latitude <span class="v" id="slat-v">45</span>°</label><input type="range"
+                            id="slat" min="-90" max="90" value="45"
+                            oninput="document.getElementById('slat-v').textContent=this.value;drawStarMap()"></div>
+                    <div class="ctl"><label>Sidereal Time <span class="v" id="lst-v">0</span>h</label><input
+                            type="range" id="lst" min="0" max="24" value="0" step="0.1"
+                            oninput="document.getElementById('lst-v').textContent=parseFloat(this.value).toFixed(1);drawStarMap()">
+                    </div>
+                    <div class="ctl"><label>Magnitude Limit <span class="v" id="mag-v">4</span></label><input
+                            type="range" id="mag" min="1" max="6" value="4"
+                            oninput="document.getElementById('mag-v').textContent=this.value;drawStarMap()"></div>
+                    <div class="btn-row"><button class="btn btn-b" onclick="autoRotateStars=!autoRotateStars">🔄
+                            Auto-Rotate</button></div>
+                    <h3>🔭 Constellations</h3>
+                    <div class="stat" id="const-list"></div>
+                </div>
+                <div class="area"><canvas id="star-cv"></canvas></div>
+            </div>
+            <!-- SOLAR CALCULATOR -->
+            <div class="panel" id="p-calc">
+                <div class="side">
+                    <h3>📐 Solar Position Algorithm</h3>
+                    <div class="ctl"><label>Latitude</label><input type="number" id="c-lat" value="45" step="0.1"></div>
+                    <div class="ctl"><label>Longitude</label><input type="number" id="c-lon" value="0" step="0.1"></div>
+                    <div class="ctl"><label>Day of Year</label><input type="number" id="c-doy" value="80" min="1"
+                            max="365"></div>
+                    <div class="ctl"><label>Hour (UTC)</label><input type="number" id="c-hr" value="12" min="0" max="23"
+                            step="0.1"></div>
+                    <div class="btn-row"><button class="btn btn-b" onclick="calcSPA()">📐 Calculate</button></div>
+                    <h3>📊 Results</h3>
+                    <div class="stat" id="spa-result">Press Calculate to run SPA</div>
+                    <h3>📋 Formulas</h3>
+                    <div
+                        style="font-size:.5rem;font-family:'JetBrains Mono',monospace;color:var(--t2);line-height:1.6;padding:4px;background:var(--bg);border-radius:4px">
+                        δ = 23.45° × sin(360/365 × (284+N))<br>
+                        EoT = 9.87sin(2B)-7.53cos(B)-1.5sin(B)<br>
+                        B = 360/365 × (N-81)<br>
+                        ω = 15°/hr × (TST - 12)<br>
+                        α = arcsin(sinφ×sinδ + cosφ×cosδ×cosω)<br>
+                        A = arccos((sinδ-sinφ×sinα)/(cosφ×cosα))<br>
+                        Shadow = h / tan(α)<br><br>
+                        δ = Declination<br>
+                        N = Day of year<br>
+                        EoT = Equation of Time<br>
+                        ω = Hour angle<br>
+                        α = Solar altitude<br>
+                        A = Solar azimuth<br>
+                        φ = Latitude
+                    </div>
+                </div>
+                <div class="area" style="display:flex;align-items:center;justify-content:center"><canvas
+                        id="spa-cv"></canvas></div>
+            </div>
+        </div>
+        <div class="footer">
+            <span>☀️ Digital Sundial OS · Shadow + Angle = Time · No Internet Required</span>
+            <span id="fps2">Pure Spherical Trigonometry</span>
+        </div>
+    </div>
+    <script>
+        // TAB SWITCHING
+        document.querySelectorAll('.tab').forEach(t => t.addEventListener('click', () => {
+            document.querySelectorAll('.tab').forEach(x => x.classList.remove('active')); t.classList.add('active');
+            document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+            document.getElementById('p-' + t.dataset.t).classList.add('active');
+            setTimeout(() => {
+                if (t.dataset.t === 'astro') { resizeAstro(); drawAstrolabe() }
+                if (t.dataset.t === 'stars') { resizeStars(); drawStarMap() }
+                if (t.dataset.t === 'calc') { resizeSPA(); calcSPA() }
+            }, 50);
+        }));
+
+        // === SOLAR MATH ===
+        const DEG = Math.PI / 180, RAD = 180 / Math.PI;
+        function solarDeclination(doy) { return 23.45 * Math.sin(DEG * 360 / 365 * (284 + doy)) }
+        function equationOfTime(doy) { const B = 360 / 365 * (doy - 81) * DEG; return 9.87 * Math.sin(2 * B) - 7.53 * Math.cos(B) - 1.5 * Math.sin(B) }
+        function solarAltitude(lat, dec, ha) { return Math.asin(Math.sin(lat * DEG) * Math.sin(dec * DEG) + Math.cos(lat * DEG) * Math.cos(dec * DEG) * Math.cos(ha * DEG)) * RAD }
+        function solarAzimuth(lat, dec, alt, ha) { let cosA = (Math.sin(dec * DEG) - Math.sin(lat * DEG) * Math.sin(alt * DEG)) / (Math.cos(lat * DEG) * Math.cos(alt * DEG)); cosA = Math.max(-1, Math.min(1, cosA)); let a = Math.acos(cosA) * RAD; return ha > 0 ? 360 - a : a }
+        function sunriseHA(lat, dec) { const c = -Math.tan(lat * DEG) * Math.tan(dec * DEG); if (c < -1) return 180; if (c > 1) return 0; return Math.acos(c) * RAD }
+        function shadowLength(objectH, altitude) { if (altitude <= 0) return Infinity; return objectH / Math.tan(altitude * DEG) }
+
+        // === SHADOW TRACKER ===
+        let camStream = null, camRunning = false, shadowData = [];
+        const cam = document.getElementById('cam'), sCv = document.getElementById('shadow-cv'), sCtx = sCv.getContext('2d');
+        const histCv = document.getElementById('angle-hist'), histCtx = histCv.getContext('2d');
+        let angleHistory = [];
+
+        async function startCamera() {
+            try {
+                camStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment', width: 640, height: 480 } });
+                cam.srcObject = camStream; camRunning = true;
+                setTimeout(() => { sCv.width = cam.videoWidth || 640; sCv.height = cam.videoHeight || 480; processShadow() }, 500);
+            } catch (e) { document.getElementById('shadow-read').textContent = 'Camera error: ' + e.message }
+        }
+        function stopCamera() { camRunning = false; if (camStream) { camStream.getTracks().forEach(t => t.stop()); cam.srcObject = null } }
+
+        function processShadow() {
+            if (!camRunning) return;
+            const W = sCv.width, H = sCv.height;
+            sCtx.drawImage(cam, 0, 0, W, H);
+            const img = sCtx.getImageData(0, 0, W, H), d = img.data;
+            const thr = parseInt(document.getElementById('thr').value);
+
+            // Find shadow (darkest connected region)
+            let darkPixels = []; let totalBright = 0;
+            for (let y = 0; y < H; y += 2) {
+                for (let x = 0; x < W; x += 2) {
+                    const i = (y * W + x) * 4; const b = (d[i] + d[i + 1] + d[i + 2]) / 3; totalBright += b;
+                    if (b < thr) { darkPixels.push({ x, y, b }); }
+                }
+            }
+            const avgBright = totalBright / ((W / 2) * (H / 2));
+
+            if (darkPixels.length > 10) {
+                // Linear regression to find shadow line
+                let sx = 0, sy = 0; darkPixels.forEach(p => { sx += p.x; sy += p.y });
+                const mx = sx / darkPixels.length, my = sy / darkPixels.length;
+                let num = 0, den = 0;
+                darkPixels.forEach(p => { num += (p.x - mx) * (p.y - my); den += (p.x - mx) * (p.x - mx) });
+                const slope = den > 0 ? num / den : 999;
+                const angle = Math.atan(slope) * RAD;
+
+                // Find shadow tip (furthest dark pixel from center)
+                const cx = W / 2, cy = H / 2;
+                let maxDist = 0, tipX = cx, tipY = cy;
+                darkPixels.forEach(p => { const d = Math.sqrt((p.x - cx) ** 2 + (p.y - cy) ** 2); if (d > maxDist) { maxDist = d; tipX = p.x; tipY = p.y } });
+
+                // Draw overlay
+                sCtx.strokeStyle = 'rgba(201,168,76,0.8)'; sCtx.lineWidth = 2;
+                sCtx.beginPath(); sCtx.moveTo(cx, cy); sCtx.lineTo(tipX, tipY); sCtx.stroke();
+                sCtx.fillStyle = '#c9a84c'; sCtx.beginPath(); sCtx.arc(tipX, tipY, 4, 0, Math.PI * 2); sCtx.fill();
+
+                // Draw dark pixels
+                darkPixels.forEach(p => { d[(p.y * W + p.x) * 4] = 201; d[(p.y * W + p.x) * 4 + 1] = 168; d[(p.y * W + p.x) * 4 + 2] = 76; d[(p.y * W + p.x) * 4 + 3] = 100 });
+
+                const shLen = Math.sqrt((tipX - cx) ** 2 + (tipY - cy) ** 2);
+                const conf = Math.min(100, Math.floor(darkPixels.length / 5));
+                const azAngle = ((Math.atan2(tipY - cy, tipX - cx) * RAD) + 360) % 360;
+
+                // Estimate sun altitude from shadow (assuming 100px = object height)
+                const objH = 100; const sunAlt = Math.atan(objH / Math.max(1, shLen)) * RAD;
+
+                angleHistory.push(azAngle); if (angleHistory.length > 200) angleHistory.shift();
+
+                document.getElementById('meas').innerHTML = `Shadow Angle: <span>${azAngle.toFixed(1)}°</span><br>Shadow Length: <span>${shLen.toFixed(1)} px</span><br>Sun Altitude: <span>${sunAlt.toFixed(1)}°</span><br>Sun Azimuth: <span>${((azAngle + 180) % 360).toFixed(1)}°</span><br>Confidence: <span>${conf}%</span>`;
+                document.getElementById('shadow-read').textContent = `Angle: ${azAngle.toFixed(1)}° | Length: ${shLen.toFixed(0)}px | Alt: ${sunAlt.toFixed(1)}° | ${darkPixels.length} shadow pixels`;
+
+                drawAngleHist();
+            }
+            requestAnimationFrame(processShadow);
+        }
+
+        function drawAngleHist() {
+            const W = histCv.width, H = histCv.height;
+            histCtx.fillStyle = '#0c0a09'; histCtx.fillRect(0, 0, W, H);
+            if (angleHistory.length < 2) return;
+            histCtx.strokeStyle = '#c9a84c'; histCtx.lineWidth = 1; histCtx.beginPath();
+            const step = W / angleHistory.length;
+            angleHistory.forEach((a, i) => { const y = H - (a / 360) * H; if (i === 0) histCtx.moveTo(i * step, y); else histCtx.lineTo(i * step, y) });
+            histCtx.stroke();
+            histCtx.fillStyle = 'rgba(201,168,76,0.2)'; histCtx.font = '9px JetBrains Mono'; histCtx.fillText('Shadow Angle History', 4, 10);
+        }
+
+        function markShadow() {
+            if (angleHistory.length === 0) return;
+            const a = angleHistory[angleHistory.length - 1];
+            const t = Date.now();
+            shadowData.push({ angle: a, time: t });
+            const log = document.getElementById('shlog');
+            const d = document.createElement('div');
+            d.textContent = `#${shadowData.length}: ${a.toFixed(1)}° @ ${new Date(t).toLocaleTimeString()}`;
+            log.prepend(d);
+        }
+        function clearLog() { shadowData = []; document.getElementById('shlog').innerHTML = '' }
+
+        function computePosition() {
+            if (shadowData.length < 2) { document.getElementById('pos-stat').innerHTML = 'Need at least 2 shadow marks<br>Mark shadows over 10+ minutes'; return }
+            // Find shortest shadow = solar noon direction
+            let minAngle = shadowData[0], maxTime = shadowData[shadowData.length - 1];
+            shadowData.forEach(s => { if (s.angle < minAngle.angle) minAngle = s });
+            // Rate of change estimates rough latitude
+            const dAngle = Math.abs(shadowData[shadowData.length - 1].angle - shadowData[0].angle);
+            const dTime = (shadowData[shadowData.length - 1].time - shadowData[0].time) / 1000 / 60;
+            const rate = dAngle / dTime; // degrees per minute
+            const estLat = Math.max(-90, Math.min(90, 45 - rate * 5));
+            const now = new Date(); const doy = Math.floor((now - new Date(now.getFullYear(), 0, 0)) / (1000 * 60 * 60 * 24));
+            const dec = solarDeclination(doy);
+            const eot = equationOfTime(doy);
+            document.getElementById('pos-stat').innerHTML = `Latitude: <span>${estLat.toFixed(2)}° N</span><br>Longitude: <span>${(-eot / 4).toFixed(2)}° (est)</span><br>UTC Time: <span>${now.toUTCString().slice(17, 25)}</span><br>Local Solar Time: <span>${(12 + eot / 60).toFixed(2)}h</span><br>Day of Year: <span>${doy}</span><br>Declination: <span>${dec.toFixed(2)}°</span><br><br><span class="c">⚠ More data points = better accuracy</span>`;
+        }
+
+        // === ASTROLABE ===
+        const aCv = document.getElementById('astro-cv'), aCtx = aCv.getContext('2d');
+        function resizeAstro() { const p = aCv.parentElement; aCv.width = p.clientWidth; aCv.height = p.clientHeight }
+        function drawAstrolabe() {
+            const W = aCv.width, H = aCv.height; if (!W) return;
+            const cx = W / 2, cy = H / 2, R = Math.min(cx, cy) - 20;
+            const lat = parseFloat(document.getElementById('lat').value);
+            const ha = parseFloat(document.getElementById('ha').value);
+            const doy = parseInt(document.getElementById('doy').value);
+            const dec = solarDeclination(doy); const eot = equationOfTime(doy);
+            const alt = solarAltitude(lat, dec, ha); const az = solarAzimuth(lat, dec, alt, ha);
+            const srHA = sunriseHA(lat, dec); const dayLen = 2 * srHA / 15;
+
+            aCtx.fillStyle = '#0c0a09'; aCtx.fillRect(0, 0, W, H);
+
+            // Outer ring (brass)
+            aCtx.strokeStyle = '#c9a84c'; aCtx.lineWidth = 3; aCtx.beginPath(); aCtx.arc(cx, cy, R, 0, Math.PI * 2); aCtx.stroke();
+            aCtx.lineWidth = 1; aCtx.beginPath(); aCtx.arc(cx, cy, R - 8, 0, Math.PI * 2); aCtx.stroke();
+
+            // Hour marks
+            for (let h = 0; h < 24; h++) {
+                const a = (h / 24) * Math.PI * 2 - Math.PI / 2;
+                const x1 = cx + Math.cos(a) * (R - 8), y1 = cy + Math.sin(a) * (R - 8);
+                const x2 = cx + Math.cos(a) * (R - 20), y2 = cy + Math.sin(a) * (R - 20);
+                aCtx.strokeStyle = h % 6 === 0 ? '#c9a84c' : 'rgba(201,168,76,0.3)';
+                aCtx.beginPath(); aCtx.moveTo(x1, y1); aCtx.lineTo(x2, y2); aCtx.stroke();
+                aCtx.fillStyle = '#c9a84c'; aCtx.font = '9px Cinzel'; aCtx.textAlign = 'center';
+                aCtx.fillText(h + 'h', cx + Math.cos(a) * (R - 28), cy + Math.sin(a) * (R - 28) + 3);
+            }
+
+            // Altitude circles
+            aCtx.strokeStyle = 'rgba(201,168,76,0.1)';
+            for (let alt = 10; alt <= 80; alt += 10) {
+                const r = R * (90 - alt) / 90; aCtx.beginPath(); aCtx.arc(cx, cy, r, 0, Math.PI * 2); aCtx.stroke();
+                if (alt % 20 === 0) { aCtx.fillStyle = 'rgba(201,168,76,0.2)'; aCtx.font = '8px JetBrains Mono'; aCtx.fillText(alt + '°', cx + r + 3, cy + 3) }
+            }
+
+            // Azimuth lines
+            for (let a = 0; a < 360; a += 30) { const rad = a * DEG; aCtx.strokeStyle = 'rgba(201,168,76,0.05)'; aCtx.beginPath(); aCtx.moveTo(cx, cy); aCtx.lineTo(cx + Math.cos(rad) * R, cy + Math.sin(rad) * R); aCtx.stroke() }
+
+            // Horizon line
+            aCtx.strokeStyle = 'rgba(201,168,76,0.4)'; aCtx.lineWidth = 2;
+            aCtx.beginPath(); aCtx.arc(cx, cy, R, 0, Math.PI); aCtx.stroke();
+            aCtx.fillStyle = 'rgba(201,168,76,0.05)'; aCtx.beginPath(); aCtx.arc(cx, cy, R, 0, Math.PI); aCtx.fill();
+            aCtx.lineWidth = 1;
+
+            // Ecliptic
+            aCtx.strokeStyle = 'rgba(239,68,68,0.3)'; aCtx.lineWidth = 1;
+            aCtx.beginPath();
+            for (let d = 0; d < 365; d++) { const dc = solarDeclination(d); const r = R * (90 - Math.abs(dc)) / 90; const a = (d / 365) * Math.PI * 2 - Math.PI / 2; aCtx.lineTo(cx + Math.cos(a) * r, cy + Math.sin(a) * r) }
+            aCtx.closePath(); aCtx.stroke();
+
+            // Sun position
+            if (alt > 0) {
+                const sunR = R * (90 - alt) / 90; const sunA = (az - 90) * DEG;
+                const sx = cx + Math.cos(sunA) * sunR, sy = cy + Math.sin(sunA) * sunR;
+                // Glow
+                const grd = aCtx.createRadialGradient(sx, sy, 0, sx, sy, 20); grd.addColorStop(0, 'rgba(251,191,36,0.6)'); grd.addColorStop(1, 'rgba(251,191,36,0)');
+                aCtx.fillStyle = grd; aCtx.fillRect(sx - 20, sy - 20, 40, 40);
+                aCtx.fillStyle = '#fbbf24'; aCtx.beginPath(); aCtx.arc(sx, sy, 6, 0, Math.PI * 2); aCtx.fill();
+                aCtx.fillStyle = '#c9a84c'; aCtx.font = '9px JetBrains Mono'; aCtx.fillText(`☀ ${alt.toFixed(1)}°`, sx + 10, sy - 8);
+            }
+
+            // Center decoration
+            aCtx.fillStyle = '#c9a84c'; aCtx.beginPath(); aCtx.arc(cx, cy, 4, 0, Math.PI * 2); aCtx.fill();
+            // Pointer (hour angle hand)
+            const pAngle = (ha / 360) * Math.PI * 2 - Math.PI / 2;
+            aCtx.strokeStyle = '#c9a84c'; aCtx.lineWidth = 2; aCtx.beginPath(); aCtx.moveTo(cx, cy); aCtx.lineTo(cx + Math.cos(pAngle) * (R - 40), cy + Math.sin(pAngle) * (R - 40)); aCtx.stroke();
+
+            // Labels
+            aCtx.fillStyle = 'rgba(201,168,76,0.5)'; aCtx.font = '9px Cinzel'; aCtx.textAlign = 'center';
+            ['N', 'E', 'S', 'W'].forEach((l, i) => { const a = i * Math.PI / 2 - Math.PI / 2; aCtx.fillText(l, cx + Math.cos(a) * (R + 12), cy + Math.sin(a) * (R + 12) + 3) });
+
+            // Stats
+            document.getElementById('astro-stat').innerHTML = `Declination: <span>${dec.toFixed(2)}°</span><br>Equation of Time: <span>${eot.toFixed(1)} min</span><br>Sun Altitude: <span>${alt.toFixed(1)}°</span><br>Sun Azimuth: <span>${az.toFixed(1)}°</span><br>Sunrise HA: <span>±${srHA.toFixed(1)}°</span><br>Day Length: <span>${dayLen.toFixed(1)}h</span>`;
+        }
+
+        // === STAR MAP ===
+        const stCv = document.getElementById('star-cv'), stCtx = stCv.getContext('2d');
+        let autoRotateStars = false;
+        // Bright stars: [RA(hours), Dec(degrees), magnitude, name]
+        const STARS = [
+            [6.75, -16.7, -1.46, 'Sirius'], [5.92, 7.41, 0.5, 'Betelgeuse'], [5.24, -8.2, 0.12, 'Rigel'],
+            [14.26, 19.18, -0.05, 'Arcturus'], [18.62, 38.78, 0.03, 'Vega'], [5.28, 46.0, 0.08, 'Capella'],
+            [7.65, 5.22, 0.34, 'Procyon'], [1.63, -57.2, 0.46, 'Achernar'], [19.85, 8.87, 0.76, 'Altair'],
+            [4.6, 16.51, 0.87, 'Aldebaran'], [16.49, -26.4, 0.96, 'Antares'], [12.44, -63.1, 0.77, 'Acrux'],
+            [0.44, -42.3, 2.0, 'Ankaa'], [2.07, 42.33, 2.06, 'Mirach'], [3.41, 49.86, 1.8, 'Algol'],
+            [0.68, 56.54, 2.23, 'Schedar'], [0.95, 60.72, 2.27, 'Caph'], [1.91, 89.26, 1.98, 'Polaris'],
+            [5.42, -1.2, 1.7, 'Alnilam'], [5.68, -1.94, 2.25, 'Mintaka'], [5.53, -0.3, 1.77, 'Alnitak'],
+            [11.06, 61.75, 1.77, 'Dubhe'], [11.03, 56.38, 2.37, 'Merak'], [13.79, 49.31, 1.86, 'Alioth'],
+            [13.4, 54.93, 2.44, 'Mizar'], [12.9, 55.96, 2.41, 'Alcor'],
+            [22.1, -0.3, 2.49, 'Sadalmelik'], [20.69, 45.28, 1.25, 'Deneb']
+        ];
+        // Constellation lines: pairs of star indices
+        const CONSTELLATIONS = [
+            { name: 'Orion', stars: [[1, 2], [18, 19], [18, 20], [19, 20]] },
+            { name: 'Big Dipper', stars: [[21, 22], [22, 23], [23, 24]] },
+        ];
+
+        function resizeStars() { const p = stCv.parentElement; stCv.width = p.clientWidth; stCv.height = p.clientHeight }
+        function drawStarMap() {
+            const W = stCv.width, H = stCv.height; if (!W) return;
+            const cx = W / 2, cy = H / 2, R = Math.min(cx, cy) - 15;
+            const lat = parseFloat(document.getElementById('slat').value);
+            const lst = parseFloat(document.getElementById('lst').value);
+            const magLim = parseFloat(document.getElementById('mag').value);
+
+            stCtx.fillStyle = '#08070a'; stCtx.fillRect(0, 0, W, H);
+
+            // Circular border
+            stCtx.strokeStyle = 'rgba(201,168,76,0.3)'; stCtx.lineWidth = 2; stCtx.beginPath(); stCtx.arc(cx, cy, R, 0, Math.PI * 2); stCtx.stroke();
+
+            // Altitude circles
+            stCtx.strokeStyle = 'rgba(201,168,76,0.05)'; stCtx.lineWidth = 1;
+            for (let a = 15; a < 90; a += 15) { stCtx.beginPath(); stCtx.arc(cx, cy, R * a / 90, 0, Math.PI * 2); stCtx.stroke() }
+
+            // Cardinal directions
+            stCtx.fillStyle = 'rgba(201,168,76,0.3)'; stCtx.font = '10px Cinzel'; stCtx.textAlign = 'center';
+            stCtx.fillText('N', cx, cy - R - 4); stCtx.fillText('S', cx, cy + R + 12); stCtx.fillText('E', cx - R - 10, cy + 3); stCtx.fillText('W', cx + R + 10, cy + 3);
+
+            // Plot stars
+            const constList = document.getElementById('const-list');
+            let visCount = 0;
+            const plotted = [];
+
+            STARS.forEach((s, idx) => {
+                const ra = s[0], dec = s[1], mag = s[2], name = s[3];
+                if (mag > magLim) return;
+
+                // Convert RA/Dec to Alt/Az
+                const ha = (lst - ra) * 15;
+                const alt = Math.asin(Math.sin(lat * DEG) * Math.sin(dec * DEG) + Math.cos(lat * DEG) * Math.cos(dec * DEG) * Math.cos(ha * DEG)) * RAD;
+                if (alt < 0) return;
+                let cosAz = (Math.sin(dec * DEG) - Math.sin(lat * DEG) * Math.sin(alt * DEG)) / (Math.cos(lat * DEG) * Math.cos(alt * DEG));
+                cosAz = Math.max(-1, Math.min(1, cosAz));
+                let az = Math.acos(cosAz) * RAD;
+                if (ha > 0) az = 360 - az;
+
+                const r = R * (90 - alt) / 90;
+                const a = (az - 180) * DEG;
+                const sx = cx + Math.sin(a) * r, sy = cy - Math.cos(a) * r;
+
+                plotted[idx] = { x: sx, y: sy };
+
+                // Size by magnitude
+                const size = Math.max(1, 3.5 - mag * 0.7);
+
+                // Glow
+                if (mag < 1.5) { const g = stCtx.createRadialGradient(sx, sy, 0, sx, sy, size * 3); g.addColorStop(0, 'rgba(255,255,220,0.2)'); g.addColorStop(1, 'rgba(255,255,220,0)'); stCtx.fillStyle = g; stCtx.fillRect(sx - size * 3, sy - size * 3, size * 6, size * 6) }
+
+                stCtx.fillStyle = mag < 0 ? '#fff' : mag < 1 ? '#ffe8b0' : mag < 2 ? '#ddd' : '#999';
+                stCtx.beginPath(); stCtx.arc(sx, sy, size, 0, Math.PI * 2); stCtx.fill();
+
+                if (mag < 2.5) { stCtx.fillStyle = 'rgba(201,168,76,0.4)'; stCtx.font = '8px JetBrains Mono'; stCtx.textAlign = 'left'; stCtx.fillText(name, sx + size + 3, sy + 2) }
+                visCount++;
+            });
+
+            // Draw constellation lines
+            stCtx.strokeStyle = 'rgba(201,168,76,0.15)'; stCtx.lineWidth = 1;
+            CONSTELLATIONS.forEach(c => { c.stars.forEach(pair => { if (plotted[pair[0]] && plotted[pair[1]]) { stCtx.beginPath(); stCtx.moveTo(plotted[pair[0]].x, plotted[pair[0]].y); stCtx.lineTo(plotted[pair[1]].x, plotted[pair[1]].y); stCtx.stroke() } }) });
+
+            constList.innerHTML = `Visible Stars: <span>${visCount}</span>`;
+        }
+
+        // Auto rotate stars
+        setInterval(() => { if (autoRotateStars) { const el = document.getElementById('lst'); el.value = (parseFloat(el.value) + 0.05) % 24; document.getElementById('lst-v').textContent = parseFloat(el.value).toFixed(1); drawStarMap() } }, 50);
+
+        // === SOLAR CALCULATOR ===
+        const spCv = document.getElementById('spa-cv'), spCtx = spCv.getContext('2d');
+        function resizeSPA() { const p = spCv.parentElement; spCv.width = p.clientWidth || 600; spCv.height = p.clientHeight || 400 }
+        function calcSPA() {
+            const lat = parseFloat(document.getElementById('c-lat').value);
+            const lon = parseFloat(document.getElementById('c-lon').value);
+            const doy = parseInt(document.getElementById('c-doy').value);
+            const hr = parseFloat(document.getElementById('c-hr').value);
+            const dec = solarDeclination(doy); const eot = equationOfTime(doy);
+            const tst = hr + lon / 15 + eot / 60; const ha = (tst - 12) * 15;
+            const alt = solarAltitude(lat, dec, ha); const az = solarAzimuth(lat, dec, alt, ha);
+            const srHA = sunriseHA(lat, dec); const dayLen = 2 * srHA / 15;
+            const srise = 12 - srHA / 15 - eot / 60 - lon / 15; const sset = 12 + srHA / 15 - eot / 60 - lon / 15;
+            const shLen = shadowLength(1, alt);
+
+            document.getElementById('spa-result').innerHTML = `
+Declination: <span>${dec.toFixed(3)}°</span><br>
+EoT: <span>${eot.toFixed(2)} min</span><br>
+Hour Angle: <span>${ha.toFixed(2)}°</span><br>
+<strong>Sun Altitude: <span class="g">${alt.toFixed(2)}°</span></strong><br>
+<strong>Sun Azimuth: <span class="c">${az.toFixed(2)}°</span></strong><br>
+Sunrise: <span>${fmtHr(srise)} UTC</span><br>
+Sunset: <span>${fmtHr(sset)} UTC</span><br>
+Day Length: <span>${dayLen.toFixed(2)}h</span><br>
+Shadow (1m obj): <span>${alt > 0 ? shLen.toFixed(2) + 'm' : '∞ (below horizon)'}</span>`;
+
+            // Draw sun path diagram
+            const W = spCv.width, H = spCv.height; if (!W) return;
+            spCtx.fillStyle = '#0c0a09'; spCtx.fillRect(0, 0, W, H);
+            const cx = W / 2, cy = H * 0.8, R = Math.min(W / 2, H * 0.7) - 20;
+
+            // Horizon
+            spCtx.strokeStyle = 'rgba(201,168,76,0.3)'; spCtx.lineWidth = 2;
+            spCtx.beginPath(); spCtx.moveTo(cx - R - 10, cy); spCtx.lineTo(cx + R + 10, cy); spCtx.stroke();
+            spCtx.fillStyle = 'rgba(201,168,76,0.2)'; spCtx.font = '9px Cinzel';
+            ['E', 'S', 'W'].forEach((l, i) => { const x = cx + (i - 1) * R; spCtx.fillText(l, x - 3, cy + 14) });
+
+            // Sun path arc
+            spCtx.strokeStyle = 'rgba(251,191,36,0.3)'; spCtx.lineWidth = 1; spCtx.beginPath();
+            for (let h = -12; h <= 12; h += 0.1) {
+                const lha = h * 15; const la = solarAltitude(lat, dec, lha); const laz = solarAzimuth(lat, dec, la, lha); if (la < 0) continue;
+                const px = cx + (laz - 180) / 180 * R; const py = cy - la / 90 * R; if (h === -12) spCtx.moveTo(px, py); else spCtx.lineTo(px, py)
+            }
+            spCtx.stroke();
+
+            // Current sun
+            if (alt > 0) {
+                const px = cx + (az - 180) / 180 * R; const py = cy - alt / 90 * R;
+                const g = spCtx.createRadialGradient(px, py, 0, px, py, 15); g.addColorStop(0, 'rgba(251,191,36,0.6)'); g.addColorStop(1, 'rgba(251,191,36,0)');
+                spCtx.fillStyle = g; spCtx.fillRect(px - 15, py - 15, 30, 30);
+                spCtx.fillStyle = '#fbbf24'; spCtx.beginPath(); spCtx.arc(px, py, 5, 0, Math.PI * 2); spCtx.fill();
+                spCtx.fillStyle = '#c9a84c'; spCtx.font = '9px JetBrains Mono'; spCtx.fillText(`Alt:${alt.toFixed(1)}° Az:${az.toFixed(1)}°`, px + 10, py - 8)
+            }
+
+            // Altitude marks
+            spCtx.strokeStyle = 'rgba(201,168,76,0.1)';
+            for (let a = 15; a <= 75; a += 15) {
+                const y = cy - a / 90 * R; spCtx.beginPath(); spCtx.moveTo(cx - R, y); spCtx.lineTo(cx + R, y); spCtx.stroke();
+                spCtx.fillStyle = 'rgba(201,168,76,0.15)'; spCtx.font = '8px JetBrains Mono'; spCtx.fillText(a + '°', cx - R - 20, y + 3)
+            }
+
+            spCtx.fillStyle = 'rgba(201,168,76,0.15)'; spCtx.font = '9px JetBrains Mono'; spCtx.fillText('Sun Path Diagram', 10, 14);
+        }
+        function fmtHr(h) { h = ((h % 24) + 24) % 24; const hr = Math.floor(h); const mn = Math.floor((h - hr) * 60); return `${hr.toString().padStart(2, '0')}:${mn.toString().padStart(2, '0')}` }
+    </script>
+</body>
+
+</html>

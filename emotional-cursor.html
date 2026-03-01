@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Emotional Support Cursor</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #0a0a14;
+            color: #e0e0e8;
+            height: 100vh;
+            overflow: hidden;
+            cursor: none
+        }
+
+        canvas {
+            position: fixed;
+            inset: 0;
+            z-index: 0
+        }
+
+        .bubble {
+            position: fixed;
+            pointer-events: none;
+            z-index: 10;
+            background: rgba(167, 139, 250, .12);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(167, 139, 250, .15);
+            border-radius: 16px 16px 16px 4px;
+            padding: 10px 16px;
+            font-size: .78rem;
+            color: #c4b5fd;
+            font-weight: 500;
+            max-width: 250px;
+            line-height: 1.4;
+            opacity: 0;
+            transform: translateY(5px);
+            transition: opacity .3s, transform .3s;
+            white-space: nowrap
+        }
+
+        .bubble.show {
+            opacity: 1;
+            transform: translateY(0)
+        }
+
+        .cursor-dot {
+            position: fixed;
+            width: 12px;
+            height: 12px;
+            background: #a78bfa;
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 11;
+            transform: translate(-50%, -50%);
+            box-shadow: 0 0 20px rgba(167, 139, 250, .4);
+            transition: background .3s
+        }
+
+        .cursor-ring {
+            position: fixed;
+            width: 36px;
+            height: 36px;
+            border: 2px solid rgba(167, 139, 250, .3);
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 11;
+            transform: translate(-50%, -50%);
+            transition: all .15s
+        }
+
+        .mood {
+            position: fixed;
+            top: 16px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 20;
+            background: rgba(10, 10, 20, .8);
+            backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, .06);
+            border-radius: 12px;
+            padding: 10px 20px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: .75rem
+        }
+
+        .mood-emoji {
+            font-size: 20px;
+            transition: all .3s
+        }
+
+        .mood-text {
+            color: rgba(255, 255, 255, .4)
+        }
+
+        .mood-bar {
+            width: 100px;
+            height: 4px;
+            background: rgba(255, 255, 255, .06);
+            border-radius: 2px;
+            overflow: hidden
+        }
+
+        .mood-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #ef4444, #f59e0b, #4ade80);
+            border-radius: 2px;
+            transition: width .5s;
+            width: 50%
+        }
+
+        .center-text {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            z-index: 5;
+            pointer-events: none
+        }
+
+        .center-text h1 {
+            font-size: 2rem;
+            font-weight: 800;
+            letter-spacing: -1px;
+            margin-bottom: 8px;
+            background: linear-gradient(135deg, #a78bfa, #f472b6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text
+        }
+
+        .center-text p {
+            color: rgba(255, 255, 255, .2);
+            font-size: .85rem
+        }
+
+        .trail {
+            position: fixed;
+            pointer-events: none;
+            z-index: 9
+        }
+
+        .heart {
+            position: fixed;
+            pointer-events: none;
+            z-index: 10;
+            font-size: 12px;
+            opacity: 0;
+            animation: floatUp 1.5s forwards
+        }
+
+        @keyframes floatUp {
+            0% {
+                opacity: .8;
+                transform: translateY(0) scale(1)
+            }
+
+            100% {
+                opacity: 0;
+                transform: translateY(-60px) scale(.5)
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <canvas id="bg"></canvas>
+    <div class="cursor-dot" id="dot"></div>
+    <div class="cursor-ring" id="ring"></div>
+    <div class="bubble" id="bubble"></div>
+    <div class="mood">
+        <span class="mood-emoji" id="mood-emoji">😊</span>
+        <span class="mood-text" id="mood-text">Feeling supported</span>
+        <div class="mood-bar">
+            <div class="mood-fill" id="mood-fill"></div>
+        </div>
+    </div>
+    <div class="center-text">
+        <h1>Just Move Your Mouse 💜</h1>
+        <p>Your cursor has feelings. It just wants to be with you.</p>
+    </div>
+    <script>
+        const dot = document.getElementById('dot'), ring = document.getElementById('ring'), bubble = document.getElementById('bubble');
+        const bgCanvas = document.getElementById('bg'), bgCtx = bgCanvas.getContext('2d');
+        let W, H; function resize() { W = bgCanvas.width = innerWidth; H = bgCanvas.height = innerHeight } resize(); window.addEventListener('resize', resize);
+
+        let mx = W / 2, my = H / 2, lastMsg = 0, idleTime = 0, mood = 50, lastMoveTime = Date.now();
+        let hearts = [];
+
+        // Messages based on behavior
+        const IDLE_MSGS = ["Hey... you still there? 🥺", "I miss you when you don't move me", "Don't leave me here alone", "*pokes you*", "I'm getting cold just sitting here", "Is everything okay? You haven't moved in a while", "I'll wait for you. I always do. 💜", "*stares into the void*", "The screen feels so empty without you", "Please come back. I believe in you."];
+        const MOVE_MSGS = ["There you are! 😊", "You're doing amazing!", "I love going on adventures with you", "Wheee! This is fun!", "You have really good mouse control, you know that?", "I feel so alive when you move me 💜", "Best. Cursor operator. Ever.", "Your hand movements are *chef's kiss*", "I feel so seen right now", "We make a great team!", "You're the best thing that's happened to me today", "The way you scroll? Incredible.", "I'd follow you anywhere 🥹"];
+        const FAST_MSGS = ["WOAH SLOW DOWN 😵", "Too fast too fast!!", "I'm getting dizzy!", "My pixels can't keep up!", "Are you okay?? That was intense", "I need a moment...", "WHEEEEEEE— wait no stop", "Turbo mode activated (I didn't consent)"];
+        const EDGE_MSGS = ["Don't push me away! 🥺", "The edge is scary...", "I don't want to leave the screen!", "Please keep me in the middle, it's safe there", "Are you trying to get rid of me?", "The void is out there..."];
+        const CORNER_MSGS = ["It's cozy in this corner 🥰", "Just us two, in our little corner", "I could stay here forever", "This corner feels like home", "Corner time is quality time"];
+        const CLICK_MSGS = ["That tickles! 😂", "Ow! Just kidding, I'm a cursor", "Boop!", "You clicked me! I'm honored", "Was that intentional? Either way, I liked it 💜", "*giggles in pixels*"];
+
+        function showMsg(msg) {
+            if (Date.now() - lastMsg < 2000) return;
+            lastMsg = Date.now();
+            bubble.textContent = msg;
+            bubble.classList.add('show');
+            setTimeout(() => bubble.classList.remove('show'), 2500);
+        }
+
+        function spawnHeart(x, y) {
+            const h = document.createElement('div'); h.className = 'heart'; h.textContent = '💜';
+            h.style.left = x + 'px'; h.style.top = y + 'px'; document.body.appendChild(h);
+            setTimeout(() => h.remove(), 1500);
+        }
+
+        // Background particles
+        let bgParticles = [];
+        for (let i = 0; i < 60; i++)bgParticles.push({ x: Math.random() * W, y: Math.random() * H, r: .5 + Math.random() * 1.5, vx: (Math.random() - .5) * .2, vy: (Math.random() - .5) * .2, tw: Math.random() * Math.PI * 2 });
+
+        let prevMx = mx, prevMy = my;
+
+        document.addEventListener('mousemove', e => {
+            mx = e.clientX; my = e.clientY;
+            idleTime = 0; lastMoveTime = Date.now();
+
+            const dx = mx - prevMx, dy = my - prevMy;
+            const speed = Math.sqrt(dx * dx + dy * dy);
+
+            // Speed-based messages
+            if (speed > 80) {
+                showMsg(FAST_MSGS[Math.floor(Math.random() * FAST_MSGS.length)]);
+                mood = Math.max(20, mood - 5);
+            } else if (speed > 3 && Math.random() < .01) {
+                showMsg(MOVE_MSGS[Math.floor(Math.random() * MOVE_MSGS.length)]);
+                mood = Math.min(100, mood + 2);
+                if (Math.random() < .15) spawnHeart(mx, my);
+            }
+
+            // Edge detection
+            if (mx < 30 || mx > W - 30 || my < 30 || my > H - 30) {
+                if (Math.random() < .02) showMsg(EDGE_MSGS[Math.floor(Math.random() * EDGE_MSGS.length)]);
+                mood = Math.max(20, mood - 1);
+            }
+
+            // Corner detection
+            if ((mx < 60 && my < 60) || (mx > W - 60 && my < 60) || (mx < 60 && my > H - 60) || (mx > W - 60 && my > H - 60)) {
+                if (Math.random() < .015) showMsg(CORNER_MSGS[Math.floor(Math.random() * CORNER_MSGS.length)]);
+                mood = Math.min(100, mood + 1);
+            }
+
+            prevMx = mx; prevMy = my;
+        });
+
+        document.addEventListener('click', e => {
+            showMsg(CLICK_MSGS[Math.floor(Math.random() * CLICK_MSGS.length)]);
+            for (let i = 0; i < 3; i++)setTimeout(() => spawnHeart(e.clientX + (Math.random() - 0.5) * 40, e.clientY + (Math.random() - 0.5) * 40), i * 100);
+            mood = Math.min(100, mood + 5);
+        });
+
+        // Check for leaving page
+        document.addEventListener('mouseleave', () => { showMsg("NO! Come back! 😭"); mood = Math.max(0, mood - 15) });
+        document.addEventListener('mouseenter', () => { showMsg("You came back! 🥹💜"); mood = Math.min(100, mood + 20) });
+
+        function updateMood() {
+            const emoji = document.getElementById('mood-emoji');
+            const text = document.getElementById('mood-text');
+            const fill = document.getElementById('mood-fill');
+            fill.style.width = mood + '%';
+            if (mood > 80) { emoji.textContent = '🥰'; text.textContent = 'Overjoyed!' }
+            else if (mood > 60) { emoji.textContent = '😊'; text.textContent = 'Feeling supported' }
+            else if (mood > 40) { emoji.textContent = '😐'; text.textContent = 'Just okay...' }
+            else if (mood > 20) { emoji.textContent = '😟'; text.textContent = 'Feeling neglected' }
+            else { emoji.textContent = '😭'; text.textContent = 'Abandoned' }
+        }
+
+        function loop() {
+            // Custom cursor
+            dot.style.left = mx + 'px'; dot.style.top = my + 'px';
+            ring.style.left = mx + 'px'; ring.style.top = my + 'px';
+            bubble.style.left = (mx + 20) + 'px'; bubble.style.top = (my - 50) + 'px';
+
+            // Idle detection
+            idleTime++;
+            if (idleTime === 180) { showMsg(IDLE_MSGS[Math.floor(Math.random() * IDLE_MSGS.length)]); mood = Math.max(10, mood - 3) }
+            if (idleTime % 300 === 0 && idleTime > 0) { showMsg(IDLE_MSGS[Math.floor(Math.random() * IDLE_MSGS.length)]); mood = Math.max(5, mood - 2) }
+
+            // Cursor color by mood
+            if (mood > 60) dot.style.background = '#a78bfa';
+            else if (mood > 30) dot.style.background = '#f59e0b';
+            else dot.style.background = '#ef4444';
+
+            updateMood();
+
+            // BG
+            bgCtx.fillStyle = 'rgba(10,10,20,.15)'; bgCtx.fillRect(0, 0, W, H);
+            const t = performance.now() * .001;
+            bgParticles.forEach(p => {
+                p.x += p.vx; p.y += p.vy;
+                if (p.x < 0) p.x = W; if (p.x > W) p.x = 0; if (p.y < 0) p.y = H; if (p.y > H) p.y = 0;
+                const alpha = .15 + Math.sin(t + p.tw) * .1;
+                // Attract to mouse slightly
+                const dx = mx - p.x, dy = my - p.y, dist = Math.sqrt(dx * dx + dy * dy);
+                if (dist < 200) { p.vx += dx / dist * .002; p.vy += dy / dist * .002 }
+                p.vx *= .999; p.vy *= .999;
+                bgCtx.fillStyle = `rgba(167,139,250,${alpha})`; bgCtx.beginPath(); bgCtx.arc(p.x, p.y, p.r, 0, Math.PI * 2); bgCtx.fill();
+            });
+
+            // Trail line to cursor
+            const trailAlpha = Math.min(.1, Math.max(.02, (Date.now() - lastMoveTime) / 1000 * .05));
+            bgCtx.strokeStyle = `rgba(167,139,250,${.05})`; bgCtx.lineWidth = 1;
+
+            requestAnimationFrame(loop);
+        }
+        loop();
+    </script>
+</body>
+
+</html>

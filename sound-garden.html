@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sound Garden — Plant Musical Seeds</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #06060e;
+            color: #eee;
+            height: 100vh;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column
+        }
+
+        .topbar {
+            height: 52px;
+            background: rgba(6, 6, 14, .95);
+            backdrop-filter: blur(16px);
+            border-bottom: 1px solid rgba(255, 255, 255, .06);
+            display: flex;
+            align-items: center;
+            padding: 0 16px;
+            gap: 12px;
+            z-index: 10
+        }
+
+        .topbar-title {
+            font-weight: 800;
+            font-size: .9rem;
+            background: linear-gradient(135deg, #4ade80, #22d3ee);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent
+        }
+
+        .btn {
+            padding: 6px 14px;
+            background: rgba(255, 255, 255, .06);
+            border: 1px solid rgba(255, 255, 255, .08);
+            border-radius: 8px;
+            color: #aaa;
+            font-size: .78rem;
+            font-family: inherit;
+            cursor: pointer;
+            transition: all .15s
+        }
+
+        .btn:hover {
+            background: rgba(255, 255, 255, .1);
+            color: #fff
+        }
+
+        .btn.active {
+            background: rgba(74, 222, 128, .12);
+            border-color: rgba(74, 222, 128, .25);
+            color: #4ade80
+        }
+
+        .btn.accent {
+            background: rgba(74, 222, 128, .15);
+            border-color: rgba(74, 222, 128, .2);
+            color: #4ade80
+        }
+
+        .tempo {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            margin-left: auto
+        }
+
+        .tempo label {
+            font-size: .7rem;
+            color: rgba(255, 255, 255, .3)
+        }
+
+        .tempo input {
+            width: 80px;
+            -webkit-appearance: none;
+            height: 3px;
+            background: rgba(255, 255, 255, .1);
+            border-radius: 2px;
+            outline: none
+        }
+
+        .tempo input::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #4ade80;
+            cursor: pointer
+        }
+
+        .grid-wrap {
+            flex: 1;
+            display: flex;
+            overflow: hidden;
+            position: relative
+        }
+
+        .row-labels {
+            width: 48px;
+            display: flex;
+            flex-direction: column;
+            background: rgba(6, 6, 14, .8);
+            border-right: 1px solid rgba(255, 255, 255, .04);
+            z-index: 2
+        }
+
+        .row-label {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            border-bottom: 1px solid rgba(255, 255, 255, .03)
+        }
+
+        .grid {
+            flex: 1;
+            display: grid;
+            position: relative
+        }
+
+        .cell {
+            border: 1px solid rgba(255, 255, 255, .03);
+            cursor: pointer;
+            transition: background .1s;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center
+        }
+
+        .cell:hover {
+            background: rgba(255, 255, 255, .04)
+        }
+
+        .cell.active {
+            border-radius: 4px
+        }
+
+        .cell .seed {
+            font-size: 18px;
+            opacity: 0;
+            transform: scale(0);
+            transition: all .2s;
+            position: absolute
+        }
+
+        .cell.active .seed {
+            opacity: 1;
+            transform: scale(1)
+        }
+
+        .playhead {
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            width: 3px;
+            background: rgba(74, 222, 128, .6);
+            box-shadow: 0 0 20px rgba(74, 222, 128, .3);
+            z-index: 5;
+            pointer-events: none;
+            transition: left .05s linear;
+            border-radius: 2px
+        }
+
+        .cell.flash {
+            animation: cellFlash .3s
+        }
+
+        @keyframes cellFlash {
+            0% {
+                background: rgba(74, 222, 128, .2)
+            }
+
+            100% {
+                background: transparent
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="topbar">
+        <span class="topbar-title">🌱 Sound Garden</span>
+        <button class="btn accent" id="btn-play">▶ Play</button>
+        <button class="btn" id="btn-clear">✕ Clear</button>
+        <button class="btn" id="btn-random">🎲 Random</button>
+        <div class="tempo">
+            <label>BPM</label>
+            <input type="range" id="bpm" min="60" max="200" value="120">
+            <span id="bpm-val" style="font-size:.75rem;color:#4ade80;width:30px">120</span>
+        </div>
+    </div>
+    <div class="grid-wrap">
+        <div class="row-labels" id="row-labels"></div>
+        <div class="grid" id="grid">
+            <div class="playhead" id="playhead"></div>
+        </div>
+    </div>
+    <script>
+        const ROWS = 8, COLS = 16;
+        const INSTRUMENTS = [
+            { name: 'Kick', emoji: '🥁', note: 60, type: 'kick' },
+            { name: 'Snare', emoji: '🪘', note: 62, type: 'snare' },
+            { name: 'Hi-Hat', emoji: '🔔', note: 64, type: 'hihat' },
+            { name: 'Clap', emoji: '👏', note: 66, type: 'clap' },
+            { name: 'Bass', emoji: '🎸', note: 40, type: 'bass' },
+            { name: 'Synth', emoji: '🎹', note: 72, type: 'synth' },
+            { name: 'Bell', emoji: '🔔', note: 84, type: 'bell' },
+            { name: 'Chirp', emoji: '🐦', note: 96, type: 'chirp' },
+        ];
+        const COLORS = ['#ef4444', '#f59e0b', '#eab308', '#4ade80', '#22d3ee', '#818cf8', '#a78bfa', '#f472b6'];
+
+        let grid = Array.from({ length: ROWS }, () => Array(COLS).fill(false));
+        let playing = false, step = 0, intervalId = null, bpm = 120;
+        let audioCtx = null;
+
+        function getAudio() { if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)(); return audioCtx }
+
+        function playSound(row) {
+            const ctx = getAudio(); const inst = INSTRUMENTS[row]; const now = ctx.currentTime;
+            const osc = ctx.createOscillator(); const gain = ctx.createGain();
+            osc.connect(gain); gain.connect(ctx.destination);
+            if (inst.type === 'kick') { osc.type = 'sine'; osc.frequency.setValueAtTime(150, now); osc.frequency.exponentialRampToValueAtTime(30, now + .15); gain.gain.setValueAtTime(.8, now); gain.gain.exponentialRampToValueAtTime(.001, now + .3); osc.start(now); osc.stop(now + .3) }
+            else if (inst.type === 'snare') { const buf = ctx.createBuffer(1, ctx.sampleRate * .15, ctx.sampleRate); const d = buf.getChannelData(0); for (let i = 0; i < d.length; i++)d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / d.length, 2); const src = ctx.createBufferSource(); src.buffer = buf; const g = ctx.createGain(); g.gain.value = .5; src.connect(g); g.connect(ctx.destination); src.start(now); return }
+            else if (inst.type === 'hihat') { const buf = ctx.createBuffer(1, ctx.sampleRate * .05, ctx.sampleRate); const d = buf.getChannelData(0); for (let i = 0; i < d.length; i++)d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / d.length, 4) * .4; const src = ctx.createBufferSource(); src.buffer = buf; src.connect(ctx.destination); src.start(now); return }
+            else if (inst.type === 'clap') { const buf = ctx.createBuffer(1, ctx.sampleRate * .08, ctx.sampleRate); const d = buf.getChannelData(0); for (let i = 0; i < d.length; i++)d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / d.length, 3) * (i % 400 < 200 ? .6 : .3); const src = ctx.createBufferSource(); src.buffer = buf; const g = ctx.createGain(); g.gain.value = .4; src.connect(g); g.connect(ctx.destination); src.start(now); return }
+            else if (inst.type === 'bass') { osc.type = 'sawtooth'; osc.frequency.value = inst.note * .8; gain.gain.setValueAtTime(.3, now); gain.gain.exponentialRampToValueAtTime(.001, now + .3); const f = ctx.createBiquadFilter(); f.type = 'lowpass'; f.frequency.value = 200; osc.disconnect(); osc.connect(f); f.connect(gain); osc.start(now); osc.stop(now + .3) }
+            else if (inst.type === 'synth') { osc.type = 'square'; osc.frequency.value = 262 + row * 50; gain.gain.setValueAtTime(.15, now); gain.gain.exponentialRampToValueAtTime(.001, now + .2); osc.start(now); osc.stop(now + .2) }
+            else if (inst.type === 'bell') { osc.type = 'sine'; osc.frequency.value = inst.note * 4; gain.gain.setValueAtTime(.2, now); gain.gain.exponentialRampToValueAtTime(.001, now + .5); osc.start(now); osc.stop(now + .5) }
+            else if (inst.type === 'chirp') { osc.type = 'sine'; osc.frequency.setValueAtTime(inst.note * 6, now); osc.frequency.exponentialRampToValueAtTime(inst.note * 12, now + .05); osc.frequency.exponentialRampToValueAtTime(inst.note * 4, now + .1); gain.gain.setValueAtTime(.12, now); gain.gain.exponentialRampToValueAtTime(.001, now + .15); osc.start(now); osc.stop(now + .15) }
+        }
+
+        // Build UI
+        const gridEl = document.getElementById('grid');
+        const labelsEl = document.getElementById('row-labels');
+        gridEl.style.gridTemplateColumns = `repeat(${COLS},1fr)`;
+        gridEl.style.gridTemplateRows = `repeat(${ROWS},1fr)`;
+
+        INSTRUMENTS.forEach((inst, r) => {
+            const label = document.createElement('div'); label.className = 'row-label'; label.textContent = inst.emoji; label.title = inst.name; labelsEl.appendChild(label);
+            for (let c = 0; c < COLS; c++) {
+                const cell = document.createElement('div'); cell.className = 'cell'; cell.dataset.row = r; cell.dataset.col = c;
+                const seed = document.createElement('span'); seed.className = 'seed'; seed.textContent = inst.emoji; cell.appendChild(seed);
+                cell.addEventListener('click', () => {
+                    grid[r][c] = !grid[r][c]; cell.classList.toggle('active');
+                    cell.style.background = grid[r][c] ? COLORS[r] + '15' : '';
+                    cell.style.borderColor = grid[r][c] ? COLORS[r] + '40' : 'rgba(255,255,255,.03)';
+                    if (grid[r][c]) playSound(r);
+                });
+                gridEl.appendChild(cell);
+            }
+        });
+
+        const playhead = document.getElementById('playhead');
+
+        function tick() {
+            const cells = gridEl.querySelectorAll('.cell');
+            for (let r = 0; r < ROWS; r++) {
+                if (grid[r][step]) {
+                    playSound(r);
+                    const cell = cells[r * COLS + step]; cell.classList.remove('flash'); void cell.offsetWidth; cell.classList.add('flash');
+                }
+            }
+            const cellW = gridEl.offsetWidth / COLS;
+            playhead.style.left = (step * cellW + cellW / 2 - 1) + 'px';
+            step = (step + 1) % COLS;
+        }
+
+        document.getElementById('btn-play').addEventListener('click', function () {
+            playing = !playing;
+            this.textContent = playing ? '⏸ Pause' : '▶ Play';
+            this.classList.toggle('active', playing);
+            if (playing) {
+                if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
+                step = 0; intervalId = setInterval(tick, 60000 / bpm / 4);
+            } else { clearInterval(intervalId); playhead.style.left = '-10px' }
+        });
+
+        document.getElementById('btn-clear').addEventListener('click', () => {
+            grid = Array.from({ length: ROWS }, () => Array(COLS).fill(false));
+            gridEl.querySelectorAll('.cell').forEach(c => { c.classList.remove('active'); c.style.background = ''; c.style.borderColor = 'rgba(255,255,255,.03)' });
+        });
+
+        document.getElementById('btn-random').addEventListener('click', () => {
+            grid = Array.from({ length: ROWS }, () => Array.from({ length: COLS }, () => Math.random() < .2));
+            const cells = gridEl.querySelectorAll('.cell');
+            grid.forEach((row, r) => row.forEach((v, c) => {
+                const cell = cells[r * COLS + c];
+                cell.classList.toggle('active', v);
+                cell.style.background = v ? COLORS[r] + '15' : '';
+                cell.style.borderColor = v ? COLORS[r] + '40' : 'rgba(255,255,255,.03)';
+            }));
+        });
+
+        const bpmSlider = document.getElementById('bpm');
+        bpmSlider.addEventListener('input', e => {
+            bpm = parseInt(e.target.value); document.getElementById('bpm-val').textContent = bpm;
+            if (playing) { clearInterval(intervalId); intervalId = setInterval(tick, 60000 / bpm / 4) }
+        });
+    </script>
+</body>
+
+</html>

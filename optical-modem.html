@@ -1,0 +1,1004 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Optical Air-Gap Modem 📡</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Inter:wght@400;500;600;700&display=swap"
+        rel="stylesheet">
+    <style>
+        :root {
+            --bg: #09090b;
+            --s: #18181b;
+            --s2: #27272a;
+            --brd: #3f3f46;
+            --t: #fafafa;
+            --t2: #a1a1aa;
+            --acc: #06b6d4;
+            --acc2: #22d3ee;
+            --grn: #22c55e;
+            --red: #ef4444;
+            --orn: #f59e0b;
+            --pur: #8b5cf6
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg);
+            color: var(--t);
+            min-height: 100vh;
+            overflow-x: hidden
+        }
+
+        .app {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 20px
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 24px
+        }
+
+        .header h1 {
+            font-size: 1.6rem;
+            margin-bottom: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px
+        }
+
+        .header h1 span {
+            color: var(--acc)
+        }
+
+        .header .sub {
+            color: var(--t2);
+            font-size: .7rem
+        }
+
+        .mode-switch {
+            display: flex;
+            gap: 0;
+            margin: 20px auto;
+            max-width: 400px;
+            border-radius: 10px;
+            overflow: hidden;
+            border: 1px solid var(--brd)
+        }
+
+        .mode-btn {
+            flex: 1;
+            padding: 10px;
+            text-align: center;
+            font-size: .75rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all .15s;
+            background: var(--s);
+            color: var(--t2);
+            border: none;
+            font-family: inherit
+        }
+
+        .mode-btn.active {
+            background: rgba(6, 182, 212, .15);
+            color: var(--acc2)
+        }
+
+        .mode-btn:hover {
+            background: var(--s2)
+        }
+
+        .panel {
+            display: none
+        }
+
+        .panel.active {
+            display: block
+        }
+
+        .card {
+            background: var(--s);
+            border: 1px solid var(--brd);
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 12px
+        }
+
+        .card h3 {
+            font-size: .75rem;
+            font-weight: 600;
+            color: var(--acc2);
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 6px
+        }
+
+        .row {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap
+        }
+
+        .col {
+            flex: 1;
+            min-width: 300px
+        }
+
+        textarea {
+            width: 100%;
+            padding: 10px;
+            background: var(--bg);
+            border: 1px solid var(--brd);
+            border-radius: 8px;
+            color: var(--t);
+            font-family: 'JetBrains Mono', monospace;
+            font-size: .75rem;
+            resize: vertical;
+            min-height: 80px
+        }
+
+        .btn {
+            padding: 8px 16px;
+            border-radius: 8px;
+            border: 1px solid var(--brd);
+            background: var(--s2);
+            color: var(--t);
+            font-family: inherit;
+            font-size: .7rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all .1s;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px
+        }
+
+        .btn:hover {
+            background: rgba(255, 255, 255, .08)
+        }
+
+        .btn-acc {
+            background: rgba(6, 182, 212, .15);
+            border-color: rgba(6, 182, 212, .3);
+            color: var(--acc2)
+        }
+
+        .btn-acc:hover {
+            background: rgba(6, 182, 212, .25)
+        }
+
+        .btn-red {
+            background: rgba(239, 68, 68, .15);
+            border-color: rgba(239, 68, 68, .3);
+            color: var(--red)
+        }
+
+        .btn-grn {
+            background: rgba(34, 197, 94, .15);
+            border-color: rgba(34, 197, 94, .3);
+            color: var(--grn)
+        }
+
+        .btn-row {
+            display: flex;
+            gap: 6px;
+            margin: 8px 0;
+            flex-wrap: wrap
+        }
+
+        .stat {
+            font-size: .6rem;
+            font-family: 'JetBrains Mono', monospace;
+            color: var(--t2);
+            line-height: 1.8
+        }
+
+        .stat span {
+            color: var(--acc2);
+            font-weight: 600
+        }
+
+        .stat .grn {
+            color: var(--grn)
+        }
+
+        .stat .red {
+            color: var(--red)
+        }
+
+        .stat .orn {
+            color: var(--orn)
+        }
+
+        .tx-screen {
+            width: 100%;
+            aspect-ratio: 16/9;
+            background: #000;
+            border-radius: 8px;
+            overflow: hidden;
+            position: relative;
+            border: 2px solid var(--brd)
+        }
+
+        .tx-canvas {
+            width: 100%;
+            height: 100%;
+            display: block
+        }
+
+        .rx-screen {
+            width: 100%;
+            max-width: 500px;
+            border-radius: 8px;
+            overflow: hidden;
+            border: 2px solid var(--brd);
+            position: relative;
+            background: #000
+        }
+
+        .rx-screen video {
+            width: 100%;
+            display: block
+        }
+
+        .rx-canvas {
+            width: 100%;
+            height: 60px;
+            display: block;
+            margin-top: 4px
+        }
+
+        .progress {
+            width: 100%;
+            height: 6px;
+            background: var(--bg);
+            border-radius: 3px;
+            overflow: hidden;
+            margin: 6px 0
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--acc), var(--grn));
+            transition: width .2s;
+            border-radius: 3px
+        }
+
+        .log {
+            max-height: 150px;
+            overflow-y: auto;
+            font-size: .55rem;
+            font-family: 'JetBrains Mono', monospace;
+            color: var(--t2);
+            padding: 8px;
+            background: var(--bg);
+            border-radius: 6px;
+            margin-top: 8px
+        }
+
+        .log div {
+            padding: 1px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, .02)
+        }
+
+        .log .ok {
+            color: var(--grn)
+        }
+
+        .log .err {
+            color: var(--red)
+        }
+
+        .log .info {
+            color: var(--acc2)
+        }
+
+        .protocol-viz {
+            display: grid;
+            grid-template-columns: repeat(8, 1fr);
+            gap: 2px;
+            margin: 8px 0
+        }
+
+        .proto-cell {
+            height: 20px;
+            border-radius: 3px;
+            transition: background .05s
+        }
+
+        .speed-sel {
+            display: flex;
+            gap: 4px;
+            margin: 6px 0
+        }
+
+        .speed-btn {
+            padding: 4px 10px;
+            border-radius: 6px;
+            border: 1px solid var(--brd);
+            background: var(--s);
+            color: var(--t2);
+            font-family: inherit;
+            font-size: .6rem;
+            cursor: pointer
+        }
+
+        .speed-btn.active {
+            background: rgba(6, 182, 212, .15);
+            border-color: var(--acc);
+            color: var(--acc2)
+        }
+
+        .diagram {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: .55rem;
+            color: var(--t2);
+            padding: 8px;
+            background: var(--bg);
+            border-radius: 6px;
+            line-height: 1.4;
+            white-space: pre
+        }
+
+        .sample-zone {
+            position: absolute;
+            border: 2px dashed var(--acc);
+            pointer-events: none;
+            z-index: 5;
+            opacity: .5
+        }
+    </style>
+</head>
+
+<body>
+    <div class="app">
+        <div class="header">
+            <h1>📡 Optical <span>Air-Gap</span> Modem</h1>
+            <div class="sub">Transfer data between two computers using only light · No Wi-Fi · No Bluetooth · No Cables
+            </div>
+        </div>
+
+        <div class="mode-switch">
+            <button class="mode-btn active" data-mode="tx" onclick="switchMode('tx')">📤 TRANSMIT</button>
+            <button class="mode-btn" data-mode="rx" onclick="switchMode('rx')">📥 RECEIVE</button>
+            <button class="mode-btn" data-mode="proto" onclick="switchMode('proto')">📋 PROTOCOL</button>
+        </div>
+
+        <!-- TRANSMIT -->
+        <div class="panel active" id="panel-tx">
+            <div class="row">
+                <div class="col">
+                    <div class="card">
+                        <h3>📝 Data Input</h3>
+                        <textarea id="tx-data"
+                            placeholder="Type or paste data to transmit...">Hello from Computer A! This data is being transferred through LIGHT. No cables, no WiFi — just photons. 📡✨</textarea>
+                        <div class="btn-row">
+                            <button class="btn btn-acc" onclick="startTransmit()">📤 Start Transmit</button>
+                            <button class="btn btn-red" onclick="stopTransmit()">⏹ Stop</button>
+                            <button class="btn" onclick="document.getElementById('tx-data').value=''">🗑 Clear</button>
+                        </div>
+                        <h3 style="margin-top:12px">⚡ Speed</h3>
+                        <div class="speed-sel">
+                            <button class="speed-btn" data-bps="5" onclick="setSpeed(this,5)">5 bps</button>
+                            <button class="speed-btn active" data-bps="10" onclick="setSpeed(this,10)">10 bps</button>
+                            <button class="speed-btn" data-bps="20" onclick="setSpeed(this,20)">20 bps</button>
+                            <button class="speed-btn" data-bps="30" onclick="setSpeed(this,30)">30 bps</button>
+                        </div>
+                        <div class="stat">
+                            Data Size: <span id="tx-size">0</span> bytes |
+                            Bits: <span id="tx-bits">0</span> |
+                            Est. Time: <span id="tx-est">0</span>s
+                        </div>
+                    </div>
+                </div>
+                <div class="col">
+                    <div class="card">
+                        <h3>📺 Optical Transmitter</h3>
+                        <div class="tx-screen"><canvas class="tx-canvas" id="tx-canvas"></canvas></div>
+                        <div class="progress">
+                            <div class="progress-fill" id="tx-progress"></div>
+                        </div>
+                        <div class="stat">
+                            Status: <span id="tx-status" class="grn">Ready</span> |
+                            Sent: <span id="tx-sent">0</span>/<span id="tx-total">0</span> bits |
+                            Frame: <span id="tx-frame">0</span>
+                        </div>
+                        <h3 style="margin-top:8px">🔢 Binary Stream</h3>
+                        <div class="protocol-viz" id="tx-viz"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- RECEIVE -->
+        <div class="panel" id="panel-rx">
+            <div class="row">
+                <div class="col">
+                    <div class="card">
+                        <h3>📷 Webcam Receiver</h3>
+                        <div class="btn-row">
+                            <button class="btn btn-acc" onclick="startReceive()">📷 Start Camera</button>
+                            <button class="btn btn-grn" onclick="startDecoding()">▶ Start Decoding</button>
+                            <button class="btn btn-red" onclick="stopReceive()">⏹ Stop</button>
+                        </div>
+                        <div class="rx-screen" id="rx-screen">
+                            <video id="rx-video" autoplay playsinline muted></video>
+                            <div class="sample-zone" id="sample-zone"></div>
+                        </div>
+                        <h3 style="margin-top:8px">📊 Signal Waveform</h3>
+                        <canvas class="rx-canvas" id="rx-wave" height="60"></canvas>
+                    </div>
+                </div>
+                <div class="col">
+                    <div class="card">
+                        <h3>📥 Decoded Data</h3>
+                        <textarea id="rx-data" readonly placeholder="Decoded data will appear here..."></textarea>
+                        <div class="stat">
+                            Status: <span id="rx-status">Waiting</span> |
+                            Bits Received: <span id="rx-bits">0</span> |
+                            Bytes: <span id="rx-bytes">0</span>
+                        </div>
+                        <div class="progress">
+                            <div class="progress-fill" id="rx-progress"></div>
+                        </div>
+                        <h3 style="margin-top:8px">🔍 Signal Analysis</h3>
+                        <div class="stat">
+                            Brightness: <span id="rx-bright">0</span> |
+                            Threshold: <span id="rx-thresh">128</span><br>
+                            Sync Lock: <span id="rx-sync">❌ No</span> |
+                            Bit Rate: <span id="rx-rate">0</span> bps<br>
+                            Errors: <span id="rx-errors" class="red">0</span> |
+                            Confidence: <span id="rx-conf" class="grn">0</span>%
+                        </div>
+                    </div>
+                    <div class="card">
+                        <h3>📋 Decode Log</h3>
+                        <div class="log" id="rx-log"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- PROTOCOL -->
+        <div class="panel" id="panel-proto">
+            <div class="row">
+                <div class="col">
+                    <div class="card">
+                        <h3>📋 Protocol Specification</h3>
+                        <div class="diagram">╔══════════════════════════════════════════╗
+                            ║ OPTICAL AIR-GAP MODEM PROTOCOL v1 ║
+                            ╠══════════════════════════════════════════╣
+                            ║ ║
+                            ║ Physical Layer: Screen ↔ Webcam ║
+                            ║ Encoding: Binary Amplitude Modulation ║
+                            ║ Channels: RGB Color Multiplexing ║
+                            ║ Sync: Preamble + Manchester Encoding ║
+                            ║ ║
+                            ╠══════════════════════════════════════════╣
+                            ║ FRAME STRUCTURE ║
+                            ║ ║
+                            ║ ┌────────┬────────┬──────┬─────┬─────┐ ║
+                            ║ │PREAMBLE│SYNC │LENGTH│DATA │CHECK│ ║
+                            ║ │8 bits │8 bits │8 bits│N×8 │8bit │ ║
+                            ║ │10101010│11001100│byte │bytes│XOR │ ║
+                            ║ └────────┴────────┴──────┴─────┴─────┘ ║
+                            ║ ║
+                            ║ PREAMBLE: Alternating 1/0 for clock ║
+                            ║ SYNC: Fixed pattern for alignment ║
+                            ║ LENGTH: Payload size (0-255 bytes) ║
+                            ║ DATA: Actual payload bytes ║
+                            ║ CHECK: XOR checksum of all data ║
+                            ║ ║
+                            ╠══════════════════════════════════════════╣
+                            ║ ENCODING ║
+                            ║ ║
+                            ║ Bit 1 → Screen WHITE (R=255 G=255 B=255)║
+                            ║ Bit 0 → Screen BLACK (R=0 G=0 B=0) ║
+                            ║ ║
+                            ║ Multi-channel (experimental): ║
+                            ║ R channel → Bit 0 ║
+                            ║ G channel → Bit 1 ║
+                            ║ B channel → Bit 2 (3 bits per flash) ║
+                            ║ ║
+                            ╠══════════════════════════════════════════╣
+                            ║ RECEIVER ║
+                            ║ ║
+                            ║ 1. Webcam captures screen at 30fps ║
+                            ║ 2. Sample center region brightness ║
+                            ║ 3. Apply threshold → binary ║
+                            ║ 4. Detect preamble for sync ║
+                            ║ 5. Read length, extract data ║
+                            ║ 6. Verify checksum ║
+                            ║ ║
+                            ╚══════════════════════════════════════════╝</div>
+                    </div>
+                </div>
+                <div class="col">
+                    <div class="card">
+                        <h3>⚡ Performance</h3>
+                        <div class="stat" style="line-height:2">
+                            <strong>Theoretical Max:</strong><br>
+                            • 1-channel (BW): <span>30 bps</span> @ 30fps camera<br>
+                            • 3-channel (RGB): <span>90 bps</span> @ 30fps<br>
+                            • Screen rate limited to camera fps<br><br>
+                            <strong>Practical:</strong><br>
+                            • ~10-20 bps reliable<br>
+                            • ~1-2 bytes/second throughput<br>
+                            • Error rate: <span class="orn">&lt;5%</span> in good conditions<br><br>
+                            <strong>Requirements:</strong><br>
+                            • Bright screen facing camera<br>
+                            • Stable viewing angle<br>
+                            • Minimal ambient light changes<br>
+                            • Camera exposure locked if possible<br><br>
+                            <strong>Compared to:</strong><br>
+                            • Early modems (300 baud): <span class="red">150x slower</span><br>
+                            • Morse code: <span class="orn">~Same speed</span><br>
+                            • Carrier pigeon: <span class="grn">Faster for large files</span><br>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <h3>🧮 The Math</h3>
+                        <div class="stat" style="line-height:2">
+                            <strong>Signal Detection:</strong><br>
+                            brightness = (R + G + B) / 3<br>
+                            threshold = (min + max) / 2 (adaptive)<br>
+                            bit = brightness > threshold ? 1 : 0<br><br>
+                            <strong>Clock Recovery:</strong><br>
+                            Preamble 10101010 provides transitions<br>
+                            Period T = avg(edge_intervals)<br>
+                            Sample at T/2 after each edge<br><br>
+                            <strong>Checksum:</strong><br>
+                            XOR all data bytes together<br>
+                            check = data[0] ⊕ data[1] ⊕ ... ⊕ data[n]
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // === MODE SWITCHING ===
+        function switchMode(mode) {
+            document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
+            document.querySelector(`.mode-btn[data-mode="${mode}"]`).classList.add('active');
+            document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+            document.getElementById('panel-' + mode).classList.add('active');
+        }
+
+        // === TRANSMITTER ===
+        const txCanvas = document.getElementById('tx-canvas');
+        const txCtx = txCanvas.getContext('2d');
+        let txBPS = 10;
+        let txRunning = false;
+        let txInterval = null;
+        let txBits = [];
+        let txBitIndex = 0;
+        let txFrameCount = 0;
+
+        // Protocol constants
+        const PREAMBLE = [1, 0, 1, 0, 1, 0, 1, 0];
+        const SYNC_WORD = [1, 1, 0, 0, 1, 1, 0, 0];
+
+        function resizeTxCanvas() {
+            const p = txCanvas.parentElement;
+            txCanvas.width = p.clientWidth;
+            txCanvas.height = p.clientHeight || 300;
+        }
+        resizeTxCanvas();
+        window.addEventListener('resize', resizeTxCanvas);
+
+        function textToBits(text) {
+            const bytes = new TextEncoder().encode(text);
+            const bits = [];
+
+            // Split into frames of max 32 bytes
+            const FRAME_SIZE = 32;
+            for (let offset = 0; offset < bytes.length; offset += FRAME_SIZE) {
+                const chunk = bytes.slice(offset, offset + FRAME_SIZE);
+
+                // Preamble
+                bits.push(...PREAMBLE);
+                // Sync word
+                bits.push(...SYNC_WORD);
+                // Length byte
+                const lenBits = [];
+                for (let b = 7; b >= 0; b--) lenBits.push((chunk.length >> b) & 1);
+                bits.push(...lenBits);
+
+                // Data bytes
+                let checksum = 0;
+                for (const byte of chunk) {
+                    checksum ^= byte;
+                    for (let b = 7; b >= 0; b--) bits.push((byte >> b) & 1);
+                }
+
+                // Checksum
+                for (let b = 7; b >= 0; b--) bits.push((checksum >> b) & 1);
+
+                // Gap between frames (8 zeros)
+                bits.push(0, 0, 0, 0, 0, 0, 0, 0);
+            }
+
+            return bits;
+        }
+
+        function setSpeed(btn, bps) {
+            document.querySelectorAll('.speed-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            txBPS = bps;
+            updateTxStats();
+        }
+
+        function updateTxStats() {
+            const text = document.getElementById('tx-data').value;
+            const bytes = new TextEncoder().encode(text);
+            document.getElementById('tx-size').textContent = bytes.length;
+            // Estimate total bits including protocol overhead
+            const frames = Math.ceil(bytes.length / 32);
+            const totalBits = frames * (8 + 8 + 8 + 8) + bytes.length * 8 + frames * 8;
+            document.getElementById('tx-bits').textContent = totalBits;
+            document.getElementById('tx-est').textContent = (totalBits / txBPS).toFixed(1);
+        }
+        document.getElementById('tx-data').addEventListener('input', updateTxStats);
+        updateTxStats();
+
+        function startTransmit() {
+            if (txRunning) return;
+            const text = document.getElementById('tx-data').value;
+            if (!text) return;
+
+            txBits = textToBits(text);
+            txBitIndex = 0;
+            txFrameCount = 0;
+            txRunning = true;
+            document.getElementById('tx-status').textContent = 'TRANSMITTING';
+            document.getElementById('tx-status').className = 'orn';
+            document.getElementById('tx-total').textContent = txBits.length;
+
+            // Init viz
+            const viz = document.getElementById('tx-viz');
+            viz.innerHTML = '';
+            for (let i = 0; i < 32; i++) {
+                const cell = document.createElement('div');
+                cell.className = 'proto-cell';
+                cell.style.background = 'var(--s)';
+                viz.appendChild(cell);
+            }
+
+            txInterval = setInterval(transmitBit, 1000 / txBPS);
+        }
+
+        function transmitBit() {
+            if (txBitIndex >= txBits.length) {
+                // Loop transmission
+                txBitIndex = 0;
+                txFrameCount++;
+                document.getElementById('tx-frame').textContent = txFrameCount;
+            }
+
+            const bit = txBits[txBitIndex];
+            const W = txCanvas.width, H = txCanvas.height;
+
+            // Flash screen
+            if (bit === 1) {
+                txCtx.fillStyle = '#ffffff';
+            } else {
+                txCtx.fillStyle = '#000000';
+            }
+            txCtx.fillRect(0, 0, W, H);
+
+            // Draw center indicator
+            txCtx.fillStyle = bit ? 'rgba(0,0,0,0.3)' : 'rgba(255,255,255,0.1)';
+            txCtx.font = '14px JetBrains Mono';
+            txCtx.textAlign = 'center';
+            txCtx.fillText(`BIT ${txBitIndex}: ${bit}`, W / 2, H / 2);
+
+            // Update viz
+            const cells = document.getElementById('tx-viz').children;
+            const vizStart = Math.max(0, txBitIndex - 31);
+            for (let i = 0; i < 32; i++) {
+                const bi = vizStart + i;
+                if (bi < txBits.length && bi <= txBitIndex) {
+                    cells[i].style.background = txBits[bi] ? '#22d3ee' : '#27272a';
+                } else {
+                    cells[i].style.background = 'var(--s)';
+                }
+            }
+
+            txBitIndex++;
+            document.getElementById('tx-sent').textContent = txBitIndex;
+            document.getElementById('tx-progress').style.width = (txBitIndex / txBits.length * 100) + '%';
+        }
+
+        function stopTransmit() {
+            txRunning = false;
+            clearInterval(txInterval);
+            txCtx.fillStyle = '#000';
+            txCtx.fillRect(0, 0, txCanvas.width, txCanvas.height);
+            document.getElementById('tx-status').textContent = 'Stopped';
+            document.getElementById('tx-status').className = 'red';
+        }
+
+        // === RECEIVER ===
+        let rxStream = null;
+        let rxDecoding = false;
+        let rxAnimFrame = null;
+        const rxVideo = document.getElementById('rx-video');
+        const rxWave = document.getElementById('rx-wave');
+        const rxWaveCtx = rxWave.getContext('2d');
+
+        let rxSamples = [];
+        let rxBitBuffer = [];
+        let rxThreshold = 128;
+        let rxMinBright = 255, rxMaxBright = 0;
+        let rxLastBit = -1;
+        let rxSyncLocked = false;
+        let rxState = 'SEARCH_PREAMBLE'; // SEARCH_PREAMBLE, READ_SYNC, READ_LENGTH, READ_DATA, READ_CHECK
+        let rxDataLength = 0;
+        let rxDataBits = [];
+        let rxCheckBits = [];
+        let rxDecodedBytes = [];
+        let rxErrors = 0;
+        let rxTotalBits = 0;
+        let rxWaveData = [];
+
+        function rxLog(msg, type = 'info') {
+            const log = document.getElementById('rx-log');
+            const d = document.createElement('div');
+            d.className = type;
+            d.textContent = `[${new Date().toLocaleTimeString()}] ${msg}`;
+            log.prepend(d);
+            if (log.children.length > 100) log.lastChild.remove();
+        }
+
+        async function startReceive() {
+            try {
+                rxStream = await navigator.mediaDevices.getUserMedia({
+                    video: { facingMode: 'environment', width: 640, height: 480 }
+                });
+                rxVideo.srcObject = rxStream;
+                document.getElementById('rx-status').textContent = 'Camera Active';
+                rxLog('Camera started', 'ok');
+
+                // Show sample zone
+                setTimeout(() => {
+                    const screen = document.getElementById('rx-screen');
+                    const zone = document.getElementById('sample-zone');
+                    const w = screen.clientWidth * 0.3;
+                    const h = screen.clientHeight * 0.3;
+                    zone.style.width = w + 'px';
+                    zone.style.height = h + 'px';
+                    zone.style.left = (screen.clientWidth / 2 - w / 2) + 'px';
+                    zone.style.top = (screen.clientHeight / 2 - h / 2) + 'px';
+                }, 500);
+            } catch (e) {
+                rxLog('Camera error: ' + e.message, 'err');
+                document.getElementById('rx-status').textContent = 'Camera Error';
+            }
+        }
+
+        function startDecoding() {
+            if (!rxStream) { rxLog('Start camera first!', 'err'); return; }
+            rxDecoding = true;
+            rxSyncLocked = false;
+            rxState = 'SEARCH_PREAMBLE';
+            rxBitBuffer = [];
+            rxDecodedBytes = [];
+            rxErrors = 0;
+            rxTotalBits = 0;
+            rxLog('Decoding started — point camera at transmitting screen', 'ok');
+            document.getElementById('rx-status').textContent = 'Searching for signal...';
+            decodeFrame();
+        }
+
+        function decodeFrame() {
+            if (!rxDecoding) return;
+
+            // Sample brightness from video
+            const tmpCanvas = document.createElement('canvas');
+            tmpCanvas.width = 640;
+            tmpCanvas.height = 480;
+            const tmpCtx = tmpCanvas.getContext('2d');
+            tmpCtx.drawImage(rxVideo, 0, 0, 640, 480);
+
+            // Sample center region
+            const cx = 320, cy = 240, size = 80;
+            const imgData = tmpCtx.getImageData(cx - size / 2, cy - size / 2, size, size);
+            const data = imgData.data;
+
+            let totalBright = 0;
+            for (let i = 0; i < data.length; i += 4) {
+                totalBright += (data[i] + data[i + 1] + data[i + 2]) / 3;
+            }
+            const brightness = totalBright / (size * size);
+
+            // Adaptive threshold
+            rxMinBright = Math.min(rxMinBright, brightness) * 0.99 + brightness * 0.01;
+            rxMaxBright = Math.max(rxMaxBright, brightness) * 0.99 + brightness * 0.01;
+            rxThreshold = (rxMinBright + rxMaxBright) / 2;
+
+            const bit = brightness > rxThreshold ? 1 : 0;
+
+            // Waveform visualization
+            rxWaveData.push(brightness);
+            if (rxWaveData.length > 200) rxWaveData.shift();
+            drawWaveform();
+
+            // Update stats
+            document.getElementById('rx-bright').textContent = brightness.toFixed(0);
+            document.getElementById('rx-thresh').textContent = rxThreshold.toFixed(0);
+
+            // Only process if bit changed or enough time passed
+            rxSamples.push({ brightness, bit, time: Date.now() });
+
+            // Process bit
+            if (rxLastBit !== bit) {
+                rxLastBit = bit;
+                rxBitBuffer.push(bit);
+                rxTotalBits++;
+                document.getElementById('rx-bits').textContent = rxTotalBits;
+                processProtocol();
+            }
+
+            const conf = rxMaxBright - rxMinBright > 30 ? Math.min(100, Math.floor((rxMaxBright - rxMinBright) / 2)) : 0;
+            document.getElementById('rx-conf').textContent = conf;
+
+            rxAnimFrame = requestAnimationFrame(decodeFrame);
+        }
+
+        function processProtocol() {
+            const buf = rxBitBuffer;
+
+            if (rxState === 'SEARCH_PREAMBLE') {
+                // Look for preamble pattern in last 8 bits
+                if (buf.length >= 8) {
+                    const last8 = buf.slice(-8);
+                    const match = last8.every((b, i) => b === PREAMBLE[i]);
+                    if (match) {
+                        rxState = 'READ_SYNC';
+                        rxBitBuffer = [];
+                        rxSyncLocked = true;
+                        document.getElementById('rx-sync').textContent = '✅ Yes';
+                        document.getElementById('rx-sync').className = 'grn';
+                        rxLog('Preamble detected! Reading sync word...', 'ok');
+                    }
+                    // Keep only last 8 bits while searching
+                    if (buf.length > 16) rxBitBuffer = buf.slice(-8);
+                }
+            }
+            else if (rxState === 'READ_SYNC') {
+                if (buf.length >= 8) {
+                    const syncMatch = buf.slice(0, 8).every((b, i) => b === SYNC_WORD[i]);
+                    if (syncMatch) {
+                        rxState = 'READ_LENGTH';
+                        rxBitBuffer = [];
+                        rxLog('Sync word matched! Reading length...', 'ok');
+                    } else {
+                        rxState = 'SEARCH_PREAMBLE';
+                        rxSyncLocked = false;
+                        document.getElementById('rx-sync').textContent = '❌ Lost';
+                        rxLog('Sync mismatch — resynchronizing', 'err');
+                    }
+                }
+            }
+            else if (rxState === 'READ_LENGTH') {
+                if (buf.length >= 8) {
+                    rxDataLength = 0;
+                    for (let i = 0; i < 8; i++) rxDataLength = (rxDataLength << 1) | buf[i];
+                    rxBitBuffer = [];
+                    rxDataBits = [];
+                    rxState = 'READ_DATA';
+                    rxLog(`Length: ${rxDataLength} bytes (${rxDataLength * 8} bits)`, 'info');
+                }
+            }
+            else if (rxState === 'READ_DATA') {
+                if (buf.length >= rxDataLength * 8) {
+                    // Decode bytes
+                    const bytes = [];
+                    let checksum = 0;
+                    for (let i = 0; i < rxDataLength; i++) {
+                        let byte = 0;
+                        for (let b = 0; b < 8; b++) byte = (byte << 1) | buf[i * 8 + b];
+                        bytes.push(byte);
+                        checksum ^= byte;
+                    }
+                    rxBitBuffer = buf.slice(rxDataLength * 8);
+                    rxDecodedBytes.push(...bytes);
+                    rxState = 'READ_CHECK';
+                    rxCheckBits = [];
+
+                    // Decode text
+                    const text = new TextDecoder().decode(new Uint8Array(rxDecodedBytes));
+                    document.getElementById('rx-data').value = text;
+                    document.getElementById('rx-bytes').textContent = rxDecodedBytes.length;
+                    rxLog(`Decoded ${bytes.length} bytes: "${String.fromCharCode(...bytes).substring(0, 20)}..."`, 'ok');
+                }
+            }
+            else if (rxState === 'READ_CHECK') {
+                if (buf.length >= 8) {
+                    let check = 0;
+                    for (let i = 0; i < 8; i++) check = (check << 1) | buf[i];
+                    // Verify
+                    let expected = 0;
+                    const lastChunkStart = rxDecodedBytes.length - rxDataLength;
+                    for (let i = lastChunkStart; i < rxDecodedBytes.length; i++) expected ^= rxDecodedBytes[i];
+
+                    if (check === expected) {
+                        rxLog(`Checksum OK ✅ (0x${check.toString(16).padStart(2, '0')})`, 'ok');
+                    } else {
+                        rxErrors++;
+                        document.getElementById('rx-errors').textContent = rxErrors;
+                        rxLog(`Checksum FAIL ❌ (got 0x${check.toString(16)}, expected 0x${expected.toString(16)})`, 'err');
+                    }
+                    rxBitBuffer = [];
+                    rxState = 'SEARCH_PREAMBLE';
+                    rxSyncLocked = false;
+                }
+            }
+        }
+
+        function drawWaveform() {
+            const W = rxWave.width = rxWave.parentElement?.clientWidth || 400;
+            const H = 60;
+            rxWaveCtx.fillStyle = '#09090b';
+            rxWaveCtx.fillRect(0, 0, W, H);
+
+            // Threshold line
+            const threshY = H - (rxThreshold / 255 * H);
+            rxWaveCtx.strokeStyle = 'rgba(239,68,68,0.4)';
+            rxWaveCtx.setLineDash([4, 4]);
+            rxWaveCtx.beginPath();
+            rxWaveCtx.moveTo(0, threshY);
+            rxWaveCtx.lineTo(W, threshY);
+            rxWaveCtx.stroke();
+            rxWaveCtx.setLineDash([]);
+
+            // Waveform
+            if (rxWaveData.length < 2) return;
+            rxWaveCtx.strokeStyle = '#22d3ee';
+            rxWaveCtx.lineWidth = 1.5;
+            rxWaveCtx.beginPath();
+            const step = W / rxWaveData.length;
+            rxWaveData.forEach((v, i) => {
+                const x = i * step;
+                const y = H - (v / 255 * H);
+                if (i === 0) rxWaveCtx.moveTo(x, y);
+                else rxWaveCtx.lineTo(x, y);
+            });
+            rxWaveCtx.stroke();
+        }
+
+        function stopReceive() {
+            rxDecoding = false;
+            if (rxAnimFrame) cancelAnimationFrame(rxAnimFrame);
+            if (rxStream) { rxStream.getTracks().forEach(t => t.stop()); rxStream = null; }
+            rxVideo.srcObject = null;
+            document.getElementById('rx-status').textContent = 'Stopped';
+            rxLog('Receiver stopped', 'info');
+        }
+
+        // Clear initial canvas
+        txCtx.fillStyle = '#000';
+        txCtx.fillRect(0, 0, txCanvas.width, txCanvas.height);
+        txCtx.fillStyle = 'rgba(255,255,255,0.1)';
+        txCtx.font = '14px Inter';
+        txCtx.textAlign = 'center';
+        txCtx.fillText('Press TRANSMIT to begin', txCanvas.width / 2, txCanvas.height / 2);
+    </script>
+</body>
+
+</html>
