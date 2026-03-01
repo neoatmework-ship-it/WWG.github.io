@@ -311,9 +311,9 @@
                 <div style="display:flex; flex-direction:column; gap:8px; margin-top:2px;">
                     <span style="font-size: 0.8rem; color: var(--text-muted); line-height: 1.4;">
                         Uses a completely free, 100% client-side AI model (<a
-                            href="https://img.ly/showcases/cesdk/background-removal" target="_blank"
-                            style="color: var(--accent);">img.ly</a>).
-                        It processes locally in your browser. The first run must download the 40MB model cache.
+                            href="https://huggingface.co/briaai/RMBG-1.4" target="_blank"
+                            style="color: var(--accent);">RMBG-1.4</a>).
+                        It processes locally in your browser. The first run downloads the model (approx. 170MB cache).
                     </span>
                 </div>
             </div>
@@ -337,10 +337,8 @@
         </div>
     </div>
 
-    <script type="module">
-        import imglyRemoveBackground from "https://cdn.jsdelivr.net/npm/@imgly/background-removal@1.4.3/dist/imglyRemoveBackground.esm.js";
-        window.imglyRemoveBackground = imglyRemoveBackground;
-    </script>
+    <!-- Transformers.js script to avoid ES Module Cross-Origin scoping issues -->
+    <script src="https://cdn.jsdelivr.net/npm/@xenova/transformers@2.17.2/dist/transformers.min.js"></script>
 
     <script>
         const fileInput = document.getElementById('file-input');
@@ -426,26 +424,73 @@
             }
         });
 
+        let segmenterPipeline = null;
+
         async function processBgRemoval(canvas) {
-            return new Promise(async (resolve, reject) => {
-                try {
-                    if (!window.imglyRemoveBackground) {
-                        return reject(new Error("AI Model engine failed to load from CDN."));
-                    }
-
-                    const blob = await new Promise(r => canvas.toBlob(r, 'image/png'));
-                    const config = {
-                        publicPath: "https://cdn.jsdelivr.net/npm/@imgly/background-removal@1.4.3/dist/"
-                    };
-
-                    // The first run downloads the models
-                    const newBlob = await window.imglyRemoveBackground(blob, config);
-                    const newUrl = URL.createObjectURL(newBlob);
-                    resolve(newUrl);
-                } catch (err) {
-                    reject(err);
+            try {
+                if (!window.transformers) {
+                    throw new Error("Transformers.js AI engine failed to load from CDN.");
                 }
-            });
+
+                // Initialize pipeline only once to cache it
+                if (!segmenterPipeline) {
+                    statusText.textContent = 'Loading AI model... (First run downloads 170MB)';
+                    window.transformers.env.allowLocalModels = false;
+                    segmenterPipeline = await window.transformers.pipeline('image-segmentation', 'briaai/RMBG-1.4');
+                }
+
+                statusText.textContent = 'Removing background via AI...';
+
+                // Get canvas data as data url for the model input
+                const dataUrl = canvas.toDataURL('image/png');
+
+                // Run the image segmentation
+                const output = await segmenterPipeline(dataUrl);
+
+                // The output mask is returned as a RawImage. Fallback if it's an array for Xenova's generic outputs
+                const mask = Array.isArray(output) ? output[0].mask : output.mask;
+                if (!mask) throw new Error("Could not extract mask from model output");
+
+                const ctx = canvas.getContext('2d');
+                const imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+
+                // Check if mask needs to be resized to the canvas
+                // RMBG scale and un-scale usually handles it, but let's confirm sizes match
+                if (mask.width === canvas.width && mask.height === canvas.height) {
+                    // Fast path: Apply the monochrome mask directly to the canvas alpha channel
+                    for (let i = 0; i < imgData.data.length / 4; i++) {
+                        imgData.data[i * 4 + 3] = mask.data[i];
+                    }
+                    ctx.putImageData(imgData, 0, 0);
+                } else {
+                    // Slow path: the mask is differently sized, we have to scale it up
+                    const maskCanvas = document.createElement('canvas');
+                    maskCanvas.width = mask.width;
+                    maskCanvas.height = mask.height;
+                    const maskCtx = maskCanvas.getContext('2d');
+                    const maskImgData = maskCtx.createImageData(mask.width, mask.height);
+
+                    // Convert RawImage grayscale mask to an RGBA mask image
+                    for (let i = 0; i < mask.data.length; i++) {
+                        maskImgData.data[i * 4] = 0; // r
+                        maskImgData.data[i * 4 + 1] = 0; // g
+                        maskImgData.data[i * 4 + 2] = 0; // b
+                        maskImgData.data[i * 4 + 3] = mask.data[i]; // a
+                    }
+                    maskCtx.putImageData(maskImgData, 0, 0);
+
+                    // Draw the original image but only keep pixels where the mask is opaque (source-in)
+                    ctx.globalCompositeOperation = 'destination-in';
+                    ctx.drawImage(maskCanvas, 0, 0, canvas.width, canvas.height);
+                    ctx.globalCompositeOperation = 'source-over';
+                }
+
+                return canvas.toDataURL('image/png');
+
+            } catch (err) {
+                console.error("BG Removal Error:", err);
+                throw err;
+            }
         }
 
         async function extractFrames() {
