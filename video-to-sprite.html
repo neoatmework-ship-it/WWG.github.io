@@ -305,18 +305,17 @@
             </div>
             <div class="control-group">
                 <label style="display:flex; align-items:center; gap:8px;">
-                    <input type="checkbox" id="input-remove-bg" style="width:16px; height:16px; margin:0;" checked>
-                    Remove Background
+                    <input type="checkbox" id="input-remove-bg" style="width:16px; height:16px; margin:0;">
+                    Remove Background (AI)
                 </label>
-                <div style="display:flex; gap:10px; margin-top:2px;">
-                    <input type="color" id="input-bg-color" value="#00ff00"
-                        style="padding:2px; height:46px; width:50px; cursor:pointer;" title="Background Color">
-                    <div style="flex:1;">
-                        <label style="font-size:0.75rem; text-transform:none;">Tolerance: <span
-                                id="tol-val">40</span></label>
-                        <input type="range" id="input-tolerance" value="40" min="0" max="255"
-                            style="width:100%; height:auto; padding:0; margin-top:5px; cursor:pointer;">
-                    </div>
+                <div style="display:flex; flex-direction:column; gap:8px; margin-top:2px;">
+                    <input type="password" id="input-api-key" placeholder="remove.bg API Key"
+                        title="Get a free API key at remove.bg" style="font-size: 0.9rem; padding: 8px 12px;">
+                    <span style="font-size: 0.75rem; color: var(--text-muted); line-height: 1.4;">
+                        Requires a <a href="https://www.remove.bg/api" target="_blank"
+                            style="color: var(--accent);">remove.bg</a> API key. <br>
+                        (Processes the final sprite sheet to save API credits)
+                    </span>
                 </div>
             </div>
         </div>
@@ -348,11 +347,7 @@
         const inputFps = document.getElementById('input-fps');
         const inputScale = document.getElementById('input-scale');
         const inputRemoveBg = document.getElementById('input-remove-bg');
-        const inputBgColor = document.getElementById('input-bg-color');
-        const inputTolerance = document.getElementById('input-tolerance');
-        const tolVal = document.getElementById('tol-val');
-
-        inputTolerance.addEventListener('input', () => tolVal.textContent = inputTolerance.value);
+        const inputApiKey = document.getElementById('input-api-key');
 
         const statusContainer = document.getElementById('status-container');
         const progressBar = document.getElementById('progress-bar');
@@ -428,13 +423,32 @@
             }
         });
 
-        function hexToRgb(hex) {
-            const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
-            return result ? {
-                r: parseInt(result[1], 16),
-                g: parseInt(result[2], 16),
-                b: parseInt(result[3], 16)
-            } : { r: 0, g: 255, b: 0 };
+        function processBgRemoval(dataUrl, apiKey) {
+            return new Promise((resolve, reject) => {
+                const formData = new FormData();
+                formData.append('size', 'auto');
+                formData.append('image_file_b64', dataUrl.replace(/^data:image\/(png|jpeg|jpg);base64,/, ''));
+
+                fetch('https://api.remove.bg/v1.0/removebg', {
+                    method: 'POST',
+                    headers: {
+                        'X-Api-Key': apiKey,
+                    },
+                    body: formData
+                })
+                    .then(response => {
+                        if (!response.ok) {
+                            return response.json().then(json => Promise.reject(json.errors[0].title));
+                        }
+                        return response.blob();
+                    })
+                    .then(blob => {
+                        const reader = new FileReader();
+                        reader.onloadend = () => resolve(reader.result);
+                        reader.readAsDataURL(blob);
+                    })
+                    .catch(err => reject(err));
+            });
         }
 
         async function extractFrames() {
@@ -489,32 +503,6 @@
                 const ctx = c.getContext('2d', { willReadFrequently: true });
                 ctx.drawImage(video, 0, 0, w, h);
 
-                if (inputRemoveBg.checked) {
-                    const targetColor = hexToRgb(inputBgColor.value);
-                    const tolerance = parseInt(inputTolerance.value);
-                    const imgData = ctx.getImageData(0, 0, w, h);
-                    const data = imgData.data;
-
-                    // Pre-calculate squared tolerance for performance
-                    const tolSq = tolerance * tolerance;
-
-                    for (let i = 0; i < data.length; i += 4) {
-                        const r = data[i];
-                        const g = data[i + 1];
-                        const b = data[i + 2];
-
-                        // Euclidean distance squared
-                        const distSq = (r - targetColor.r) * (r - targetColor.r) +
-                            (g - targetColor.g) * (g - targetColor.g) +
-                            (b - targetColor.b) * (b - targetColor.b);
-
-                        if (distSq <= tolSq) {
-                            data[i + 3] = 0; // Set alpha to 0 (transparent)
-                        }
-                    }
-                    ctx.putImageData(imgData, 0, 0);
-                }
-
                 frames.push(c);
 
                 const pct = Math.min(100, Math.floor((frames.length / expectedFrames) * 100));
@@ -547,10 +535,35 @@
                 ctxOut.drawImage(frames[i], x, y);
             }
 
-            statusText.textContent = `Done! Created ${cols}x${rows} grid (${outCanvas.width}x${outCanvas.height}px)`;
+            // Standard export
+            let dataUrl = outCanvas.toDataURL('image/png');
+
+            // API Background Removal
+            if (inputRemoveBg.checked) {
+                const apiKey = inputApiKey.value.trim();
+                if (!apiKey) {
+                    alert("Please enter a remove.bg API key to use the AI background removal feature (or uncheck the box).");
+                    statusText.textContent = "Missing API Key.";
+                    btnGenerate.disabled = false;
+                    return;
+                }
+
+                statusText.textContent = 'Removing background via AI... (this may take a moment)';
+                try {
+                    dataUrl = await processBgRemoval(dataUrl, apiKey);
+                    statusText.textContent = `Done! Background removed. Created ${cols}x${rows} grid (${outCanvas.width}x${outCanvas.height}px)`;
+                } catch (err) {
+                    console.error(err);
+                    alert("Background removal failed: " + (err.message || err));
+                    statusText.textContent = "Background removal failed.";
+                    btnGenerate.disabled = false;
+                    return;
+                }
+            } else {
+                statusText.textContent = `Done! Created ${cols}x${rows} grid (${outCanvas.width}x${outCanvas.height}px)`;
+            }
 
             // Show result
-            const dataUrl = outCanvas.toDataURL('image/png');
             previewImg.src = dataUrl;
 
             resultContainer.style.display = 'block';
