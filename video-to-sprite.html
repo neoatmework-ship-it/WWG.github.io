@@ -338,7 +338,7 @@
     </div>
 
     <script type="module">
-        import imglyRemoveBackground from "https://unpkg.com/@imgly/background-removal@1.4.3/dist/imglyRemoveBackground.esm.js";
+        import imglyRemoveBackground from "https://cdn.jsdelivr.net/npm/@imgly/background-removal@1.4.3/dist/imglyRemoveBackground.esm.js";
         window.imglyRemoveBackground = imglyRemoveBackground;
     </script>
 
@@ -435,7 +435,7 @@
 
                     const blob = await new Promise(r => canvas.toBlob(r, 'image/png'));
                     const config = {
-                        publicPath: "https://unpkg.com/@imgly/background-removal@1.4.3/dist/"
+                        publicPath: "https://cdn.jsdelivr.net/npm/@imgly/background-removal@1.4.3/dist/"
                     };
 
                     // The first run downloads the models
