@@ -337,8 +337,12 @@
         </div>
     </div>
 
-    <script>
+    <script type="module">
+        import imglyRemoveBackground from "https://unpkg.com/@imgly/background-removal@1.4.3/dist/imglyRemoveBackground.esm.js";
+        window.imglyRemoveBackground = imglyRemoveBackground;
+    </script>
 
+    <script>
         const fileInput = document.getElementById('file-input');
         const dropZone = document.getElementById('drop-zone');
         const dropText = document.getElementById('drop-text');
@@ -425,15 +429,17 @@
         async function processBgRemoval(canvas) {
             return new Promise(async (resolve, reject) => {
                 try {
-                    // Dynamically import the module only when needed
-                    const module = await import("https://unpkg.com/@imgly/background-removal@1.4.3/dist/imglyRemoveBackground.esm.js");
-                    const imglyRemoveBackground = module.default;
+                    if (!window.imglyRemoveBackground) {
+                        return reject(new Error("AI Model engine failed to load from CDN."));
+                    }
 
                     const blob = await new Promise(r => canvas.toBlob(r, 'image/png'));
                     const config = {
                         publicPath: "https://unpkg.com/@imgly/background-removal@1.4.3/dist/"
                     };
-                    const newBlob = await imglyRemoveBackground(blob, config);
+
+                    // The first run downloads the models
+                    const newBlob = await window.imglyRemoveBackground(blob, config);
                     const newUrl = URL.createObjectURL(newBlob);
                     resolve(newUrl);
                 } catch (err) {
