@@ -337,6 +337,15 @@
         </div>
     </div>
 
+    <script type="module">
+        // Import transformers from the CDN as an ES Module
+        import { pipeline, env } from 'https://cdn.jsdelivr.net/npm/@xenova/transformers@2.17.2';
+
+        // Expose them to the global scope for the main application script
+        window.transformersPipeline = pipeline;
+        window.transformersEnv = env;
+    </script>
+
     <script>
         const fileInput = document.getElementById('file-input');
         const dropZone = document.getElementById('drop-zone');
@@ -429,11 +438,12 @@
                 if (!segmenterPipeline) {
                     statusText.textContent = 'Loading AI model... (First run downloads 170MB)';
 
-                    // Dynamically import transformers to avoid global script tag issues
-                    const transformers = await import('https://cdn.jsdelivr.net/npm/@xenova/transformers@2.17.2');
+                    if (!window.transformersPipeline) {
+                        throw new Error("Transformers.js AI engine failed to load from CDN.");
+                    }
 
-                    transformers.env.allowLocalModels = false;
-                    segmenterPipeline = await transformers.pipeline('image-segmentation', 'briaai/RMBG-1.4');
+                    window.transformersEnv.allowLocalModels = false;
+                    segmenterPipeline = await window.transformersPipeline('image-segmentation', 'briaai/RMBG-1.4');
                 }
 
                 statusText.textContent = 'Removing background via AI...';
