@@ -257,6 +257,40 @@
 </head>
 
 <body>
+
+<!-- WWG Back Button -->
+<style>
+.wwg-back-btn {
+    position: fixed;
+    top: 20px;
+    left: 20px;
+    width: 44px;
+    height: 44px;
+    background: rgba(10, 10, 15, 0.7);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #a78bfa;
+    z-index: 99999;
+    transition: all 0.3s ease;
+    text-decoration: none;
+}
+.wwg-back-btn:hover {
+    background: rgba(167, 139, 250, 0.2);
+    border-color: rgba(167, 139, 250, 0.4);
+    transform: scale(1.05) translateX(-2px);
+    color: #fff;
+    box-shadow: 0 0 15px rgba(167, 139, 250, 0.3);
+}
+</style>
+<a href="index.html" class="wwg-back-btn" title="Back to Gallery">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+</a>
+
     <div class="machine">
         <div class="lights" id="lights"></div>
         <h1>EMOJI SLOTS</h1>
