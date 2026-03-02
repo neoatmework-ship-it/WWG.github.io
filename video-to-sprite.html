@@ -69,6 +69,45 @@
             box-shadow: 0 0 15px rgba(167, 139, 250, 0.3);
         }
 
+        /* Easter Egg */
+        .easter-minotaur {
+            position: fixed;
+            bottom: 20px;
+            left: -150px;
+            width: 128px;
+            height: 128px;
+            background-image: url('minotaur_sheet.jpg');
+            background-size: 1024px 896px;
+            background-position: 0 0;
+            z-index: 999999;
+            pointer-events: none;
+            display: none;
+            mix-blend-mode: screen;
+        }
+
+        .easter-minotaur.active {
+            display: block;
+            animation:
+                minotaur-walk 0.5s steps(8) infinite,
+                minotaur-move 4s linear forwards;
+        }
+
+        @keyframes minotaur-walk {
+            100% {
+                background-position: -1024px 0;
+            }
+        }
+
+        @keyframes minotaur-move {
+            0% {
+                left: -150px;
+            }
+
+            100% {
+                left: 110vw;
+            }
+        }
+
         .container {
             width: 100%;
             max-width: 800px;
@@ -677,6 +716,42 @@
                     btnDownloadZip.disabled = false;
                 }
             };
+        }
+
+        // Easter Egg Logic
+        let secretBuffer = "";
+        const secretWords = ["isaac", "minotaur"];
+
+        document.addEventListener('keydown', (e) => {
+            if (!e.key || e.key.length !== 1) return;
+            secretBuffer += e.key.toLowerCase();
+            if (secretBuffer.length > 20) secretBuffer = secretBuffer.slice(-20);
+
+            if (secretWords.some(w => secretBuffer.endsWith(w))) {
+                secretBuffer = "";
+                triggerMinotaur();
+            }
+        });
+
+        function triggerMinotaur() {
+            let mino = document.getElementById('easter-minotaur');
+            if (!mino) {
+                mino = document.createElement('div');
+                mino.id = 'easter-minotaur';
+                mino.className = 'easter-minotaur';
+                document.body.appendChild(mino);
+            }
+
+            // Reset animation
+            mino.classList.remove('active');
+            void mino.offsetWidth; // trigger reflow
+            mino.classList.add('active');
+
+            mino.addEventListener('animationend', (evt) => {
+                if (evt.animationName === 'minotaur-move') {
+                    mino.classList.remove('active');
+                }
+            }, { once: true });
         }
     </script>
 </body>
