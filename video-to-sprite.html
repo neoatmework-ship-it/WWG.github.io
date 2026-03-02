@@ -8,6 +8,7 @@
     <link
         href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap"
         rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <style>
         :root {
             --bg: #050508;
@@ -333,7 +334,9 @@
             <img id="preview-img" class="preview" alt="Sprite Sheet Preview">
             <button class="btn" id="btn-download"
                 style="background: linear-gradient(135deg, var(--accent), var(--pink)); color: #fff; border:none; margin-top: 10px;">Download
-                Sprite Sheet 💾</button>
+                <button class="btn" id="btn-download-zip"
+                    style="background: linear-gradient(135deg, var(--primary), var(--secondary)); color: #fff; border:none; margin-top: 10px; margin-left: 10px;">Download
+                    Frames (ZIP) 📦</button>
         </div>
     </div>
 
@@ -366,6 +369,7 @@
         const ctxOut = outCanvas.getContext('2d', { willReadFrequently: true });
         const previewImg = document.getElementById('preview-img');
         const btnDownload = document.getElementById('btn-download');
+        const btnDownloadZip = document.getElementById('btn-download-zip');
 
         let videoFile = null;
 
@@ -618,6 +622,60 @@
                 document.body.appendChild(link);
                 link.click();
                 document.body.removeChild(link);
+            };
+
+            btnDownloadZip.onclick = async () => {
+                const zip = new JSZip();
+                btnDownloadZip.disabled = true;
+                const originalText = btnDownloadZip.textContent;
+                btnDownloadZip.textContent = "Zipping frames... ⏳";
+
+                try {
+                    if (inputRemoveBg.checked) {
+                        // The outputUrl has the bg removed from the whole sprite sheet, chop it back up
+                        const img = new Image();
+                        img.src = outputUrl;
+                        await new Promise(r => img.onload = r);
+
+                        const tmpCanvas = document.createElement('canvas');
+                        tmpCanvas.width = w;
+                        tmpCanvas.height = h;
+                        const tmpCtx = tmpCanvas.getContext('2d');
+
+                        for (let i = 0; i < frames.length; i++) {
+                            const x = (i % cols) * w;
+                            const y = Math.floor(i / cols) * h;
+                            tmpCtx.clearRect(0, 0, w, h);
+                            tmpCtx.drawImage(img, x, y, w, h, 0, 0, w, h);
+                            const blob = await new Promise(r => tmpCanvas.toBlob(r, 'image/png'));
+                            zip.file(`frame_${i.toString().padStart(3, '0')}.png`, blob);
+                        }
+                    } else {
+                        // Original frames are already clean on transparent canvases (or opaque)
+                        for (let i = 0; i < frames.length; i++) {
+                            const blob = await new Promise(r => frames[i].toBlob(r, 'image/png'));
+                            zip.file(`frame_${i.toString().padStart(3, '0')}.png`, blob);
+                        }
+                    }
+
+                    const zipBlob = await zip.generateAsync({ type: 'blob' });
+                    const zipUrl = URL.createObjectURL(zipBlob);
+
+                    const link = document.createElement('a');
+                    link.download = `extracted_frames_${Math.floor(Date.now() / 1000)}.zip`;
+                    link.href = zipUrl;
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                    URL.revokeObjectURL(zipUrl);
+
+                } catch (e) {
+                    console.error("Zipping error:", e);
+                    alert("Failed to zip frames! See console.");
+                } finally {
+                    btnDownloadZip.textContent = originalText;
+                    btnDownloadZip.disabled = false;
+                }
             };
         }
     </script>
