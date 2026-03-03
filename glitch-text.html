@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <link rel="icon"
+        href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20100%20100%22%3E%3Ctext%20y%3D%22.9em%22%20font-size%3D%2290%22%3E%F0%9F%91%BD%3C%2Ftext%3E%3C%2Fsvg%3E">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Glitch Text Generator | WWG</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400&family=Inter:wght@400;500;700&display=swap"
+        rel="stylesheet">
+    <style>
+        :root {
+            --bg: #0a0a0a;
+            --surface: #121212;
+            --border: #333;
+            --accent1: #00ff41;
+            /* Matrix green */
+            --accent2: #ff003c;
+            /* Cyber red */
+            --accent3: #00e5ff;
+            /* Cyan */
+            --text: #e0e0e0;
+            --text-muted: #888;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            overflow-x: hidden;
+            background-image:
+                radial-gradient(circle at 15% 50%, rgba(0, 255, 65, 0.03) 0%, transparent 50%),
+                radial-gradient(circle at 85% 30%, rgba(255, 0, 60, 0.03) 0%, transparent 50%);
+        }
+
+        .container {
+            width: 100%;
+            max-width: 800px;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            padding: 40px;
+            border-radius: 4px;
+            box-shadow: 0 0 40px rgba(0, 255, 65, 0.05);
+            position: relative;
+        }
+
+        /* Scanline Overlay */
+        .container::after {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(to bottom,
+                    rgba(255, 255, 255, 0),
+                    rgba(255, 255, 255, 0) 50%,
+                    rgba(0, 0, 0, 0.2) 50%,
+                    rgba(0, 0, 0, 0.2));
+            background-size: 100% 4px;
+            pointer-events: none;
+            border-radius: 4px;
+            z-index: 10;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            position: relative;
+        }
+
+        .glitch-title {
+            font-family: 'Space Mono', monospace;
+            font-size: 3rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            position: relative;
+            display: inline-block;
+            color: var(--text);
+        }
+
+        .glitch-title::before,
+        .glitch-title::after {
+            content: "NEXUS_CORRUPT";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: var(--surface);
+        }
+
+        .glitch-title::before {
+            left: 2px;
+            text-shadow: -2px 0 var(--accent2);
+            clip: rect(24px, 550px, 90px, 0);
+            animation: glitch-anim-2 3s infinite linear alternate-reverse;
+        }
+
+        .glitch-title::after {
+            left: -2px;
+            text-shadow: -2px 0 var(--accent3);
+            clip: rect(85px, 550px, 140px, 0);
+            animation: glitch-anim 2.5s infinite linear alternate-reverse;
+        }
+
+        @keyframes glitch-anim {
+            0% {
+                clip: rect(10px, 9999px, 83px, 0);
+            }
+
+            20% {
+                clip: rect(65px, 9999px, 86px, 0);
+            }
+
+            40% {
+                clip: rect(4px, 9999px, 2px, 0);
+            }
+
+            60% {
+                clip: rect(41px, 9999px, 12px, 0);
+            }
+
+            80% {
+                clip: rect(98px, 9999px, 52px, 0);
+            }
+
+            100% {
+                clip: rect(3px, 9999px, 84px, 0);
+            }
+        }
+
+        @keyframes glitch-anim-2 {
+            0% {
+                clip: rect(65px, 9999px, 100px, 0);
+            }
+
+            20% {
+                clip: rect(3px, 9999px, 50px, 0);
+            }
+
+            40% {
+                clip: rect(42px, 9999px, 20px, 0);
+            }
+
+            60% {
+                clip: rect(80px, 9999px, 90px, 0);
+            }
+
+            80% {
+                clip: rect(12px, 9999px, 5px, 0);
+            }
+
+            100% {
+                clip: rect(90px, 9999px, 45px, 0);
+            }
+        }
+
+        .input-group {
+            margin-bottom: 24px;
+        }
+
+        textarea {
+            width: 100%;
+            height: 120px;
+            background: #000;
+            border: 1px solid var(--border);
+            color: var(--accent1);
+            font-family: 'Space Mono', monospace;
+            padding: 16px;
+            font-size: 1.1rem;
+            resize: none;
+            outline: none;
+            transition: 0.3s;
+        }
+
+        textarea:focus {
+            border-color: var(--accent1);
+            box-shadow: 0 0 15px rgba(0, 255, 65, 0.2);
+        }
+
+        .controls {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 24px;
+            background: rgba(0, 0, 0, 0.5);
+            padding: 20px;
+            border: 1px solid var(--border);
+        }
+
+        .slider-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .slider-group label {
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--text-muted);
+            display: flex;
+            justify-content: space-between;
+        }
+
+        input[type="range"] {
+            -webkit-appearance: none;
+            width: 100%;
+            height: 4px;
+            background: #333;
+            outline: none;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 16px;
+            height: 16px;
+            background: var(--accent1);
+            cursor: pointer;
+            border-radius: 0;
+            transition: 0.2s;
+        }
+
+        input[type="range"]::-webkit-slider-thumb:hover {
+            transform: scale(1.2);
+            box-shadow: 0 0 10px var(--accent1);
+        }
+
+        .output-box {
+            position: relative;
+        }
+
+        .output-text {
+            width: 100%;
+            min-height: 150px;
+            background: #000;
+            border: 1px solid var(--border);
+            color: #fff;
+            padding: 20px;
+            font-size: 1.5rem;
+            font-family: 'Inter', sans-serif;
+            line-height: 1.4;
+            word-wrap: break-word;
+            white-space: pre-wrap;
+            overflow: hidden;
+        }
+
+        .copy-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: var(--accent1);
+            color: #000;
+            border: none;
+            padding: 8px 16px;
+            font-family: 'Space Mono', monospace;
+            font-weight: bold;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: 0.2s;
+            z-index: 20;
+        }
+
+        .copy-btn:hover {
+            background: #fff;
+            box-shadow: 0 0 15px var(--accent1);
+        }
+
+        .back-btn {
+            position: absolute;
+            top: -40px;
+            left: 0;
+            color: var(--text-muted);
+            text-decoration: none;
+            font-family: 'Space Mono', monospace;
+            font-size: 0.9rem;
+            transition: color 0.2s;
+        }
+
+        .back-btn:hover {
+            color: var(--accent1);
+        }
+
+        /* Dynamic CSS Glitch Effect applied to result text */
+        .css-glitch {
+            position: relative;
+            display: inline-block;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="container">
+        <a href="index.html" class="back-btn">&lt; SYS.EXIT()</a>
+
+        <div class="header">
+            <div class="glitch-title" data-text="NEXUS_CORRUPT">NEXUS_CORRUPT</div>
+            <p class="desc" style="margin-top: 10px; font-family: 'Space Mono';">Zalgo entity generator payload.</p>
+        </div>
+
+        <div class="input-group">
+            <textarea id="src-text" placeholder="ENTER BASE STRINGS HERE..."
+                spellcheck="false">Welcome to the machine.</textarea>
+        </div>
+
+        <div class="controls">
+            <div class="slider-group">
+                <label><span>Corruption Level</span> <span id="val-level">50%</span></label>
+                <input type="range" id="slip-level" min="0" max="100" value="50">
+            </div>
+            <div class="slider-group">
+                <label><span>Vertical Spread</span> <span id="val-spread">Medium</span></label>
+                <input type="range" id="slip-spread" min="1" max="3" value="2">
+            </div>
+        </div>
+
+        <div class="output-box">
+            <button class="copy-btn" id="btn-copy">COPY_PAYLOAD</button>
+            <div class="output-text" id="out-text"></div>
+        </div>
+    </div>
+
+    <!-- Zalgo Logic -->
+    <script>
+        const srcText = document.getElementById('src-text');
+        const outText = document.getElementById('out-text');
+        const slipLevel = document.getElementById('slip-level');
+        const slipSpread = document.getElementById('slip-spread');
+        const valLevel = document.getElementById('val-level');
+        const valSpread = document.getElementById('val-spread');
+        const btnCopy = document.getElementById('btn-copy');
+
+        // Unicode combining diacritical marks ranges
+        const zalgoUp = [
+            '\u030d', '\u030e', '\u0304', '\u0305', '\u033f', '\u0311', '\u0306', '\u0310',
+            '\u0352', '\u0351', '\u030b', '\u030f', '\u0312', '\u0313', '\u0314', '\u033d',
+            '\u0309', '\u0363', '\u0364', '\u0365', '\u0366', '\u0367', '\u0368', '\u0369',
+            '\u036a', '\u036b', '\u036c', '\u036d', '\u036e', '\u036f', '\u033e', '\u035b', '\u0346', '\u031a'
+        ];
+
+        const zalgoDown = [
+            '\u0316', '\u0317', '\u0318', '\u0319', '\u031c', '\u031d', '\u0320', '\u0322',
+            '\u0323', '\u0324', '\u0325', '\u0326', '\u0329', '\u032a', '\u032b', '\u032c',
+            '\u032d', '\u032e', '\u032f', '\u0330', '\u0331', '\u0332', '\u0333', '\u0339',
+            '\u033a', '\u033b', '\u033c', '\u0345', '\u0354', '\u0355', '\u0356', '\u0359', '\u035a', '\u0321'
+        ];
+
+        const zalgoMid = [
+            '\u0315', '\u031b', '\u0340', '\u0341', '\u0358', '\u0328', '\u0334', '\u0335',
+            '\u0336', '\u0337', '\u0338', '\u0327', '\u0362'
+        ];
+
+        function rand(max) {
+            return Math.floor(Math.random() * max);
+        }
+
+        function generateZalgo(text) {
+            const level = parseInt(slipLevel.value); // 0 to 100
+            const spread = parseInt(slipSpread.value); // 1, 2, 3
+
+            let result = '';
+
+            // Map spread to number of marks
+            let maxUp = spread * 4;
+            let maxDown = spread * 4;
+            let maxMid = spread * 2;
+
+            for (let i = 0; i < text.length; i++) {
+                let char = text[i];
+                if (char === '\n') {
+                    result += char;
+                    continue; // don't zalgo newlines
+                }
+
+                result += char;
+
+                // Probability of corrupting this specific character
+                if (Math.random() * 100 > level) continue;
+
+                // Add UP marks
+                let numUp = rand(maxUp);
+                for (let j = 0; j < numUp; j++) {
+                    result += zalgoUp[rand(zalgoUp.length)];
+                }
+
+                // Add MID marks
+                let numMid = rand(maxMid);
+                for (let j = 0; j < numMid; j++) {
+                    result += zalgoMid[rand(zalgoMid.length)];
+                }
+
+                // Add DOWN marks
+                let numDown = rand(maxDown);
+                for (let j = 0; j < numDown; j++) {
+                    result += zalgoDown[rand(zalgoDown.length)];
+                }
+            }
+
+            return result;
+        }
+
+        function updateOutput() {
+            const t = srcText.value;
+            outText.textContent = generateZalgo(t);
+        }
+
+        // Event Listeners
+        srcText.addEventListener('input', updateOutput);
+
+        slipLevel.addEventListener('input', () => {
+            valLevel.textContent = `${slipLevel.value}%`;
+            updateOutput();
+        });
+
+        slipSpread.addEventListener('input', () => {
+            const labels = ['Low', 'Medium', 'High'];
+            valSpread.textContent = labels[slipSpread.value - 1];
+            updateOutput();
+        });
+
+        btnCopy.addEventListener('click', () => {
+            navigator.clipboard.writeText(outText.textContent);
+            const original = btnCopy.textContent;
+            btnCopy.textContent = "COPIED!";
+            btnCopy.style.background = "#fff";
+            setTimeout(() => {
+                btnCopy.textContent = original;
+                btnCopy.style.background = "var(--accent1)";
+            }, 1000);
+        });
+
+        // Add a random CSS glitch shutter effect periodically
+        setInterval(() => {
+            if (Math.random() > 0.7) {
+                outText.style.transform = `translate(${rand(10) - 5}px, ${rand(6) - 3}px) skewX(${rand(10) - 5}deg)`;
+                outText.style.filter = `drop-shadow(${rand(10) - 5}px 0 var(--accent2)) drop-shadow(${rand(10) - 5}px 0 var(--accent3))`;
+
+                setTimeout(() => {
+                    outText.style.transform = 'none';
+                    outText.style.filter = 'none';
+                }, 50 + rand(100));
+            }
+        }, 300);
+
+        // Init
+        updateOutput();
+
+    </script>
+</body>
+
+</html>

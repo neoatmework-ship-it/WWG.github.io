@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lissajous Curve Drawer | WWG</title>
+    <style>
+        :root {
+            --bg: #0b0e14;
+            --panel: rgba(20, 25, 35, 0.8);
+            --accent: #00ffcc;
+            --text: #e0e6ed;
+            --border: #30363d;
+        }
+
+        body,
+        html {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            background-color: var(--bg);
+            color: var(--text);
+            font-family: 'JetBrains Mono', 'Fira Code', monospace;
+            overflow: hidden;
+            display: flex;
+        }
+
+        #canvas {
+            flex: 1;
+            display: block;
+        }
+
+        .controls {
+            width: 320px;
+            background: var(--panel);
+            backdrop-filter: blur(10px);
+            border-left: 1px solid var(--border);
+            padding: 30px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            overflow-y: auto;
+            z-index: 10;
+        }
+
+        .control-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        label {
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #8b949e;
+        }
+
+        .val-display {
+            font-size: 1.2rem;
+            color: var(--accent);
+            font-weight: bold;
+        }
+
+        input[type="range"] {
+            width: 100%;
+            cursor: pointer;
+        }
+
+        .back-link {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            color: var(--accent);
+            text-decoration: none;
+            font-size: 0.9rem;
+            border: 1px solid var(--accent);
+            padding: 8px 16px;
+            border-radius: 4px;
+            transition: all 0.2s;
+            z-index: 10;
+        }
+
+        .back-link:hover {
+            background: var(--accent);
+            color: var(--bg);
+        }
+
+        h1 {
+            font-size: 1.2rem;
+            margin: 0 0 10px 0;
+            color: var(--accent);
+        }
+
+        .info {
+            font-size: 0.75rem;
+            color: #8b949e;
+            line-height: 1.4;
+        }
+
+        .btn {
+            background: transparent;
+            border: 1px solid var(--accent);
+            color: var(--accent);
+            padding: 10px;
+            cursor: pointer;
+            text-transform: uppercase;
+            font-family: inherit;
+            transition: 0.2s;
+        }
+
+        .btn:hover {
+            background: rgba(0, 255, 204, 0.1);
+        }
+
+        .btn.active {
+            background: var(--accent);
+            color: var(--bg);
+        }
+    </style>
+</head>
+
+<body>
+    <a href="index.html" class="back-link">SYSTEM.RETURN()</a>
+
+    <canvas id="canvas"></canvas>
+
+    <div class="controls">
+        <h1>LISSAJOUS.EXE</h1>
+        <p class="info">Visualizing the harmonic intersection of two perpendicular sine waves.</p>
+
+        <div class="info" style="margin-top: 10px; border-left: 2px solid var(--accent); padding-left: 10px;">
+            <strong>THE POINT:</strong> Explore how frequencies interact. When A and B are simple ratios (1:2, 2:3),
+            perfect loops form. Phase shifting creates the illusion of 3D rotation.
+        </div>
+
+        <div class="control-group" style="margin-top: 20px;">
+            <label>Freq X (A): <span class="val-display" id="val-a">3</span></label>
+            <input type="range" id="freq-a" min="1" max="20" step="1" value="3">
+        </div>
+
+        <div class="control-group">
+            <label>Freq Y (B): <span class="val-display" id="val-b">2</span></label>
+            <input type="range" id="freq-b" min="1" max="20" step="1" value="2">
+        </div>
+
+        <div class="control-group">
+            <label>Phase Shift: <span class="val-display" id="val-phase">1.57</span></label>
+            <input type="range" id="phase" min="0" max="6.28" step="0.01" value="1.57">
+        </div>
+
+        <div class="control-group">
+            <label>Resolution: <span class="val-display" id="val-res">1000</span></label>
+            <input type="range" id="res" min="100" max="5000" step="100" value="1000">
+        </div>
+
+        <div class="control-group">
+            <label>Rotation: <span class="val-display" id="val-rot">0.00</span></label>
+            <input type="range" id="rot" min="0" max="6.28" step="0.01" value="0.00">
+        </div>
+
+        <div style="margin-top: 10px; display: flex; flex-direction: column; gap: 10px;">
+            <button class="btn active" id="auto-cycle">Toggle Auto-Cycle</button>
+            <button class="btn" id="randomize">Randomize</button>
+        </div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+
+        const freqAInput = document.getElementById('freq-a');
+        const freqBInput = document.getElementById('freq-b');
+        const phaseInput = document.getElementById('phase');
+        const resInput = document.getElementById('res');
+        const rotInput = document.getElementById('rot');
+
+        const valA = document.getElementById('val-a');
+        const valB = document.getElementById('val-b');
+        const valPhase = document.getElementById('val-phase');
+        const valRes = document.getElementById('val-res');
+        const valRot = document.getElementById('val-rot');
+
+        const autoBtn = document.getElementById('auto-cycle');
+        const randBtn = document.getElementById('randomize');
+
+        let width, height;
+        let isAutoCycle = true;
+        let rotation = 0;
+
+        function resize() {
+            width = canvas.width = canvas.clientWidth;
+            height = canvas.height = canvas.clientHeight;
+        }
+
+        window.onresize = resize;
+        resize();
+
+        function draw() {
+            ctx.fillStyle = '#0b0e14';
+            ctx.fillRect(0, 0, width, height);
+
+            const a = parseFloat(freqAInput.value);
+            const b = parseFloat(freqBInput.value);
+            const phase = parseFloat(phaseInput.value);
+            const res = parseInt(resInput.value);
+            const rot = parseFloat(rotInput.value) + rotation;
+
+            valA.textContent = a;
+            valB.textContent = b;
+            valPhase.textContent = phase.toFixed(2);
+            valRes.textContent = res;
+            valRot.textContent = (rot % 6.28).toFixed(2);
+
+            const centerX = width / 2;
+            const centerY = height / 2;
+            const size = Math.min(width, height) * 0.35;
+
+            ctx.beginPath();
+            ctx.strokeStyle = '#00ffcc';
+            ctx.lineWidth = 2;
+            ctx.shadowBlur = 10;
+            ctx.shadowColor = '#00ffcc';
+
+            for (let i = 0; i <= res; i++) {
+                const t = (i / res) * Math.PI * 2;
+
+                // Lissajous base coords
+                let x = Math.sin(a * t + phase) * size;
+                let y = Math.sin(b * t) * size;
+
+                // Rotation transformation
+                const rx = x * Math.cos(rot) - y * Math.sin(rot);
+                const ry = x * Math.sin(rot) + y * Math.cos(rot);
+
+                if (i === 0) {
+                    ctx.moveTo(centerX + rx, centerY + ry);
+                } else {
+                    ctx.lineTo(centerX + rx, centerY + ry);
+                }
+            }
+            ctx.stroke();
+
+            if (isAutoCycle) {
+                rotation += 0.01;
+                phaseInput.value = (parseFloat(phaseInput.value) + 0.005) % 6.28;
+            }
+
+            requestAnimationFrame(draw);
+        }
+
+        autoBtn.onclick = () => {
+            isAutoCycle = !isAutoCycle;
+            autoBtn.classList.toggle('active');
+        };
+
+        randBtn.onclick = () => {
+            freqAInput.value = Math.floor(Math.random() * 15) + 1;
+            freqBInput.value = Math.floor(Math.random() * 15) + 1;
+            phaseInput.value = Math.random() * 6.28;
+        };
+
+        draw();
+    </script>
+</body>
+
+</html>

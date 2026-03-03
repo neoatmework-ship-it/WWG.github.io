@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Audio Visualizer | WWG</title>
+    <style>
+        :root {
+            --bg: #000;
+            --accent: #ff00ff;
+            --text: #fff;
+        }
+
+        body,
+        html {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            background-color: var(--bg);
+            color: var(--text);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        #canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+
+        .overlay {
+            position: relative;
+            z-index: 10;
+            text-align: center;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 40px;
+            border-radius: 20px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            max-width: 400px;
+            transition: opacity 0.5s;
+        }
+
+        .overlay.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        h1 {
+            font-size: 2rem;
+            margin-bottom: 20px;
+            background: linear-gradient(45deg, #ff00ff, #00ffff);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        p {
+            font-size: 0.9rem;
+            color: #aaa;
+            margin-bottom: 30px;
+        }
+
+        .btn {
+            background: linear-gradient(45deg, #ff00ff, #00ffff);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 30px;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 20px rgba(255, 0, 255, 0.5);
+        }
+
+        .controls {
+            position: absolute;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 20px;
+            z-index: 20;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        body:hover .controls {
+            opacity: 1;
+        }
+
+        .control-btn {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 0.8rem;
+            backdrop-filter: blur(5px);
+        }
+
+        .control-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .back-link {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            color: white;
+            text-decoration: none;
+            font-size: 0.8rem;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 10px 15px;
+            border-radius: 5px;
+            z-index: 30;
+        }
+    </style>
+</head>
+
+<body>
+    <a href="index.html" class="back-link">← Gallery</a>
+
+    <canvas id="canvas"></canvas>
+
+    <div class="overlay" id="overlay">
+        <h1>Audio Visualizer</h1>
+        <p>This experience requires microphone access to transform your surroundings into light. No audio is recorded or
+            sent anywhere.</p>
+        <button class="btn" id="start-btn">Iniciate Visualization</button>
+    </div>
+
+    <div class="controls">
+        <button class="control-btn" id="mode-btn">Mode: Bars</button>
+        <button class="control-btn" id="full-btn">Fullscreen</button>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        const startBtn = document.getElementById('start-btn');
+        const overlay = document.getElementById('overlay');
+        const modeBtn = document.getElementById('mode-btn');
+        const fullBtn = document.getElementById('full-btn');
+
+        let audioContext;
+        let analyser;
+        let dataArray;
+        let bufferLength;
+        let isStarted = false;
+        let mode = 'bars'; // bars, circle, line
+
+        function initAudio() {
+            audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            analyser = audioContext.createAnalyser();
+            analyser.fftSize = 256;
+            bufferLength = analyser.frequencyBinCount;
+            dataArray = new Uint8Array(bufferLength);
+
+            navigator.mediaDevices.getUserMedia({ audio: true })
+                .then(stream => {
+                    const source = audioContext.createMediaStreamSource(stream);
+                    source.connect(analyser);
+                    isStarted = true;
+                    overlay.classList.add('hidden');
+                    animate();
+                })
+                .catch(err => {
+                    alert("Microphone access denied. Visualization cannot start.");
+                    console.error(err);
+                });
+        }
+
+        function resize() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+
+        window.onresize = resize;
+        resize();
+
+        startBtn.onclick = initAudio;
+
+        modeBtn.onclick = () => {
+            const modes = ['bars', 'circle', 'line'];
+            mode = modes[(modes.indexOf(mode) + 1) % modes.length];
+            modeBtn.textContent = `Mode: ${mode.charAt(0).toUpperCase() + mode.slice(1)}`;
+        };
+
+        fullBtn.onclick = () => {
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen();
+            } else {
+                document.exitFullscreen();
+            }
+        };
+
+        function animate() {
+            if (!isStarted) return;
+            requestAnimationFrame(animate);
+
+            analyser.getByteFrequencyData(dataArray);
+
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.1)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            const barWidth = (canvas.width / bufferLength) * 2.5;
+            let barHeight;
+            let x = 0;
+
+            if (mode === 'bars') {
+                for (let i = 0; i < bufferLength; i++) {
+                    barHeight = dataArray[i] * 2;
+                    const r = barHeight + (25 * (i / bufferLength));
+                    const g = 250 * (i / bufferLength);
+                    const b = 50;
+
+                    ctx.fillStyle = `rgb(${r},${g},${b})`;
+                    ctx.fillRect(x, canvas.height - barHeight, barWidth, barHeight);
+
+                    x += barWidth + 1;
+                }
+            } else if (mode === 'circle') {
+                const centerX = canvas.width / 2;
+                const centerY = canvas.height / 2;
+                const radius = 150;
+
+                for (let i = 0; i < bufferLength; i++) {
+                    barHeight = dataArray[i] * 1.5;
+                    const angle = (i / bufferLength) * Math.PI * 2;
+
+                    const x1 = centerX + Math.cos(angle) * radius;
+                    const y1 = centerY + Math.sin(angle) * radius;
+                    const x2 = centerX + Math.cos(angle) * (radius + barHeight);
+                    const y2 = centerY + Math.sin(angle) * (radius + barHeight);
+
+                    ctx.strokeStyle = `hsl(${(i / bufferLength) * 360}, 100%, 50%)`;
+                    ctx.lineWidth = 4;
+                    ctx.beginPath();
+                    ctx.moveTo(x1, y1);
+                    ctx.lineTo(x2, y2);
+                    ctx.stroke();
+                }
+            } else if (mode === 'line') {
+                ctx.beginPath();
+                ctx.lineWidth = 2;
+                ctx.strokeStyle = '#00ffff';
+
+                const sliceWidth = canvas.width / bufferLength;
+                let lx = 0;
+
+                for (let i = 0; i < bufferLength; i++) {
+                    const v = dataArray[i] / 128.0;
+                    const y = v * canvas.height / 2;
+
+                    if (i === 0) {
+                        ctx.moveTo(lx, y);
+                    } else {
+                        ctx.lineTo(lx, y);
+                    }
+
+                    lx += sliceWidth;
+                }
+                ctx.stroke();
+            }
+        }
+    </script>
+</body>
+
+</html>

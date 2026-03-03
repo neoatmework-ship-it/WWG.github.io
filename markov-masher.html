@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <link rel="icon"
+        href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20100%20100%22%3E%3Ctext%20y%3D%22.9em%22%20font-size%3D%2290%22%3E%F0%9F%93%B0%3C%2Ftext%3E%3C%2Fsvg%3E">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Markov Chain Text Masher | WWG</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Courier+Prime:ital,wght@0,400;0,700;1,400&family=Playfair+Display:ital,wght@0,600;1,600&display=swap"
+        rel="stylesheet">
+    <style>
+        :root {
+            --bg: #f4f1ea;
+            --paper: #fffff8;
+            --ink: #2b2b2b;
+            --ink-light: #5a5a5a;
+            --accent: #d94f30;
+            /* Vintage red */
+            --border: #dcd7c9;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Courier Prime', monospace;
+            background-color: var(--bg);
+            color: var(--ink);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 40px 20px;
+            background-image: url('data:image/svg+xml,%3Csvg width="100" height="100" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"%3E%3Cfilter id="noise"%3E%3CfeTurbulence type="fractalNoise" baseFrequency="0.8" numOctaves="4" stitchTiles="stitch"/%3E%3C/filter%3E%3Crect width="100" height="100" filter="url(%23noise)" opacity="0.08"/%3E%3C/svg%3E');
+        }
+
+        .back-link {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            color: var(--ink-light);
+            text-decoration: none;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: 0.2s;
+        }
+
+        .back-link:hover {
+            color: var(--accent);
+        }
+
+        .container {
+            width: 100%;
+            max-width: 1000px;
+            background: var(--paper);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05), inset 0 0 60px rgba(0, 0, 0, 0.02);
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            padding: 40px;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+
+        /* Typewriter styling elements */
+        .container::before {
+            content: '';
+            position: absolute;
+            top: -10px;
+            left: 20px;
+            right: 20px;
+            height: 10px;
+            background: linear-gradient(to right, #ccc, #eee, #ccc);
+            border-radius: 5px 5px 0 0;
+            box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            font-family: 'Playfair Display', serif;
+            text-align: center;
+            font-size: 2.5rem;
+            margin-bottom: 5px;
+            color: var(--ink);
+            border-bottom: 2px solid var(--ink);
+            padding-bottom: 15px;
+            position: relative;
+        }
+
+        h1::after {
+            content: '';
+            position: absolute;
+            bottom: -5px;
+            left: 20%;
+            right: 20%;
+            height: 1px;
+            background: var(--ink);
+        }
+
+        .desc {
+            text-align: center;
+            color: var(--ink-light);
+            margin: 20px 0 30px 0;
+            font-size: 0.9rem;
+            line-height: 1.5;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+        }
+
+        @media (max-width: 768px) {
+            .grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .panel {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .panel-header {
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            border-bottom: 1px dashed var(--border);
+            padding-bottom: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        textarea {
+            width: 100%;
+            flex: 1;
+            min-height: 300px;
+            background: transparent;
+            border: 1px solid var(--border);
+            padding: 15px;
+            font-family: 'Courier Prime', monospace;
+            font-size: 0.95rem;
+            line-height: 1.5;
+            color: var(--ink);
+            resize: none;
+            outline: none;
+            transition: 0.2s;
+        }
+
+        textarea:focus {
+            border-color: var(--accent);
+            background: rgba(217, 79, 48, 0.02);
+        }
+
+        .controls {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .controls select,
+        .controls input {
+            padding: 8px;
+            font-family: inherit;
+            border: 1px solid var(--border);
+            background: var(--bg);
+            outline: none;
+        }
+
+        .btn {
+            background: var(--ink);
+            color: var(--paper);
+            border: none;
+            padding: 12px 20px;
+            font-family: inherit;
+            font-weight: bold;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .btn:hover {
+            background: var(--accent);
+            transform: translateY(-2px);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .btn.secondary {
+            background: transparent;
+            color: var(--ink);
+            border: 1px solid var(--ink);
+            padding: 6px 12px;
+            font-size: 0.8rem;
+        }
+
+        .btn.secondary:hover {
+            background: var(--ink);
+            color: var(--paper);
+        }
+
+        /* Output specific styling */
+        #output-text {
+            background: rgba(0, 0, 0, 0.02);
+            border: 1px solid var(--border);
+            padding: 20px;
+            min-height: 300px;
+            white-space: pre-wrap;
+            overflow-y: auto;
+            font-size: 1.1rem;
+            line-height: 1.6;
+        }
+
+        .stats {
+            font-size: 0.8rem;
+            color: var(--ink-light);
+            text-align: right;
+            margin-top: -5px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <a href="index.html" class="back-link">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="19" y1="12" x2="5" y2="12"></line>
+            <polyline points="12 19 5 12 12 5"></polyline>
+        </svg>
+        Return to Gallery
+    </a>
+
+    <div class="container">
+        <h1>The Markov Masher</h1>
+        <p class="desc">A statistical text generator. Provide it with source text (like Shakespeare, Wikipedia, or a
+            cookbook), and it will analyze the probability of word sequences to hallucinate entirely new,
+            algorithmically-mashed paragraphs in the same style.</p>
+
+        <div class="grid">
+            <!-- Left: Input -->
+            <div class="panel">
+                <div class="panel-header">
+                    <span>Source Material</span>
+                    <button class="btn secondary" id="btn-load-sample">Load Sample</button>
+                </div>
+                <textarea id="src-text"
+                    placeholder="Paste a large amount of text here. The more text you provide, the better the algorithm can learn the style and vocabulary..."></textarea>
+                <div class="stats" id="src-stats">Words: 0 | Unique: 0</div>
+            </div>
+
+            <!-- Right: Output -->
+            <div class="panel">
+                <div class="panel-header">
+                    <span>Generated Output</span>
+                    <div style="display:flex; gap: 10px; align-items:center;">
+                        <label title="Chain Size: Higher = more coherent, Lower = more chaotic"
+                            style="font-size:0.8rem; cursor:help;">Order Context:</label>
+                        <select id="sel-order">
+                            <option value="1">1 Word (Chaotic)</option>
+                            <option value="2" selected>2 Words (Balanced)</option>
+                            <option value="3">3 Words (Strict)</option>
+                            <option value="4">4 Words (Plagiarism risk)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div id="output-text">Awaiting input...</div>
+
+                <div class="controls" style="margin-top:auto;">
+                    <input type="number" id="input-length" value="100" min="10" max="1000" style="width:80px;"
+                        title="Words to generate">
+                    <span style="font-size:0.8rem; color:var(--ink-light)">Words</span>
+                    <button class="btn" id="btn-generate" style="flex:1;">Generate Text ⚙️</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const srcText = document.getElementById('src-text');
+        const outText = document.getElementById('output-text');
+        const selOrder = document.getElementById('sel-order');
+        const inputLength = document.getElementById('input-length');
+        const btnGenerate = document.getElementById('btn-generate');
+        const btnLoadSample = document.getElementById('btn-load-sample');
+        const srcStats = document.getElementById('src-stats');
+
+        const SAMPLE_TEXT = `Alice was beginning to get very tired of sitting by her sister on the bank, and of having nothing to do: once or twice she had peeped into the book her sister was reading, but it had no pictures or conversations in it, 'and what is the use of a book,' thought Alice 'without pictures or conversations?'
+
+So she was considering in her own mind (as well as she could, for the hot day made her feel very sleepy and stupid), whether the pleasure of making a daisy-chain would be worth the trouble of getting up and picking the daisies, when suddenly a White Rabbit with pink eyes ran close by her.
+
+There was nothing so VERY remarkable in that; nor did Alice think it so VERY much out of the way to hear the Rabbit say to itself, 'Oh dear! Oh dear! I shall be late!' (when she thought it over afterwards, it occurred to her that she ought to have wondered at this, but at the time it all seemed quite natural); but when the Rabbit actually TOOK A WATCH OUT OF ITS WAISTCOAT-POCKET, and looked at it, and then hurried on, Alice started to her feet, for it flashed across her mind that she had never before seen a rabbit with either a waistcoat-pocket, or a watch to take out of it, and burning with curiosity, she ran across the field after it, and fortunately was just in time to see it pop down a large rabbit-hole under the hedge.
+
+In another moment down went Alice after it, never once considering how in the world she was to get out again.
+
+The rabbit-hole went straight on like a tunnel for some way, and then dipped suddenly down, so suddenly that Alice had not a moment to think about stopping herself before she found herself falling down a very deep well.`;
+
+        // Tokenize text into words (keeping basic punctuation attached to words for better flow)
+        function tokenize(text) {
+            // Split by whitespace
+            const words = text.split(/\s+/).filter(w => w.trim().length > 0);
+            return words;
+        }
+
+        // Build the N-gram Markov Chain Dictionary
+        function buildChain(words, order) {
+            const chain = {};
+
+            for (let i = 0; i <= words.length - order; i++) {
+                // The "state" is the previous N words joined by a space
+                const gram = words.slice(i, i + order).join(' ');
+
+                // The "next word" that followed this state
+                const nextWord = words[i + order];
+
+                if (!chain[gram]) {
+                    chain[gram] = [];
+                }
+
+                if (nextWord) {
+                    chain[gram].push(nextWord);
+                }
+            }
+            return chain;
+        }
+
+        function pickRandom(arr) {
+            return arr[Math.floor(Math.random() * arr.length)];
+        }
+
+        // Generate Text using the built Chain
+        function generateText(chain, words, order, maxWords) {
+            // Find a valid starting Gram (Ideally one that starts with a capital letter)
+            let startGrams = Object.keys(chain).filter(g => /^[A-Z]/.test(g));
+            if (startGrams.length === 0) startGrams = Object.keys(chain); // Fallback
+
+            let currentGram = pickRandom(startGrams);
+            if (!currentGram) return "Not enough text to generate anything!";
+
+            let result = currentGram.split(' '); // Start the result array with the initial gram tokens
+
+            for (let i = 0; i < maxWords - order; i++) {
+                const possibleNextWords = chain[currentGram];
+
+                if (!possibleNextWords || possibleNextWords.length === 0) {
+                    // Reached a dead end (a gram that only occurred at the very end of the text)
+                    // Let's pick a random new starting gram to keep going, injecting a space
+                    currentGram = pickRandom(startGrams);
+                    result.push("... " + currentGram);
+                    continue;
+                }
+
+                // Probability happens naturally here because duplicate nextWords exist in the array
+                const nextWord = pickRandom(possibleNextWords);
+                result.push(nextWord);
+
+                // Shift the current Gram window forward
+                currentGram = result.slice(result.length - order).join(' ');
+            }
+
+            return result.join(' ');
+        }
+
+        // Main Generation Trigger
+        function runMarkov() {
+            const raw = srcText.value.trim();
+            if (raw.length < 10) {
+                outText.innerHTML = "<em>Please provide more source material first...</em>";
+                return;
+            }
+
+            const order = parseInt(selOrder.value);
+            const length = parseInt(inputLength.value) || 100;
+
+            const words = tokenize(raw);
+            const chain = buildChain(words, order);
+
+            // UI Typing Effect
+            btnGenerate.disabled = true;
+            btnGenerate.textContent = "Processing...";
+            outText.style.opacity = "0.5";
+
+            setTimeout(() => {
+                const generated = generateText(chain, words, order, length);
+                outText.textContent = generated;
+                outText.style.opacity = "1";
+                btnGenerate.disabled = false;
+                btnGenerate.textContent = "Generate Text ⚙️";
+            }, 300);
+        }
+
+        // Stats tracking
+        srcText.addEventListener('input', () => {
+            const text = srcText.value.trim();
+            if (!text) {
+                srcStats.textContent = `Words: 0 | Unique: 0`;
+                return;
+            }
+            const words = tokenize(text);
+            const unique = new Set(words).size;
+            srcStats.textContent = `Words: ${words.length} | Unique: ${unique}`;
+        });
+
+        // Event Bindings
+        btnGenerate.addEventListener('click', runMarkov);
+
+        btnLoadSample.addEventListener('click', () => {
+            srcText.value = SAMPLE_TEXT;
+            srcText.dispatchEvent(new Event('input')); // trigger stats
+            runMarkov();
+        });
+
+    </script>
+</body>
+
+</html>

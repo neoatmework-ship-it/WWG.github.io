@@ -1,0 +1,504 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <link rel="icon"
+        href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20100%20100%22%3E%3Ctext%20y%3D%22.9em%22%20font-size%3D%2290%22%3E%F0%9F%8E%A1%3C%2Ftext%3E%3C%2Fsvg%3E">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Harmonograph Simulator | WWG</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Crimson+Pro:ital,wght@0,300;0,700;1,400&family=Inter:wght@400;500;600&display=swap"
+        rel="stylesheet">
+    <style>
+        :root {
+            --bg: #1c1c1f;
+            --surface: #26262b;
+            --border: #3d3d44;
+            --accent: #e5b365;
+            /* Brass/Gold */
+            --accent-glow: rgba(229, 179, 101, 0.2);
+            --text: #e8e8e5;
+            --text-muted: #959590;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            display: flex;
+            background-image:
+                linear-gradient(rgba(28, 28, 31, 0.95), rgba(28, 28, 31, 0.95)),
+                url('data:image/svg+xml,%3Csvg width="40" height="40" viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg"%3E%3Cpath d="M0 0h40v40H0V0zm20 20h20v20H20V20zM0 20h20v20H0V20z" fill="%2326262b" fill-opacity="0.4" fill-rule="evenodd"/%3E%3C/svg%3E');
+        }
+
+        .back-btn {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            color: var(--text-muted);
+            text-decoration: none;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: color 0.2s;
+            z-index: 100;
+        }
+
+        .back-btn:hover {
+            color: var(--accent);
+        }
+
+        .layout {
+            display: flex;
+            width: 100%;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* Side Panel Controls */
+        .controls-panel {
+            width: 380px;
+            background: var(--surface);
+            border-right: 1px solid var(--border);
+            padding: 40px 30px;
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+            overflow-y: auto;
+            box-shadow: 5px 0 20px rgba(0, 0, 0, 0.2);
+            z-index: 10;
+        }
+
+        .header h1 {
+            font-family: 'Crimson Pro', serif;
+            font-size: 2.2rem;
+            color: var(--accent);
+            margin-bottom: 5px;
+            font-weight: 300;
+        }
+
+        .header p {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            line-height: 1.4;
+        }
+
+        .control-section {
+            background: rgba(0, 0, 0, 0.15);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .section-title {
+            font-family: 'Crimson Pro', serif;
+            font-size: 1.1rem;
+            color: #fff;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 8px;
+            margin-bottom: 4px;
+        }
+
+        .slider-group {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .slider-group label {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .slider-group label span.val {
+            color: var(--accent);
+            font-family: monospace;
+            font-size: 0.9rem;
+        }
+
+        input[type="range"] {
+            -webkit-appearance: none;
+            width: 100%;
+            height: 4px;
+            background: var(--border);
+            border-radius: 2px;
+            outline: none;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            background: var(--accent);
+            cursor: pointer;
+            transition: transform 0.1s;
+        }
+
+        input[type="range"]::-webkit-slider-thumb:hover {
+            transform: scale(1.3);
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 10px;
+            margin-top: auto;
+        }
+
+        .btn {
+            flex: 1;
+            padding: 12px;
+            background: transparent;
+            border: 1px solid var(--accent);
+            color: var(--accent);
+            font-family: 'Inter', sans-serif;
+            font-weight: 500;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: 0.2s;
+            text-transform: uppercase;
+            font-size: 0.85rem;
+            letter-spacing: 1px;
+        }
+
+        .btn:hover {
+            background: var(--accent);
+            color: var(--bg);
+            box-shadow: 0 0 15px var(--accent-glow);
+        }
+
+        .btn.primary {
+            background: var(--accent);
+            color: var(--bg);
+        }
+
+        .btn.primary:hover {
+            background: #f3c780;
+        }
+
+        /* Canvas Area */
+        .canvas-container {
+            flex: 1;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: radial-gradient(circle, #2d2d33 0%, var(--bg) 100%);
+        }
+
+        canvas {
+            background: #fff;
+            /* Paper color */
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+            border-radius: 4px;
+            cursor: crosshair;
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--border);
+            border-radius: 3px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--text-muted);
+        }
+    </style>
+</head>
+
+<body>
+
+    <a href="index.html" class="back-btn">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+            stroke-linecap="round" stroke-linejoin="round">
+            <line x1="19" y1="12" x2="5" y2="12"></line>
+            <polyline points="12 19 5 12 12 5"></polyline>
+        </svg>
+        Back to Gallery
+    </a>
+
+    <div class="layout">
+        <div class="controls-panel">
+            <div class="header">
+                <h1>Harmonograph</h1>
+                <p>A mathematical pendulum simulator mapping complex Lissajous curves.</p>
+            </div>
+
+            <div class="control-section">
+                <div class="section-title">Pendulum 1 (X Axis)</div>
+                <div class="slider-group">
+                    <label>Frequency (f1) <span class="val" id="val-f1">2.0</span></label>
+                    <input type="range" id="param-f1" min="0" max="10" step="0.01" value="2.0">
+                </div>
+                <div class="slider-group">
+                    <label>Phase (p1) <span class="val" id="val-p1">1.57</span></label>
+                    <input type="range" id="param-p1" min="0" max="6.28" step="0.01" value="1.57">
+                </div>
+                <div class="slider-group">
+                    <label>Damping (d1) <span class="val" id="val-d1">0.001</span></label>
+                    <input type="range" id="param-d1" min="0" max="0.01" step="0.0001" value="0.001">
+                </div>
+            </div>
+
+            <div class="control-section">
+                <div class="section-title">Pendulum 2 (Y Axis)</div>
+                <div class="slider-group">
+                    <label>Frequency (f2) <span class="val" id="val-f2">2.01</span></label>
+                    <input type="range" id="param-f2" min="0" max="10" step="0.01" value="2.01">
+                </div>
+                <div class="slider-group">
+                    <label>Phase (p2) <span class="val" id="val-p2">0.0</span></label>
+                    <input type="range" id="param-p2" min="0" max="6.28" step="0.01" value="0.0">
+                </div>
+                <div class="slider-group">
+                    <label>Damping (d2) <span class="val" id="val-d2">0.001</span></label>
+                    <input type="range" id="param-d2" min="0" max="0.01" step="0.0001" value="0.001">
+                </div>
+            </div>
+
+            <div class="control-section">
+                <div class="section-title">Pendulum 3 (Rotary X)</div>
+                <div class="slider-group">
+                    <label>Frequency (f3) <span class="val" id="val-f3">3.0</span></label>
+                    <input type="range" id="param-f3" min="0" max="10" step="0.01" value="3.0">
+                </div>
+                <div class="slider-group">
+                    <label>Phase (p3) <span class="val" id="val-p3">0.0</span></label>
+                    <input type="range" id="param-p3" min="0" max="6.28" step="0.01" value="0.0">
+                </div>
+                <div class="slider-group">
+                    <label>Damping (d3) <span class="val" id="val-d3">0.001</span></label>
+                    <input type="range" id="param-d3" min="0" max="0.01" step="0.0001" value="0.001">
+                </div>
+            </div>
+
+            <div class="control-section">
+                <div class="section-title">Pendulum 4 (Rotary Y)</div>
+                <div class="slider-group">
+                    <label>Frequency (f4) <span class="val" id="val-f4">3.0</span></label>
+                    <input type="range" id="param-f4" min="0" max="10" step="0.01" value="3.0">
+                </div>
+                <div class="slider-group">
+                    <label>Phase (p4) <span class="val" id="val-p4">1.57</span></label>
+                    <input type="range" id="param-p4" min="0" max="6.28" step="0.01" value="1.57">
+                </div>
+                <div class="slider-group">
+                    <label>Damping (d4) <span class="val" id="val-d4">0.001</span></label>
+                    <input type="range" id="param-d4" min="0" max="0.01" step="0.0001" value="0.001">
+                </div>
+            </div>
+
+            <div class="btn-group">
+                <button class="btn" id="btn-random">Randomize</button>
+                <button class="btn primary" id="btn-draw">Draw</button>
+            </div>
+
+            <button class="btn" id="btn-download" style="margin-top: -10px;">Save Pattern as PNG</button>
+        </div>
+
+        <div class="canvas-container" id="canvas-container">
+            <canvas id="paper" width="800" height="800"></canvas>
+        </div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('paper');
+        const ctx = canvas.getContext('2d', { alpha: false });
+
+        let reqId = null;
+        let isDrawing = false;
+
+        // Settings State
+        const P = {
+            f1: 2.0, p1: 1.57, d1: 0.001, a1: 1.0,
+            f2: 2.01, p2: 0.0, d2: 0.001, a2: 1.0,
+            f3: 3.0, p3: 0.0, d3: 0.001, a3: 1.0,
+            f4: 3.0, p4: 1.57, d4: 0.001, a4: 1.0,
+            timeStep: 0.05,
+            maxTime: 10000,
+            scale: 250, // Half width - padding
+        };
+
+        // UI Bindings
+        const inputs = ['f1', 'p1', 'd1', 'f2', 'p2', 'd2', 'f3', 'p3', 'd3', 'f4', 'p4', 'd4'];
+
+        inputs.forEach(key => {
+            const el = document.getElementById(`param-${key}`);
+            const valEl = document.getElementById(`val-${key}`);
+
+            el.addEventListener('input', (e) => {
+                const val = parseFloat(e.target.value);
+                P[key] = val;
+                valEl.textContent = val.toFixed(key.startsWith('d') ? 4 : 2);
+
+                // Live preview instantly drafts it very fast
+                if (!isDrawing) fastDraft();
+            });
+        });
+
+        function syncUI() {
+            inputs.forEach(key => {
+                const el = document.getElementById(`param-${key}`);
+                const valEl = document.getElementById(`val-${key}`);
+                el.value = P[key];
+                valEl.textContent = P[key].toFixed(key.startsWith('d') ? 4 : 2);
+            });
+        }
+
+        function clearPaper() {
+            ctx.fillStyle = '#ffffff';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+        }
+
+        // Equation for Harmonograph (X and Y components of combined pendulums)
+        function getXY(t) {
+            const x = P.a1 * Math.sin(t * P.f1 + P.p1) * Math.exp(-P.d1 * t) +
+                P.a3 * Math.sin(t * P.f3 + P.p3) * Math.exp(-P.d3 * t);
+
+            const y = P.a2 * Math.sin(t * P.f2 + P.p2) * Math.exp(-P.d2 * t) +
+                P.a4 * Math.sin(t * P.f4 + P.p4) * Math.exp(-P.d4 * t);
+
+            // Normalize (-2 to 2) space to canvas coordinates
+            const cx = canvas.width / 2;
+            const cy = canvas.height / 2;
+            // The max theoretical amplitude is 2.0 (a1+a3).
+            return {
+                x: cx + (x / 2.0) * P.scale,
+                y: cy + (y / 2.0) * P.scale
+            };
+        }
+
+        // Fast draft mode for immediate feedback when sliding
+        function fastDraft() {
+            if (reqId) cancelAnimationFrame(reqId);
+            clearPaper();
+
+            ctx.beginPath();
+            ctx.strokeStyle = 'rgba(20, 20, 30, 0.4)';
+            ctx.lineWidth = 1;
+
+            let pos = getXY(0);
+            ctx.moveTo(pos.x, pos.y);
+
+            // Draw fewer points to keep it responsive
+            const fastStep = P.timeStep * 4;
+            const fastMax = P.maxTime * 0.5; // Only draw half
+
+            for (let t = 0; t < fastMax; t += fastStep) {
+                pos = getXY(t);
+                ctx.lineTo(pos.x, pos.y);
+            }
+            ctx.stroke();
+        }
+
+        // Animated slow-draw mode for visual satisfaction
+        function animateDraw() {
+            if (reqId) cancelAnimationFrame(reqId);
+            clearPaper();
+            isDrawing = true;
+
+            let t = 0;
+            const ptsPerFrame = 50;
+            const color = `rgba(${Math.random() * 50},{Math.random()*50},20, 0.6)`;
+
+            ctx.strokeStyle = 'rgba(20, 20, 50, 0.5)';
+            ctx.lineWidth = 0.5;
+
+            let pos = getXY(t);
+            ctx.beginPath();
+            ctx.moveTo(pos.x, pos.y);
+
+            function step() {
+                ctx.beginPath();
+                ctx.moveTo(pos.x, pos.y);
+
+                for (let i = 0; i < ptsPerFrame; i++) {
+                    t += P.timeStep;
+                    if (t > P.maxTime) {
+                        isDrawing = false;
+                        return;
+                    }
+                    pos = getXY(t);
+                    ctx.lineTo(pos.x, pos.y);
+                }
+                ctx.stroke();
+                reqId = requestAnimationFrame(step);
+            }
+            reqId = requestAnimationFrame(step);
+        }
+
+        // Randomizer
+        document.getElementById('btn-random').addEventListener('click', () => {
+            // Generate pleasing random ratios
+            const _base = Math.floor(Math.random() * 5) + 1;
+            P.f1 = _base;
+            P.f2 = _base + (Math.random() * 0.1 - 0.05); // slightly out of phase
+            P.f3 = Math.floor(Math.random() * 5) + 1;
+            P.f4 = P.f3 + (Math.random() * 0.1 - 0.05);
+
+            P.p1 = Math.random() * Math.PI * 2;
+            P.p2 = Math.random() * Math.PI * 2;
+            P.p3 = Math.random() * Math.PI * 2;
+            P.p4 = Math.random() * Math.PI * 2;
+
+            const decay = 0.0001 + Math.random() * 0.002;
+            P.d1 = decay; P.d2 = decay;
+            P.d3 = decay * (Math.random() * 2); P.d4 = P.d3;
+
+            syncUI();
+            animateDraw();
+        });
+
+        document.getElementById('btn-draw').addEventListener('click', animateDraw);
+
+        document.getElementById('btn-download').addEventListener('click', () => {
+            const link = document.createElement('a');
+            link.download = `harmonograph_${Date.now()}.png`;
+            link.href = canvas.toDataURL('image/png');
+            link.click();
+        });
+
+        // Init responsive resizing
+        function resizeCanvas() {
+            const container = document.getElementById('canvas-container');
+            const size = Math.min(container.clientWidth - 40, container.clientHeight - 40);
+
+            // Keep it square
+            canvas.style.width = size + 'px';
+            canvas.style.height = size + 'px';
+
+            // Render size is always high-res 800x800 for clean lines
+        }
+
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
+        animateDraw();
+
+    </script>
+</body>
+
+</html>

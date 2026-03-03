@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Emoji Physics Drop | WWG</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/matter-js/0.19.0/matter.min.js"></script>
+    <style>
+        :root {
+            --bg: #121212;
+            --accent: #ffcc00;
+        }
+
+        body,
+        html {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            background-color: var(--bg);
+            overflow: hidden;
+            font-family: 'Segoe UI', system-ui, sans-serif;
+        }
+
+        #canvas-container {
+            width: 100%;
+            height: 100%;
+            cursor: copy;
+        }
+
+        .ui {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            pointer-events: none;
+            text-align: right;
+            color: white;
+            z-index: 10;
+        }
+
+        .ui h1 {
+            margin: 0;
+            font-size: 1.5rem;
+            color: var(--accent);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .ui p {
+            font-size: 0.8rem;
+            opacity: 0.7;
+        }
+
+        .controls {
+            position: absolute;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 15px;
+            z-index: 10;
+        }
+
+        .btn {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 30px;
+            cursor: pointer;
+            font-family: inherit;
+            font-size: 0.9rem;
+            transition: 0.2s;
+            pointer-events: auto;
+        }
+
+        .btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateY(-2px);
+        }
+
+        .back-link {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            color: white;
+            text-decoration: none;
+            font-size: 0.8rem;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 10px 20px;
+            border-radius: 30px;
+            z-index: 10;
+        }
+
+        .back-link:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+    </style>
+</head>
+
+<body>
+    <a href="index.html" class="back-link">← Gallery</a>
+
+    <div class="ui">
+        <h1>Emoji Physics</h1>
+        <p>Click anywhere to drop chaos.</p>
+    </div>
+
+    <div class="controls">
+        <button class="btn" id="clear">Clear All</button>
+        <button class="btn" id="gravity">Toggle Gravity</button>
+        <button class="btn" id="burst">Burst!</button>
+    </div>
+
+    <div id="canvas-container"></div>
+
+    <script>
+        const { Engine, Render, Runner, Bodies, Composite, Mouse, MouseConstraint, World } = Matter;
+
+        const engine = Engine.create();
+        const world = engine.world;
+        const container = document.getElementById('canvas-container');
+
+        const render = Render.create({
+            element: container,
+            engine: engine,
+            options: {
+                width: window.innerWidth,
+                height: window.innerHeight,
+                wireframes: false,
+                background: '#121212'
+            }
+        });
+
+        Render.run(render);
+        const runner = Runner.create();
+        Runner.run(runner, engine);
+
+        // Ground and Walls
+        const wallOptions = { isStatic: true, render: { fillStyle: '#1a1a1a' } };
+        const ground = Bodies.rectangle(window.innerWidth / 2, window.innerHeight + 30, window.innerWidth, 60, wallOptions);
+        const leftWall = Bodies.rectangle(-30, window.innerHeight / 2, 60, window.innerHeight, wallOptions);
+        const rightWall = Bodies.rectangle(window.innerWidth + 30, window.innerHeight / 2, 60, window.innerHeight, wallOptions);
+        const ceiling = Bodies.rectangle(window.innerWidth / 2, -30, window.innerWidth, 60, wallOptions);
+
+        World.add(world, [ground, leftWall, rightWall, ceiling]);
+
+        const emojis = ['😀', '😂', '😍', '🤔', '😎', '🍕', '🎉', '🔥', '🚀', '🌈', '💎', '🦄', '👻', '💩', '🌟', '🎮'];
+        let bodies = [];
+
+        function spawnEmoji(x, y) {
+            const emoji = emojis[Math.floor(Math.random() * emojis.length)];
+            const size = 40 + Math.random() * 40;
+
+            // Create a circle body for the emoji
+            const body = Bodies.circle(x, y, size / 2, {
+                restitution: 0.6,
+                friction: 0.1,
+                render: {
+                    sprite: {
+                        // We generate a temp canvas to use as a texture for the emoji
+                        texture: createEmojiTexture(emoji, size)
+                    }
+                }
+            });
+
+            bodies.push(body);
+            World.add(world, body);
+        }
+
+        function createEmojiTexture(emoji, size) {
+            const canvas = document.createElement('canvas');
+            canvas.width = size;
+            canvas.height = size;
+            const ctx = canvas.getContext('2d');
+            ctx.font = `${size * 0.8}px serif`;
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText(emoji, size / 2, size / 2 + size * 0.05);
+            return canvas.toDataURL();
+        }
+
+        container.addEventListener('mousedown', (e) => {
+            spawnEmoji(e.clientX, e.clientY);
+        });
+
+        // UI Controls
+        document.getElementById('clear').onclick = () => {
+            bodies.forEach(body => World.remove(world, body));
+            bodies = [];
+        };
+
+        document.getElementById('gravity').onclick = () => {
+            world.gravity.y = world.gravity.y === 0 ? 1 : 0;
+        };
+
+        document.getElementById('burst').onclick = () => {
+            const centerX = window.innerWidth / 2;
+            const centerY = window.innerHeight / 2;
+
+            for (let i = 0; i < 30; i++) {
+                spawnEmoji(centerX, centerY);
+                const last = bodies[bodies.length - 1];
+                Matter.Body.applyForce(last, last.position, {
+                    x: (Math.random() - 0.5) * 0.5,
+                    y: (Math.random() - 0.5) * 0.5
+                });
+            }
+        };
+
+        // Window Resize
+        window.addEventListener('resize', () => {
+            render.canvas.width = window.innerWidth;
+            render.canvas.height = window.innerHeight;
+
+            Matter.Body.setPosition(ground, { x: window.innerWidth / 2, y: window.innerHeight + 30 });
+            Matter.Body.setPosition(rightWall, { x: window.innerWidth + 30, y: window.innerHeight / 2 });
+        });
+
+        // Interactive mouse
+        const mouse = Mouse.create(render.canvas);
+        const mouseConstraint = MouseConstraint.create(engine, {
+            mouse: mouse,
+            constraint: {
+                stiffness: 0.2,
+                render: { visible: false }
+            }
+        });
+        World.add(world, mouseConstraint);
+
+        // Initial drop
+        for (let i = 0; i < 5; i++) {
+            spawnEmoji(Math.random() * window.innerWidth, 100);
+        }
+
+    </script>
+</body>
+
+</html>

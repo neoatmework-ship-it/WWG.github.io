@@ -1,0 +1,602 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <link rel="icon"
+        href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20100%20100%22%3E%3Ctext%20y%3D%22.9em%22%20font-size%3D%2290%22%3E%F0%9F%A7%AC%3C%2Ftext%3E%3C%2Fsvg%3E">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mandelbrot Deep Zoom | WWG</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600&family=IBM+Plex+Mono:wght@400;600&display=swap"
+        rel="stylesheet">
+    <style>
+        :root {
+            --bg: #030014;
+            --surface: rgba(15, 10, 40, 0.85);
+            --border: #3b2a75;
+            --accent: #b258ff;
+            --accent-hover: #d28cff;
+            --text: #f0f0ff;
+            --text-muted: #9a8cad;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Space Grotesk', sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            width: 100vw;
+            height: 100vh;
+            overflow: hidden;
+            display: flex;
+        }
+
+        /* Canvas acts as full background */
+        #mandelbrot-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            cursor: crosshair;
+            z-index: 1;
+        }
+
+        /* UI Panel Overlay */
+        .ui-panel {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            width: 340px;
+            background: var(--surface);
+            backdrop-filter: blur(12px);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 24px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6), inset 0 0 0 1px rgba(255, 255, 255, 0.05);
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            z-index: 10;
+        }
+
+        .header h1 {
+            font-size: 1.5rem;
+            color: var(--accent);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .header p {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            margin-top: 5px;
+            line-height: 1.4;
+        }
+
+        .stats-box {
+            background: rgba(0, 0, 0, 0.4);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 12px;
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 0.75rem;
+            color: var(--accent-hover);
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .stats-box div {
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .stats-box div span:first-child {
+            color: var(--text-muted);
+        }
+
+        .control-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .control-group label {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--text-muted);
+            font-weight: 600;
+        }
+
+        input[type="range"] {
+            -webkit-appearance: none;
+            width: 100%;
+            height: 4px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 2px;
+            outline: none;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: var(--accent);
+            cursor: pointer;
+            box-shadow: 0 0 10px var(--accent);
+            transition: 0.2s transform;
+        }
+
+        input[type="range"]::-webkit-slider-thumb:hover {
+            transform: scale(1.3);
+        }
+
+        .btn-group {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+
+        .btn {
+            background: rgba(178, 88, 255, 0.1);
+            border: 1px solid var(--accent);
+            color: var(--accent);
+            padding: 10px;
+            border-radius: 6px;
+            font-family: 'Space Grotesk', sans-serif;
+            font-weight: 600;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: 0.2s;
+            text-transform: uppercase;
+        }
+
+        .btn:hover {
+            background: var(--accent);
+            color: #000;
+            box-shadow: 0 0 15px rgba(178, 88, 255, 0.4);
+        }
+
+        .btn.full {
+            grid-column: span 2;
+            background: var(--accent);
+            color: #000;
+        }
+
+        .btn.full:hover {
+            background: var(--accent-hover);
+        }
+
+        .back-link {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            color: var(--text-muted);
+            text-decoration: none;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: 0.2s;
+            z-index: 20;
+            background: var(--surface);
+            padding: 8px 16px;
+            border-radius: 20px;
+            backdrop-filter: blur(5px);
+            border: 1px solid var(--border);
+        }
+
+        .back-link:hover {
+            color: var(--accent);
+            border-color: var(--accent);
+        }
+
+        .instructions {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            text-align: center;
+            background: rgba(0, 0, 0, 0.3);
+            padding: 10px;
+            border-radius: 8px;
+            border: 1px dashed var(--border);
+        }
+
+        /* Loading indicator */
+        #loader {
+            position: absolute;
+            top: 20px;
+            right: 380px;
+            background: var(--accent);
+            color: #000;
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 0.8rem;
+            padding: 6px 12px;
+            border-radius: 4px;
+            z-index: 20;
+            display: none;
+            box-shadow: 0 0 15px var(--accent);
+            animation: pulse 1s infinite alternate;
+        }
+
+        @keyframes pulse {
+            0% {
+                opacity: 0.7;
+            }
+
+            100% {
+                opacity: 1;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <a href="index.html" class="back-link">
+        <svg fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            viewBox="0 0 24 24" height="16" width="16">
+            <polyline points="15 18 9 12 15 6"></polyline>
+        </svg>
+        Return to Gallery
+    </a>
+
+    <canvas id="mandelbrot-canvas"></canvas>
+    <div id="loader">CALCULATING FRACTAL...</div>
+
+    <div class="ui-panel">
+        <div class="header">
+            <h1>Mandelbrot Explorer</h1>
+            <p>Infinite mathematical beauty. Deep zoom into the fractal boundary by clicking.</p>
+        </div>
+
+        <div class="stats-box">
+            <div><span>Magnification:</span> <span id="stat-zoom">1x</span></div>
+            <div><span>Render Time:</span> <span id="stat-time">0ms</span></div>
+            <div><span>Center X:</span> <span id="stat-x">-0.5</span></div>
+            <div><span>Center Y:</span> <span id="stat-y">0.0</span></div>
+        </div>
+
+        <div class="control-group">
+            <label>Iterations <span id="val-iter">150</span></label>
+            <input type="range" id="param-iter" min="50" max="1000" step="50" value="150"
+                title="Higher iterations reveal more detail deep in the fractal but take longer to calculate.">
+        </div>
+
+        <div class="instructions">
+            Left Click: Zoom IN<br>
+            Right Click / Shift+Click: Zoom OUT
+        </div>
+
+        <div class="btn-group">
+            <button class="btn" id="btn-reset">Reset View</button>
+            <button class="btn" id="btn-hq">HD Render</button>
+            <button class="btn full" id="btn-save">Save HD Snapshot</button>
+        </div>
+    </div>
+
+    <!-- Inline Web Worker for non-blocking Mandelbrot calculation -->
+    <script id="worker-script" type="javascript/worker">
+        // This runs in a separate thread!
+        self.onmessage = function(e) {
+            const { 
+                width, height, 
+                centerX, centerY, zoom, 
+                maxIter, palette 
+            } = e.data;
+
+            const imgData = new Uint8ClampedArray(width * height * 4);
+            
+            // Calculate complex plane boundaries based on center and zoom
+            // Base width is roughly 4 (from -2.5 to 1.5)
+            const rangeX = 4.0 / zoom; 
+            const rangeY = (4.0 * (height/width)) / zoom;
+
+            const minX = centerX - rangeX / 2;
+            const maxX = centerX + rangeX / 2;
+            const minY = centerY - rangeY / 2;
+            const maxY = centerY + rangeY / 2;
+
+            const dx = (maxX - minX) / width;
+            const dy = (maxY - minY) / height;
+
+            let index = 0;
+
+            for (let y = 0; y < height; y++) {
+                const cy = minY + y * dy;
+                for (let x = 0; x < width; x++) {
+                    const cx = minX + x * dx;
+                    
+                    let zx = 0;
+                    let zy = 0;
+                    let iter = 0;
+                    
+                    // Optimization: check if inside main cardioid or period-2 bulb before looping
+                    const q = (cx - 0.25) * (cx - 0.25) + cy * cy;
+                    if (q * (q + (cx - 0.25)) < 0.25 * cy * cy || (cx + 1) * (cx + 1) + cy * cy < 0.0625) {
+                        iter = maxIter;
+                    } else {
+                        // Main Mandelbrot loop: z = z^2 + c
+                        let zx2 = 0;
+                        let zy2 = 0;
+
+                        while (zx2 + zy2 < 4 && iter < maxIter) {
+                            zy = 2 * zx * zy + cy;
+                            zx = zx2 - zy2 + cx;
+                            zx2 = zx * zx;
+                            zy2 = zy * zy;
+                            iter++;
+                        }
+                    }
+
+                    // Coloring Magic
+                    if (iter === maxIter) {
+                        // Inside the set -> Black
+                        imgData[index++] = 0;
+                        imgData[index++] = 0;
+                        imgData[index++] = 0;
+                        imgData[index++] = 255;
+                    } else {
+                        // Outside the set -> Smooth coloring algorithm
+                        
+                        // Continuous smooth coloring formula
+                        let log_z = Math.log(zx*zx + zy*zy) / 2.0;
+                        let nu = Math.log(log_z / Math.log(2)) / Math.log(2);
+                        let smoothIter = iter + 1 - nu;
+                        
+                        // Map smooth iterations to a pleasant palette cycle
+                        // Palette logic:
+                        const colorIndex = Math.floor((smoothIter * 5) % 255);
+                        
+                        // A vibrant purple/cyan spectrum matching the UI
+                        imgData[index++] = (colorIndex * 2) % 255; // R
+                        imgData[index++] = (colorIndex * 5) % 255; // G
+                        imgData[index++] = 255 - colorIndex; // B
+                        imgData[index++] = 255; // A
+                    }
+                }
+            }
+
+            self.postMessage({ buffer: imgData.buffer }, [imgData.buffer]);
+        };
+    </script>
+
+    <!-- Main UI Logic -->
+    <script>
+        const canvas = document.getElementById('mandelbrot-canvas');
+        const ctx = canvas.getContext('2d');
+        const loader = document.getElementById('loader');
+
+        // UI Elements
+        const statZoom = document.getElementById('stat-zoom');
+        const statTime = document.getElementById('stat-time');
+        const statX = document.getElementById('stat-x');
+        const statY = document.getElementById('stat-y');
+        const inputIter = document.getElementById('param-iter');
+        const valIter = document.getElementById('val-iter');
+
+        // State Profile
+        let STATE = {
+            centerX: -0.5,
+            centerY: 0.0,
+            zoom: 1.0, // Scale factor: 1.0 means width of 4 units on complex plane
+            maxIter: parseInt(inputIter.value),
+            width: 0,
+            height: 0
+        };
+
+        // Initialize Web Worker using Blob (to keep it all in one HTML file)
+        const workerBlob = new Blob([document.getElementById('worker-script').textContent], { type: "text/javascript" });
+        const worker = new Worker(URL.createObjectURL(workerBlob));
+
+        let isRendering = false;
+        let pendingRender = false;
+        let renderStartTime = 0;
+
+        function resizeCanvas() {
+            STATE.width = window.innerWidth;
+            STATE.height = window.innerHeight;
+            canvas.width = STATE.width;
+            canvas.height = STATE.height;
+            requestRender();
+        }
+
+        window.addEventListener('resize', resizeCanvas);
+
+        function requestRender(hq = false) {
+            if (isRendering) {
+                pendingRender = true;
+                return;
+            }
+
+            isRendering = true;
+            loader.style.display = 'block';
+            renderStartTime = performance.now();
+
+            // Downscale for faster interactivity dragging/zooming, unless HQ forced
+            const scale = hq ? 1 : 0.5; // Render half resolution for smooth UI, upscale via canvas
+            const rWidth = Math.floor(STATE.width * scale);
+            const rHeight = Math.floor(STATE.height * scale);
+
+            worker.postMessage({
+                width: rWidth,
+                height: rHeight,
+                centerX: STATE.centerX,
+                centerY: STATE.centerY,
+                zoom: STATE.zoom,
+                maxIter: STATE.maxIter
+            });
+        }
+
+        worker.onmessage = function (e) {
+            const rWidth = (e.data.buffer.byteLength / 4) / Math.floor(STATE.height * (e.data.buffer.byteLength < STATE.width * STATE.height * 4 ? 0.5 : 1)); // hacky reverse calc height
+            const rScale = e.data.buffer.byteLength < STATE.width * STATE.height * 4 ? 0.5 : 1;
+            const finalWidth = Math.floor(STATE.width * rScale);
+            const finalHeight = Math.floor(STATE.height * rScale);
+
+            const imgData = new ImageData(new Uint8ClampedArray(e.data.buffer), finalWidth, finalHeight);
+
+            // Draw via temp canvas to scale up if needed
+            const tCanvas = document.createElement('canvas');
+            tCanvas.width = finalWidth; tCanvas.height = finalHeight;
+            tCanvas.getContext('2d').putImageData(imgData, 0, 0);
+
+            // Draw to main
+            ctx.clearRect(0, 0, STATE.width, STATE.height);
+            ctx.drawImage(tCanvas, 0, 0, STATE.width, STATE.height);
+
+            const timeTaken = Math.round(performance.now() - renderStartTime);
+
+            // Update UI Stats
+            loader.style.display = 'none';
+            statTime.textContent = `${timeTaken}ms`;
+
+            // Format zoom beautifully (using exponent notation for deep deep zooms)
+            let zTxt = STATE.zoom;
+            if (zTxt > 1000000) zTxt = zTxt.toExponential(2) + "x";
+            else zTxt = Math.round(zTxt) + "x";
+            statZoom.textContent = zTxt;
+
+            statX.textContent = STATE.centerX.toFixed(7);
+            statY.textContent = STATE.centerY.toFixed(7);
+
+            isRendering = false;
+
+            if (pendingRender) {
+                pendingRender = false;
+                requestRender();
+            }
+        };
+
+        // --- INTERACTION ---
+
+        // Map Screen coordinates to Complex Plane coordinates
+        function mapComplex(screenX, screenY) {
+            const rangeX = 4.0 / STATE.zoom;
+            const rangeY = (4.0 * (STATE.height / STATE.width)) / STATE.zoom;
+
+            const minX = STATE.centerX - rangeX / 2;
+            const maxY = STATE.centerY + rangeY / 2; // Y is inverted
+
+            const cX = minX + (screenX / STATE.width) * rangeX;
+            const cY = maxY - (screenY / STATE.height) * rangeY;
+            return { cX, cY };
+        }
+
+        canvas.addEventListener('click', (e) => {
+            // Prevent zooming if they are just dragging (handled by mousedown/up diff)
+            if (isDragging) return;
+
+            const cPos = mapComplex(e.clientX, e.clientY);
+
+            // Zoom In by default, Zoom Out if Shift is pressed or Right Click
+            const zoomFactor = 2.0;
+
+            if (e.shiftKey) {
+                STATE.zoom /= zoomFactor;
+            } else {
+                STATE.zoom *= zoomFactor;
+            }
+
+            // Recenter based on click
+            STATE.centerX = cPos.cX;
+            STATE.centerY = cPos.cY;
+
+            requestRender();
+        });
+
+        // Provide custom context menu block for easy right click outward zoom
+        canvas.addEventListener('contextmenu', (e) => {
+            e.preventDefault();
+            const cPos = mapComplex(e.clientX, e.clientY);
+            STATE.zoom /= 2.0;
+            STATE.centerX = cPos.cX;
+            STATE.centerY = cPos.cY;
+            requestRender();
+        });
+
+        // Support Panning (Dragging)
+        let isDragging = false;
+        let dragStartX, dragStartY;
+        let startCenterX, startCenterY;
+
+        canvas.addEventListener('mousedown', (e) => {
+            if (e.button !== 0) return; // Only left click drag
+            isDragging = false; // reset
+            dragStartX = e.clientX;
+            dragStartY = e.clientY;
+            startCenterX = STATE.centerX;
+            startCenterY = STATE.centerY;
+        });
+
+        canvas.addEventListener('mousemove', (e) => {
+            if (e.buttons !== 1) return; // Must be holding left click
+            isDragging = true;
+
+            // Calculate pixel diff
+            const dx = e.clientX - dragStartX;
+            const dy = e.clientY - dragStartY;
+
+            // Map pixel diff to complex plane diff
+            const rangeX = 4.0 / STATE.zoom;
+            const rangeY = (4.0 * (STATE.height / STATE.width)) / STATE.zoom;
+
+            const cDx = (dx / STATE.width) * rangeX;
+            const cDy = (dy / STATE.height) * rangeY;
+
+            STATE.centerX = startCenterX - cDx;
+            STATE.centerY = startCenterY + cDy; // Y inverted
+
+            // Re-render continuously while dragging
+            requestRender();
+        });
+
+        inputIter.addEventListener('change', (e) => {
+            valIter.textContent = e.target.value;
+            STATE.maxIter = parseInt(e.target.value);
+            requestRender();
+        });
+
+        // Fast update display value while sliding, without rendering lag
+        inputIter.addEventListener('input', (e) => valIter.textContent = e.target.value);
+
+        document.getElementById('btn-reset').addEventListener('click', () => {
+            STATE.centerX = -0.5;
+            STATE.centerY = 0.0;
+            STATE.zoom = 1.0;
+            requestRender();
+        });
+
+        document.getElementById('btn-hq').addEventListener('click', () => {
+            requestRender(true); // Force 1:1 scale render
+        });
+
+        document.getElementById('btn-save').addEventListener('click', () => {
+            // Guarantee an HQ render exists before saving, then trigger download
+            requestRender(true);
+            setTimeout(() => {
+                const link = document.createElement('a');
+                link.download = `mandelbrot_zoom_${Math.floor(STATE.zoom)}x.png`;
+                link.href = canvas.toDataURL('image/png');
+                link.click();
+            }, 1000); // Give worker 1s to execute the HQ render buffer visually
+        });
+
+        // Init
+        resizeCanvas();
+
+    </script>
+</body>
+
+</html>

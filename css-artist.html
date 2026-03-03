@@ -1,0 +1,516 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <link rel="icon"
+        href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20100%20100%22%3E%3Ctext%20y%3D%22.9em%22%20font-size%3D%2290%22%3E%F0%9F%8E%A8%3C%2Ftext%3E%3C%2Fsvg%3E">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CSS Box Shadow Artist | WWG</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;600&family=Outfit:wght@400;600;800&display=swap"
+        rel="stylesheet">
+    <style>
+        :root {
+            --bg: #0f172a;
+            /* Slate 900 */
+            --surface: #1e293b;
+            /* Slate 800 */
+            --surface-hover: #334155;
+            /* Slate 700 */
+            --border: #475569;
+            /* Slate 600 */
+            --primary: #3b82f6;
+            /* Blue 500 */
+            --primary-hover: #2563eb;
+            /* Blue 600 */
+            --text: #f8fafc;
+            /* Slate 50 */
+            --text-muted: #cbd5e1;
+            /* Slate 300 */
+
+            --cell-size: 20px;
+            --grid-size: 16;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Outfit', sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 40px;
+        }
+
+        .back-link {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            color: var(--text-muted);
+            text-decoration: none;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: color 0.2s;
+        }
+
+        .back-link:hover {
+            color: var(--text);
+        }
+
+        .container {
+            width: 100%;
+            max-width: 1200px;
+            display: grid;
+            grid-template-columns: auto 1fr;
+            gap: 40px;
+            background: var(--surface);
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+        }
+
+        @media (max-width: 900px) {
+            .container {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* LEFT: EDITOR */
+        .editor-section {
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+            align-items: center;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            font-weight: 800;
+            background: linear-gradient(to right, #60a5fa, #c084fc);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-align: center;
+            line-height: 1.1;
+        }
+
+        .desc {
+            color: var(--text-muted);
+            text-align: center;
+            font-size: 0.95rem;
+            max-width: 350px;
+        }
+
+        /* Toolbar */
+        .toolbar {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            background: rgba(0, 0, 0, 0.2);
+            padding: 10px 20px;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+        }
+
+        input[type="color"] {
+            -webkit-appearance: none;
+            border: none;
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            cursor: pointer;
+            padding: 0;
+            background: transparent;
+        }
+
+        input[type="color"]::-webkit-color-swatch-wrapper {
+            padding: 0;
+        }
+
+        input[type="color"]::-webkit-color-swatch {
+            border: 2px solid var(--border);
+            border-radius: 8px;
+        }
+
+        .tool-btn {
+            background: transparent;
+            color: var(--text-muted);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 8px 16px;
+            cursor: pointer;
+            font-family: 'Outfit', sans-serif;
+            font-weight: 600;
+            transition: 0.2s;
+        }
+
+        .tool-btn.active,
+        .tool-btn:hover {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+
+        /* Grid */
+        #grid {
+            display: grid;
+            grid-template-columns: repeat(var(--grid-size), var(--cell-size));
+            grid-template-rows: repeat(var(--grid-size), var(--cell-size));
+            background: #cbd5e1 url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="40" height="40"><rect width="20" height="20" fill="%23e2e8f0"/><rect x="20" y="20" width="20" height="20" fill="%23e2e8f0"/></svg>');
+            /* Transparency checkboard */
+            border: 2px solid var(--border);
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+            user-select: none;
+        }
+
+        .cell {
+            width: var(--cell-size);
+            height: var(--cell-size);
+            border: 1px solid rgba(0, 0, 0, 0.05);
+            /* very faint gridlines */
+            cursor: crosshair;
+        }
+
+        /* RIGHT: OUTPUT */
+        .output-section {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .output-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .output-header h2 {
+            font-size: 1.5rem;
+        }
+
+        .btn-copy {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-family: inherit;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-copy:hover {
+            background: var(--primary-hover);
+        }
+
+        .code-container {
+            flex: 1;
+            background: #000;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 20px;
+            overflow-y: auto;
+            position: relative;
+            max-height: 500px;
+        }
+
+        pre {
+            font-family: 'Fira Code', monospace;
+            font-size: 0.85rem;
+            color: #10b981;
+            /* Emerald green code */
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+
+        .css-property {
+            color: #60a5fa;
+        }
+
+        .css-value {
+            color: #fcd34d;
+        }
+
+        /* Actual generated DOM output preview area */
+        .live-preview-box {
+            height: 120px;
+            background: rgba(0, 0, 0, 0.2);
+            border: 1px dashed var(--border);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+
+        .preview-label {
+            position: absolute;
+            top: 10px;
+            left: 15px;
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        /* THE SINGLE DIV */
+        #single-div {
+            width: 1px;
+            height: 1px;
+            /* Box-shadow generated via JS goes here */
+        }
+    </style>
+</head>
+
+<body>
+
+    <a href="index.html" class="back-link">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="15 18 9 12 15 6"></polyline>
+        </svg>
+        Galería
+    </a>
+
+    <div class="container">
+
+        <!-- Left Column -->
+        <div class="editor-section">
+            <div>
+                <h1>Single-Div CSS Artist</h1>
+                <p class="desc">Draw an image and we'll collapse it into a single HTML `&lt;div&gt;` using an enormous
+                    `box-shadow` property array.</p>
+            </div>
+
+            <div class="toolbar">
+                <input type="color" id="color-picker" value="#3b82f6" title="Pick Color">
+                <button class="tool-btn active" id="tool-draw">Draw</button>
+                <button class="tool-btn" id="tool-erase">Erase</button>
+                <div style="width: 1px; height: 20px; background: var(--border); margin: 0 5px;"></div>
+                <button class="tool-btn" id="btn-clear"
+                    style="color:#ef4444; border-color: rgba(239, 68, 68, 0.3);">Trash</button>
+            </div>
+
+            <div id="grid"></div>
+        </div>
+
+        <!-- Right Column -->
+        <div class="output-section">
+
+            <div class="live-preview-box">
+                <div class="preview-label">Live Div Render</div>
+                <!-- This Div represents the generated CSS -->
+                <div id="single-div-wrapper" style="transform: scale(3);">
+                    <div id="single-div"></div>
+                </div>
+            </div>
+
+            <div class="output-header">
+                <h2>Generated CSS</h2>
+                <button class="btn-copy" id="btn-copy">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                        <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                    </svg>
+                    Copy Ruleset
+                </button>
+            </div>
+
+            <div class="code-container">
+                <pre id="css-output"></pre>
+            </div>
+
+        </div>
+
+    </div>
+
+    <script>
+        const grid = document.getElementById('grid');
+        const colorPicker = document.getElementById('color-picker');
+        const toolDraw = document.getElementById('tool-draw');
+        const toolErase = document.getElementById('tool-erase');
+        const btnClear = document.getElementById('btn-clear');
+        const btnCopy = document.getElementById('btn-copy');
+        const cssOutput = document.getElementById('css-output');
+        const singleDivWrapper = document.getElementById('single-div-wrapper'); // We scale the wrapper, not the pure div
+        const singleDiv = document.getElementById('single-div');
+
+        const GRID_SIZE = 16;
+        let isDrawing = false;
+        let currentMode = 'draw'; // 'draw' or 'erase'
+
+        // Data structure to hold colored pixels. Key: "x,y", Value: hex color
+        let pixels = {};
+
+        // 1. Initialize Grid
+        function initGrid() {
+            grid.innerHTML = '';
+            // CSS Variables enforce grid-size logic
+
+            for (let y = 0; y < GRID_SIZE; y++) {
+                for (let x = 0; x < GRID_SIZE; x++) {
+                    const cell = document.createElement('div');
+                    cell.className = 'cell';
+                    cell.dataset.x = x;
+                    cell.dataset.y = y;
+
+                    // Mouse events
+                    cell.addEventListener('mousedown', handleCellAction);
+                    cell.addEventListener('mouseenter', (e) => {
+                        if (isDrawing) handleCellAction(e);
+                    });
+
+                    grid.appendChild(cell);
+                }
+            }
+        }
+
+        // 2. Painting Logic
+        function handleCellAction(e) {
+            const cell = e.target;
+            const x = cell.dataset.x;
+            const y = cell.dataset.y;
+            const key = `${x},${y}`;
+
+            if (currentMode === 'draw') {
+                const color = colorPicker.value;
+                cell.style.backgroundColor = color;
+                pixels[key] = color;
+            } else if (currentMode === 'erase') {
+                cell.style.backgroundColor = 'transparent';
+                delete pixels[key];
+            }
+            generateCSS();
+        }
+
+        // Global mouse events for drag painting
+        grid.addEventListener('mousedown', () => isDrawing = true);
+        window.addEventListener('mouseup', () => isDrawing = false);
+
+        // 3. Toolbar listeners
+        toolDraw.addEventListener('click', () => {
+            currentMode = 'draw';
+            toolDraw.classList.add('active');
+            toolErase.classList.remove('active');
+        });
+
+        toolErase.addEventListener('click', () => {
+            currentMode = 'erase';
+            toolErase.classList.add('active');
+            toolDraw.classList.remove('active');
+        });
+
+        btnClear.addEventListener('click', () => {
+            if (confirm("Clear all pixels?")) {
+                pixels = {};
+                document.querySelectorAll('.cell').forEach(c => c.style.backgroundColor = 'transparent');
+                generateCSS();
+            }
+        });
+
+        // 4. Generate the Box Shadow String
+        function generateCSS() {
+            const keys = Object.keys(pixels);
+
+            if (keys.length === 0) {
+                cssOutput.innerHTML = `<span class="css-property">.pixel-art</span> {\n  <span style="color:#64748b;">/* Draw something! */</span>\n}`;
+                singleDiv.style.boxShadow = 'none';
+                return;
+            }
+
+            // Since our single Div is 1x1, each box shadow needs to be mapped.
+            // A shadow syntax: offsetX offsetY blur spread color
+            // e.g., 5px 2px 0 0 #ff0000
+
+            // To align the rendering accurately relative to the center or top left,
+            // we treat the grid coords as multipliers.
+            // E.g., if we want the output to be 10x10 squares, we'd multiply by 10.
+            // For the pure CSS output, we'll assume a 1px base block, and the user can scale it in wrapping containers.
+
+            let shadowStrings = [];
+            // We'll scale up the internal preview just so it's visible. Keep the CSS raw.
+            let previewShadows = [];
+            const PREVIEW_SCALE = 2; // Real DOM render scale multiplier
+
+            keys.forEach(key => {
+                const [x, y] = key.split(',').map(Number);
+                const color = pixels[key];
+
+                // Raw string for output: 1px grid
+                // Adding +1 so it pushes off the true 0,0 top-left origin cleanly
+                shadowStrings.push(`${x + 1}px ${y + 1}px 0 0 ${color}`);
+
+                // Preview string: Uses PREVIEW_SCALE internally
+                previewShadows.push(`${(x + 1) * PREVIEW_SCALE}px ${(y + 1) * PREVIEW_SCALE}px 0 0 ${color}`);
+            });
+
+            const cssRule = shadowStrings.join(',\n      ');
+
+            // Format UI Block
+            cssOutput.innerHTML = `<span class="css-property">.pixel-art</span> {
+  <span class="css-property">width</span>: <span class="css-value">1px</span>;
+  <span class="css-property">height</span>: <span class="css-value">1px</span>;
+  <span class="css-property">box-shadow</span>: 
+      <span class="css-value">${cssRule}</span>;
+}`;
+
+            // Apply to live preview (needs adjustments for 1px sizing and positioning to center)
+            singleDiv.style.width = PREVIEW_SCALE + 'px';
+            singleDiv.style.height = PREVIEW_SCALE + 'px';
+            singleDiv.style.boxShadow = previewShadows.join(', ');
+
+            // Offset the wrapper to center the drawing in the box
+            // Width of drawing is gridSize * PREVIEW_SCALE.
+            const wOffset = (GRID_SIZE * PREVIEW_SCALE) / 2;
+            singleDivWrapper.style.marginLeft = `-${wOffset}px`;
+            singleDivWrapper.style.marginTop = `-${wOffset}px`;
+        }
+
+        // Copy functionality
+        btnCopy.addEventListener('click', () => {
+            const textToCopy = cssOutput.innerText;
+            navigator.clipboard.writeText(textToCopy).then(() => {
+                const originalText = btnCopy.innerHTML;
+                btnCopy.innerHTML = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg> Copied!`;
+                setTimeout(() => {
+                    btnCopy.innerHTML = originalText;
+                }, 2000);
+            });
+        });
+
+        // Start
+        initGrid();
+
+        // Draw a quick smiley face default to show it off
+        const smile = [
+            "4,4", "5,4", "10,4", "11,4",
+            "4,5", "5,5", "10,5", "11,5",
+            "4,10", "11,10",
+            "5,11", "6,11", "7,11", "8,11", "9,11", "10,11"
+        ];
+        colorPicker.value = "#fcd34d";
+        smile.forEach(k => {
+            pixels[k] = "#fcd34d";
+            const [x, y] = k.split(',');
+            document.querySelector(`.cell[data-x="${x}"][data-y="${y}"]`).style.backgroundColor = "#fcd34d";
+        });
+        generateCSS();
+
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,575 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <link rel="icon"
+        href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20100%20100%22%3E%3Ctext%20y%3D%22.9em%22%20font-size%3D%2290%22%3E%F0%9F%A6%86%3C%2Ftext%3E%3C%2Fsvg%3E">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Boids Flocking Simulator | WWG</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;700&family=Work+Sans:wght@400;600&display=swap"
+        rel="stylesheet">
+    <style>
+        :root {
+            --bg: #12141d;
+            --surface: rgba(30, 34, 49, 0.85);
+            --border: #2c3145;
+            --primary: #4fc3f7;
+            /* Light Blue */
+            --accent: #ffb74d;
+            /* Orange */
+            --text: #e0e5ff;
+            --text-muted: #8589a1;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Work Sans', sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            width: 100vw;
+            height: 100vh;
+            overflow: hidden;
+            display: flex;
+        }
+
+        #canvas-container {
+            flex: 1;
+            position: relative;
+            background: radial-gradient(circle at center, #1b1e2b 0%, var(--bg) 100%);
+        }
+
+        canvas {
+            display: block;
+            touch-action: none;
+        }
+
+        /* UI Panel overlay */
+        .panel {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            width: 320px;
+            background: var(--surface);
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 24px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4);
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            z-index: 10;
+        }
+
+        .header {
+            margin-bottom: 5px;
+        }
+
+        .title {
+            font-family: 'Roboto Mono', monospace;
+            font-size: 1.5rem;
+            color: var(--primary);
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .title svg {
+            width: 24px;
+            height: 24px;
+            stroke: var(--primary);
+        }
+
+        .desc {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            margin-top: 6px;
+            line-height: 1.4;
+        }
+
+        .control-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .control-group label {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--text-muted);
+            font-weight: 600;
+        }
+
+        .control-group label span.val {
+            color: var(--text);
+            font-family: 'Roboto Mono', monospace;
+        }
+
+        input[type="range"] {
+            -webkit-appearance: none;
+            width: 100%;
+            height: 4px;
+            background: var(--border);
+            border-radius: 2px;
+            outline: none;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: var(--primary);
+            cursor: pointer;
+            transition: 0.2s transform;
+        }
+
+        input[type="range"]::-webkit-slider-thumb:hover {
+            transform: scale(1.3);
+            box-shadow: 0 0 10px rgba(79, 195, 247, 0.4);
+        }
+
+        .btn {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border);
+            color: var(--text);
+            padding: 10px 15px;
+            border-radius: 6px;
+            font-family: 'Work Sans', sans-serif;
+            font-weight: 600;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: 0.2s;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn:hover {
+            background: var(--border);
+        }
+
+        .btn.accent {
+            background: rgba(255, 183, 77, 0.1);
+            border-color: var(--accent);
+            color: var(--accent);
+        }
+
+        .btn.accent:hover {
+            background: var(--accent);
+            color: var(--bg);
+        }
+
+        .back-link {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            color: var(--text-muted);
+            text-decoration: none;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: 0.2s;
+            z-index: 20;
+            background: rgba(18, 20, 29, 0.5);
+            padding: 8px 16px;
+            border-radius: 20px;
+            backdrop-filter: blur(5px);
+            border: 1px solid var(--border);
+        }
+
+        .back-link:hover {
+            color: var(--primary);
+            border-color: var(--primary);
+        }
+
+        .tips {
+            font-size: 0.75rem;
+            color: rgba(255, 255, 255, 0.3);
+            text-align: center;
+            margin-top: -10px;
+        }
+
+        @media (max-width: 768px) {
+            .panel {
+                top: auto;
+                bottom: 0;
+                right: 0;
+                width: 100%;
+                border-radius: 20px 20px 0 0;
+                max-height: 50vh;
+                overflow-y: auto;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <a href="index.html" class="back-link">
+        <svg fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            viewBox="0 0 24 24" height="16" width="16">
+            <polyline points="15 18 9 12 15 6"></polyline>
+        </svg>
+        Return to Gallery
+    </a>
+
+    <div id="canvas-container">
+        <canvas id="boidsCanvas"></canvas>
+    </div>
+
+    <div class="panel">
+        <div class="header">
+            <div class="title">
+                <svg viewBox="0 0 24 24" fill="none" stroke-width="2">
+                    <path d="M12 2L2 22l10-4 10 4L12 2z"></path>
+                </svg>
+                BOIDS ENGIN_
+            </div>
+            <p class="desc">Artificial life program simulating the flocking behavior of birds.</p>
+        </div>
+
+        <div class="control-group">
+            <label>Separation <span class="val" id="val-sep">1.5</span></label>
+            <input type="range" id="param-sep" min="0" max="3" step="0.1" value="1.5">
+            <div style="font-size:0.7rem; color:var(--text-muted);">Steer to avoid crowding local flockmates</div>
+        </div>
+
+        <div class="control-group">
+            <label>Alignment <span class="val" id="val-ali">1.0</span></label>
+            <input type="range" id="param-ali" min="0" max="3" step="0.1" value="1.0">
+            <div style="font-size:0.7rem; color:var(--text-muted);">Steer towards average heading of flockmates</div>
+        </div>
+
+        <div class="control-group">
+            <label>Cohesion <span class="val" id="val-coh">1.0</span></label>
+            <input type="range" id="param-coh" min="0" max="3" step="0.1" value="1.0">
+            <div style="font-size:0.7rem; color:var(--text-muted);">Steer to move toward average position of flockmates
+            </div>
+        </div>
+
+        <div style="height: 1px; background: var(--border); margin: 5px 0;"></div>
+
+        <div class="control-group">
+            <label>Visual Range <span class="val" id="val-vis">100</span></label>
+            <input type="range" id="param-vis" min="20" max="300" step="5" value="100">
+        </div>
+
+        <div class="control-group">
+            <label>Max Speed <span class="val" id="val-spd">4.0</span></label>
+            <input type="range" id="param-spd" min="1" max="10" step="0.5" value="4.0">
+        </div>
+
+        <div style="display:flex; gap:10px; margin-top:10px;">
+            <button class="btn" id="btn-count" style="flex:1;">Max Entities</button>
+            <button class="btn accent" id="btn-predator">Spawn Predator</button>
+        </div>
+
+        <div class="tips">Click or tap canvas to scatter the flock.</div>
+    </div>
+
+    <!-- Boids Math & Drawing -->
+    <script>
+        const canvas = document.getElementById('boidsCanvas');
+        const ctx = canvas.getContext('2d');
+        const container = document.getElementById('canvas-container');
+
+        let width, height;
+        let boids = [];
+        let predators = [];
+        let config = {
+            separation: 1.5,
+            alignment: 1.0,
+            cohesion: 1.0,
+            visualRange: 100,
+            maxSpeed: 4.0,
+            maxForce: 0.1,
+            count: 250 // default count
+        };
+
+        // UI Bindings
+        const inputs = [
+            { id: 'sep', prop: 'separation' },
+            { id: 'ali', prop: 'alignment' },
+            { id: 'coh', prop: 'cohesion' },
+            { id: 'vis', prop: 'visualRange' },
+            { id: 'spd', prop: 'maxSpeed' }
+        ];
+
+        inputs.forEach(init => {
+            const el = document.getElementById(`param-${init.id}`);
+            const valEl = document.getElementById(`val-${init.id}`);
+            el.addEventListener('input', (e) => {
+                let v = parseFloat(e.target.value);
+                config[init.prop] = v;
+                valEl.textContent = v.toFixed(1);
+            });
+        });
+
+        // Resize handler
+        function resize() {
+            width = container.clientWidth;
+            height = container.clientHeight;
+            canvas.width = width * window.devicePixelRatio;
+            canvas.height = height * window.devicePixelRatio;
+            ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
+        }
+        window.addEventListener('resize', resize);
+        resize();
+
+        // Vector class math
+        class Vector {
+            constructor(x, y) { this.x = x; this.y = y; }
+            add(v) { this.x += v.x; this.y += v.y; return this; }
+            sub(v) { this.x -= v.x; this.y -= v.y; return this; }
+            mult(n) { this.x *= n; this.y *= n; return this; }
+            div(n) { this.x /= n; this.y /= n; return this; }
+            mag() { return Math.sqrt(this.x * this.x + this.y * this.y); }
+            normalize() {
+                let m = this.mag();
+                if (m !== 0) { this.div(m); }
+                return this;
+            }
+            limit(max) {
+                if (this.mag() > max) {
+                    this.normalize();
+                    this.mult(max);
+                }
+                return this;
+            }
+            setMag(n) { return this.normalize().mult(n); }
+            copy() { return new Vector(this.x, this.y); }
+            dist(v) {
+                let dx = this.x - v.x;
+                let dy = this.y - v.y;
+                return Math.sqrt(dx * dx + dy * dy);
+            }
+        }
+
+        // Boid Class
+        class Boid {
+            constructor(x, y, isPredator = false) {
+                this.position = new Vector(x, y);
+                this.velocity = new Vector((Math.random() * 2) - 1, (Math.random() * 2) - 1);
+                this.velocity.setMag(Math.random() * 2 + 2);
+                this.acceleration = new Vector(0, 0);
+                this.isPredator = isPredator;
+            }
+
+            edges() {
+                // Wrap around edges smoothly
+                const buffer = 20;
+                if (this.position.x > width + buffer) this.position.x = -buffer;
+                else if (this.position.x < -buffer) this.position.x = width + buffer;
+                if (this.position.y > height + buffer) this.position.y = -buffer;
+                else if (this.position.y < -buffer) this.position.y = height + buffer;
+            }
+
+            // Craig Reynolds' Three Rules
+            flock(boids, predators) {
+                let alignment = new Vector(0, 0);
+                let cohesion = new Vector(0, 0);
+                let separation = new Vector(0, 0);
+                let flee = new Vector(0, 0);
+                let total = 0;
+                let sepTotal = 0;
+
+                for (let other of boids) {
+                    let d = this.position.dist(other.position);
+
+                    // Don't flock with oneself and only see nearby boids
+                    if (other !== this && d < config.visualRange && !other.isPredator) {
+                        alignment.add(other.velocity);
+                        cohesion.add(other.position);
+                        total++;
+
+                        // Separation is stronger the closer they are
+                        if (d < config.visualRange / 2) {
+                            let diff = this.position.copy().sub(other.position);
+                            diff.div(d * d); // Weight by inverse square of distance
+                            separation.add(diff);
+                            sepTotal++;
+                        }
+                    }
+                }
+
+                // Predator avoidance (High priority)
+                for (let pred of predators) {
+                    let d = this.position.dist(pred.position);
+                    if (d < config.visualRange * 1.5) { // Can see predators much further
+                        let diff = this.position.copy().sub(pred.position);
+                        diff.div(d); // Strong repulsion
+                        flee.add(diff);
+                    }
+                }
+
+                if (total > 0) {
+                    alignment.div(total).setMag(config.maxSpeed).sub(this.velocity).limit(config.maxForce);
+                    cohesion.div(total).sub(this.position).setMag(config.maxSpeed).sub(this.velocity).limit(config.maxForce);
+                }
+                if (sepTotal > 0) {
+                    separation.div(sepTotal).setMag(config.maxSpeed).sub(this.velocity).limit(config.maxForce);
+                }
+                if (flee.mag() > 0) {
+                    flee.setMag(config.maxSpeed * 1.5).sub(this.velocity).limit(config.maxForce * 2);
+                }
+
+                // Apply Weights
+                alignment.mult(config.alignment);
+                cohesion.mult(config.cohesion);
+                separation.mult(config.separation);
+                flee.mult(2.5); // Fleeing is top priority
+
+                this.acceleration.add(alignment);
+                this.acceleration.add(cohesion);
+                this.acceleration.add(separation);
+                this.acceleration.add(flee);
+            }
+
+            // Predator hunting logic
+            hunt(boids) {
+                let target = new Vector(0, 0);
+                let closest = Infinity;
+
+                // Find closest boid to chase
+                for (let b of boids) {
+                    let d = this.position.dist(b.position);
+                    if (d < config.visualRange * 2 && d < closest) {
+                        closest = d;
+                        target = b.position.copy();
+                    }
+                }
+
+                if (closest !== Infinity) {
+                    let steer = target.sub(this.position);
+                    steer.setMag(config.maxSpeed * 1.1); // Slightly faster than normal boids
+                    steer.sub(this.velocity);
+                    steer.limit(config.maxForce * 0.8); // Steers slightly slower
+                    this.acceleration.add(steer);
+                }
+            }
+
+            update() {
+                this.position.add(this.velocity);
+                this.velocity.add(this.acceleration);
+                this.velocity.limit(this.isPredator ? config.maxSpeed * 1.2 : config.maxSpeed);
+                this.acceleration.mult(0); // Reset for next frame
+            }
+
+            draw() {
+                let theta = Math.atan2(this.velocity.y, this.velocity.x) + Math.PI / 2;
+                ctx.save();
+                ctx.translate(this.position.x, this.position.y);
+                ctx.rotate(theta);
+
+                ctx.beginPath();
+                if (this.isPredator) {
+                    ctx.moveTo(0, -10);
+                    ctx.lineTo(-6, 8);
+                    ctx.lineTo(0, 4);
+                    ctx.lineTo(6, 8);
+                    ctx.fillStyle = '#ff4757'; // Red predator
+                    ctx.shadowBlur = 10;
+                    ctx.shadowColor = '#ff4757';
+                } else {
+                    ctx.moveTo(0, -6);
+                    ctx.lineTo(-4, 4);
+                    ctx.lineTo(0, 2);
+                    ctx.lineTo(4, 4);
+                    // Base color + slight speed variation
+                    const spd = (this.velocity.mag() / config.maxSpeed);
+                    ctx.fillStyle = `rgba(79, 195, ${150 + spd * 105}, ${0.6 + spd * 0.4})`;
+                }
+                ctx.fill();
+                ctx.restore();
+            }
+        }
+
+        // Setup
+        function init() {
+            boids = [];
+            predators = [];
+            for (let i = 0; i < config.count; i++) {
+                boids.push(new Boid(Math.random() * width, Math.random() * height));
+            }
+        }
+
+        // Animation Loop
+        function animate() {
+            // Draw trail effect
+            ctx.fillStyle = 'rgba(18, 20, 29, 0.3)';
+            ctx.fillRect(0, 0, width, height);
+
+            // Update Predators
+            for (let pred of predators) {
+                pred.edges();
+                pred.hunt(boids);
+                pred.update();
+                pred.draw();
+            }
+
+            // Update Boids
+            for (let boid of boids) {
+                boid.edges();
+                boid.flock(boids, predators);
+                boid.update();
+                boid.draw();
+            }
+
+            requestAnimationFrame(animate);
+        }
+
+        // Click to scatter
+        canvas.addEventListener('mousedown', (e) => {
+            const rect = canvas.getBoundingClientRect();
+            const mousePos = new Vector(e.clientX - rect.left, e.clientY - rect.top);
+
+            // Apply massive burst force away from mouse
+            for (let b of boids) {
+                let distance = b.position.dist(mousePos);
+                if (distance < 200) {
+                    let burst = b.position.copy().sub(mousePos);
+                    burst.setMag(config.maxSpeed * 3);
+                    b.velocity = burst;
+                }
+            }
+        });
+
+        // UI Actions
+        document.getElementById('btn-count').addEventListener('click', () => {
+            config.count = config.count === 250 ? 500 : 250;
+            document.getElementById('btn-count').textContent = config.count === 500 ? "Normal Entities" : "Max Entities";
+            // Repopulate
+            boids = [];
+            for (let i = 0; i < config.count; i++) {
+                boids.push(new Boid(Math.random() * width, Math.random() * height));
+            }
+        });
+
+        document.getElementById('btn-predator').addEventListener('click', () => {
+            predators.push(new Boid(width / 2, height / 2, true));
+        });
+
+        // Run
+        init();
+        animate();
+
+    </script>
+</body>
+
+</html>
