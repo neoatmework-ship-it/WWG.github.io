@@ -1,0 +1,707 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <link rel="icon"
+        href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20100%20100%22%3E%3Ctext%20y%3D%22.9em%22%20font-size%3D%2290%22%3E%F0%9F%8C%8D%3C%2Ftext%3E%3C%2Fsvg%3E">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Procedural Planet</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap"
+        rel="stylesheet">
+    <style>
+        :root {
+            --bg: #09090b;
+            --bg-panel: rgba(20, 20, 25, 0.85);
+            --border: rgba(255, 255, 255, 0.1);
+            --accent: #2dd4bf;
+            --accent-glow: rgba(45, 212, 191, 0.3);
+            --text: #f0eef5;
+            --text-muted: #8888a0;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            height: 100vh;
+            overflow: hidden;
+            display: flex;
+        }
+
+        /* Fullscreen WebGL Canvas */
+        #canvas-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+
+        /* 3D Space Background styling */
+        .stars {
+            position: absolute;
+            inset: 0;
+            z-index: 0;
+            background:
+                radial-gradient(circle at 15% 50%, rgba(45, 212, 191, 0.08) 0%, transparent 50%),
+                radial-gradient(circle at 85% 30%, rgba(167, 139, 250, 0.08) 0%, transparent 50%);
+        }
+
+        /* WWG Back Button */
+        .wwg-back-btn {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            width: 44px;
+            height: 44px;
+            background: rgba(10, 10, 15, 0.7);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #a78bfa;
+            z-index: 99999;
+            transition: all 0.3s ease;
+            text-decoration: none;
+        }
+
+        .wwg-back-btn:hover {
+            background: rgba(167, 139, 250, 0.2);
+            border-color: rgba(167, 139, 250, 0.4);
+            transform: scale(1.05) translateX(-2px);
+            color: #fff;
+            box-shadow: 0 0 15px rgba(167, 139, 250, 0.3);
+        }
+
+        /* Controls UI */
+        .ui-panel {
+            position: absolute;
+            right: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 320px;
+            background: var(--bg-panel);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 24px;
+            z-index: 10;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .header h1 {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 1.8rem;
+            margin-bottom: 4px;
+            background: linear-gradient(135deg, var(--accent), #a78bfa);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .header p {
+            color: var(--text-muted);
+            font-size: 0.85rem;
+        }
+
+        .control-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .control-group label {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .control-group label span {
+            color: var(--text);
+            font-weight: 500;
+        }
+
+        input[type="range"] {
+            -webkit-appearance: none;
+            width: 100%;
+            height: 6px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 4px;
+            outline: none;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: var(--accent);
+            cursor: pointer;
+            box-shadow: 0 0 10px var(--accent-glow);
+            transition: transform 0.1s;
+        }
+
+        input[type="range"]::-webkit-slider-thumb:hover {
+            transform: scale(1.2);
+        }
+
+        .btn {
+            background: rgba(167, 139, 250, 0.15);
+            border: 1px solid rgba(167, 139, 250, 0.3);
+            color: #a78bfa;
+            padding: 12px;
+            border-radius: 12px;
+            font-family: 'Space Grotesk', sans-serif;
+            font-weight: 600;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-top: 10px;
+        }
+
+        .btn:hover {
+            background: #a78bfa;
+            color: #000;
+            box-shadow: 0 0 20px rgba(167, 139, 250, 0.4);
+            transform: translateY(-2px);
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            background: rgba(0, 0, 0, 0.3);
+            padding: 12px;
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .stat-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            font-size: 0.75rem;
+            color: var(--text-muted);
+        }
+
+        .stat-item span {
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--text);
+            font-family: 'Space Grotesk', sans-serif;
+        }
+
+        .loading-overlay {
+            position: absolute;
+            inset: 0;
+            background: var(--bg);
+            z-index: 1000;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            transition: opacity 0.5s;
+        }
+
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 3px solid rgba(255, 255, 255, 0.1);
+            border-top-color: var(--accent);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 20px;
+        }
+
+        @keyframes spin {
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="stars"></div>
+    <div id="canvas-container"></div>
+
+    <a href="index.html" class="wwg-back-btn" title="Back to Gallery">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+            stroke-linecap="round" stroke-linejoin="round">
+            <line x1="19" y1="12" x2="5" y2="12"></line>
+            <polyline points="12 19 5 12 12 5"></polyline>
+        </svg>
+    </a>
+
+    <div class="ui-panel">
+        <div class="header">
+            <h1>Planet Forge</h1>
+            <p>Procedural 3D World Generation</p>
+        </div>
+
+        <div class="stats">
+            <div class="stat-item">
+                Biomes
+                <span id="stat-biomes">6</span>
+            </div>
+            <div class="stat-item">
+                Seed
+                <span id="stat-seed">1337</span>
+            </div>
+        </div>
+
+        <div class="control-group">
+            <label>Sea Level <span id="val-sea">0.40</span></label>
+            <input type="range" id="ctrl-sea" min="0" max="1" step="0.01" value="0.40">
+        </div>
+
+        <div class="control-group">
+            <label>Temperature <span id="val-temp">0.50</span></label>
+            <input type="range" id="ctrl-temp" min="0" max="1" step="0.01" value="0.50">
+        </div>
+
+        <div class="control-group">
+            <label>Moisture <span id="val-moist">0.60</span></label>
+            <input type="range" id="ctrl-moist" min="0" max="1" step="0.01" value="0.60">
+        </div>
+
+        <div class="control-group">
+            <label>Terrain Roughness <span id="val-rough">0.50</span></label>
+            <input type="range" id="ctrl-rough" min="0" max="1" step="0.01" value="0.50">
+        </div>
+
+        <div class="control-group">
+            <label>Atmosphere <span id="val-atmos">1.0</span></label>
+            <input type="range" id="ctrl-atmos" min="0" max="2" step="0.1" value="1.0">
+        </div>
+
+        <button class="btn" id="btn-randomize">Randomize Seed</button>
+    </div>
+
+    <div class="loading-overlay" id="loading">
+        <div class="spinner"></div>
+        <p>Forging World...</p>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+
+    <!-- Simplex Noise for procedural generation -->
+    <script>
+        // A fast javascript implementation of simplex noise by Jonas Wagner
+        (function () { var F3 = 1.0 / 3.0, G3 = 1.0 / 6.0; function SimplexNoise(random) { if (!random) random = Math.random; this.p = new Uint8Array(256); this.perm = new Uint8Array(512); this.permMod12 = new Uint8Array(512); for (var i = 0; i < 256; i++) { this.p[i] = Math.floor(random() * 256) } for (i = 0; i < 512; i++) { this.perm[i] = this.p[i & 255]; this.permMod12[i] = this.perm[i] % 12 } } SimplexNoise.prototype = { grad3: new Float32Array([1, 1, 0, -1, 1, 0, 1, -1, 0, -1, -1, 0, 1, 0, 1, -1, 0, 1, 1, 0, -1, -1, 0, -1, 0, 1, 1, 0, -1, 1, 0, 1, -1, 0, -1, -1]), noise3D: function (x, y, z) { var permMod12 = this.permMod12; var perm = this.perm; var grad3 = this.grad3; var s = (x + y + z) * F3; var i = Math.floor(x + s); var j = Math.floor(y + s); var k = Math.floor(z + s); var t = (i + j + k) * G3; var X0 = i - t; var Y0 = j - t; var Z0 = k - t; var x0 = x - X0; var y0 = y - Y0; var z0 = z - Z0; var i1, j1, k1; var i2, j2, k2; if (x0 >= y0) { if (y0 >= z0) { i1 = 1; j1 = 0; k1 = 0; i2 = 1; j2 = 1; k2 = 0 } else if (x0 >= z0) { i1 = 1; j1 = 0; k1 = 0; i2 = 1; j2 = 0; k2 = 1 } else { i1 = 0; j1 = 0; k1 = 1; i2 = 1; j2 = 0; k2 = 1 } } else { if (y0 < z0) { i1 = 0; j1 = 0; k1 = 1; i2 = 0; j2 = 1; k2 = 1 } else if (x0 < z0) { i1 = 0; j1 = 1; k1 = 0; i2 = 0; j2 = 1; k2 = 1 } else { i1 = 0; j1 = 1; k1 = 0; i2 = 1; j2 = 1; k2 = 0 } } var x1 = x0 - i1 + G3; var y1 = y0 - j1 + G3; var z1 = z0 - k1 + G3; var x2 = x0 - i2 + 2.0 * G3; var y2 = y0 - j2 + 2.0 * G3; var z2 = z0 - k2 + 2.0 * G3; var x3 = x0 - 1.0 + 3.0 * G3; var y3 = y0 - 1.0 + 3.0 * G3; var z3 = z0 - 1.0 + 3.0 * G3; var ii = i & 255; var jj = j & 255; var kk = k & 255; var t0 = 0.6 - x0 * x0 - y0 * y0 - z0 * z0; if (t0 < 0) var n0 = 0.0; else { var gi0 = permMod12[ii + perm[jj + perm[kk]]] * 3; t0 *= t0; n0 = t0 * t0 * (grad3[gi0] * x0 + grad3[gi0 + 1] * y0 + grad3[gi0 + 2] * z0) } var t1 = 0.6 - x1 * x1 - y1 * y1 - z1 * z1; if (t1 < 0) var n1 = 0.0; else { var gi1 = permMod12[ii + i1 + perm[jj + j1 + perm[kk + k1]]] * 3; t1 *= t1; n1 = t1 * t1 * (grad3[gi1] * x1 + grad3[gi1 + 1] * y1 + grad3[gi1 + 2] * z1) } var t2 = 0.6 - x2 * x2 - y2 * y2 - z2 * z2; if (t2 < 0) var n2 = 0.0; else { var gi2 = permMod12[ii + i2 + perm[jj + j2 + perm[kk + k2]]] * 3; t2 *= t2; n2 = t2 * t2 * (grad3[gi2] * x2 + grad3[gi2 + 1] * y2 + grad3[gi2 + 2] * z2) } var t3 = 0.6 - x3 * x3 - y3 * y3 - z3 * z3; if (t3 < 0) var n3 = 0.0; else { var gi3 = permMod12[ii + 1 + perm[jj + 1 + perm[kk + 1]]] * 3; t3 *= t3; n3 = t3 * t3 * (grad3[gi3] * x3 + grad3[gi3 + 1] * y3 + grad3[gi3 + 2] * z3) } return 32.0 * (n0 + n1 + n2 + n3) } }; window.SimplexNoise = SimplexNoise })();
+    </script>
+
+    <!-- Main Generator Logic -->
+    <script>
+        // Init Three.js Scene
+        const container = document.getElementById('canvas-container');
+        const scene = new THREE.Scene();
+
+        // Add some background stars directly to scene
+        const starGeo = new THREE.BufferGeometry();
+        const starParts = 2000;
+        const starPos = new Float32Array(starParts * 3);
+        const starColors = new Float32Array(starParts * 3);
+
+        for (let i = 0; i < starParts * 3; i += 3) {
+            starPos[i] = (Math.random() - 0.5) * 1000;
+            starPos[i + 1] = (Math.random() - 0.5) * 1000;
+            starPos[i + 2] = (Math.random() - 0.5) * 1000 - 300;
+
+            const shade = 0.5 + Math.random() * 0.5;
+            starColors[i] = shade;
+            starColors[i + 1] = shade;
+            starColors[i + 2] = shade;
+        }
+
+        starGeo.setAttribute('position', new THREE.BufferAttribute(starPos, 3));
+        starGeo.setAttribute('color', new THREE.BufferAttribute(starColors, 3));
+        const starMat = new THREE.PointsMaterial({ size: 1.5, vertexColors: true });
+        const stars = new THREE.Points(starGeo, starMat);
+        scene.add(stars);
+
+        // Camera & Renderer
+        const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 2000);
+        camera.position.set(0, 0, 30);
+
+        const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2)); // Perf optimization
+        container.appendChild(renderer.domElement);
+
+        // Controls
+        const controls = new THREE.OrbitControls(camera, renderer.domElement);
+        controls.enableDamping = true;
+        controls.dampingFactor = 0.05;
+        controls.enablePan = false;
+        controls.minDistance = 15;
+        controls.maxDistance = 60;
+
+        // Lighting
+        const ambientLight = new THREE.AmbientLight(0xFFFFFF, 0.15); // soft dark side
+        scene.add(ambientLight);
+
+        const dirLight = new THREE.DirectionalLight(0xFFFFFF, 1.2);
+        dirLight.position.set(15, 10, 15);
+        scene.add(dirLight);
+
+        // Add a back rim light for visual flair
+        const rimLight = new THREE.DirectionalLight(0x2dd4bf, 0.5);
+        rimLight.position.set(-15, -10, -15);
+        scene.add(rimLight);
+
+        // Planet Objects
+        const PLANET_RADIUS = 10;
+        const DETAIL = 120; // sphere segments
+
+        // Use an Icosahedron for more even vertex density than Sphere (good for noise)
+        const planetGeo = new THREE.IcosahedronGeometry(PLANET_RADIUS, DETAIL);
+        // We will modify vertices, but keep the original to sample from
+        const baseVertices = [];
+        const baseNormals = [];
+
+        const positionAttr = planetGeo.attributes.position;
+        const normalAttr = planetGeo.attributes.normal;
+
+        for (let i = 0; i < positionAttr.count; i++) {
+            baseVertices.push(new THREE.Vector3().fromBufferAttribute(positionAttr, i));
+            baseNormals.push(new THREE.Vector3().fromBufferAttribute(normalAttr, i));
+        }
+
+        // Setup vertex colors
+        const colors = new Float32Array(positionAttr.count * 3);
+        planetGeo.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+
+        const planetMat = new THREE.MeshStandardMaterial({
+            vertexColors: true,
+            roughness: 0.8,
+            metalness: 0.1,
+            flatShading: true // Gives a nice low-poly/stylized feel with the displacement
+        });
+
+        const planetMesh = new THREE.Mesh(planetGeo, planetMat);
+        scene.add(planetMesh);
+
+        // Water Sphere (rendered slightly larger than sea level radius)
+        const waterGeo = new THREE.IcosahedronGeometry(PLANET_RADIUS, 64);
+        const waterMat = new THREE.MeshPhysicalMaterial({
+            color: 0x1e3a8a,
+            transparent: true,
+            opacity: 0.85,
+            roughness: 0.1,
+            metalness: 0.1,
+            clearcoat: 1.0,
+            clearcoatRoughness: 0.1
+        });
+        const waterMesh = new THREE.Mesh(waterGeo, waterMat);
+        scene.add(waterMesh);
+
+        // Atmosphere Glow (Shader)
+        const atmosGeo = new THREE.IcosahedronGeometry(PLANET_RADIUS * 1.2, 64);
+        const atmosMat = new THREE.ShaderMaterial({
+            uniforms: {
+                c: { type: "f", value: 0.4 },
+                p: { type: "f", value: 4.0 },
+                glowColor: { type: "c", value: new THREE.Color(0x60a5fa) },
+                viewVector: { type: "v3", value: camera.position }
+            },
+            vertexShader: `
+                uniform vec3 viewVector;
+                varying float intensity;
+                void main() {
+                    vec3 vNormal = normalize( normalMatrix * normal );
+                    vec3 vNormel = normalize( normalMatrix * viewVector );
+                    intensity = pow( 0.6 - dot(vNormal, vNormel), 4.0 );
+                    gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 );
+                }
+            `,
+            fragmentShader: `
+                uniform vec3 glowColor;
+                varying float intensity;
+                void main() {
+                    vec3 glow = glowColor * intensity;
+                    gl_FragColor = vec4( glow, intensity * 0.5 );
+                }
+            `,
+            side: THREE.BackSide,
+            blending: THREE.AdditiveBlending,
+            transparent: true,
+            depthWrite: false
+        });
+        const atmosMesh = new THREE.Mesh(atmosGeo, atmosMat);
+        scene.add(atmosMesh);
+
+        // --- Procedural Generation Logic ---
+
+        let seed = Math.floor(Math.random() * 10000);
+        let noiseX = new SimplexNoise(() => seed / 10000); // Hacky seed approach for the specific lib
+        let noiseY = new SimplexNoise(); // We just recreate to randomize
+
+        // Params from UI
+        let params = {
+            sea: 0.40,
+            temp: 0.50,
+            moist: 0.60,
+            rough: 0.50,
+            atmos: 1.0
+        };
+
+        const colorPalettes = {
+            polar: new THREE.Color(0xf8fafc), // Ice
+            tundra: new THREE.Color(0xcbd5e1),
+            boreal: new THREE.Color(0x334155), // Dark pine
+            grassland: new THREE.Color(0x84cc16),
+            forest: new THREE.Color(0x22c55e),
+            jungle: new THREE.Color(0x15803d),
+            savanna: new THREE.Color(0xfcd34d),
+            desert: new THREE.Color(0xf59e0b),
+            beach: new THREE.Color(0xfde047),
+            scorched: new THREE.Color(0x78716c)
+        };
+
+        function getBiomeColor(elevation, temp, moisture) {
+            // Elevation: 0 to 1
+            // Temp: 0 to 1
+            // Moisture: 0 to 1
+
+            // Adjust temp by elevation (colder higher up)
+            let localTemp = temp - (elevation * 0.4);
+
+            if (elevation < 0.05) return colorPalettes.beach; // Coast
+
+            if (localTemp < 0.2) return colorPalettes.polar; // Always ice caps
+
+            if (localTemp < 0.4) {
+                if (moisture > 0.5) return colorPalettes.boreal;
+                return colorPalettes.tundra;
+            }
+
+            if (localTemp < 0.7) {
+                if (moisture < 0.3) return colorPalettes.grassland;
+                if (moisture < 0.7) return colorPalettes.forest;
+                return colorPalettes.jungle;
+            }
+
+            // Hot
+            if (moisture < 0.2) return colorPalettes.scorched;
+            if (moisture < 0.4) return colorPalettes.desert;
+            if (moisture < 0.7) return colorPalettes.savanna;
+            return colorPalettes.jungle;
+        }
+
+        // FBM (Fractal Brownian Motion)
+        function fbm(v, octaves, lacunarity, gain) {
+            let amp = 0.5;
+            let freq = 1.0;
+            let val = 0.0;
+            for (let i = 0; i < octaves; i++) {
+                val += amp * noiseX.noise3D(v.x * freq, v.y * freq, v.z * freq);
+                freq *= lacunarity;
+                amp *= gain;
+            }
+            return val;
+        }
+
+        function generatePlanet() {
+            // Update UI
+            document.getElementById('stat-seed').innerText = seed;
+
+            // Scale params
+            const roughFreq = 0.5 + (params.rough * 2.0);
+            const roughAmp = 0.2 + (params.rough * 2.5);
+
+            const colorArray = planetGeo.attributes.color.array;
+            let biomesSeen = new Set();
+
+            // Generate Noise Terrain
+            for (let i = 0; i < baseVertices.length; i++) {
+                const bV = baseVertices[i];
+                const bN = baseNormals[i];
+
+                // Height Noise (4 octaves)
+                let nHeight = fbm(new THREE.Vector3(bV.x * roughFreq, bV.y * roughFreq, bV.z * roughFreq), 5, 2.0, 0.5);
+                // Map from roughly -1..1 to 0..1
+                nHeight = (nHeight + 1) / 2;
+
+                // Apply easing to make plains flatter and mountains sharper
+                nHeight = Math.pow(nHeight, 1.5);
+
+                // Temp Noise (based on latitude + some noise)
+                const latitude = Math.abs(bV.y / PLANET_RADIUS); // 0 at eq, 1 at poles
+                let nTemp = fbm(new THREE.Vector3(bV.x * 0.5 + 88, bV.y * 0.5 + 88, bV.z * 0.5 + 88), 2, 2.0, 0.5);
+                nTemp = (nTemp + 1) / 2;
+                // Combine global temp slider, latitude falloff, and local noise
+                let finalTemp = params.temp - (latitude * 0.6) + (nTemp * 0.3);
+                finalTemp = Math.max(0, Math.min(1, finalTemp));
+
+                // Moisture Noise
+                let nMoist = fbm(new THREE.Vector3(bV.x * 0.7 + 33, bV.y * 0.7 + 33, bV.z * 0.7 + 33), 3, 2.0, 0.5);
+                nMoist = (nMoist + 1) / 2;
+                let finalMoist = params.moist + (nMoist * 0.4 - 0.2);
+                finalMoist = Math.max(0, Math.min(1, finalMoist));
+
+                // Final Elevation Calculation
+                let elevationAmt;
+                if (nHeight < params.sea) {
+                    // Under water - flatten out sea floor
+                    elevationAmt = (nHeight / params.sea) * 0.5; // Scale so deep sea is 0
+
+                    // Color assignment for deep sea (just to blend at coasts)
+                    colorArray[i * 3] = 0x1e / 255;
+                    colorArray[i * 3 + 1] = 0x3a / 255;
+                    colorArray[i * 3 + 2] = 0x8a / 255;
+
+                } else {
+                    // Land
+                    // Normalize land elevation from 0 to 1
+                    let normLandElev = (nHeight - params.sea) / (1.0 - params.sea);
+                    elevationAmt = 0.5 + (normLandElev * roughAmp);
+
+                    // Assign biome color
+                    const bColor = getBiomeColor(normLandElev, finalTemp, finalMoist);
+                    colorArray[i * 3] = bColor.r;
+                    colorArray[i * 3 + 1] = bColor.g;
+                    colorArray[i * 3 + 2] = bColor.b;
+
+                    // Hacky way to count rough unique biomes
+                    biomesSeen.add(bColor.getHexString());
+                }
+
+                // Displace vertex
+                // We add a tiny bit of noise to water too so it's not perfectly smooth
+                let dispRadius = PLANET_RADIUS + elevationAmt;
+
+                positionAttr.setXYZ(
+                    i,
+                    bN.x * dispRadius,
+                    bN.y * dispRadius,
+                    bN.z * dispRadius
+                );
+            }
+
+            document.getElementById('stat-biomes').innerText = biomesSeen.size;
+
+            positionAttr.needsUpdate = true;
+            planetGeo.attributes.color.needsUpdate = true;
+            planetGeo.computeVertexNormals();
+
+            // Update Water scale
+            // Sea level represents a percentage of height range.
+            let waterScale = 1.0 + (0.5 / PLANET_RADIUS); // base sea floor
+            waterMesh.scale.setScalar(waterScale + ((params.sea - 0.2) * 0.15)); // Adjust scaling logic
+
+            // Adjust water color based on temp
+            if (params.temp < 0.3) waterMesh.material.color.setHex(0x93c5fd); // Icy water
+            else if (params.temp > 0.7) waterMesh.material.color.setHex(0x0284c7); // Tropical deep
+            else waterMesh.material.color.setHex(0x1e3a8a); // Standard
+
+            // Update Atmosphere
+            atmosMesh.scale.setScalar(params.atmos);
+            atmosMat.uniforms.intensity = params.atmos;
+            if (params.atmos <= 0.1) atmosMesh.visible = false;
+            else atmosMesh.visible = true;
+
+            // Color atmos based on temp/moisture
+            if (params.temp > 0.8 && params.moist < 0.3) atmosMat.uniforms.glowColor.value.setHex(0xfcd34d); // Dusty
+            else if (params.temp < 0.2) atmosMat.uniforms.glowColor.value.setHex(0xffffff); // Icy
+            else atmosMat.uniforms.glowColor.value.setHex(0x60a5fa); // Standard Earth
+        }
+
+        // Init
+        // Give time for UI
+        setTimeout(() => {
+            generatePlanet();
+            // Hide loader
+            const loader = document.getElementById('loading');
+            loader.style.opacity = '0';
+            setTimeout(() => loader.style.display = 'none', 500);
+        }, 100);
+
+        // Bind UI Events
+        const binds = ['sea', 'temp', 'moist', 'rough', 'atmos'];
+        binds.forEach(key => {
+            const input = document.getElementById(`ctrl-${key}`);
+            const disp = document.getElementById(`val-${key}`);
+            input.addEventListener('input', (e) => {
+                params[key] = parseFloat(e.target.value);
+                disp.innerText = params[key].toFixed(2);
+                generatePlanet();
+            });
+        });
+
+        document.getElementById('btn-randomize').addEventListener('click', () => {
+            seed = Math.floor(Math.random() * 10000);
+            noiseX = new SimplexNoise(() => seed / 10000);
+
+            // Randomize params
+            params.sea = 0.2 + Math.random() * 0.6;
+            params.temp = 0.1 + Math.random() * 0.8;
+            params.moist = 0.1 + Math.random() * 0.8;
+            params.rough = 0.2 + Math.random() * 0.6;
+
+            binds.forEach(key => {
+                document.getElementById(`ctrl-${key}`).value = params[key];
+                document.getElementById(`val-${key}`).innerText = params[key].toFixed(2);
+            });
+
+            generatePlanet();
+        });
+
+
+        // Render Loop
+        const clock = new THREE.Clock();
+
+        function animate() {
+            requestAnimationFrame(animate);
+
+            const dt = clock.getDelta();
+
+            controls.update();
+
+            // Idle rotation
+            planetMesh.rotation.y += dt * 0.05;
+            waterMesh.rotation.y += dt * 0.05;
+
+            // Slowly rotate stars
+            stars.rotation.y += dt * 0.01;
+
+            // Update atmos shader uniform
+            atmosMat.uniforms.viewVector.value = new THREE.Vector3().subVectors(camera.position, atmosMesh.position);
+
+            renderer.render(scene, camera);
+        }
+
+        animate();
+
+        // Responsive handling
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+
+    </script>
+</body>
+
+</html>
