@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <link rel="icon"
+        href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20100%20100%22%3E%3Ctext%20y%3D%22.9em%22%20font-size%3D%2290%22%3E%F0%9F%92%BD%3C%2Ftext%3E%3C%2Fsvg%3E">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DVD Bounce Simulator</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap"
+        rel="stylesheet">
+    <style>
+        :root {
+            --bg: #050505;
+            --bg-panel: rgba(15, 15, 20, 0.85);
+            --border: rgba(255, 255, 255, 0.1);
+            --accent: #2dd4bf;
+            --accent-glow: rgba(45, 212, 191, 0.3);
+            --text: #f0eef5;
+            --text-muted: #8888a0;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            height: 100vh;
+            overflow: hidden;
+            display: flex;
+        }
+
+        /* The Box where the DVD bounces */
+        #bounce-area {
+            position: absolute;
+            inset: 0;
+            z-index: 1;
+            overflow: hidden;
+            background: radial-gradient(circle at center, #111 0%, #000 100%);
+        }
+
+        /* The Logo */
+        #dvd-logo {
+            position: absolute;
+            width: 150px;
+            /* height auto adjusts based on SVG aspect ratio */
+            will-change: transform, filter;
+            z-index: 2;
+            pointer-events: none;
+            /* Drop shadow for coolness */
+            filter: drop-shadow(0 0 15px rgba(255, 255, 255, 0.4));
+            transition: filter 0.1s linear, width 0.2s ease;
+        }
+
+        /* SVG Paths get recolored via the path fill in JS */
+        #dvd-logo svg {
+            width: 100%;
+            height: 100%;
+            display: block;
+        }
+
+        /* WWG Back Button */
+        .wwg-back-btn {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            width: 44px;
+            height: 44px;
+            background: rgba(10, 10, 15, 0.7);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #a78bfa;
+            z-index: 99999;
+            transition: all 0.3s ease;
+            text-decoration: none;
+        }
+
+        .wwg-back-btn:hover {
+            background: rgba(167, 139, 250, 0.2);
+            border-color: rgba(167, 139, 250, 0.4);
+            transform: scale(1.05) translateX(-2px);
+            color: #fff;
+            box-shadow: 0 0 15px rgba(167, 139, 250, 0.3);
+        }
+
+        /* Controls UI */
+        .ui-panel {
+            position: absolute;
+            right: 20px;
+            top: 20px;
+            width: 320px;
+            background: var(--bg-panel);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 24px;
+            z-index: 10;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .header h1 {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 1.8rem;
+            margin-bottom: 4px;
+            background: linear-gradient(135deg, var(--accent), #a78bfa);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .header p {
+            color: var(--text-muted);
+            font-size: 0.85rem;
+        }
+
+        .control-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .control-group label {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .control-group label span {
+            color: var(--text);
+            font-weight: 500;
+        }
+
+        input[type="range"] {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 100%;
+            height: 6px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 4px;
+            outline: none;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: var(--accent);
+            cursor: pointer;
+            box-shadow: 0 0 10px var(--accent-glow);
+            transition: transform 0.1s;
+        }
+
+        input[type="range"]::-webkit-slider-thumb:hover {
+            transform: scale(1.2);
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            background: rgba(0, 0, 0, 0.3);
+            padding: 12px;
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            text-align: center;
+        }
+
+        .stat-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            font-size: 0.75rem;
+            color: var(--text-muted);
+        }
+
+        .stat-item span {
+            font-size: 1.4rem;
+            font-weight: 600;
+            color: var(--text);
+            font-family: 'Space Grotesk', sans-serif;
+            transition: transform 0.2s, color 0.2s;
+        }
+
+        .stat-item.bump span {
+            transform: scale(1.3);
+            color: #fff;
+        }
+
+        .corner-bump span {
+            color: #fca5a5 !important;
+            text-shadow: 0 0 20px rgba(248, 113, 113, 0.8);
+            transform: scale(1.5) !important;
+        }
+
+        /* Screen Flash effect on corner hit */
+        #flash {
+            position: absolute;
+            inset: 0;
+            background: white;
+            opacity: 0;
+            pointer-events: none;
+            z-index: 5;
+            transition: opacity 0.5s ease-out;
+        }
+    </style>
+</head>
+
+<body>
+
+    <a href="index.html" class="wwg-back-btn" title="Back to Gallery">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+            stroke-linecap="round" stroke-linejoin="round">
+            <line x1="19" y1="12" x2="5" y2="12"></line>
+            <polyline points="12 19 5 12 12 5"></polyline>
+        </svg>
+    </a>
+
+    <div id="bounce-area">
+        <div id="dvd-logo">
+            <!-- Iconic style vector logo -->
+            <svg viewBox="0 0 100 50" xmlns="http://www.w3.org/2000/svg">
+                <!-- Disc ellipse -->
+                <ellipse cx="50" cy="40" rx="45" ry="10" fill="none" stroke="currentColor" stroke-width="3" />
+                <ellipse cx="50" cy="40" rx="15" ry="3" fill="none" stroke="currentColor" stroke-width="2" />
+                <!-- Text -->
+                <text x="50" y="32" font-family="Arial Black, Impact, sans-serif" font-weight="900" font-size="28"
+                    font-style="italic" text-anchor="middle" fill="currentColor">DVD</text>
+                <text x="50" y="47" font-family="Arial, sans-serif" font-weight="bold" font-size="8" letter-spacing="2"
+                    text-anchor="middle" fill="currentColor">VIDEO</text>
+            </svg>
+        </div>
+        <div id="flash"></div>
+    </div>
+
+    <div class="ui-panel">
+        <div class="header">
+            <h1>DVD Simulator</h1>
+            <p>Force the perfect corner hit.</p>
+        </div>
+
+        <div class="stats">
+            <div class="stat-item" id="stat-walls">
+                Wall Hits
+                <span>0</span>
+            </div>
+            <div class="stat-item" id="stat-corners">
+                Corner Hits
+                <span>0</span>
+            </div>
+        </div>
+
+        <div class="control-group">
+            <label>Speed <span id="val-speed">3 px/f</span></label>
+            <input type="range" id="ctrl-speed" min="1" max="20" step="1" value="3">
+        </div>
+
+        <div class="control-group">
+            <label>Logo Size <span id="val-size">150 px</span></label>
+            <input type="range" id="ctrl-size" min="50" max="400" step="1" value="150">
+        </div>
+
+    </div>
+
+    <script>
+        const logo = document.getElementById('dvd-logo');
+        const area = document.getElementById('bounce-area');
+        const flash = document.getElementById('flash');
+        const wallHitsEl = document.querySelector('#stat-walls span');
+        const wallBox = document.getElementById('stat-walls');
+        const cornerHitsEl = document.querySelector('#stat-corners span');
+        const cornerBox = document.getElementById('stat-corners');
+
+        const ctrlSpeed = document.getElementById('ctrl-speed');
+        const valSpeed = document.getElementById('val-speed');
+        const ctrlSize = document.getElementById('ctrl-size');
+        const valSize = document.getElementById('val-size');
+
+        let x = 100;
+        let y = 100;
+        let dx = 3;
+        let dy = 3;
+        let speedMult = 1;
+
+        let wallHits = 0;
+        let cornerHits = 0;
+
+        let currentColor = '#ff0000';
+
+        // Preset nice bright colors
+        const colors = [
+            '#ff0000', '#00ff00', '#0000ff', '#ffff00',
+            '#ff00ff', '#00ffff', '#ff8800', '#88ff00',
+            '#ffffff'
+        ];
+
+        function changeColor() {
+            let nextColor = colors[Math.floor(Math.random() * colors.length)];
+            while (nextColor === currentColor) {
+                nextColor = colors[Math.floor(Math.random() * colors.length)];
+            }
+            currentColor = nextColor;
+            logo.style.color = currentColor;
+            logo.style.filter = `drop-shadow(0 0 15px ${currentColor}88)`;
+        }
+
+        // Init color
+        changeColor();
+
+        function bumpStat(box) {
+            box.classList.remove('bump');
+            void box.offsetWidth; // trigger reflow
+            box.classList.add('bump');
+        }
+
+        function triggerCornerHit() {
+            cornerHits++;
+            cornerHitsEl.innerText = cornerHits;
+
+            // Dramatic flash
+            flash.style.transition = 'none';
+            flash.style.opacity = '1';
+
+            cornerBox.classList.remove('corner-bump');
+            void cornerBox.offsetWidth;
+            cornerBox.classList.add('corner-bump');
+
+            setTimeout(() => {
+                flash.style.transition = 'opacity 0.8s ease-out';
+                flash.style.opacity = '0';
+            }, 50);
+
+            setTimeout(() => {
+                cornerBox.classList.remove('corner-bump');
+            }, 1000);
+        }
+
+        function animate() {
+            const areaRect = area.getBoundingClientRect();
+            const logoRect = logo.getBoundingClientRect();
+
+            // Calculate actual speeds
+            let currentDx = Math.sign(dx) * parseFloat(ctrlSpeed.value);
+            let currentDy = Math.sign(dy) * parseFloat(ctrlSpeed.value);
+
+            x += currentDx;
+            y += currentDy;
+
+            let hitX = false;
+            let hitY = false;
+
+            // Collision check X
+            if (x + logoRect.width >= areaRect.width) {
+                x = areaRect.width - logoRect.width;
+                dx = -Math.abs(dx);
+                hitX = true;
+            } else if (x <= 0) {
+                x = 0;
+                dx = Math.abs(dx);
+                hitX = true;
+            }
+
+            // Collision check Y
+            if (y + logoRect.height >= areaRect.height) {
+                y = areaRect.height - logoRect.height;
+                dy = -Math.abs(dy);
+                hitY = true;
+            } else if (y <= 0) {
+                y = 0;
+                dy = Math.abs(dy);
+                hitY = true;
+            }
+
+            if (hitX || hitY) {
+                changeColor();
+
+                if (hitX && hitY) {
+                    triggerCornerHit();
+                } else {
+                    wallHits++;
+                    wallHitsEl.innerText = wallHits;
+                    bumpStat(wallBox);
+                }
+            }
+
+            logo.style.transform = `translate(${x}px, ${y}px)`;
+
+            requestAnimationFrame(animate);
+        }
+
+        // Controls binding
+        ctrlSpeed.addEventListener('input', (e) => {
+            valSpeed.innerText = `${e.target.value} px/f`;
+        });
+
+        ctrlSize.addEventListener('input', (e) => {
+            const size = e.target.value;
+            valSize.innerText = `${size} px`;
+            logo.style.width = `${size}px`;
+        });
+
+        // Initialize bounce position slightly offset to prevent instant wall snapping
+        x = Math.floor(Math.random() * (window.innerWidth - 200)) + 50;
+        y = Math.floor(Math.random() * (window.innerHeight - 200)) + 50;
+
+        // Start
+        requestAnimationFrame(animate);
+
+    </script>
+</body>
+
+</html>
