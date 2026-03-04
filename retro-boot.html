@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Retro Boot Screen | WWG</title>
+    <link rel="icon"
+        href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E💾%3C/text%3E%3C/svg%3E">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=VT323&display=swap');
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: #000;
+            min-height: 100vh;
+            font-family: 'VT323', monospace;
+            color: #c0c0c0;
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* CRT Effects */
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            z-index: 100;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%),
+                linear-gradient(90deg, rgba(255, 0, 0, 0.03), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.03));
+            background-size: 100% 3px, 4px 100%;
+            pointer-events: none;
+        }
+
+        body::after {
+            content: '';
+            position: fixed;
+            inset: 0;
+            z-index: 99;
+            box-shadow: inset 0 0 120px rgba(0, 0, 0, 0.9);
+            pointer-events: none;
+        }
+
+        .screen {
+            padding: 40px;
+            font-size: 18px;
+            line-height: 1.5;
+            position: relative;
+            z-index: 1;
+            max-width: 900px;
+        }
+
+        .line {
+            opacity: 0;
+            white-space: pre-wrap;
+        }
+
+        .line.visible {
+            opacity: 1;
+        }
+
+        .line.bios {
+            color: #aaa;
+        }
+
+        .line.header {
+            color: #00aaff;
+            font-size: 22px;
+        }
+
+        .line.success {
+            color: #00ff00;
+        }
+
+        .line.warning {
+            color: #ffaa00;
+        }
+
+        .line.error {
+            color: #ff3333;
+        }
+
+        .line.info {
+            color: #888;
+        }
+
+        .line.white {
+            color: #ffffff;
+        }
+
+        .cursor-blink {
+            display: inline-block;
+            background: #c0c0c0;
+            width: 10px;
+            height: 18px;
+            animation: blink 0.6s infinite;
+            vertical-align: text-bottom;
+        }
+
+        @keyframes blink {
+
+            0%,
+            50% {
+                opacity: 1;
+            }
+
+            51%,
+            100% {
+                opacity: 0;
+            }
+        }
+
+        .progress-bar {
+            display: inline-block;
+            width: 300px;
+            height: 14px;
+            border: 1px solid #555;
+            position: relative;
+            vertical-align: middle;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: #00ff00;
+            transition: width 0.1s;
+        }
+
+        .back-link {
+            position: fixed;
+            top: 15px;
+            right: 20px;
+            z-index: 200;
+            color: rgba(255, 255, 255, 0.3);
+            text-decoration: none;
+            font-family: 'VT323', monospace;
+            font-size: 16px;
+        }
+
+        .back-link:hover {
+            color: white;
+        }
+
+        .controls {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 200;
+            display: flex;
+            gap: 12px;
+        }
+
+        .controls button {
+            font-family: 'VT323', monospace;
+            font-size: 16px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: #aaa;
+            padding: 8px 18px;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .controls button:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+        }
+    </style>
+</head>
+
+<body>
+    <a href="index.html" class="back-link">[ESC] EXIT</a>
+
+    <div class="screen" id="screen"></div>
+
+    <div class="controls">
+        <button onclick="startBoot('win95')">Windows 95</button>
+        <button onclick="startBoot('dos')">MS-DOS</button>
+        <button onclick="startBoot('linux')">Linux</button>
+        <button onclick="startBoot('bsod')">BSOD</button>
+    </div>
+
+    <script>
+        const screen = document.getElementById('screen');
+        let abortBoot = false;
+
+        async function typeDelay(ms) {
+            return new Promise(r => setTimeout(r, ms));
+        }
+
+        function addLine(text, cls = '', instant = false) {
+            const div = document.createElement('div');
+            div.className = `line ${cls}`;
+            div.textContent = text;
+            screen.appendChild(div);
+            if (instant) div.classList.add('visible');
+            else {
+                requestAnimationFrame(() => div.classList.add('visible'));
+            }
+            screen.scrollTop = screen.scrollHeight;
+            return div;
+        }
+
+        function addProgress() {
+            const div = document.createElement('div');
+            div.className = 'line visible';
+            div.innerHTML = 'Loading: <span class="progress-bar"><span class="progress-fill" style="width:0%"></span></span> <span class="pct">0%</span>';
+            screen.appendChild(div);
+            return div;
+        }
+
+        async function animateProgress(div, duration = 2000) {
+            const fill = div.querySelector('.progress-fill');
+            const pct = div.querySelector('.pct');
+            const steps = 50;
+            for (let i = 0; i <= steps; i++) {
+                if (abortBoot) return;
+                const p = Math.round((i / steps) * 100);
+                fill.style.width = p + '%';
+                pct.textContent = p + '%';
+                await typeDelay(duration / steps);
+            }
+        }
+
+        async function startBoot(type) {
+            abortBoot = true;
+            await typeDelay(100);
+            abortBoot = false;
+            screen.innerHTML = '';
+
+            switch (type) {
+                case 'win95': await bootWin95(); break;
+                case 'dos': await bootDOS(); break;
+                case 'linux': await bootLinux(); break;
+                case 'bsod': await bootBSOD(); break;
+            }
+        }
+
+        async function bootWin95() {
+            addLine('AMIBIOS (C) 1995 American Megatrends Inc.,', 'bios');
+            await typeDelay(300);
+            addLine('BIOS Date 11/15/95 17:42:21 Ver: 08.00.10', 'info');
+            await typeDelay(200);
+            addLine('');
+            addLine('Main Processor : Intel Pentium(TM) 75MHz', 'white');
+            await typeDelay(400);
+            addLine('Memory Test : 16384K OK', 'success');
+            await typeDelay(600);
+            addLine('');
+            addLine('Detecting IDE drives...', 'bios');
+            await typeDelay(800);
+            addLine('  Primary Master  : WDC AC2340       340MB', '');
+            await typeDelay(200);
+            addLine('  Primary Slave   : [None]', 'info');
+            addLine('  Secondary Master: CREATIVE CD1202E  4X CD-ROM', '');
+            await typeDelay(400);
+            addLine('');
+            addLine('Starting MS-DOS...', 'white');
+            await typeDelay(500);
+            addLine('');
+            addLine('HIMEM is testing extended memory...done.', 'success');
+            await typeDelay(300);
+            addLine('');
+            const p = addProgress();
+            addLine('');
+            await animateProgress(p, 3000);
+            if (abortBoot) return;
+            addLine('');
+            addLine('C:\\WINDOWS> WIN', 'white');
+            await typeDelay(1000);
+            addLine('');
+            addLine('╔══════════════════════════════════════╗', 'header');
+            addLine('║     Microsoft Windows 95             ║', 'header');
+            addLine('║     Starting Windows...              ║', 'header');
+            addLine('╚══════════════════════════════════════╝', 'header');
+            await typeDelay(1500);
+            addLine('');
+            addLine('Welcome to Windows 95!', 'success');
+            addLine('');
+            addLine('C:\\WINDOWS\\DESKTOP> _', 'white');
+        }
+
+        async function bootDOS() {
+            addLine('Microsoft(R) MS-DOS(R) Version 6.22', 'white');
+            addLine('             (C)Copyright Microsoft Corp 1981-1994.', 'info');
+            await typeDelay(500);
+            addLine('');
+            addLine('C:\\> DIR', 'white');
+            await typeDelay(300);
+            addLine(' Volume in drive C is MSDOS622');
+            addLine(' Volume Serial Number is 1A3E-7F2B');
+            addLine(' Directory of C:\\');
+            addLine('');
+            addLine('DOS          <DIR>     11-15-94   6:22a');
+            addLine('WINDOWS      <DIR>     03-12-95   2:14p');
+            addLine('GAMES        <DIR>     05-22-95   9:30a');
+            addLine('AUTOEXEC BAT       256 11-15-94   6:22a');
+            addLine('CONFIG   SYS       512 11-15-94   6:22a');
+            addLine('COMMAND  COM    54,645 11-15-94   6:22a');
+            await typeDelay(300);
+            addLine('     3 file(s)         55,413 bytes');
+            addLine('     3 dir(s)     287,342,592 bytes free');
+            addLine('');
+            addLine('C:\\> CD GAMES', 'white');
+            await typeDelay(400);
+            addLine('C:\\GAMES> DIR', 'white');
+            await typeDelay(300);
+            addLine('');
+            addLine('DOOM         <DIR>     05-22-95   9:30a');
+            addLine('DUKE3D       <DIR>     01-29-96   4:15p');
+            addLine('QUAKE        <DIR>     06-22-96  11:00a');
+            addLine('MONKEY       <DIR>     10-15-90   3:22p');
+            addLine('JAZZ         <DIR>     08-01-94   7:45a');
+            addLine('');
+            addLine('C:\\GAMES> DOOM', 'success');
+            await typeDelay(800);
+            addLine('');
+            addLine('Loading DOOM v1.9...', 'warning');
+            const p = addProgress();
+            await animateProgress(p, 2000);
+            if (abortBoot) return;
+            addLine('');
+            addLine('▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓', 'error');
+            addLine('▓  DOOM - id Software - 1993           ▓', 'error');
+            addLine('▓  "Knee-Deep in the Dead"             ▓', 'error');
+            addLine('▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓', 'error');
+        }
+
+        async function bootLinux() {
+            addLine('[    0.000000] Linux version 6.2.0-generic (root@buildhost)', 'info');
+            await typeDelay(100);
+            addLine('[    0.000000] Command line: BOOT_IMAGE=/vmlinuz root=/dev/sda1', 'info');
+            await typeDelay(100);
+            addLine('[    0.004213] x86/fpu: Supporting XSAVE feature', 'info');
+            addLine('[    0.004213] CPU: Intel Core i7-9700K @ 3.60GHz', '');
+            await typeDelay(100);
+            addLine('[    0.016422] Memory: 16384MB available', 'success');
+            await typeDelay(200);
+
+            const services = [
+                ['systemd', 'Starting system...', 'success'],
+                ['udev', 'Starting device manager...', 'success'],
+                ['network', 'Bringing up eth0... DHCP...', 'success'],
+                ['sshd', 'Starting OpenSSH server...', 'success'],
+                ['cron', 'Starting periodic command scheduler...', 'success'],
+                ['ntpd', 'Synchronizing system clock...', 'success'],
+                ['docker', 'Starting container runtime...', 'success'],
+                ['nginx', 'Starting web server...', 'success'],
+            ];
+
+            for (const [name, desc, cls] of services) {
+                if (abortBoot) return;
+                addLine(`[  OK  ] Started ${name}: ${desc}`, cls);
+                await typeDelay(150 + Math.random() * 200);
+            }
+
+            addLine('');
+            await typeDelay(300);
+            addLine('Welcome to Ubuntu 24.04 LTS (GNU/Linux 6.2.0-generic x86_64)', 'header');
+            addLine('');
+            addLine(' * Documentation:  https://help.ubuntu.com', 'info');
+            addLine(' * Management:     https://landscape.canonical.com', 'info');
+            addLine(' * Support:        https://ubuntu.com/pro', 'info');
+            addLine('');
+            addLine('  System load:  0.08       Processes:           142', '');
+            addLine('  Usage of /:   35.2%      Users logged in:     1', '');
+            addLine('  Memory usage: 12%        IPv4 address:        192.168.1.42', '');
+            addLine('  Swap usage:   0%', '');
+            addLine('');
+            await typeDelay(500);
+            addLine('Last login: Mon Mar 03 20:30:00 2026 from 192.168.1.1', 'info');
+            addLine('user@server:~$ _', 'success');
+        }
+
+        async function bootBSOD() {
+            addLine('Detecting hardware...', 'bios');
+            await typeDelay(500);
+            addLine('Memory Test: 65536K', '');
+            await typeDelay(300);
+            addLine('Loading Windows...', 'white');
+            await typeDelay(1000);
+
+            screen.innerHTML = '';
+            screen.style.background = '#0000aa';
+            screen.style.padding = '60px';
+            document.body.style.background = '#0000aa';
+
+            addLine('', 'white');
+            addLine('   Windows', 'white');
+            addLine('', 'white');
+            addLine('   A problem has been detected and Windows has been shut down to prevent', 'white');
+            addLine('   damage to your computer.', 'white');
+            addLine('', 'white');
+            addLine('   DRIVER_IRQL_NOT_LESS_OR_EQUAL', 'white');
+            addLine('', 'white');
+            addLine('   If this is the first time you\'ve seen this Stop error screen,', 'white');
+            addLine('   restart your computer. If this screen appears again, follow', 'white');
+            addLine('   these steps:', 'white');
+            addLine('', 'white');
+            addLine('   Check to make sure any new hardware or software is properly installed.', 'white');
+            addLine('   If this is a new installation, ask your hardware or software', 'white');
+            addLine('   manufacturer for any Windows updates you might need.', 'white');
+            addLine('', 'white');
+            addLine('   Technical information:', 'white');
+            addLine('', 'white');
+            addLine('   *** STOP: 0x000000D1 (0xBFD44C1C, 0x00000002, 0x00000000, 0xF786B33A)', 'white');
+            addLine('', 'white');
+
+            let pct = 0;
+            const dumpLine = addLine(`   Collecting data for crash dump... ${pct}% complete`, 'white');
+            const interval = setInterval(() => {
+                if (abortBoot) { clearInterval(interval); return; }
+                pct += Math.floor(Math.random() * 8) + 1;
+                if (pct > 100) {
+                    pct = 100;
+                    clearInterval(interval);
+                    dumpLine.textContent = `   Physical memory dump complete.`;
+                    addLine('   Contact your system administrator or technical support group.', 'white');
+                } else {
+                    dumpLine.textContent = `   Collecting data for crash dump... ${pct}% complete`;
+                }
+            }, 300);
+        }
+
+        // Auto-start with Win95
+        startBoot('win95');
+    </script>
+</body>
+
+</html>

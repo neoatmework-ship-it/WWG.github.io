@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Neon Clock | WWG</title>
+    <link rel="icon"
+        href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E🕐%3C/text%3E%3C/svg%3E">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: #050510;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Orbitron', monospace;
+            overflow: hidden;
+            color: white;
+        }
+
+        .back-link {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            color: rgba(255, 255, 255, 0.5);
+            text-decoration: none;
+            font-size: 0.8rem;
+            padding: 8px 16px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            transition: 0.3s;
+        }
+
+        .back-link:hover {
+            color: #fff;
+            border-color: rgba(255, 255, 255, 0.3);
+        }
+
+        canvas {
+            display: block;
+        }
+
+        .digital-time {
+            margin-top: 30px;
+            font-size: 3rem;
+            font-weight: 900;
+            letter-spacing: 8px;
+            text-shadow:
+                0 0 10px var(--glow),
+                0 0 30px var(--glow),
+                0 0 60px var(--glow);
+            transition: text-shadow 1s;
+        }
+
+        .date-display {
+            margin-top: 8px;
+            font-size: 0.85rem;
+            letter-spacing: 4px;
+            color: rgba(255, 255, 255, 0.4);
+        }
+
+        .theme-switcher {
+            position: absolute;
+            bottom: 30px;
+            display: flex;
+            gap: 12px;
+        }
+
+        .theme-dot {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            cursor: pointer;
+            border: 2px solid transparent;
+            transition: 0.3s;
+            opacity: 0.7;
+        }
+
+        .theme-dot:hover {
+            opacity: 1;
+            transform: scale(1.2);
+        }
+
+        .theme-dot.active {
+            border-color: white;
+            opacity: 1;
+        }
+    </style>
+</head>
+
+<body>
+    <a href="index.html" class="back-link">← Gallery</a>
+    <canvas id="clock"></canvas>
+    <div class="digital-time" id="digital"></div>
+    <div class="date-display" id="date-display"></div>
+
+    <div class="theme-switcher">
+        <div class="theme-dot active" style="background: #ff006e;" data-h="340" data-s="100" data-l="50"
+            title="Hot Pink"></div>
+        <div class="theme-dot" style="background: #00f5d4;" data-h="168" data-s="100" data-l="48" title="Cyan"></div>
+        <div class="theme-dot" style="background: #fee440;" data-h="54" data-s="99" data-l="62" title="Yellow"></div>
+        <div class="theme-dot" style="background: #9b5de5;" data-h="270" data-s="70" data-l="62" title="Purple"></div>
+        <div class="theme-dot" style="background: #f15bb5;" data-h="320" data-s="85" data-l="65" title="Magenta"></div>
+        <div class="theme-dot" style="background: #00bbf9;" data-h="197" data-s="100" data-l="49" title="Blue"></div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('clock');
+        const ctx = canvas.getContext('2d');
+        const digital = document.getElementById('digital');
+        const dateDisplay = document.getElementById('date-display');
+
+        let size = Math.min(window.innerWidth * 0.55, window.innerHeight * 0.45);
+        canvas.width = size;
+        canvas.height = size;
+
+        let hue = 340, sat = 100, lit = 50;
+
+        function getColor(alpha = 1) {
+            return `hsla(${hue}, ${sat}%, ${lit}%, ${alpha})`;
+        }
+
+        function drawClock() {
+            const now = new Date();
+            const s = now.getSeconds() + now.getMilliseconds() / 1000;
+            const m = now.getMinutes() + s / 60;
+            const h = (now.getHours() % 12) + m / 60;
+
+            const cx = size / 2;
+            const cy = size / 2;
+            const r = size / 2 - 20;
+
+            ctx.clearRect(0, 0, size, size);
+
+            // Outer ring glow
+            ctx.beginPath();
+            ctx.arc(cx, cy, r, 0, Math.PI * 2);
+            ctx.strokeStyle = getColor(0.15);
+            ctx.lineWidth = 3;
+            ctx.shadowBlur = 30;
+            ctx.shadowColor = getColor(0.5);
+            ctx.stroke();
+
+            // Tick marks
+            for (let i = 0; i < 60; i++) {
+                const angle = (i / 60) * Math.PI * 2 - Math.PI / 2;
+                const isHour = i % 5 === 0;
+                const inner = r - (isHour ? 25 : 12);
+                const outer = r - 4;
+
+                ctx.beginPath();
+                ctx.moveTo(cx + Math.cos(angle) * inner, cy + Math.sin(angle) * inner);
+                ctx.lineTo(cx + Math.cos(angle) * outer, cy + Math.sin(angle) * outer);
+                ctx.strokeStyle = isHour ? getColor(0.9) : getColor(0.2);
+                ctx.lineWidth = isHour ? 3 : 1;
+                ctx.shadowBlur = isHour ? 15 : 0;
+                ctx.shadowColor = getColor(0.6);
+                ctx.stroke();
+            }
+
+            // Hour numbers
+            ctx.font = `${size * 0.06}px Orbitron`;
+            ctx.fillStyle = getColor(0.6);
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.shadowBlur = 10;
+            ctx.shadowColor = getColor(0.4);
+            for (let i = 1; i <= 12; i++) {
+                const angle = (i / 12) * Math.PI * 2 - Math.PI / 2;
+                const numR = r - 45;
+                ctx.fillText(i, cx + Math.cos(angle) * numR, cy + Math.sin(angle) * numR);
+            }
+
+            // Second hand trail (arc)
+            const secAngle = (s / 60) * Math.PI * 2 - Math.PI / 2;
+            ctx.beginPath();
+            ctx.arc(cx, cy, r - 15, -Math.PI / 2, secAngle);
+            ctx.strokeStyle = getColor(0.3);
+            ctx.lineWidth = 2;
+            ctx.shadowBlur = 20;
+            ctx.shadowColor = getColor(0.8);
+            ctx.stroke();
+
+            // Draw hands
+            function drawHand(angle, length, width, alpha) {
+                ctx.beginPath();
+                ctx.moveTo(cx, cy);
+                ctx.lineTo(
+                    cx + Math.cos(angle) * length,
+                    cy + Math.sin(angle) * length
+                );
+                ctx.strokeStyle = getColor(alpha);
+                ctx.lineWidth = width;
+                ctx.lineCap = 'round';
+                ctx.shadowBlur = width * 5;
+                ctx.shadowColor = getColor(0.8);
+                ctx.stroke();
+            }
+
+            // Hour hand
+            const hourAngle = (h / 12) * Math.PI * 2 - Math.PI / 2;
+            drawHand(hourAngle, r * 0.5, 5, 0.9);
+
+            // Minute hand
+            const minAngle = (m / 60) * Math.PI * 2 - Math.PI / 2;
+            drawHand(minAngle, r * 0.72, 3, 0.8);
+
+            // Second hand
+            drawHand(secAngle, r * 0.85, 1.5, 1);
+
+            // Center dot
+            ctx.beginPath();
+            ctx.arc(cx, cy, 5, 0, Math.PI * 2);
+            ctx.fillStyle = getColor(1);
+            ctx.shadowBlur = 20;
+            ctx.shadowColor = getColor(1);
+            ctx.fill();
+
+            // Digital time
+            const hrs = String(now.getHours()).padStart(2, '0');
+            const mins = String(now.getMinutes()).padStart(2, '0');
+            const secs = String(now.getSeconds()).padStart(2, '0');
+            digital.textContent = `${hrs}:${mins}:${secs}`;
+            digital.style.setProperty('--glow', getColor(0.6));
+            digital.style.color = getColor(1);
+
+            // Date
+            const days = ['SUNDAY', 'MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY', 'SATURDAY'];
+            const months = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC'];
+            dateDisplay.textContent = `${days[now.getDay()]} · ${months[now.getMonth()]} ${now.getDate()}, ${now.getFullYear()}`;
+
+            requestAnimationFrame(drawClock);
+        }
+
+        // Theme switching
+        document.querySelectorAll('.theme-dot').forEach(dot => {
+            dot.addEventListener('click', () => {
+                document.querySelectorAll('.theme-dot').forEach(d => d.classList.remove('active'));
+                dot.classList.add('active');
+                hue = parseInt(dot.dataset.h);
+                sat = parseInt(dot.dataset.s);
+                lit = parseInt(dot.dataset.l);
+            });
+        });
+
+        window.addEventListener('resize', () => {
+            size = Math.min(window.innerWidth * 0.55, window.innerHeight * 0.45);
+            canvas.width = size;
+            canvas.height = size;
+        });
+
+        drawClock();
+    </script>
+</body>
+
+</html>

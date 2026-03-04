@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Infinite Tunnel | WWG</title>
+    <link rel="icon"
+        href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E🕳️%3C/text%3E%3C/svg%3E">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: #000;
+            overflow: hidden;
+            width: 100vw;
+            height: 100vh;
+            font-family: 'Segoe UI', system-ui, sans-serif;
+        }
+
+        canvas {
+            display: block;
+        }
+
+        .back-link {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            z-index: 10;
+            color: rgba(255, 255, 255, 0.4);
+            text-decoration: none;
+            font-size: 0.8rem;
+            padding: 8px 16px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            transition: 0.3s;
+        }
+
+        .back-link:hover {
+            color: #fff;
+            border-color: rgba(255, 255, 255, 0.3);
+        }
+
+        .controls {
+            position: absolute;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 10;
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(10px);
+            padding: 12px 24px;
+            border-radius: 30px;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .controls label {
+            color: rgba(255, 255, 255, 0.5);
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .controls input[type="range"] {
+            width: 80px;
+            cursor: pointer;
+            accent-color: #a78bfa;
+        }
+
+        .controls select {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            color: white;
+            padding: 4px 8px;
+            border-radius: 10px;
+            font-size: 0.75rem;
+            cursor: pointer;
+        }
+    </style>
+</head>
+
+<body>
+    <a href="index.html" class="back-link">← Gallery</a>
+    <canvas id="tunnel"></canvas>
+
+    <div class="controls">
+        <label>Speed</label>
+        <input type="range" id="speed" min="1" max="10" value="4">
+        <label>Sides</label>
+        <input type="range" id="sides" min="3" max="12" value="6">
+        <label>Style</label>
+        <select id="style">
+            <option value="neon">Neon</option>
+            <option value="rainbow">Rainbow</option>
+            <option value="matrix">Matrix</option>
+            <option value="fire">Fire</option>
+        </select>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('tunnel');
+        const ctx = canvas.getContext('2d');
+
+        let W, H;
+        function resize() {
+            W = canvas.width = window.innerWidth;
+            H = canvas.height = window.innerHeight;
+        }
+        resize();
+        window.addEventListener('resize', resize);
+
+        const speedSlider = document.getElementById('speed');
+        const sidesSlider = document.getElementById('sides');
+        const styleSelect = document.getElementById('style');
+
+        let mouseX = 0.5, mouseY = 0.5;
+        document.addEventListener('mousemove', e => {
+            mouseX = e.clientX / W;
+            mouseY = e.clientY / H;
+        });
+
+        const colorSchemes = {
+            neon: (d, t) => `hsla(${260 + d * 2 + t * 50}, 100%, ${50 + d}%, `,
+            rainbow: (d, t) => `hsla(${d * 8 + t * 100}, 80%, 55%, `,
+            matrix: (d, t) => `hsla(${120 + Math.sin(d * 0.1) * 20}, 100%, ${30 + d * 0.5}%, `,
+            fire: (d, t) => `hsla(${15 + d * 0.5 + Math.sin(t * 3) * 10}, 100%, ${40 + d}%, `
+        };
+
+        let time = 0;
+
+        function drawTunnel() {
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.15)';
+            ctx.fillRect(0, 0, W, H);
+
+            const speed = parseInt(speedSlider.value);
+            const sides = parseInt(sidesSlider.value);
+            const style = styleSelect.value;
+            const colorFn = colorSchemes[style];
+
+            time += 0.01 * speed;
+
+            const cx = W / 2 + (mouseX - 0.5) * 100;
+            const cy = H / 2 + (mouseY - 0.5) * 100;
+
+            const layers = 40;
+
+            for (let i = layers; i >= 0; i--) {
+                const depth = (i + (time * 5) % 1);
+                const scale = 1 / (depth * 0.08 + 0.01);
+                const size = Math.min(W, H) * 0.03 * scale;
+
+                if (size > Math.max(W, H) * 2) continue;
+                if (size < 2) continue;
+
+                const alpha = Math.max(0, Math.min(1, 1 - depth / layers));
+                const rotation = time * 0.5 + depth * 0.1;
+
+                ctx.beginPath();
+                for (let s = 0; s <= sides; s++) {
+                    const angle = (s / sides) * Math.PI * 2 + rotation;
+                    const x = cx + Math.cos(angle) * size;
+                    const y = cy + Math.sin(angle) * size;
+                    if (s === 0) ctx.moveTo(x, y);
+                    else ctx.lineTo(x, y);
+                }
+                ctx.closePath();
+
+                const colorStr = colorFn(depth, time);
+                ctx.strokeStyle = colorStr + (alpha * 0.8).toFixed(2) + ')';
+                ctx.lineWidth = Math.max(1, 3 - depth * 0.05);
+                ctx.shadowBlur = 15;
+                ctx.shadowColor = colorStr + '0.5)';
+                ctx.stroke();
+            }
+
+            requestAnimationFrame(drawTunnel);
+        }
+
+        drawTunnel();
+    </script>
+</body>
+
+</html>

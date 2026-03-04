@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rain Simulator | WWG</title>
+    <link rel="icon"
+        href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E🌧️%3C/text%3E%3C/svg%3E">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: #0a0a1a;
+            overflow: hidden;
+            width: 100vw;
+            height: 100vh;
+            font-family: 'Segoe UI', system-ui, sans-serif;
+        }
+
+        canvas {
+            display: block;
+            position: absolute;
+            top: 0;
+            left: 0;
+        }
+
+        #rain {
+            z-index: 2;
+        }
+
+        #drops {
+            z-index: 3;
+        }
+
+        .window-frame {
+            position: absolute;
+            inset: 0;
+            z-index: 4;
+            pointer-events: none;
+            box-shadow: inset 0 0 100px rgba(0, 0, 0, 0.6), inset 0 0 300px rgba(0, 0, 0, 0.3);
+        }
+
+        .condensation {
+            position: absolute;
+            inset: 0;
+            z-index: 1;
+            background: radial-gradient(ellipse at 50% 50%, transparent 30%, rgba(100, 130, 170, 0.04) 100%);
+            pointer-events: none;
+        }
+
+        .back-link {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            z-index: 10;
+            color: rgba(255, 255, 255, 0.4);
+            text-decoration: none;
+            font-size: 0.8rem;
+            padding: 8px 16px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            transition: 0.3s;
+            backdrop-filter: blur(5px);
+        }
+
+        .back-link:hover {
+            color: #fff;
+            border-color: rgba(255, 255, 255, 0.3);
+        }
+
+        .controls {
+            position: absolute;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 10;
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            background: rgba(0, 0, 0, 0.4);
+            backdrop-filter: blur(10px);
+            padding: 12px 24px;
+            border-radius: 30px;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .controls label {
+            color: rgba(255, 255, 255, 0.5);
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .controls input[type="range"] {
+            width: 100px;
+            cursor: pointer;
+            accent-color: #6ea8fe;
+        }
+
+        .controls button {
+            background: rgba(255, 255, 255, 0.1);
+            border: none;
+            color: rgba(255, 255, 255, 0.7);
+            padding: 6px 14px;
+            border-radius: 15px;
+            cursor: pointer;
+            font-size: 0.75rem;
+            transition: 0.2s;
+        }
+
+        .controls button:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .controls button.active {
+            background: rgba(110, 168, 254, 0.3);
+            color: #6ea8fe;
+        }
+    </style>
+</head>
+
+<body>
+    <a href="index.html" class="back-link">← Gallery</a>
+    <div class="condensation"></div>
+    <canvas id="rain"></canvas>
+    <canvas id="drops"></canvas>
+    <div class="window-frame"></div>
+
+    <div class="controls">
+        <label>Intensity</label>
+        <input type="range" id="intensity" min="20" max="500" value="200">
+        <label>Wind</label>
+        <input type="range" id="wind" min="-5" max="5" step="0.5" value="1">
+        <button id="thunder" class="active">⚡ Thunder</button>
+        <button id="lightning-btn">🌩️ Flash!</button>
+    </div>
+
+    <script>
+        const rainCanvas = document.getElementById('rain');
+        const dropCanvas = document.getElementById('drops');
+        const rCtx = rainCanvas.getContext('2d');
+        const dCtx = dropCanvas.getContext('2d');
+
+        let W, H;
+        function resize() {
+            W = rainCanvas.width = dropCanvas.width = window.innerWidth;
+            H = rainCanvas.height = dropCanvas.height = window.innerHeight;
+        }
+        resize();
+        window.addEventListener('resize', resize);
+
+        const intensitySlider = document.getElementById('intensity');
+        const windSlider = document.getElementById('wind');
+        const thunderBtn = document.getElementById('thunder');
+        const lightningBtn = document.getElementById('lightning-btn');
+
+        let thunderEnabled = true;
+        thunderBtn.addEventListener('click', () => {
+            thunderEnabled = !thunderEnabled;
+            thunderBtn.classList.toggle('active');
+        });
+
+        // Rain drops
+        class RainDrop {
+            constructor() { this.reset(); }
+            reset() {
+                this.x = Math.random() * W * 1.4 - W * 0.2;
+                this.y = -20 - Math.random() * H;
+                this.speed = 12 + Math.random() * 10;
+                this.len = 15 + Math.random() * 20;
+                this.opacity = 0.1 + Math.random() * 0.3;
+                this.thickness = 0.5 + Math.random() * 1.5;
+            }
+            update(wind) {
+                this.y += this.speed;
+                this.x += wind * 2;
+                if (this.y > H + 20) {
+                    // splash
+                    if (Math.random() < 0.3) {
+                        splashes.push(new Splash(this.x, H - 5));
+                    }
+                    this.reset();
+                }
+            }
+            draw(ctx, wind) {
+                const windOffset = wind * this.len * 0.3;
+                ctx.beginPath();
+                ctx.moveTo(this.x, this.y);
+                ctx.lineTo(this.x + windOffset, this.y + this.len);
+                ctx.strokeStyle = `rgba(180, 210, 255, ${this.opacity})`;
+                ctx.lineWidth = this.thickness;
+                ctx.stroke();
+            }
+        }
+
+        // Window pane water drops (slow drips)
+        class WindowDrop {
+            constructor() { this.reset(); }
+            reset() {
+                this.x = Math.random() * W;
+                this.y = -10;
+                this.radius = 1 + Math.random() * 3;
+                this.speed = 0.2 + Math.random() * 0.8;
+                this.opacity = 0.3 + Math.random() * 0.4;
+                this.wobble = Math.random() * 0.3;
+                this.trail = [];
+            }
+            update() {
+                this.y += this.speed;
+                this.x += Math.sin(this.y * 0.02) * this.wobble;
+                this.trail.push({ x: this.x, y: this.y, r: this.radius * 0.4 });
+                if (this.trail.length > 40) this.trail.shift();
+                if (this.y > H + 10) this.reset();
+            }
+            draw(ctx) {
+                // Trail
+                for (let i = 0; i < this.trail.length; i++) {
+                    const t = this.trail[i];
+                    const a = (i / this.trail.length) * this.opacity * 0.3;
+                    ctx.beginPath();
+                    ctx.arc(t.x, t.y, t.r, 0, Math.PI * 2);
+                    ctx.fillStyle = `rgba(150, 200, 255, ${a})`;
+                    ctx.fill();
+                }
+                // Main drop
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+                ctx.fillStyle = `rgba(180, 220, 255, ${this.opacity})`;
+                ctx.fill();
+            }
+        }
+
+        class Splash {
+            constructor(x, y) {
+                this.x = x; this.y = y;
+                this.particles = [];
+                for (let i = 0; i < 4; i++) {
+                    this.particles.push({
+                        vx: (Math.random() - 0.5) * 3,
+                        vy: -1 - Math.random() * 3,
+                        life: 1
+                    });
+                }
+            }
+            update() {
+                this.particles.forEach(p => {
+                    p.vx *= 0.98;
+                    p.vy += 0.15;
+                    p.life -= 0.05;
+                });
+                this.particles = this.particles.filter(p => p.life > 0);
+            }
+            draw(ctx) {
+                this.particles.forEach(p => {
+                    ctx.beginPath();
+                    ctx.arc(
+                        this.x + p.vx * (1 - p.life) * 20,
+                        this.y + p.vy * (1 - p.life) * 10,
+                        1, 0, Math.PI * 2
+                    );
+                    ctx.fillStyle = `rgba(180, 210, 255, ${p.life * 0.5})`;
+                    ctx.fill();
+                });
+            }
+            isDead() { return this.particles.length === 0; }
+        }
+
+        let drops = [];
+        let windowDrops = [];
+        let splashes = [];
+        let lightningAlpha = 0;
+
+        function initDrops() {
+            const count = parseInt(intensitySlider.value);
+            drops = [];
+            for (let i = 0; i < count; i++) drops.push(new RainDrop());
+            windowDrops = [];
+            for (let i = 0; i < 30; i++) windowDrops.push(new WindowDrop());
+        }
+        initDrops();
+
+        intensitySlider.addEventListener('input', () => {
+            const target = parseInt(intensitySlider.value);
+            while (drops.length < target) drops.push(new RainDrop());
+            while (drops.length > target) drops.pop();
+        });
+
+        // Lightning
+        function triggerLightning() {
+            lightningAlpha = 1;
+            if (thunderEnabled) {
+                setTimeout(() => {
+                    const audio = new AudioContext();
+                    const noise = audio.createBufferSource();
+                    const buf = audio.createBuffer(1, audio.sampleRate * 0.8, audio.sampleRate);
+                    const data = buf.getChannelData(0);
+                    for (let i = 0; i < data.length; i++) {
+                        data[i] = (Math.random() * 2 - 1) * Math.exp(-i / (audio.sampleRate * 0.3));
+                    }
+                    noise.buffer = buf;
+                    const gain = audio.createGain();
+                    const filter = audio.createBiquadFilter();
+                    filter.type = 'lowpass';
+                    filter.frequency.value = 400;
+                    gain.gain.setValueAtTime(0.3, audio.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.001, audio.currentTime + 0.8);
+                    noise.connect(filter);
+                    filter.connect(gain);
+                    gain.connect(audio.destination);
+                    noise.start();
+                }, 300 + Math.random() * 1500);
+            }
+        }
+
+        lightningBtn.addEventListener('click', triggerLightning);
+
+        // Random lightning
+        setInterval(() => {
+            if (thunderEnabled && Math.random() < 0.15) triggerLightning();
+        }, 5000);
+
+        function animate() {
+            const wind = parseFloat(windSlider.value);
+
+            // Rain layer
+            rCtx.clearRect(0, 0, W, H);
+
+            // Lightning flash
+            if (lightningAlpha > 0) {
+                rCtx.fillStyle = `rgba(200, 220, 255, ${lightningAlpha * 0.15})`;
+                rCtx.fillRect(0, 0, W, H);
+                lightningAlpha *= 0.92;
+                if (lightningAlpha < 0.01) lightningAlpha = 0;
+            }
+
+            drops.forEach(d => { d.update(wind); d.draw(rCtx, wind); });
+            splashes.forEach(s => { s.update(); s.draw(rCtx); });
+            splashes = splashes.filter(s => !s.isDead());
+
+            // Window drops layer
+            dCtx.clearRect(0, 0, W, H);
+            windowDrops.forEach(d => { d.update(); d.draw(dCtx); });
+
+            requestAnimationFrame(animate);
+        }
+
+        animate();
+    </script>
+</body>
+
+</html>
