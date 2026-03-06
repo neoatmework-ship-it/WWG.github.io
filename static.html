@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Static Broadcast</title>
+    <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: #030303;
+            color: #aaa;
+            font-family: 'Share Tech Mono', monospace;
+            min-height: 100vh;
+            overflow: hidden;
+        }
+
+        #static {
+            position: fixed;
+            inset: 0;
+            opacity: 0;
+            transition: opacity 4s;
+            mix-blend-mode: screen;
+            pointer-events: none;
+            z-index: 10;
+        }
+
+        .box {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            z-index: 2;
+            opacity: 0;
+            animation: fadeIn 4s 3s forwards;
+        }
+
+        @keyframes fadeIn {
+            to {
+                opacity: 1
+            }
+        }
+
+        .words {
+            font-size: 1.5rem;
+            letter-spacing: 4px;
+            line-height: 2;
+            text-transform: uppercase;
+            color: #fff;
+            text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+        }
+
+        .hint {
+            margin-top: 40px;
+            font-size: 0.8rem;
+            color: #666;
+            letter-spacing: 2px;
+        }
+
+        canvas#wave {
+            position: absolute;
+            inset: 0;
+            z-index: 1;
+            opacity: 0;
+            transition: opacity 2s;
+        }
+    </style>
+</head>
+
+<body>
+
+    <canvas id="static"></canvas>
+    <canvas id="wave"></canvas>
+
+    <div class="box">
+        <div class="words" id="msg"></div>
+        <div class="hint">THE NOISE IS THE SIGNAL</div>
+        <a href="index.html" style="display:block;margin-top:40px;color:#444;text-decoration:none;font-size:0.7rem;">←
+            leave</a>
+    </div>
+
+    <script>
+        // Static
+        const st = document.getElementById('static');
+        const sCtx = st.getContext('2d');
+        st.width = innerWidth; st.height = innerHeight;
+        setTimeout(() => { st.style.opacity = '0.3'; }, 200);
+
+        function drawStatic() {
+            const imgData = sCtx.createImageData(st.width, st.height);
+            const data = imgData.data;
+            for (let i = 0; i < data.length; i += 4) {
+                const v = Math.random() * 255;
+                data[i] = v; data[i + 1] = v; data[i + 2] = v; data[i + 3] = 255;
+            }
+            sCtx.putImageData(imgData, 0, 0);
+            requestAnimationFrame(drawStatic);
+        }
+        drawStatic();
+
+        // Wave
+        const wv = document.getElementById('wave');
+        const wCtx = wv.getContext('2d');
+        wv.width = innerWidth; wv.height = innerHeight;
+        setTimeout(() => { wv.style.opacity = '1'; }, 5000);
+
+        let t = 0;
+        function drawWave() {
+            wCtx.fillStyle = 'rgba(3,3,3,0.1)';
+            wCtx.fillRect(0, 0, wv.width, wv.height);
+
+            wCtx.beginPath();
+            wCtx.strokeStyle = 'rgba(255,255,255,0.1)';
+            wCtx.lineWidth = 1;
+            const cy = wv.height / 2;
+
+            for (let x = 0; x < wv.width; x += 5) {
+                const y = cy + Math.sin(x * 0.01 + t) * 100 * Math.sin(x * 0.003 - t * 0.5) * (Math.random() * 0.2 + 0.8);
+                if (x === 0) wCtx.moveTo(x, y); else wCtx.lineTo(x, y);
+            }
+            wCtx.stroke();
+            t += 0.05;
+            requestAnimationFrame(drawWave);
+        }
+        drawWave();
+
+        const lines = [
+            "You turned the noise all the way up.",
+            "You listened to the static for 5 seconds.",
+            "Are you looking for something that isn't here?",
+            "The gallery is a closed system.",
+            "Except for the cracks.",
+            "Find the edge of the world and keep going.",
+        ];
+        let lineIdx = 0;
+        const msgEl = document.getElementById('msg');
+        setInterval(() => {
+            msgEl.style.opacity = '0';
+            setTimeout(() => {
+                msgEl.textContent = lines[lineIdx];
+                msgEl.style.opacity = '1';
+                lineIdx = (lineIdx + 1) % lines.length;
+            }, 1000);
+        }, 6000);
+    </script>
+</body>
+
+</html>

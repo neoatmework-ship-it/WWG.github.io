@@ -230,7 +230,22 @@
             check1037();
         });
         gainEl.addEventListener('input', () => document.getElementById('gv').textContent = gainEl.value + '%');
-        noiseEl.addEventListener('input', () => document.getElementById('nv').textContent = noiseEl.value + '%');
+        let staticTimer = null;
+        noiseEl.addEventListener('input', () => {
+            document.getElementById('nv').textContent = noiseEl.value + '%';
+            if (noiseEl.value >= 100) {
+                if (!staticTimer) {
+                    staticTimer = setTimeout(() => {
+                        document.body.style.transition = 'opacity 2s';
+                        document.body.style.opacity = '0';
+                        setTimeout(() => window.location.href = 'static.html', 2000);
+                    }, 5000);
+                }
+            } else {
+                clearTimeout(staticTimer);
+                staticTimer = null;
+            }
+        });
         document.getElementById('sig-btns').querySelectorAll('.sbtn').forEach(b => {
             b.addEventListener('click', () => { document.querySelectorAll('.sbtn').forEach(x => x.classList.remove('active')); b.classList.add('active'); sig = b.dataset.s; });
         });

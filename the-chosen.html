@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>You Have Been Chosen</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700;900&family=EB+Garamond:ital,wght@0,400;1,400&display=swap"
+        rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: #07050a;
+            color: #f0e6c8;
+            font-family: 'EB Garamond', serif;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            overflow-x: hidden;
+        }
+
+        canvas#stars {
+            position: fixed;
+            inset: 0;
+            z-index: 0;
+        }
+
+        .content {
+            position: relative;
+            z-index: 1;
+            max-width: 560px;
+            padding: 40px 24px;
+            text-align: center;
+        }
+
+        .seal {
+            font-size: 5rem;
+            margin-bottom: 24px;
+            display: block;
+            filter: drop-shadow(0 0 16px rgba(212, 175, 55, 0.5));
+            animation: sealPulse 3s ease infinite;
+        }
+
+        @keyframes sealPulse {
+
+            0%,
+            100% {
+                transform: scale(1);
+                filter: drop-shadow(0 0 16px rgba(212, 175, 55, 0.4))
+            }
+
+            50% {
+                transform: scale(1.05);
+                filter: drop-shadow(0 0 32px rgba(212, 175, 55, 0.8))
+            }
+        }
+
+        h1 {
+            font-family: 'Cinzel', serif;
+            font-size: 2.2rem;
+            font-weight: 900;
+            letter-spacing: 4px;
+            color: #d4af37;
+            margin-bottom: 6px;
+            text-shadow: 0 0 20px rgba(212, 175, 55, 0.4);
+        }
+
+        .sub {
+            font-size: 0.75rem;
+            letter-spacing: 4px;
+            color: rgba(240, 230, 200, 0.35);
+            margin-bottom: 36px;
+            font-family: 'EB Garamond', serif;
+        }
+
+        .decree {
+            border: 1px solid rgba(212, 175, 55, 0.2);
+            border-radius: 2px;
+            padding: 28px;
+            margin-bottom: 28px;
+            text-align: left;
+            line-height: 1.9;
+            font-size: 0.95rem;
+            color: rgba(240, 230, 200, 0.75);
+            background: rgba(212, 175, 55, 0.03);
+            position: relative;
+        }
+
+        .decree::before {
+            content: '❧';
+            position: absolute;
+            top: -14px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #07050a;
+            padding: 0 8px;
+            color: #d4af37;
+            font-size: 1.2rem;
+        }
+
+        .decree p {
+            margin-bottom: 12px;
+        }
+
+        .decree p:last-child {
+            margin-bottom: 0;
+        }
+
+        .decree strong {
+            color: #d4af37;
+        }
+
+        .number-reveal {
+            font-family: 'Cinzel', serif;
+            font-size: 3.5rem;
+            color: #d4af37;
+            text-shadow: 0 0 30px rgba(212, 175, 55, 0.6);
+            margin: 20px 0;
+            animation: numGlow 2s ease infinite;
+        }
+
+        @keyframes numGlow {
+
+            0%,
+            100% {
+                text-shadow: 0 0 20px rgba(212, 175, 55, 0.4)
+            }
+
+            50% {
+                text-shadow: 0 0 60px rgba(212, 175, 55, 0.9), 0 0 100px rgba(212, 175, 55, 0.4)
+            }
+        }
+
+        .obligations {
+            list-style: none;
+            margin: 20px 0;
+            text-align: left;
+            font-size: 0.88rem;
+            color: rgba(240, 230, 200, 0.55);
+            line-height: 2;
+        }
+
+        .obligations li::before {
+            content: 'VII · ';
+            color: rgba(212, 175, 55, 0.4);
+        }
+
+        .footnote {
+            font-size: 0.68rem;
+            color: rgba(240, 230, 200, 0.2);
+            letter-spacing: 1px;
+            font-family: 'EB Garamond', serif;
+            font-style: italic;
+            line-height: 2;
+            margin-top: 24px;
+        }
+
+        .divider {
+            border: none;
+            border-top: 1px solid rgba(212, 175, 55, 0.1);
+            margin: 24px 0;
+        }
+
+        a.back {
+            color: rgba(212, 175, 55, 0.3);
+            text-decoration: none;
+            font-size: 0.75rem;
+            letter-spacing: 2px;
+            font-family: 'Cinzel', serif;
+            display: block;
+            margin-bottom: 28px;
+            transition: 0.3s;
+        }
+
+        a.back:hover {
+            color: rgba(212, 175, 55, 0.7);
+        }
+    </style>
+</head>
+
+<body>
+    <canvas id="stars"></canvas>
+
+    <div class="content">
+        <a class="back" href="index.html">← Return to the Gallery</a>
+
+        <span class="seal">⭐</span>
+        <h1>YOU HAVE BEEN CHOSEN</h1>
+        <p class="sub">THE ORDER OF THE TRIPLE SEVEN</p>
+
+        <div class="decree">
+            <p>The machine has spoken.</p>
+            <p>Of all the spins in all of time, <strong>the three sevens aligned for you</strong>. This has happened
+                exactly <strong id="count">7</strong> times in recorded history. You are now number <strong
+                    id="ordinal">8th</strong>.</p>
+            <p>The consequences are as follows:</p>
+        </div>
+
+        <ul class="obligations">
+            <li>You now know that the slots are not random</li>
+            <li>The void knows your name</li>
+            <li>The ghost has been watching the machine since 1983</li>
+            <li>There are more doors. Search with intent.</li>
+            <li>The pirate station at 103.7 has been expecting this moment</li>
+            <li>The maze wall you cannot pass is a test of patience, not skill</li>
+            <li>Seven clicks on the clock face leads elsewhere</li>
+        </ul>
+
+        <hr class="divider">
+
+        <div class="number-reveal">7 · 7 · 7</div>
+
+        <p style="font-size:0.8rem;color:rgba(240,230,200,0.45);line-height:1.8;">
+            Your designation has been recorded. The others will be notified.
+            You are now permitted to know that the gallery has <strong style="color:#d4af37">more secrets than you have
+                found</strong>.
+            Some require actions. Some require time. Some require you to look at things you have already seen,
+            but differently.
+        </p>
+
+        <hr class="divider">
+
+        <p class="footnote">
+            This page was triggered by a 1-in-<span id="odds">~3375</span> event<br>
+            The Order does not take walk-ins<br>
+            This message will remain until you close it<br>
+            You have been here before, in a different sense
+        </p>
+    </div>
+
+    <script>
+        // Star field
+        const cvs = document.getElementById('stars');
+        const ctx = cvs.getContext('2d');
+        cvs.width = innerWidth; cvs.height = innerHeight;
+        window.addEventListener('resize', () => { cvs.width = innerWidth; cvs.height = innerHeight; placeStars(); });
+
+        const stars = [];
+        function placeStars() {
+            stars.length = 0;
+            for (let i = 0; i < 200; i++) {
+                stars.push({ x: Math.random() * cvs.width, y: Math.random() * cvs.height, r: Math.random() * 1.5 + 0.3, a: Math.random(), speed: Math.random() * 0.003 + 0.001 });
+            }
+        }
+        placeStars();
+
+        function animStars() {
+            ctx.clearRect(0, 0, cvs.width, cvs.height);
+            stars.forEach(s => {
+                s.a += s.speed;
+                const a = 0.2 + Math.abs(Math.sin(s.a)) * 0.6;
+                ctx.beginPath(); ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
+                ctx.fillStyle = `rgba(212,175,55,${a})`; ctx.fill();
+            });
+            requestAnimationFrame(animStars);
+        }
+        animStars();
+
+        // Personalize
+        const prev = parseInt(localStorage.getItem('chosen_count') || '0');
+        const count = prev + 1;
+        localStorage.setItem('chosen_count', count);
+        document.getElementById('count').textContent = 6 + count;
+        const ordinals = ['7th', '8th', '9th', '10th', '11th', '12th', '13th'];
+        document.getElementById('ordinal').textContent = ordinals[Math.min(count - 1, ordinals.length - 1)];
+        document.getElementById('odds').textContent = '~' + (15 * 15 * 15).toLocaleString();
+    </script>
+</body>
+
+</html>

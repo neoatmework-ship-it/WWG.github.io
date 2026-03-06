@@ -646,7 +646,8 @@
 
     <section class="hero">
         <span class="hero-badge">✦ Curated Collection</span>
-        <h1><span class="gradient-text">WWG</span></h1>
+        <h1><span class="gradient-text" id="wwg-title" style="cursor:pointer;user-select:none;" title="WWG">WWG</span>
+        </h1>
         <p>Weird Website Gallery — a hand-picked collection of strange, wonderful, and interactive web experiences</p>
         <div class="hero-count"><strong>44</strong> sites and counting</div>
         <div class="search-wrap">
@@ -2337,6 +2338,22 @@
                         setTimeout(() => { window.location.href = SECRET_PAGES[term]; }, 600);
                     }
                 }
+            });
+
+            // WWG Title 5-click secret
+            let wwgClicks = 0;
+            let wwgTimer = null;
+            document.getElementById('wwg-title').addEventListener('click', () => {
+                wwgClicks++;
+                clearTimeout(wwgTimer);
+                if (wwgClicks === 5) {
+                    document.body.style.transition = 'filter 1.5s ease, opacity 1s ease';
+                    document.body.style.filter = 'invert(1) hue-rotate(180deg)';
+                    document.body.style.opacity = '0';
+                    setTimeout(() => window.location.href = 'mirror.html', 1500);
+                    return;
+                }
+                wwgTimer = setTimeout(() => { wwgClicks = 0; }, 800);
             });
 
             // Search

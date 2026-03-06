@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WWG — Mirror Gallery</title>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: #f0f0f0;
+            color: #0a0a0f;
+            font-family: 'Space Grotesk', sans-serif;
+            min-height: 100vh;
+            /* Everything inverted */
+            filter: invert(1) hue-rotate(180deg);
+            animation: comeIn 1.2s ease both;
+        }
+
+        @keyframes comeIn {
+            0% {
+                filter: invert(1) hue-rotate(180deg) brightness(0)
+            }
+
+            100% {
+                filter: invert(1) hue-rotate(180deg) brightness(1)
+            }
+        }
+
+        header {
+            background: rgba(255, 255, 255, 0.95);
+            border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+            padding: 20px 32px;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            /* flip horizontally */
+            transform: scaleX(-1);
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+        }
+
+        .logo span {
+            opacity: 0.3;
+            margin: 0 4px;
+        }
+
+        .mirror-tag {
+            font-size: 0.65rem;
+            letter-spacing: 3px;
+            color: rgba(10, 10, 15, 0.4);
+        }
+
+        nav {
+            margin-left: auto;
+            display: flex;
+            gap: 8px;
+        }
+
+        nav a {
+            padding: 6px 14px;
+            font-size: 0.8rem;
+            border-radius: 20px;
+            text-decoration: none;
+            color: rgba(10, 10, 15, 0.5);
+            border: 1px solid rgba(10, 10, 15, 0.1);
+            transition: 0.2s;
+        }
+
+        nav a:hover {
+            color: rgba(10, 10, 15, 0.9);
+            border-color: rgba(10, 10, 15, 0.3);
+        }
+
+        .hero {
+            padding: 48px 32px 32px;
+            text-align: center;
+            transform: scaleX(-1);
+        }
+
+        .hero h1 {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 8px;
+            letter-spacing: -0.5px;
+        }
+
+        .hero p {
+            color: rgba(10, 10, 15, 0.5);
+            font-size: 0.9rem;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+            gap: 16px;
+            padding: 0 24px 48px;
+            max-width: 1200px;
+            margin: 0 auto;
+            transform: scaleX(-1);
+        }
+
+        .card {
+            background: rgba(255, 255, 255, 0.8);
+            border: 1px solid rgba(10, 10, 15, 0.08);
+            border-radius: 12px;
+            padding: 20px;
+            cursor: pointer;
+            transition: 0.2s;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+        }
+
+        .card-icon {
+            font-size: 1.8rem;
+        }
+
+        .card-title {
+            font-weight: 600;
+            font-size: 0.88rem;
+        }
+
+        .card-desc {
+            font-size: 0.75rem;
+            color: rgba(10, 10, 15, 0.45);
+            line-height: 1.5;
+        }
+
+        .card-glitch {
+            font-size: 0.6rem;
+            letter-spacing: 2px;
+            color: rgba(10, 10, 15, 0.2);
+            animation: glitch 4s infinite;
+        }
+
+        @keyframes glitch {
+
+            0%,
+            92%,
+            100% {
+                opacity: 1;
+                transform: none
+            }
+
+            93% {
+                opacity: 0.5;
+                transform: translateX(2px)
+            }
+
+            94% {
+                opacity: 1;
+                transform: translateX(-2px)
+            }
+
+            95% {
+                opacity: 0.3;
+                transform: none
+            }
+
+            96% {
+                transform: translateX(1px)
+            }
+
+            97% {
+                transform: none
+            }
+        }
+
+        .card.secret {
+            border-color: rgba(120, 0, 180, 0.2);
+            background: rgba(120, 0, 180, 0.04);
+        }
+
+        .card.secret .card-title {
+            color: rgba(120, 0, 180, 0.6);
+        }
+
+        .note {
+            text-align: center;
+            padding: 20px;
+            font-size: 0.8rem;
+            color: rgba(10, 10, 15, 0.4);
+            font-style: italic;
+            line-height: 2;
+            border-top: 1px solid rgba(10, 10, 15, 0.06);
+            transform: scaleX(-1);
+        }
+
+        a.back-real {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 200;
+            background: rgba(10, 10, 15, 0.06);
+            border: 1px solid rgba(10, 10, 15, 0.1);
+            border-radius: 20px;
+            padding: 8px 16px;
+            font-size: 0.75rem;
+            color: rgba(10, 10, 15, 0.5);
+            text-decoration: none;
+            transition: 0.2s;
+            letter-spacing: 1px;
+            transform: scaleX(-1);
+        }
+
+        a.back-real:hover {
+            color: rgba(10, 10, 15, 0.9);
+        }
+    </style>
+</head>
+
+<body>
+    <header>
+        <div class="logo">WWG <span>·</span> <span style="opacity:0.4">GWW</span></div>
+        <div class="mirror-tag">MIRROR INSTANCE — INVERTED</div>
+        <nav>
+            <a href="#">ALL</a>
+            <a href="#">WEIRD</a>
+            <a href="#">TOOLS</a>
+            <a href="#">HIDDEN</a>
+        </nav>
+    </header>
+
+    <div class="hero">
+        <h1>The Gallery, Reflected</h1>
+        <p>You clicked the title five times. The mirror showed itself.</p>
+        <p style="margin-top:8px;font-size:0.75rem;opacity:0.4;">Everything here is the same. Everything here is wrong.
+        </p>
+    </div>
+
+    <div class="grid" id="grid"></div>
+
+    <div class="note">
+        In the mirror version, all secret pages are visible but cannot be entered.<br>
+        Except one. The one that was always already there.<br>
+        Try typing <span style="font-family:monospace;letter-spacing:2px">classified</span> in the real gallery's search
+        bar.
+    </div>
+
+    <a class="back-real" href="index.html">← flip back</a>
+
+    <script>
+        const CARDS = [
+            { icon: '🌑', title: 'The Void', desc: 'found by searching the unsearchable', secret: true },
+            { icon: '👻', title: 'Ghost.exe', desc: 'it has been running since 1983', secret: true },
+            { icon: '📄', title: 'Classified', desc: 'you already found this one', secret: true },
+            { icon: '🏨', title: 'The Backrooms', desc: 'hit every wall until one gives way', secret: true },
+            { icon: '📻', title: '103.7 FM', desc: 'hold the dial steady', secret: true },
+            { icon: '🎩', title: 'The Underground', desc: 'survive long enough to see the door', secret: true },
+            { icon: '⏳', title: 'Limbo', desc: 'click the clock until time stops caring', secret: true },
+            { icon: '⭐', title: 'The Chosen', desc: 'three sevens knows who it wants', secret: true },
+            { icon: '🪞', title: 'You Are Here', desc: 'this page. you found it by being stubborn.', secret: true },
+            { icon: '🌊', title: 'The Deep', desc: 'unreachable. scroll down past everything.', secret: true },
+            // Normal cards, inverted
+            { icon: '🎮', title: 'yromeM xirtaM', desc: 'a game about remembering, or forgetting' },
+            { icon: '⏰', title: 'kcolC noeN', desc: 'click it seven times. go on.' },
+            { icon: '🎰', title: 'stoLS ijoME', desc: 'the sevens were always going to align for you' },
+            { icon: '📻', title: 'rotpecretretnI langiS', desc: 'you know the frequency' },
+            { icon: '🏜️', title: 'imS dnaS', desc: 'watch it long enough' },
+            { icon: '🌀', title: 'ezaM etinifinI', desc: 'the exit is real. the door in the wall is realer.' },
+        ];
+
+        const grid = document.getElementById('grid');
+        CARDS.forEach(c => {
+            const d = document.createElement('div');
+            d.className = 'card' + (c.secret ? ' secret' : '');
+            d.innerHTML = `<div class="card-icon">${c.icon}</div><div class="card-title">${c.title}</div><div class="card-desc">${c.desc}</div><div class="card-glitch">${c.secret ? '⚠ MIRROR ONLY' : '···'}</div>`;
+            grid.appendChild(d);
+        });
+    </script>
+</body>
+
+</html>

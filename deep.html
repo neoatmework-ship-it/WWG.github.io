@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Deep</title>
+    <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: #010203;
+            color: #4a8270;
+            font-family: 'Share Tech Mono', monospace;
+            min-height: 100vh;
+            overflow: hidden;
+        }
+
+        canvas#abyss {
+            display: block;
+            position: fixed;
+            inset: 0;
+            z-index: 1;
+        }
+
+        .over {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            z-index: 2;
+            text-shadow: 0 0 10px rgba(74, 130, 112, 0.8);
+        }
+
+        .words {
+            font-size: 3rem;
+            letter-spacing: 10px;
+            text-transform: uppercase;
+            margin-bottom: 20px;
+            animation: float 4s ease infinite;
+        }
+
+        @keyframes float {
+
+            0%,
+            100% {
+                transform: translateY(0)
+            }
+
+            50% {
+                transform: translateY(-10px)
+            }
+        }
+
+        .hint {
+            font-size: 1rem;
+            opacity: 0.6;
+        }
+
+        .back {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 10;
+            color: #4a8270;
+            text-decoration: none;
+            opacity: 0.3;
+            transition: 0.3s;
+        }
+
+        .back:hover {
+            opacity: 1;
+        }
+    </style>
+</head>
+
+<body>
+
+    <a class="back" href="index.html">ascend</a>
+    <canvas id="abyss"></canvas>
+
+    <div class="over">
+        <div class="words">T H E D E E P</div>
+        <div class="hint">You pressed 'S' and scrolled too far down.</div>
+    </div>
+
+    <script>
+        const cvs = document.getElementById('abyss');
+        const ctx = cvs.getContext('2d');
+        cvs.width = innerWidth; cvs.height = innerHeight;
+
+        const particles = Array.from({ length: 300 }, () => ({
+            x: Math.random() * cvs.width, y: Math.random() * cvs.height,
+            s: Math.random() * 2 + 0.5, a: Math.random() * 360
+        }));
+
+        function draw() {
+            ctx.fillStyle = 'rgba(1,2,3,0.1)';
+            ctx.fillRect(0, 0, cvs.width, cvs.height);
+
+            ctx.fillStyle = 'rgba(74,130,112,0.6)';
+            particles.forEach(p => {
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, p.s, 0, Math.PI * 2);
+                ctx.fill();
+
+                p.y -= p.s * 0.5;
+                if (p.y < 0) {
+                    p.y = cvs.height;
+                    p.x = Math.random() * cvs.width;
+                }
+            });
+
+            requestAnimationFrame(draw);
+        }
+        draw();
+    </script>
+</body>
+
+</html>

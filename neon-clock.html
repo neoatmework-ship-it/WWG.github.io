@@ -258,6 +258,21 @@
             canvas.height = size;
         });
 
+        // 7 clicks to enter limbo
+        let clicks = 0;
+        let cTimer = null;
+        canvas.addEventListener('click', () => {
+            clicks++;
+            clearTimeout(cTimer);
+            if (clicks === 7) {
+                document.body.style.transition = 'opacity 1s';
+                document.body.style.opacity = '0';
+                setTimeout(() => window.location.href = 'limbo.html', 1000);
+                return;
+            }
+            cTimer = setTimeout(() => { clicks = 0; }, 600);
+        });
+
         drawClock();
     </script>
 </body>
