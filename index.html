@@ -2385,7 +2385,24 @@
             });
 
             // Secret keyword detection
-            const SECRET_PAGES = { 'void': 'void.html', 'ghost': 'ghost.html', 'classified': 'classified.html' };
+            const SECRET_PAGES = {
+                'void': 'void.html',
+                'ghost': 'ghost.html',
+                'classified': 'classified.html',
+                'backrooms': 'backrooms.html',
+                'limbo': 'limbo.html',
+                'static': 'static.html',
+                'deep': 'deep.html',
+                'underground': 'underground.html',
+                'starlight': 'starlight.html',
+                'eclipse': 'eclipse.html',
+                'mirror': 'mirror.html',
+                'blackhole': 'blackhole.html',
+                'chosen': 'the-chosen.html',
+                'useful': 'useful-button.html',
+                'corner': 'dvd-secret.html'
+            };
+
             search.addEventListener('keydown', e => {
                 if (e.key === 'Enter') {
                     const term = search.value.trim().toLowerCase();
@@ -2396,6 +2413,18 @@
                         setTimeout(() => { window.location.href = SECRET_PAGES[term]; }, 600);
                     }
                 }
+            });
+
+            search.addEventListener('input', () => {
+                const term = search.value.trim().toLowerCase();
+                if (SECRET_PAGES[term]) {
+                    search.style.borderColor = 'var(--accent)';
+                    search.style.boxShadow = '0 0 20px var(--accent-glow)';
+                } else {
+                    search.style.borderColor = '';
+                    search.style.boxShadow = '';
+                }
+                filterCards();
             });
 
             // WWG Title 5-click secret
@@ -2413,9 +2442,6 @@
                 }
                 wwgTimer = setTimeout(() => { wwgClicks = 0; }, 800);
             });
-
-            // Search
-            search.addEventListener('input', filterCards);
 
             // Scroll to top
             window.addEventListener('scroll', () => {
