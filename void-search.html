@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <link rel="icon"
+        href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20100%20100%22%3E%3Ctext%20y%3D%22.9em%22%20font-size%3D%2290%22%3E%F0%9F%94%8D%3C%2Ftext%3E%3C%2Fsvg%3E">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Void Search | WWG</title>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #030305;
+            --text: #ffffff;
+            --accent: #a78bfa;
+            --muted: rgba(255, 255, 255, 0.1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body,
+        html {
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background-color: var(--bg);
+            font-family: 'Space Grotesk', sans-serif;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 2;
+        }
+
+        .search-container {
+            position: relative;
+            z-index: 10;
+            width: 90%;
+            max-width: 600px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .input-wrapper {
+            position: relative;
+            width: 100%;
+        }
+
+        input {
+            width: 100%;
+            background: transparent;
+            border: none;
+            border-bottom: 2px solid var(--muted);
+            color: var(--text);
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 2.5rem;
+            padding: 10px 0;
+            outline: none;
+            transition: border-color 0.5s ease;
+            text-align: center;
+            letter-spacing: 2px;
+            font-weight: 300;
+        }
+
+        input:focus {
+            border-bottom-color: var(--accent);
+        }
+
+        .hint {
+            color: rgba(255, 255, 255, 0.2);
+            font-size: 0.9rem;
+            letter-spacing: 4px;
+            text-transform: uppercase;
+            margin-top: 10px;
+            pointer-events: none;
+            transition: opacity 1s ease;
+        }
+
+        .void-bg {
+            position: absolute;
+            inset: 0;
+            background: radial-gradient(circle at center, #0a0a14 0%, transparent 70%);
+            opacity: 0.5;
+            z-index: 0;
+        }
+
+        /* Back Button */
+        .wwg-back-btn {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            width: 44px;
+            height: 44px;
+            background: rgba(10, 10, 15, 0.7);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #a78bfa;
+            z-index: 99999;
+            transition: all 0.3s ease;
+            text-decoration: none;
+        }
+
+        .wwg-back-btn:hover {
+            background: rgba(167, 139, 250, 0.2);
+            border-color: rgba(167, 139, 250, 0.4);
+            transform: scale(1.05) translateX(-2px);
+            color: #fff;
+            box-shadow: 0 0 15px rgba(167, 139, 250, 0.3);
+        }
+    </style>
+</head>
+
+<body>
+
+    <a href="index.html" class="wwg-back-btn" title="Back to Gallery">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+            stroke-linecap="round" stroke-linejoin="round">
+            <line x1="19" y1="12" x2="5" y2="12"></line>
+            <polyline points="12 19 5 12 12 5"></polyline>
+        </svg>
+    </a>
+
+    <div class="void-bg"></div>
+
+    <div class="search-container">
+        <div class="input-wrapper">
+            <input type="text" id="void-input" spellcheck="false" autocomplete="off" placeholder="Search the void...">
+        </div>
+        <div class="hint" id="hint">Speak to silence</div>
+    </div>
+
+    <canvas id="canvas"></canvas>
+
+    <script>
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        const input = document.getElementById('void-input');
+        const hint = document.getElementById('hint');
+
+        let width, height;
+        let particles = [];
+        let isDissolving = false;
+
+        function resize() {
+            width = canvas.width = window.innerWidth;
+            height = canvas.height = window.innerHeight;
+        }
+
+        window.addEventListener('resize', resize);
+        resize();
+
+        class Particle {
+            constructor(x, y, char, size, color) {
+                this.x = x;
+                this.y = y;
+                this.char = char;
+                this.size = size;
+                this.color = color;
+
+                this.vx = (Math.random() - 0.5) * 2;
+                this.vy = -(Math.random() * 2 + 1);
+                this.alpha = 1;
+                this.decay = Math.random() * 0.015 + 0.005;
+                this.life = 1;
+                this.rotation = (Math.random() - 0.5) * 0.2;
+                this.angle = 0;
+            }
+
+            update() {
+                this.x += this.vx;
+                this.y += this.vy;
+                this.vy -= 0.02; // Downward "drift" but slow
+                this.alpha -= this.decay;
+                this.angle += this.rotation;
+                this.life -= this.decay;
+
+                // Add a bit of wave
+                this.x += Math.sin(Date.now() / 200 + this.y / 50) * 0.5;
+            }
+
+            draw() {
+                ctx.save();
+                ctx.globalAlpha = this.alpha;
+                ctx.fillStyle = this.color;
+                ctx.font = `${this.size}px 'Space Grotesk'`;
+                ctx.translate(this.x, this.y);
+                ctx.rotate(this.angle);
+                ctx.fillText(this.char, 0, 0);
+                ctx.restore();
+            }
+        }
+
+        function createDissolveEffect(char, x, y) {
+            // Spawn multiple "shards" or just the char itself
+            particles.push(new Particle(x, y, char, 40, '#ffffff'));
+
+            // Add some "dust"
+            for (let i = 0; i < 5; i++) {
+                particles.push(new Particle(
+                    x + (Math.random() - 0.5) * 20,
+                    y + (Math.random() - 0.5) * 20,
+                    '.',
+                    Math.random() * 10 + 5,
+                    Math.random() > 0.5 ? '#a78bfa' : '#ffffff'
+                ));
+            }
+        }
+
+        input.addEventListener('input', (e) => {
+            if (isDissolving) return;
+
+            const text = input.value;
+            if (text.length === 0) return;
+
+            // Get position of the last character
+            // Since input is centered, we calculate relative to center
+            const rect = input.getBoundingClientRect();
+            const charWidth = 18; // Approximate
+            const totalWidth = text.length * charWidth;
+
+            // Spawn effect at the end of the current text
+            const x = (rect.left + rect.width / 2) - (totalWidth / 2) + (text.length * charWidth);
+            const y = rect.top + 40;
+
+            const lastChar = text.charAt(text.length - 1);
+            createDissolveEffect(lastChar, x, y);
+
+            // Secret Trigger
+            if (text.toLowerCase() === 'entropy') {
+                triggerEntropy();
+            }
+
+            if (text.length > 0) {
+                hint.style.opacity = 0;
+            } else {
+                hint.style.opacity = 1;
+            }
+        });
+
+        function triggerEntropy() {
+            isDissolving = true;
+            input.disabled = true;
+
+            // Dissolve the whole input
+            const rect = input.getBoundingClientRect();
+            const text = input.value;
+            const charWidth = 18;
+            const startX = (rect.left + rect.width / 2) - ((text.length * charWidth) / 2);
+
+            for (let i = 0; i < text.length; i++) {
+                setTimeout(() => {
+                    createDissolveEffect(text[i], startX + (i * charWidth), rect.top + 40);
+                    input.value = text.slice(0, -(i + 1));
+
+                    if (i === text.length - 1) {
+                        // After all chars gone, dissolve the UI
+                        setTimeout(() => {
+                            fadeOutUI();
+                        }, 1000);
+                    }
+                }, i * 100);
+            }
+        }
+
+        function fadeOutUI() {
+            document.querySelector('.input-wrapper').style.transition = 'opacity 2s';
+            document.querySelector('.input-wrapper').style.opacity = 0;
+
+            setTimeout(() => {
+                window.location.href = 'blackhole.html';
+            }, 3000);
+        }
+
+        function animate() {
+            ctx.clearRect(0, 0, width, height);
+
+            for (let i = particles.length - 1; i >= 0; i--) {
+                particles[i].update();
+                particles[i].draw();
+
+                if (particles[i].alpha <= 0) {
+                    particles.splice(i, 1);
+                }
+            }
+
+            requestAnimationFrame(animate);
+        }
+
+        animate();
+
+        // Initial Focus
+        window.addEventListener('click', () => {
+            if (!isDissolving) input.focus();
+        });
+    </script>
+</body>
+
+</html>
