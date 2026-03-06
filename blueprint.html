@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WWG Engine Schematic</title>
+    <style>
+        :root {
+            --blue: #003366;
+            --white: rgba(255, 255, 255, 0.9);
+            --grid: rgba(255, 255, 255, 0.1);
+        }
+
+        body {
+            background-color: var(--blue);
+            color: var(--white);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 40px;
+            overflow: hidden;
+            background-image:
+                linear-gradient(var(--grid) 1px, transparent 1px),
+                linear-gradient(90deg, var(--grid) 1px, transparent 1px),
+                linear-gradient(var(--grid) 2px, transparent 2px),
+                linear-gradient(90deg, var(--grid) 2px, transparent 2px);
+            background-size: 20px 20px, 20px 20px, 100px 100px, 100px 100px;
+        }
+
+        .header {
+            border-bottom: 2px solid var(--white);
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            padding-bottom: 10px;
+            margin-bottom: 30px;
+        }
+
+        .title {
+            font-size: 2.5rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .meta {
+            text-align: right;
+            font-family: monospace;
+            font-size: 0.9rem;
+        }
+
+        .canvas-container {
+            position: relative;
+            width: 100%;
+            height: calc(100vh - 200px);
+            border: 2px solid var(--white);
+            overflow: hidden;
+        }
+
+        svg {
+            width: 100%;
+            height: 100%;
+            stroke: var(--white);
+            fill: none;
+            stroke-width: 1;
+        }
+
+        .label {
+            position: absolute;
+            background: var(--blue);
+            padding: 2px 8px;
+            border: 1px solid var(--white);
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            font-weight: bold;
+        }
+
+        .tech-box {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            width: 300px;
+            border: 2px solid var(--white);
+            padding: 15px;
+            background: var(--blue);
+        }
+
+        .tech-box table {
+            width: 100%;
+            font-size: 0.8rem;
+            border-collapse: collapse;
+        }
+
+        .tech-box td {
+            padding: 4px;
+            border: 1px solid var(--white);
+        }
+
+        .home-btn {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            color: var(--white);
+            text-decoration: none;
+            font-family: monospace;
+            border: 1px solid var(--white);
+            padding: 5px 10px;
+        }
+
+        .home-btn:hover {
+            background: var(--white);
+            color: var(--blue);
+        }
+    </style>
+</head>
+
+<body>
+    <a href="index.html" class="home-btn">RETURN_TO_ROOT</a>
+
+    <div class="header">
+        <div class="title">Gallery Engine Schematic</div>
+        <div class="meta">
+            DWG NO: SEC-99-ALPHA<br>
+            SCALE: DO NOT SCALE<br>
+            REV: 4.2 FULL GAIN
+        </div>
+    </div>
+
+    <div class="canvas-container">
+        <svg viewBox="0 0 1000 600">
+            <!-- Central Engine Core -->
+            <rect x="400" y="200" width="200" height="200" stroke-dasharray="8,4" />
+            <circle cx="500" cy="300" r="80" />
+            <circle cx="500" cy="300" r="60" stroke-dasharray="2,2" />
+
+            <!-- Nodes -->
+            <rect x="100" y="100" width="120" height="60" />
+            <rect x="100" y="440" width="120" height="60" />
+            <rect x="780" y="100" width="120" height="60" />
+            <rect x="780" y="440" width="120" height="60" />
+
+            <!-- Connecting Lines -->
+            <path d="M220 130 H 400" stroke-dasharray="5,5" />
+            <path d="M220 470 H 400" stroke-dasharray="5,5" />
+            <path d="M600 130 H 780" stroke-dasharray="5,5" />
+            <path d="M600 470 H 780" stroke-dasharray="5,5" />
+
+            <path d="M500 200 V 50" />
+            <path d="M500 400 V 550" />
+
+            <!-- Details -->
+            <circle cx="500" cy="50" r="10" />
+            <circle cx="500" cy="550" r="10" />
+        </svg>
+
+        <div class="label" style="top: 80px; left: 100px;">Node.Interactive_01</div>
+        <div class="label" style="top: 420px; left: 100px;">Node.Creative_04</div>
+        <div class="label" style="top: 80px; left: 780px;">Node.Weird_09</div>
+        <div class="label" style="top: 420px; left: 780px;">Node.Game_02</div>
+        <div class="label" style="top: 180px; left: 450px;">WWG_CORE_OS</div>
+        <div class="label" style="top: 300px; left: 510px;">HEART_BEAT</div>
+    </div>
+
+    <div class="tech-box">
+        <table>
+            <tr>
+                <td colspan="2" style="font-weight: bold; text-align: center;">SPECIFICATIONS</td>
+            </tr>
+            <tr>
+                <td>CORE FREQ</td>
+                <td>440Hz / 528Hz</td>
+            </tr>
+            <tr>
+                <td>DATA FLOW</td>
+                <td>ASYMMETRIC</td>
+            </tr>
+            <tr>
+                <td>CONTAINMENT</td>
+                <td>CSS_GRID_FLEX</td>
+            </tr>
+            <tr>
+                <td>SECURITY</td>
+                <td>VOID_ENCRYPTION</td>
+            </tr>
+            <tr>
+                <td>OBSERVER</td>
+                <td>PIKAV_01</td>
+            </tr>
+        </table>
+    </div>
+
+    <script>
+        // Subtle animation for the heartbeat
+        const heartbeat = document.querySelector('circle[stroke-dasharray="2,2"]');
+        let scale = 1;
+        let growing = true;
+
+        function animate() {
+            if (growing) {
+                scale += 0.005;
+                if (scale >= 1.1) growing = false;
+            } else {
+                scale -= 0.005;
+                if (scale <= 0.9) growing = true;
+            }
+            heartbeat.setAttribute('transform', `scale(${scale})`);
+            heartbeat.setAttribute('transform-origin', '500 300');
+            requestAnimationFrame(animate);
+        }
+        animate();
+    </script>
+</body>
+
+</html>

@@ -133,7 +133,7 @@
 
     <div class="controls">
         <label>Intensity</label>
-        <input type="range" id="intensity" min="20" max="500" value="200">
+        <input type="range" id="intensity" min="0" max="500" value="200">
         <label>Wind</label>
         <input type="range" id="wind" min="-5" max="5" step="0.5" value="1">
         <button id="thunder" class="active">⚡ Thunder</button>
@@ -324,6 +324,20 @@
             if (thunderEnabled && Math.random() < 0.15) triggerLightning();
         }, 5000);
 
+        // Zenith Trigger Logic (10s of perfect silence)
+        let zenTimerCount = 0;
+        setInterval(() => {
+            const intensityVal = parseInt(intensitySlider.value);
+            if (intensityVal === 0 && !thunderEnabled) {
+                zenTimerCount++;
+                if (zenTimerCount >= 10) {
+                    window.location.href = 'zen-garden.html';
+                }
+            } else {
+                zenTimerCount = 0;
+            }
+        }, 1000);
+
         function animate() {
             const wind = parseFloat(windSlider.value);
 
@@ -352,43 +366,45 @@
         animate();
     </script>
 
-<!-- WWG_NAV_START -->
-<style>
-.wwg-nav {
-    position: fixed;
-    bottom: 20px;
-    right: 20px;
-    display: flex;
-    gap: 10px;
-    z-index: 99999;
-}
-.wwg-nav a {
-    background: rgba(10, 10, 15, 0.7);
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    color: #a78bfa;
-    padding: 8px 16px;
-    border-radius: 20px;
-    font-family: 'Space Grotesk', sans-serif;
-    font-size: 0.8rem;
-    font-weight: 600;
-    text-decoration: none;
-    transition: all 0.3s ease;
-}
-.wwg-nav a:hover {
-    background: rgba(167, 139, 250, 0.2);
-    border-color: rgba(167, 139, 250, 0.4);
-    color: #fff;
-    transform: translateY(-2px);
-    box-shadow: 0 4px 15px rgba(167, 139, 250, 0.3);
-}
-</style>
-<div class="wwg-nav">
-    <a href="neon-clock.html">← Prev</a>
-    <a href="infinite-tunnel.html">Next →</a>
-</div>
-<!-- WWG_NAV_END -->
+    <!-- WWG_NAV_START -->
+    <style>
+        .wwg-nav {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            display: flex;
+            gap: 10px;
+            z-index: 99999;
+        }
+
+        .wwg-nav a {
+            background: rgba(10, 10, 15, 0.7);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: #a78bfa;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 0.8rem;
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+
+        .wwg-nav a:hover {
+            background: rgba(167, 139, 250, 0.2);
+            border-color: rgba(167, 139, 250, 0.4);
+            color: #fff;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(167, 139, 250, 0.3);
+        }
+    </style>
+    <div class="wwg-nav">
+        <a href="neon-clock.html">← Prev</a>
+        <a href="infinite-tunnel.html">Next →</a>
+    </div>
+    <!-- WWG_NAV_END -->
 </body>
 
 </html>

@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FATAL_ERROR: GLITCH_VOID</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #000;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            color: #f0f;
+            font-family: 'Courier New', Courier, monospace;
+            cursor: crosshair;
+        }
+
+        #glitch-container {
+            position: absolute;
+            inset: 0;
+            z-index: 1;
+        }
+
+        .glitch-block {
+            position: absolute;
+            background: #fff;
+            mix-blend-mode: difference;
+        }
+
+        #ui {
+            position: relative;
+            z-index: 10;
+            background: #000;
+            padding: 20px;
+            border: 2px solid #f0f;
+            box-shadow: 10px 10px 0 #0ff;
+            text-align: center;
+        }
+
+        h1 {
+            margin: 0 0 10px 0;
+            font-size: 1.5rem;
+        }
+
+        p {
+            margin: 0;
+            font-size: 0.9rem;
+            color: #0ff;
+        }
+
+        .back-link {
+            display: block;
+            margin-top: 20px;
+            color: #fff;
+            text-decoration: none;
+            border: 1px solid #fff;
+            padding: 5px;
+        }
+
+        .back-link:hover {
+            background: #fff;
+            color: #000;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="glitch-container"></div>
+
+    <div id="ui">
+        <h1>FATAL_ERROR</h1>
+        <p>Memory address 0x000WWG corrupted.</p>
+        <p>Render buffer overflow.</p>
+        <a href="index.html" class="back-link">REBOOT_SYSTEM</a>
+    </div>
+
+    <script>
+        const container = document.getElementById('glitch-container');
+        const colors = ['#f0f', '#0ff', '#ff0', '#fff', '#f00', '#00f', '#0f0'];
+
+        function createBlock() {
+            const block = document.createElement('div');
+            block.className = 'glitch-block';
+
+            const w = Math.random() * 200 + 10;
+            const h = Math.random() * 200 + 10;
+            block.style.width = w + 'px';
+            block.style.height = h + 'px';
+
+            block.style.left = Math.random() * 100 + '%';
+            block.style.top = Math.random() * 100 + '%';
+
+            block.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+            block.style.opacity = Math.random();
+            block.style.transform = `rotate(${Math.random() * 360}deg)`;
+
+            container.appendChild(block);
+
+            setTimeout(() => {
+                block.remove();
+            }, Math.random() * 500 + 100);
+        }
+
+        setInterval(createBlock, 30);
+
+        // Shake UI
+        const ui = document.getElementById('ui');
+        function shake() {
+            ui.style.transform = `translate(${Math.random() * 10 - 5}px, ${Math.random() * 10 - 5}px)`;
+            requestAnimationFrame(shake);
+        }
+        shake();
+
+        // Mouse trail glitch
+        document.addEventListener('mousemove', (e) => {
+            for (let i = 0; i < 3; i++) {
+                const b = document.createElement('div');
+                b.className = 'glitch-block';
+                b.style.width = '20px';
+                b.style.height = '2px';
+                b.style.left = (e.clientX + (Math.random() * 40 - 20)) + 'px';
+                b.style.top = (e.clientY + (Math.random() * 40 - 20)) + 'px';
+                b.style.backgroundColor = '#fff';
+                container.appendChild(b);
+                setTimeout(() => b.remove(), 100);
+            }
+        });
+    </script>
+</body>
+
+</html>

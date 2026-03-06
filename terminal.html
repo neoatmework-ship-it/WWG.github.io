@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WWG Internal Terminal</title>
+    <style>
+        :root {
+            --green: #00ff41;
+            --bg: #0a0a0a;
+        }
+
+        body {
+            background-color: var(--bg);
+            color: var(--green);
+            font-family: 'Courier New', Courier, monospace;
+            margin: 0;
+            padding: 20px;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+        }
+
+        /* CRT Scanline Effect */
+        body::before {
+            content: " ";
+            display: block;
+            position: absolute;
+            top: 0;
+            left: 0;
+            bottom: 0;
+            right: 0;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+            z-index: 2;
+            background-size: 100% 2px, 3px 100%;
+            pointer-events: none;
+        }
+
+        body::after {
+            content: " ";
+            display: block;
+            position: absolute;
+            top: 0;
+            left: 0;
+            bottom: 0;
+            right: 0;
+            background: rgba(18, 16, 16, 0.1);
+            opacity: 0;
+            z-index: 2;
+            pointer-events: none;
+            animation: flicker 0.15s infinite;
+        }
+
+        @keyframes flicker {
+            0% {
+                opacity: 0.27861;
+            }
+
+            5% {
+                opacity: 0.34769;
+            }
+
+            10% {
+                opacity: 0.23604;
+            }
+
+            15% {
+                opacity: 0.90626;
+            }
+
+            20% {
+                opacity: 0.18128;
+            }
+
+            25% {
+                opacity: 0.83891;
+            }
+
+            30% {
+                opacity: 0.65583;
+            }
+
+            35% {
+                opacity: 0.57807;
+            }
+
+            40% {
+                opacity: 0.26559;
+            }
+
+            45% {
+                opacity: 0.84693;
+            }
+
+            50% {
+                opacity: 0.96019;
+            }
+
+            55% {
+                opacity: 0.08594;
+            }
+
+            60% {
+                opacity: 0.20313;
+            }
+
+            65% {
+                opacity: 0.71988;
+            }
+
+            70% {
+                opacity: 0.53455;
+            }
+
+            75% {
+                opacity: 0.37288;
+            }
+
+            80% {
+                opacity: 0.71428;
+            }
+
+            85% {
+                opacity: 0.70419;
+            }
+
+            90% {
+                opacity: 0.7003;
+            }
+
+            95% {
+                opacity: 0.36108;
+            }
+
+            100% {
+                opacity: 0.24387;
+            }
+        }
+
+        #output {
+            flex-grow: 1;
+            white-space: pre-wrap;
+            overflow-y: auto;
+            margin-bottom: 10px;
+            text-shadow: 0 0 5px var(--green);
+        }
+
+        .input-line {
+            display: flex;
+            align-items: center;
+        }
+
+        .prompt {
+            margin-right: 10px;
+        }
+
+        input {
+            background: transparent;
+            border: none;
+            color: var(--green);
+            font-family: inherit;
+            font-size: inherit;
+            outline: none;
+            flex-grow: 1;
+        }
+
+        ::-webkit-scrollbar {
+            width: 5px;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--green);
+        }
+    </style>
+</head>
+
+<body>
+    <div id="output">WWG CORE TERMINAL [VERSION 1.0.4]
+        (C) 1984 WEIRD WEB GALLERY CORP.
+        UNAUTHORIZED ACCESS IS PROHIBITED.
+
+        SYSTEM READY...
+        TYPE 'HELP' FOR COMMANDS.
+    </div>
+    <div class="input-line">
+        <span class="prompt">root@wwg:~$</span>
+        <input type="text" id="command-input" autofocus spellcheck="false">
+    </div>
+
+    <script>
+        const output = document.getElementById('output');
+        const input = document.getElementById('command-input');
+
+        const files = {
+            'manifesto.txt': 'WWG is not a gallery. It is a portal.\nEvery site is a coordinate.\nEvery secret is a key.',
+            'logs.db': '[ENCRYPTED]\n[ENCRYPTED]\n[ENCRYPTED]',
+            'staff.list': 'Admin: [REDACTED]\nDesign: [REDACTED]\nObserver: PIKAV',
+            'gallery.map': 'Total Sites: 67\nHidden Nodes: 20\nSanctuary: Zenith\nCorrupted: Glitch Void'
+        };
+
+        const commands = {
+            'help': 'Available commands: HELP, LS, CAT [FILE], CLEAR, EXIT, WHOAMI',
+            'ls': 'manifesto.txt  logs.db  staff.list  gallery.map',
+            'cat': (args) => {
+                if (!args[0]) return 'Usage: CAT [filename]';
+                return files[args[0]] || `Error: File '${args[0]}' not found.`;
+            },
+            'clear': () => { output.innerHTML = ''; return ''; },
+            'whoami': 'Observer / Root User',
+            'exit': () => { window.location.href = 'index.html'; return 'Logging out...'; }
+        };
+
+        input.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                const fullCmd = input.value.trim().toLowerCase();
+                const [cmd, ...args] = fullCmd.split(' ');
+
+                output.innerHTML += `\nroot@wwg:~$ ${input.value}\n`;
+
+                if (commands[cmd]) {
+                    const result = typeof commands[cmd] === 'function' ? commands[cmd](args) : commands[cmd];
+                    output.innerHTML += result + '\n';
+                } else if (fullCmd !== '') {
+                    output.innerHTML += `Error: Command '${cmd}' not recognized.\n`;
+                }
+
+                input.value = '';
+                output.scrollTop = output.scrollHeight;
+            }
+        });
+
+        // Focus input on click anywhere
+        document.addEventListener('click', () => input.focus());
+    </script>
+</body>
+
+</html>
