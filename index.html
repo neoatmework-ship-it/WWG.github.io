@@ -655,11 +655,11 @@
         <h1><span class="gradient-text" id="wwg-title" style="cursor:pointer;user-select:none;" title="WWG">WWG</span>
         </h1>
         <p>Weird Website Gallery — a hand-picked collection of strange, wonderful, and interactive web experiences</p>
-        <div class="hero-count"><strong>70</strong> sites and counting</div>
+        <div class="hero-count"><strong>67</strong> sites and counting</div>
         <div class="search-wrap">
             <span class="search-icon">🔍</span>
             <input class="search-input" id="search" type="text"
-                placeholder="Search sites by name, description, or tag...">
+                placeholder="Search 67+ sites by name, description, or tag...">
         </div>
         <div class="filter-bar">
             <button class="filter-pill active" data-filter="all">All</button>
@@ -668,81 +668,13 @@
             <button class="filter-pill" data-filter="weird">✦ Weird</button>
             <button class="filter-pill" data-filter="game">🎮 Games</button>
             <button class="filter-pill" data-filter="creative">✨ Creative</button>
-            <button class="filter-pill" data-filter="search">🕵️ Search</button>
             <button class="filter-pill" data-filter="chill">✦ Chill</button>
         </div>
-        <div class="filter-count" id="filter-count">Showing <strong>70</strong> of 70 sites</div>
+        <div class="filter-count" id="filter-count">Showing <strong>67</strong> of 67 sites</div>
     </section>
 
     <main class="gallery">
-        <!-- Void Search -->
-        <a href="void-search.html" class="card" data-tags="interactive creative search weird">
-            <div class="card-preview">
-                <div class="card-preview-bg"
-                    style="background: linear-gradient(135deg, #030305, #11111a 50%, #000000);"></div>
-                <span class="card-label label-weird">✦ Weird</span>
-                <span class="card-preview-icon">🕳️</span>
-            </div>
-            <div class="card-body">
-                <div class="card-title">Void Search</div>
-                <div class="card-desc">A minimalist search bar where every character you type dissolves into a cloud of
-                    ethereal particles before vanishing completely.</div>
-                <div class="card-footer">
-                    <div class="card-tags"><span class="card-tag">🔍 Search</span><span class="card-tag">✨
-                            Particles</span></div>
-                    <div class="card-arrow"><svg width="14" height="14" viewBox="0 0 24 24" fill="none"
-                            stroke="currentColor" stroke-width="2">
-                            <path d="M5 12h14M12 5l7 7-7 7" />
-                        </svg></div>
-                </div>
-            </div>
-        </a>
 
-        <!-- Gravity Search -->
-        <a href="gravity-search.html" class="card" data-tags="interactive creative search">
-            <div class="card-preview">
-                <div class="card-preview-bg"
-                    style="background: linear-gradient(135deg, #ffffff, #f1f3f4 50%, #e8eaed);"></div>
-                <span class="card-label label-interactive">✦ Interactive</span>
-                <span class="card-preview-icon">⚖️</span>
-            </div>
-            <div class="card-body">
-                <div class="card-title">Gravity Search</div>
-                <div class="card-desc">Type into the world's heaviest search engine. Every letter has mass, falls out of
-                    the input, and piles up on your screen.</div>
-                <div class="card-footer">
-                    <div class="card-tags"><span class="card-tag">🔍 Search</span><span class="card-tag">🧪
-                            Physics</span></div>
-                    <div class="card-arrow"><svg width="14" height="14" viewBox="0 0 24 24" fill="none"
-                            stroke="currentColor" stroke-width="2">
-                            <path d="M5 12h14M12 5l7 7-7 7" />
-                        </svg></div>
-                </div>
-            </div>
-        </a>
-
-        <!-- Infinite Suggest -->
-        <a href="infinite-suggest.html" class="card" data-tags="interactive weird search">
-            <div class="card-preview">
-                <div class="card-preview-bg"
-                    style="background: linear-gradient(135deg, #ffffff, #f8f9fa 50%, #e8eaed);"></div>
-                <span class="card-label label-new">✦ New</span>
-                <span class="card-preview-icon">🤔</span>
-            </div>
-            <div class="card-body">
-                <div class="card-title">Infinite Suggest</div>
-                <div class="card-desc">An overly helpful search engine that provides an endless, surreal stream of
-                    philosophical and absurd autocomplete suggestions.</div>
-                <div class="card-footer">
-                    <div class="card-tags"><span class="card-tag">🔍 Search</span><span class="card-tag">✍️
-                            Absurd</span></div>
-                    <div class="card-arrow"><svg width="14" height="14" viewBox="0 0 24 24" fill="none"
-                            stroke="currentColor" stroke-width="2">
-                            <path d="M5 12h14M12 5l7 7-7 7" />
-                        </svg></div>
-                </div>
-            </div>
-        </a>
 
         <!-- Digital Theremin -->
         <a href="digital-theremin.html" class="card" data-tags="interactive creative chill">
@@ -2386,9 +2318,23 @@
 
             // Secret keyword detection
             const SECRET_PAGES = {
-                'void': 'void-search.html',
-                'gravity': 'gravity-search.html',
-                'infinite': 'infinite-suggest.html'
+                'void': 'void.html',
+                'ghost': 'ghost.html',
+                'classified': 'classified.html',
+                'backrooms': 'backrooms.html',
+                'limbo': 'limbo.html',
+                'static': 'static.html',
+                'deep': 'deep.html',
+                'underground': 'underground.html',
+                'starlight': 'starlight.html',
+                'eclipse': 'eclipse.html',
+                'mirror': 'mirror.html',
+                'blackhole': 'blackhole.html',
+                'chosen': 'the-chosen.html',
+                'useful': 'useful-button.html',
+                'corner': 'dvd-secret.html',
+                'braille': 'braille-translator.html',
+                'gravity': 'gravity-playground.html'
             };
 
             search.addEventListener('keydown', e => {
