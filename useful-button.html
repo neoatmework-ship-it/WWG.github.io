@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Useful Button</title>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background: #fafafa;
+            color: #111;
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Space Grotesk', sans-serif;
+        }
+
+        .box {
+            text-align: center;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            color: #333;
+            margin-bottom: 30px;
+        }
+
+        .useful-btn {
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: white;
+            border: none;
+            padding: 20px 40px;
+            font-size: 1.5rem;
+            border-radius: 12px;
+            cursor: pointer;
+            font-family: 'Space Grotesk', sans-serif;
+            box-shadow: 0 10px 20px rgba(16, 185, 129, 0.3);
+            transition: all 0.2s;
+        }
+
+        .useful-btn:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 30px rgba(16, 185, 129, 0.4);
+        }
+
+        .useful-btn:active {
+            transform: translateY(2px);
+            box-shadow: 0 5px 10px rgba(16, 185, 129, 0.3);
+        }
+
+        #output {
+            margin-top: 30px;
+            font-size: 1.2rem;
+            min-height: 30px;
+            color: #555;
+        }
+
+        .back {
+            margin-top: 40px;
+            display: inline-block;
+            color: #888;
+            text-decoration: none;
+            font-size: 0.9rem;
+            transition: 0.2s;
+        }
+
+        .back:hover {
+            color: #333;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="box">
+        <h1>THE USEFUL BUTTON</h1>
+        <button class="useful-btn" id="btn">Do Something Useful</button>
+        <div id="output">It is waiting.</div>
+        <a href="index.html" class="back">← Return to the mundane</a>
+    </div>
+    <script>
+        const tasks = [
+            "It organized your digital desk.",
+            "It watered a virtual plant.",
+            "It un-slouched your posture for 5 seconds.",
+            "It mentally folded your laundry.",
+            "It calculated pi to 14 decimal places and promptly forgot it.",
+            "It closed 3 unnecessary browser tabs in your soul.",
+            "It generated a feeling of mild accomplishment."
+        ];
+        let i = 0;
+        document.getElementById('btn').addEventListener('click', () => {
+            const out = document.getElementById('output');
+            out.style.opacity = '0';
+            setTimeout(() => {
+                out.textContent = tasks[i % tasks.length];
+                i++;
+                out.style.transition = 'opacity 0.3s';
+                out.style.opacity = '1';
+            }, 150);
+        });
+    </script>
+</body>
+
+</html>
