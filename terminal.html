@@ -5,155 +5,112 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>WWG Internal Terminal</title>
+    <link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
     <style>
         :root {
             --green: #00ff41;
-            --bg: #0a0a0a;
+            --green-dim: rgba(0, 255, 65, 0.5);
+            --bg: #050505;
+            --glow: 0 0 10px rgba(0, 255, 65, 0.7);
+        }
+
+        * {
+            box-sizing: border-box;
+            cursor: text;
         }
 
         body {
-            background-color: var(--bg);
-            color: var(--green);
-            font-family: 'Courier New', Courier, monospace;
+            background-color: #000;
             margin: 0;
-            padding: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            overflow: hidden;
+            color: var(--green);
+            font-family: 'VT323', monospace;
+            font-size: 1.4rem;
+        }
+
+        /* CRT Curved Monitor Wrapper */
+        .crt-frame {
+            position: relative;
+            width: 95vw;
+            height: 90vh;
+            background: var(--bg);
+            border: 30px solid #1a1a1a;
+            border-radius: 50px;
+            box-shadow:
+                inset 0 0 100px rgba(0, 0, 0, 0.9),
+                0 0 50px rgba(0, 0, 0, 0.5);
             overflow: hidden;
             display: flex;
             flex-direction: column;
-            height: 100vh;
+            padding: 40px;
         }
 
-        /* CRT Scanline Effect */
-        body::before {
-            content: " ";
-            display: block;
+        /* The Screen Curve Distortion */
+        .crt-frame::before {
+            content: "";
             position: absolute;
-            top: 0;
-            left: 0;
-            bottom: 0;
-            right: 0;
-            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
-            z-index: 2;
-            background-size: 100% 2px, 3px 100%;
+            inset: 0;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%,
+                    rgba(0, 0, 0, 0.1) 50%), linear-gradient(90deg,
+                    rgba(255, 0, 0, 0.05),
+                    rgba(0, 255, 0, 0.02),
+                    rgba(0, 0, 255, 0.05));
+            background-size: 100% 3px, 5px 100%;
+            z-index: 10;
             pointer-events: none;
+            opacity: 0.8;
         }
 
-        body::after {
-            content: " ";
-            display: block;
+        /* Vignette & Glare */
+        .crt-frame::after {
+            content: "";
             position: absolute;
-            top: 0;
-            left: 0;
-            bottom: 0;
-            right: 0;
-            background: rgba(18, 16, 16, 0.1);
-            opacity: 0;
-            z-index: 2;
+            inset: 0;
+            background:
+                radial-gradient(circle, transparent 50%, rgba(0, 0, 0, 0.4) 110%),
+                linear-gradient(135deg, rgba(255, 255, 255, 0.05) 0%, transparent 20%, transparent 80%, rgba(255, 255, 255, 0.05) 100%);
+            z-index: 11;
             pointer-events: none;
-            animation: flicker 0.15s infinite;
-        }
-
-        @keyframes flicker {
-            0% {
-                opacity: 0.27861;
-            }
-
-            5% {
-                opacity: 0.34769;
-            }
-
-            10% {
-                opacity: 0.23604;
-            }
-
-            15% {
-                opacity: 0.90626;
-            }
-
-            20% {
-                opacity: 0.18128;
-            }
-
-            25% {
-                opacity: 0.83891;
-            }
-
-            30% {
-                opacity: 0.65583;
-            }
-
-            35% {
-                opacity: 0.57807;
-            }
-
-            40% {
-                opacity: 0.26559;
-            }
-
-            45% {
-                opacity: 0.84693;
-            }
-
-            50% {
-                opacity: 0.96019;
-            }
-
-            55% {
-                opacity: 0.08594;
-            }
-
-            60% {
-                opacity: 0.20313;
-            }
-
-            65% {
-                opacity: 0.71988;
-            }
-
-            70% {
-                opacity: 0.53455;
-            }
-
-            75% {
-                opacity: 0.37288;
-            }
-
-            80% {
-                opacity: 0.71428;
-            }
-
-            85% {
-                opacity: 0.70419;
-            }
-
-            90% {
-                opacity: 0.7003;
-            }
-
-            95% {
-                opacity: 0.36108;
-            }
-
-            100% {
-                opacity: 0.24387;
-            }
         }
 
         #output {
             flex-grow: 1;
             white-space: pre-wrap;
             overflow-y: auto;
-            margin-bottom: 10px;
-            text-shadow: 0 0 5px var(--green);
+            margin-bottom: 20px;
+            padding-right: 20px;
+            text-shadow:
+                1px 1px 1px rgba(255, 0, 0, 0.5),
+                -1px -1px 1px rgba(0, 0, 255, 0.5),
+                0 0 8px var(--green);
+            animation: text-flicker 0.01s infinite alternate;
+        }
+
+        @keyframes text-flicker {
+            0% {
+                opacity: 0.98;
+            }
+
+            100% {
+                opacity: 1;
+            }
         }
 
         .input-line {
             display: flex;
             align-items: center;
+            position: relative;
+            z-index: 5;
         }
 
         .prompt {
-            margin-right: 10px;
+            color: var(--green);
+            margin-right: 12px;
+            text-shadow: var(--glow);
         }
 
         input {
@@ -164,74 +121,185 @@
             font-size: inherit;
             outline: none;
             flex-grow: 1;
+            text-shadow: var(--glow);
+            caret-color: var(--green);
+        }
+
+        .scanlines {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%,
+                    rgba(0, 0, 0, 0.3) 50%);
+            background-size: 100% 4px;
+            z-index: 12;
+            pointer-events: none;
+            animation: scanline 10s linear infinite;
+        }
+
+        @keyframes scanline {
+            0% {
+                transform: translateY(0);
+            }
+
+            100% {
+                transform: translateY(100%);
+            }
         }
 
         ::-webkit-scrollbar {
-            width: 5px;
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: transparent;
         }
 
         ::-webkit-scrollbar-thumb {
-            background: var(--green);
+            background: var(--green-dim);
+        }
+
+        .typing {
+            border-right: 10px solid var(--green);
+            animation: blink 0.7s infinite;
+        }
+
+        @keyframes blink {
+
+            0%,
+            100% {
+                border-color: transparent;
+            }
+
+            50% {
+                border-color: var(--green);
+            }
+        }
+
+        .matrix-rain {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+            opacity: 0.15;
+            pointer-events: none;
+            display: none;
         }
     </style>
 </head>
 
 <body>
-    <div id="output">WWG CORE TERMINAL [VERSION 1.0.4]
-        (C) 1984 WEIRD WEB GALLERY CORP.
-        UNAUTHORIZED ACCESS IS PROHIBITED.
+    <div class="crt-frame">
+        <canvas id="matrix-canvas" class="matrix-rain"></canvas>
+        <div id="output">WWG_OS v3.2.1 [INTERNAL_USE_ONLY]
+            (C) 1984 WEIRD WEB GALLERY CORP.
+            ---------------------------------------
+            NODE: TERMINAL_01
+            STATUS: ONLINE
+            USER: root
 
-        SYSTEM READY...
-        TYPE 'HELP' FOR COMMANDS.
-    </div>
-    <div class="input-line">
-        <span class="prompt">root@wwg:~$</span>
-        <input type="text" id="command-input" autofocus spellcheck="false">
+            TYPE 'HELP' FOR COMMANDS.
+        </div>
+        <div class="input-line">
+            <span class="prompt">root@wwg:~$</span>
+            <input type="text" id="command-input" autofocus spellcheck="false" autocomplete="off">
+        </div>
+        <div class="scanlines"></div>
     </div>
 
     <script>
         const output = document.getElementById('output');
         const input = document.getElementById('command-input');
+        const canvas = document.getElementById('matrix-canvas');
+        const ctx = canvas.getContext('2d');
 
         const files = {
             'manifesto.txt': 'WWG is not a gallery. It is a portal.\nEvery site is a coordinate.\nEvery secret is a key.',
-            'logs.db': '[ENCRYPTED]\n[ENCRYPTED]\n[ENCRYPTED]',
-            'staff.list': 'Admin: [REDACTED]\nDesign: [REDACTED]\nObserver: PIKAV',
+            'logs.db': '[ENCRYPTED_SIGNAL_STREAM]\n44.2384, -120.8402 (ACTIVE)\n99.0019, 0.2231 (PENDING)\n[ERROR: BUFFER_OVERFLOW]',
+            'staff.list': 'Admin: SEC_99_ALPHA\nDesign: NULL_POINTER\nObserver: PIKAV_01',
             'gallery.map': 'Total Sites: 67\nHidden Nodes: 20\nSanctuary: Zenith\nCorrupted: Glitch Void'
         };
 
         const commands = {
-            'help': 'Available commands: HELP, LS, CAT [FILE], CLEAR, EXIT, WHOAMI',
+            'help': 'HELP, LS, CAT [FILE], MATRIX, DECRYPT, CLEAR, WHOAMI, EXIT',
             'ls': 'manifesto.txt  logs.db  staff.list  gallery.map',
             'cat': (args) => {
                 if (!args[0]) return 'Usage: CAT [filename]';
                 return files[args[0]] || `Error: File '${args[0]}' not found.`;
             },
             'clear': () => { output.innerHTML = ''; return ''; },
-            'whoami': 'Observer / Root User',
+            'whoami': 'AUTHENTICATED_OBSERVER // LEVEL_9_CLEARANCE',
+            'matrix': () => {
+                canvas.style.display = 'block';
+                startMatrix();
+                return 'INITIALIZING_MATRIX_STREAM...';
+            },
+            'decrypt': () => {
+                let str = '';
+                for (let i = 0; i < 50; i++) str += Math.random().toString(36).substring(2);
+                setTimeout(() => {
+                    output.innerHTML += "\n[PASSWORD_FOUND]: G-L-I-T-C-H-V-O-I-D\n";
+                    output.scrollTop = output.scrollHeight;
+                }, 2000);
+                return 'RUNNING_BRUTE_FORCE_ALGORITHM...';
+            },
             'exit': () => { window.location.href = 'index.html'; return 'Logging out...'; }
         };
+
+        function writeToTerminal(text) {
+            output.innerHTML += text + '\n';
+            output.scrollTop = output.scrollHeight;
+        }
 
         input.addEventListener('keydown', (e) => {
             if (e.key === 'Enter') {
                 const fullCmd = input.value.trim().toLowerCase();
                 const [cmd, ...args] = fullCmd.split(' ');
 
-                output.innerHTML += `\nroot@wwg:~$ ${input.value}\n`;
+                writeToTerminal(`<span style="opacity:0.6">root@wwg:~$ ${input.value}</span>`);
 
                 if (commands[cmd]) {
                     const result = typeof commands[cmd] === 'function' ? commands[cmd](args) : commands[cmd];
-                    output.innerHTML += result + '\n';
+                    writeToTerminal(result);
                 } else if (fullCmd !== '') {
-                    output.innerHTML += `Error: Command '${cmd}' not recognized.\n`;
+                    writeToTerminal(`Error: Command '${cmd}' not recognized.`);
                 }
 
                 input.value = '';
-                output.scrollTop = output.scrollHeight;
             }
         });
 
-        // Focus input on click anywhere
+        // Matrix Effect
+        let matrixInterval;
+        function startMatrix() {
+            if (matrixInterval) return;
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            const letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789$+-*/=%\"'#&_(),.;:?!\\|{}<>[]^~";
+            const fontSize = 16;
+            const columns = canvas.width / fontSize;
+            const drops = [];
+            for (let x = 0; x < columns; x++) drops[x] = 1;
+
+            function draw() {
+                ctx.fillStyle = "rgba(0, 0, 0, 0.05)";
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                ctx.fillStyle = "#00ff41";
+                ctx.font = fontSize + "px monospace";
+                for (let i = 0; i < drops.length; i++) {
+                    const text = letters.charAt(Math.floor(Math.random() * letters.length));
+                    ctx.fillText(text, i * fontSize, drops[i] * fontSize);
+                    if (drops[i] * fontSize > canvas.height && Math.random() > 0.975) drops[i] = 0;
+                    drops[i]++;
+                }
+            }
+            matrixInterval = setInterval(draw, 33);
+        }
+
         document.addEventListener('click', () => input.focus());
     </script>
 </body>

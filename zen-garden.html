@@ -7,9 +7,9 @@
     <title>Zenith Sanctuary</title>
     <style>
         :root {
-            --bg: #f8f9fa;
-            --circle: rgba(0, 0, 0, 0.03);
-            --accent: #adb5bd;
+            --bg: #fdfdfd;
+            --accent: #1a1a1a;
+            --pale: #e9ecef;
         }
 
         body {
@@ -21,62 +21,39 @@
             justify-content: center;
             height: 100vh;
             overflow: hidden;
-            font-family: 'Inter', sans-serif;
-            transition: background-color 2s ease;
+            font-family: 'Inter', system-ui, sans-serif;
+            color: var(--accent);
         }
 
-        .container {
-            position: relative;
-            text-align: center;
-        }
-
-        .circle {
+        canvas {
             position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            border: 1px solid var(--accent);
-            border-radius: 50%;
-            animation: pulse 10s infinite ease-in-out;
+            inset: 0;
+            z-index: 1;
         }
 
-        @keyframes pulse {
-
-            0%,
-            100% {
-                width: 300px;
-                height: 300px;
-                opacity: 0.1;
-            }
-
-            50% {
-                width: 500px;
-                height: 500px;
-                opacity: 0.5;
-            }
-        }
-
-        .text {
+        .ui-overlay {
             position: relative;
             z-index: 10;
-            color: var(--accent);
-            font-weight: 300;
-            letter-spacing: 5px;
-            text-transform: uppercase;
-            font-size: 0.8rem;
-            animation: fadeIn 3s ease;
+            text-align: center;
+            pointer-events: none;
+            transition: opacity 2s ease;
         }
 
-        @keyframes fadeIn {
-            from {
-                opacity: 0;
-                letter-spacing: 15px;
-            }
+        h1 {
+            font-weight: 200;
+            letter-spacing: 20px;
+            text-transform: uppercase;
+            font-size: 1.2rem;
+            margin: 0;
+            opacity: 0.6;
+        }
 
-            to {
-                opacity: 1;
-                letter-spacing: 5px;
-            }
+        .status {
+            font-size: 0.6rem;
+            letter-spacing: 5px;
+            margin-top: 20px;
+            opacity: 0.3;
+            text-transform: uppercase;
         }
 
         .home-link {
@@ -84,36 +61,150 @@
             bottom: 40px;
             color: var(--accent);
             text-decoration: none;
-            font-size: 0.6rem;
-            opacity: 0.5;
-            transition: opacity 0.3s;
+            font-size: 0.7rem;
+            letter-spacing: 2px;
+            opacity: 0.2;
+            transition: opacity 0.5s;
+            pointer-events: auto;
+            text-transform: uppercase;
         }
 
         .home-link:hover {
-            opacity: 1;
+            opacity: 0.8;
+        }
+
+        #zen-indicator {
+            position: fixed;
+            top: 40px;
+            width: 100px;
+            height: 1px;
+            background: var(--accent);
+            opacity: 0;
+            transition: opacity 1s;
         }
     </style>
 </head>
 
 <body>
-    <div class="container">
-        <div class="circle" style="animation-delay: 0s;"></div>
-        <div class="circle" style="animation-delay: -2s; width: 400px; height: 400px;"></div>
-        <div class="circle" style="animation-delay: -4s; width: 200px; height: 200px;"></div>
-        <div class="text">Zenith</div>
+    <canvas id="zen-canvas"></canvas>
+
+    <div class="ui-overlay" id="ui">
+        <h1>Zenith</h1>
+        <div class="status" id="status">Adjusting Frequency</div>
     </div>
 
-    <a href="index.html" class="home-link">RETURN</a>
+    <div id="zen-indicator"></div>
+
+    <a href="index.html" class="home-link">Return to Core</a>
 
     <script>
-        // Subtle color shifting
-        let hue = 0;
-        function shift() {
-            document.body.style.backgroundColor = `hsl(${hue}, 5%, 95%)`;
-            hue = (hue + 0.1) % 360;
-            requestAnimationFrame(shift);
+        const canvas = document.getElementById('zen-canvas');
+        const ctx = canvas.getContext('2d');
+        const ui = document.getElementById('ui');
+        const status = document.getElementById('status');
+
+        let w, h;
+        let particles = [];
+        let mouse = { x: -100, y: -100 };
+        let lastMove = Date.now();
+        let zenMode = false;
+
+        function resize() {
+            w = canvas.width = window.innerWidth;
+            h = canvas.height = window.innerHeight;
         }
-        shift();
+        window.addEventListener('resize', resize);
+        resize();
+
+        class Particle {
+            constructor() {
+                this.reset();
+            }
+            reset() {
+                this.x = Math.random() * w;
+                this.y = Math.random() * h;
+                this.size = Math.random() * 2 + 1;
+                this.speedX = Math.random() * 0.5 - 0.25;
+                this.speedY = Math.random() * 0.5 - 0.25;
+                this.opacity = Math.random() * 0.5;
+            }
+            update() {
+                this.x += this.speedX;
+                this.y += this.speedY;
+
+                // Mouse influence
+                const dx = mouse.x - this.x;
+                const dy = mouse.y - this.y;
+                const dist = Math.sqrt(dx * dx + dy * dy);
+                if (dist < 200) {
+                    this.x -= dx * 0.01;
+                    this.y -= dy * 0.01;
+                }
+
+                if (this.x < 0 || this.x > w || this.y < 0 || this.y > h) this.reset();
+            }
+            draw() {
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                ctx.fillStyle = `rgba(26, 26, 26, ${this.opacity})`;
+                ctx.fill();
+            }
+        }
+
+        for (let i = 0; i < 150; i++) particles.push(new Particle());
+
+        function animate() {
+            ctx.clearRect(0, 0, w, h);
+
+            // Draw connections
+            particles.forEach((p1, i) => {
+                p1.update();
+                p1.draw();
+                for (let j = i + 1; j < particles.length; j++) {
+                    const p2 = particles[j];
+                    const dx = p1.x - p2.x;
+                    const dy = p1.y - p2.y;
+                    const dist = Math.sqrt(dx * dx + dy * dy);
+                    if (dist < 100) {
+                        ctx.beginPath();
+                        ctx.strokeStyle = `rgba(26, 26, 26, ${0.1 * (1 - dist / 100)})`;
+                        ctx.lineWidth = 0.5;
+                        ctx.moveTo(p1.x, p1.y);
+                        ctx.lineTo(p2.x, p2.y);
+                        ctx.stroke();
+                    }
+                }
+            });
+
+            // Zen check
+            if (Date.now() - lastMove > 5000 && !zenMode) {
+                enterZen();
+            }
+
+            requestAnimationFrame(animate);
+        }
+        animate();
+
+        window.addEventListener('mousemove', (e) => {
+            mouse.x = e.clientX;
+            mouse.y = e.clientY;
+            lastMove = Date.now();
+            if (zenMode) exitZen();
+        });
+
+        function enterZen() {
+            zenMode = true;
+            ui.style.opacity = '0';
+            document.body.style.backgroundColor = '#fff';
+            status.innerText = 'Sanctuary Active';
+        }
+
+        function exitZen() {
+            zenMode = false;
+            ui.style.opacity = '1';
+            document.body.style.backgroundColor = '#fdfdfd';
+            status.innerText = 'Monitoring Presence';
+        }
     </script>
 </body>
 

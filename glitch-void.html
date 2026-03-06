@@ -6,6 +6,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>FATAL_ERROR: GLITCH_VOID</title>
     <style>
+        :root {
+            --neon-pink: #ff00ff;
+            --neon-cyan: #00ffff;
+            --neon-yellow: #ffff00;
+        }
+
         body {
             margin: 0;
             padding: 0;
@@ -15,121 +21,226 @@
             align-items: center;
             justify-content: center;
             height: 100vh;
-            color: #f0f;
+            color: #fff;
             font-family: 'Courier New', Courier, monospace;
-            cursor: crosshair;
+            cursor: none;
         }
 
-        #glitch-container {
+        #glitch-canvas {
             position: absolute;
             inset: 0;
             z-index: 1;
         }
 
-        .glitch-block {
-            position: absolute;
-            background: #fff;
-            mix-blend-mode: difference;
-        }
-
         #ui {
             position: relative;
             z-index: 10;
-            background: #000;
-            padding: 20px;
-            border: 2px solid #f0f;
-            box-shadow: 10px 10px 0 #0ff;
+            background: rgba(0, 0, 0, 0.9);
+            padding: 30px;
+            border: 1px solid var(--neon-pink);
+            box-shadow:
+                0 0 20px var(--neon-pink),
+                inset 0 0 10px var(--neon-cyan);
             text-align: center;
+            max-width: 400px;
+            pointer-events: auto;
+            transform: skew(-2deg);
         }
 
-        h1 {
-            margin: 0 0 10px 0;
-            font-size: 1.5rem;
-        }
-
-        p {
+        .error-code {
+            font-size: 3rem;
+            font-weight: 900;
             margin: 0;
-            font-size: 0.9rem;
-            color: #0ff;
+            color: var(--neon-cyan);
+            text-shadow:
+                2px 2px 0 var(--neon-pink),
+                -2px -2px 0 #fff;
+            animation: text-glitch 0.2s infinite;
+        }
+
+        @keyframes text-glitch {
+            0% {
+                transform: translate(0);
+            }
+
+            20% {
+                transform: translate(-5px, 2px);
+            }
+
+            40% {
+                transform: translate(-2px, -2px);
+            }
+
+            60% {
+                transform: translate(5px, 2px);
+            }
+
+            80% {
+                transform: translate(2px, -2px);
+            }
+
+            100% {
+                transform: translate(0);
+            }
+        }
+
+        .details {
+            margin-top: 15px;
+            font-size: 0.8rem;
+            line-height: 1.6;
+            color: var(--neon-yellow);
+            opacity: 0.8;
+            text-transform: uppercase;
         }
 
         .back-link {
-            display: block;
-            margin-top: 20px;
+            display: inline-block;
+            margin-top: 25px;
             color: #fff;
             text-decoration: none;
             border: 1px solid #fff;
-            padding: 5px;
+            padding: 10px 20px;
+            font-weight: bold;
+            letter-spacing: 2px;
+            transition: 0.3s;
+            background: transparent;
         }
 
         .back-link:hover {
             background: #fff;
             color: #000;
+            box-shadow: 0 0 30px #fff;
+            transform: scale(1.1) rotate(-1deg);
+        }
+
+        /* Custom Corrupted Cursor */
+        #cursor {
+            width: 20px;
+            height: 20px;
+            background: #fff;
+            position: fixed;
+            pointer-events: none;
+            z-index: 1000;
+            mix-blend-mode: difference;
+        }
+
+        .popup {
+            position: absolute;
+            background: #fff;
+            color: #000;
+            padding: 5px;
+            border: 2px solid #000;
+            font-size: 10px;
+            font-weight: bold;
+            z-index: 50;
+            pointer-events: none;
         }
     </style>
 </head>
 
 <body>
-    <div id="glitch-container"></div>
+    <canvas id="glitch-canvas"></canvas>
+    <div id="cursor"></div>
 
     <div id="ui">
-        <h1>FATAL_ERROR</h1>
-        <p>Memory address 0x000WWG corrupted.</p>
-        <p>Render buffer overflow.</p>
+        <h1 class="error-code">0xFF_VOID</h1>
+        <div class="details">
+            FATAL_RENDER_BUFFER_OVERFLOW<br>
+            ADDR: 0x000WWG_CORRUPTED<br>
+            STATUS: ENTROPY_MAXIMIZED<br>
+            --------------------------<br>
+            SYSTEM_INTEGRITY: 0.04%
+        </div>
         <a href="index.html" class="back-link">REBOOT_SYSTEM</a>
     </div>
 
     <script>
-        const container = document.getElementById('glitch-container');
-        const colors = ['#f0f', '#0ff', '#ff0', '#fff', '#f00', '#00f', '#0f0'];
+        const canvas = document.getElementById('glitch-canvas');
+        const ctx = canvas.getContext('2d');
+        const cursor = document.getElementById('cursor');
 
-        function createBlock() {
-            const block = document.createElement('div');
-            block.className = 'glitch-block';
-
-            const w = Math.random() * 200 + 10;
-            const h = Math.random() * 200 + 10;
-            block.style.width = w + 'px';
-            block.style.height = h + 'px';
-
-            block.style.left = Math.random() * 100 + '%';
-            block.style.top = Math.random() * 100 + '%';
-
-            block.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
-            block.style.opacity = Math.random();
-            block.style.transform = `rotate(${Math.random() * 360}deg)`;
-
-            container.appendChild(block);
-
-            setTimeout(() => {
-                block.remove();
-            }, Math.random() * 500 + 100);
+        let w, h;
+        function resize() {
+            w = canvas.width = window.innerWidth;
+            h = canvas.height = window.innerHeight;
         }
+        window.addEventListener('resize', resize);
+        resize();
 
-        setInterval(createBlock, 30);
+        const colors = ['#ff00ff', '#00ffff', '#ffff00', '#ffffff', '#ff0000', '#0000ff'];
 
-        // Shake UI
-        const ui = document.getElementById('ui');
-        function shake() {
-            ui.style.transform = `translate(${Math.random() * 10 - 5}px, ${Math.random() * 10 - 5}px)`;
-            requestAnimationFrame(shake);
+        function drawGlitch() {
+            // Randomly clear parts
+            if (Math.random() > 0.8) {
+                ctx.fillStyle = 'rgba(0,0,0,0.1)';
+                ctx.fillRect(0, 0, w, h);
+            }
+
+            // Draw random blocks
+            for (let i = 0; i < 5; i++) {
+                ctx.fillStyle = colors[Math.floor(Math.random() * colors.length)];
+                const bw = Math.random() * 300;
+                const bh = Math.random() * 20;
+                ctx.fillRect(Math.random() * w, Math.random() * h, bw, bh);
+            }
+
+            // Draw "dead pixel" rows
+            if (Math.random() > 0.5) {
+                const rowY = Math.random() * h;
+                ctx.fillStyle = colors[Math.floor(Math.random() * colors.length)];
+                ctx.fillRect(0, rowY, w, 1);
+            }
+
+            // Screen tear (move chunk)
+            if (Math.random() > 0.95) {
+                const sy = Math.random() * h;
+                const sh = Math.random() * 100;
+                const sx = Math.random() * 50 - 25;
+                ctx.drawImage(canvas, 0, sy, w, sh, sx, sy, w, sh);
+            }
+
+            requestAnimationFrame(drawGlitch);
         }
-        shake();
+        drawGlitch();
 
-        // Mouse trail glitch
+        // Mouse trail & Cursor
         document.addEventListener('mousemove', (e) => {
-            for (let i = 0; i < 3; i++) {
-                const b = document.createElement('div');
-                b.className = 'glitch-block';
-                b.style.width = '20px';
-                b.style.height = '2px';
-                b.style.left = (e.clientX + (Math.random() * 40 - 20)) + 'px';
-                b.style.top = (e.clientY + (Math.random() * 40 - 20)) + 'px';
-                b.style.backgroundColor = '#fff';
-                container.appendChild(b);
-                setTimeout(() => b.remove(), 100);
+            cursor.style.left = e.clientX + 'px';
+            cursor.style.top = e.clientY + 'px';
+            cursor.style.transform = `scale(${Math.random() * 2 + 0.5}) rotate(${Math.random() * 360}deg)`;
+
+            if (Math.random() > 0.9) {
+                const popup = document.createElement('div');
+                popup.className = 'popup';
+                popup.style.left = e.clientX + 'px';
+                popup.style.top = e.clientY + 'px';
+                popup.innerText = 'DATA_LEAK: ' + Math.random().toString(16).slice(2, 10);
+                document.body.appendChild(popup);
+                setTimeout(() => popup.remove(), 1000);
             }
         });
+
+        // Click interaction
+        document.addEventListener('mousedown', () => {
+            ctx.fillStyle = '#fff';
+            ctx.fillRect(0, 0, w, h);
+            document.getElementById('ui').style.transform = `scale(1.2) rotate(${Math.random() * 10 - 5}deg)`;
+            setTimeout(() => {
+                document.getElementById('ui').style.transform = 'skew(-2deg)';
+            }, 100);
+        });
+
+        // BSOD Chance
+        setInterval(() => {
+            if (Math.random() > 0.99) {
+                ctx.fillStyle = '#0000aa';
+                ctx.fillRect(0, 0, w, h);
+                ctx.fillStyle = '#fff';
+                ctx.font = '20px monospace';
+                ctx.fillText('A problem has been detected and WWG has been shut down to prevent damage.', 50, 100);
+            }
+        }, 5000);
+
     </script>
 </body>
 
