@@ -2,7 +2,8 @@
 <html lang="en">
 
 <head>
-    <link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20100%20100%22%3E%3Ctext%20y%3D%22.9em%22%20font-size%3D%2290%22%3E%F0%9F%8E%B9%3C%2Ftext%3E%3C%2Fsvg%3E">
+    <link rel="icon"
+        href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20100%20100%22%3E%3Ctext%20y%3D%22.9em%22%20font-size%3D%2290%22%3E%F0%9F%8E%B9%3C%2Ftext%3E%3C%2Fsvg%3E">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Color Piano — Play Music with Colors</title>
@@ -219,38 +220,43 @@
 
 <body>
 
-<!-- WWG Back Button -->
-<style>
-.wwg-back-btn {
-    position: fixed;
-    top: 20px;
-    left: 20px;
-    width: 44px;
-    height: 44px;
-    background: rgba(10, 10, 15, 0.7);
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: #a78bfa;
-    z-index: 99999;
-    transition: all 0.3s ease;
-    text-decoration: none;
-}
-.wwg-back-btn:hover {
-    background: rgba(167, 139, 250, 0.2);
-    border-color: rgba(167, 139, 250, 0.4);
-    transform: scale(1.05) translateX(-2px);
-    color: #fff;
-    box-shadow: 0 0 15px rgba(167, 139, 250, 0.3);
-}
-</style>
-<a href="index.html" class="wwg-back-btn" title="Back to Gallery">
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
-</a>
+    <!-- WWG Back Button -->
+    <style>
+        .wwg-back-btn {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            width: 44px;
+            height: 44px;
+            background: rgba(10, 10, 15, 0.7);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #a78bfa;
+            z-index: 99999;
+            transition: all 0.3s ease;
+            text-decoration: none;
+        }
+
+        .wwg-back-btn:hover {
+            background: rgba(167, 139, 250, 0.2);
+            border-color: rgba(167, 139, 250, 0.4);
+            transform: scale(1.05) translateX(-2px);
+            color: #fff;
+            box-shadow: 0 0 15px rgba(167, 139, 250, 0.3);
+        }
+    </style>
+    <a href="index.html" class="wwg-back-btn" title="Back to Gallery">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+            stroke-linecap="round" stroke-linejoin="round">
+            <line x1="19" y1="12" x2="5" y2="12"></line>
+            <polyline points="12 19 5 12 12 5"></polyline>
+        </svg>
+    </a>
 
     <canvas id="bg-canvas"></canvas>
     <div class="header">
@@ -287,7 +293,38 @@
         const pianoEl = document.getElementById('piano');
         function buildPiano() { pianoEl.innerHTML = ''; let wi = 0; NOTES.forEach((n, i) => { if (n.type === 'white') { const el = document.createElement('div'); el.className = 'key white-key'; el.dataset.index = i; el.style.setProperty('--key-color', n.color); el.innerHTML = `<span class="key-label">${n.key.toUpperCase()}</span>`; pianoEl.appendChild(el); wi++ } }); wi = 0; NOTES.forEach((n, i) => { if (n.type === 'white') { wi++; return } const el = document.createElement('div'); el.className = 'key black-key'; el.dataset.index = i; el.style.setProperty('--key-color', n.color); const ww = pianoEl.querySelector('.white-key')?.offsetWidth || 56; el.style.left = ((wi - 1) * ww + ww * .7) + 'px'; el.innerHTML = `<span class="key-label">${n.key.toUpperCase()}</span>`; pianoEl.appendChild(el) }) }
         buildPiano(); window.addEventListener('resize', () => setTimeout(buildPiano, 100));
-        function pressKey(i) { const n = NOTES[i]; if (!n) return; playNote(n.freq); triggerVisual(n.color, n.hue); spawnParticles(i, n.color); const el = pianoEl.querySelector(`[data-index="${i}"]`); if (el) { el.classList.add('pressed'); setTimeout(() => el.classList.remove('pressed'), 200) } }
+        // Secret Sequence tracker
+        const secretSequence = ['C4', 'C4', 'G4', 'G4', 'A4', 'A4', 'G4'];
+        let currentSequence = [];
+
+        function pressKey(i) {
+            const n = NOTES[i];
+            if (!n) return;
+
+            playNote(n.freq);
+            triggerVisual(n.color, n.hue);
+            spawnParticles(i, n.color);
+
+            const el = pianoEl.querySelector(`[data-index="${i}"]`);
+            if (el) {
+                el.classList.add('pressed');
+                setTimeout(() => el.classList.remove('pressed'), 200);
+            }
+
+            // Starlight Secret Logic
+            currentSequence.push(n.note);
+            if (currentSequence.length > secretSequence.length) {
+                currentSequence.shift();
+            }
+
+            if (currentSequence.join(',') === secretSequence.join(',')) {
+                setTimeout(() => {
+                    document.body.style.transition = 'opacity 2s ease';
+                    document.body.style.opacity = '0';
+                    setTimeout(() => window.location.href = 'starlight.html', 1500);
+                }, 1000);
+            }
+        }
         pianoEl.addEventListener('mousedown', e => { const k = e.target.closest('.key'); if (k) pressKey(parseInt(k.dataset.index)) });
         pianoEl.addEventListener('touchstart', e => { e.preventDefault(); const k = e.target.closest('.key'); if (k) pressKey(parseInt(k.dataset.index)) }, { passive: false });
         const keyMap = {}; NOTES.forEach((n, i) => { keyMap[n.key] = i }); const keysDown = new Set();
@@ -301,43 +338,45 @@
         function spawnParticles(index, color) { const el = pianoEl.querySelector(`[data-index="${index}"]`); if (!el) return; const rect = el.getBoundingClientRect(); const cx = rect.left + rect.width / 2, cy = rect.top; for (let i = 0; i < 8; i++) { const p = document.createElement('div'); p.className = 'particle'; const sz = 4 + Math.random() * 6; p.style.width = sz + 'px'; p.style.height = sz + 'px'; p.style.background = color; p.style.boxShadow = `0 0 12px ${color}`; p.style.left = cx + 'px'; p.style.top = cy + 'px'; document.body.appendChild(p); const angle = -Math.PI / 2 + (Math.random() - .5) * Math.PI; const spd = 2 + Math.random() * 4; let vx = Math.cos(angle) * spd, vy = Math.sin(angle) * spd, x = cx, y = cy, a = 1; (function anim() { x += vx; y += vy + .5; a -= .02; if (a <= 0) { p.remove(); return } p.style.left = x + 'px'; p.style.top = y + 'px'; p.style.opacity = a; requestAnimationFrame(anim) })() } }
     </script>
 
-<!-- WWG_NAV_START -->
-<style>
-.wwg-nav {
-    position: fixed;
-    bottom: 20px;
-    right: 20px;
-    display: flex;
-    gap: 10px;
-    z-index: 99999;
-}
-.wwg-nav a {
-    background: rgba(10, 10, 15, 0.7);
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    color: #a78bfa;
-    padding: 8px 16px;
-    border-radius: 20px;
-    font-family: 'Space Grotesk', sans-serif;
-    font-size: 0.8rem;
-    font-weight: 600;
-    text-decoration: none;
-    transition: all 0.3s ease;
-}
-.wwg-nav a:hover {
-    background: rgba(167, 139, 250, 0.2);
-    border-color: rgba(167, 139, 250, 0.4);
-    color: #fff;
-    transform: translateY(-2px);
-    box-shadow: 0 4px 15px rgba(167, 139, 250, 0.3);
-}
-</style>
-<div class="wwg-nav">
-    <a href="gravity-playground.html">← Prev</a>
-    <a href="harmonograph.html">Next →</a>
-</div>
-<!-- WWG_NAV_END -->
+    <!-- WWG_NAV_START -->
+    <style>
+        .wwg-nav {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            display: flex;
+            gap: 10px;
+            z-index: 99999;
+        }
+
+        .wwg-nav a {
+            background: rgba(10, 10, 15, 0.7);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: #a78bfa;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 0.8rem;
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+
+        .wwg-nav a:hover {
+            background: rgba(167, 139, 250, 0.2);
+            border-color: rgba(167, 139, 250, 0.4);
+            color: #fff;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(167, 139, 250, 0.3);
+        }
+    </style>
+    <div class="wwg-nav">
+        <a href="gravity-playground.html">← Prev</a>
+        <a href="harmonograph.html">Next →</a>
+    </div>
+    <!-- WWG_NAV_END -->
 </body>
 
 </html>
