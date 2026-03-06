@@ -199,224 +199,31 @@
             bottom: 30%;
             left: 50%;
             transform: translateX(-50%);
-            <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Vaporwave City Drive | WWG</title><style>@import url('https://fonts.googleapis.com/css2?family=Righteous&family=Varela+Round&display=swap');
+            width: 60vh;
+            height: 60vh;
+            border-radius: 50%;
+            background: linear-gradient(180deg, #ffdb00 0%, #ff8a00 45%, #ff007f 100%);
+            box-shadow: 0 0 100px #ff007f, 0 0 200px #ff8a00;
+            z-index: 2;
+            pointer-events: auto;
+            cursor: pointer;
+            clip-path: polygon(0% 0%, 100% 0%, 100% 55%, 0% 55%,
+                    0% 58%, 100% 58%, 100% 65%, 0% 65%,
+                    0% 68%, 100% 68%, 100% 75%, 0% 75%,
+                    0% 78%, 100% 78%, 100% 85%, 0% 85%,
+                    0% 88%, 100% 88%, 100% 95%, 0% 95%,
+                    0% 98%, 100% 98%, 100% 100%, 0% 100%);
+        }
 
-            :root {
-                --neon-pink: #ff007f;
-                --neon-blue: #00f3ff;
-                --neon-purple: #b000ff;
-                --sky-top: #0a0026;
-                --sky-bottom: #240046;
-            }
-
-            body,
-            html {
-                margin: 0;
-                padding: 0;
-                width: 100%;
-                height: 100%;
-                overflow: hidden;
-                background-color: #000;
-                font-family: 'Varela Round', sans-serif;
-                user-select: none;
-            }
-
-            #canvas-container {
-                position: absolute;
-                top: 0;
-                left: 0;
-                width: 100%;
-                height: 100%;
-                z-index: 1;
-            }
-
-            .ui-layer {
-                position: absolute;
-                top: 0;
-                left: 0;
-                width: 100%;
-                height: 100%;
-                pointer-events: none;
-                z-index: 10;
-                display: flex;
-                flex-direction: column;
-                justify-content: space-between;
-                padding: 30px;
-                box-sizing: border-box;
-            }
-
-            /* Scanline Overlay for retro CRT effect */
-            .scanlines {
-                position: absolute;
-                top: 0;
-                left: 0;
-                width: 100%;
-                height: 100%;
-                background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
-                background-size: 100% 4px, 6px 100%;
-                pointer-events: none;
-                z-index: 100;
-            }
-
-            .vignette {
-                position: absolute;
-                top: 0;
-                left: 0;
-                width: 100%;
-                height: 100%;
-                box-shadow: inset 0 0 150px rgba(0, 0, 0, 0.9);
-                pointer-events: none;
-                z-index: 99;
-            }
-
-            .header {
-                text-align: center;
-                pointer-events: auto;
-            }
-
-            h1 {
-                font-family: 'Righteous', cursive;
-                font-size: 4rem;
-                margin: 0;
-                color: #fff;
-                text-transform: uppercase;
-                letter-spacing: 5px;
-                text-shadow: 0 0 10px var(--neon-pink), 0 0 20px var(--neon-pink), 0 0 40px var(--neon-purple);
-                -webkit-text-stroke: 1px var(--neon-blue);
-                transform: skewX(-5deg);
-            }
-
-            .subtitle {
-                font-family: 'Varela Round', sans-serif;
-                color: var(--neon-blue);
-                font-size: 1.2rem;
-                letter-spacing: 8px;
-                text-transform: uppercase;
-                text-shadow: 0 0 10px var(--neon-blue);
-                margin-top: -10px;
-            }
-
-            .controls {
-                align-self: flex-start;
-                pointer-events: auto;
-                background: rgba(10, 0, 38, 0.7);
-                border: 1px solid var(--neon-purple);
-                padding: 20px;
-                border-radius: 8px;
-                backdrop-filter: blur(5px);
-                box-shadow: 0 0 20px rgba(176, 0, 255, 0.3);
-                display: flex;
-                flex-direction: column;
-                gap: 15px;
-                min-width: 250px;
-            }
-
-            .control-group {
-                display: flex;
-                flex-direction: column;
-                gap: 5px;
-            }
-
-            .control-group label {
-                color: var(--neon-blue);
-                font-size: 0.8rem;
-                text-transform: uppercase;
-                letter-spacing: 2px;
-                text-shadow: 0 0 5px var(--neon-blue);
-            }
-
-            input[type="range"] {
-                -webkit-appearance: none;
-                width: 100%;
-                height: 4px;
-                background: rgba(255, 255, 255, 0.2);
-                border-radius: 2px;
-                outline: none;
-            }
-
-            input[type="range"]::-webkit-slider-thumb {
-                -webkit-appearance: none;
-                width: 16px;
-                height: 16px;
-                border-radius: 50%;
-                background: var(--neon-pink);
-                box-shadow: 0 0 10px var(--neon-pink);
-                cursor: pointer;
-            }
-
-            .instructions {
-                position: absolute;
-                bottom: 30px;
-                right: 30px;
-                color: rgba(255, 255, 255, 0.6);
-                font-size: 0.9rem;
-                text-align: right;
-                line-height: 1.5;
-            }
-
-            .instructions kbd {
-                background: rgba(255, 255, 255, 0.1);
-                border: 1px solid rgba(255, 255, 255, 0.3);
-                border-radius: 4px;
-                padding: 2px 6px;
-                font-family: monospace;
-                color: var(--neon-pink);
-            }
-
-            .back-link {
-                position: absolute;
-                top: 20px;
-                left: 20px;
-                color: var(--neon-blue);
-                text-decoration: none;
-                font-size: 1rem;
-                letter-spacing: 1px;
-                display: flex;
-                align-items: center;
-                gap: 8px;
-                pointer-events: auto;
-                transition: 0.2s;
-                text-transform: uppercase;
-            }
-
-            .back-link:hover {
-                color: var(--neon-pink);
-                text-shadow: 0 0 10px var(--neon-pink);
-            }
-
-            /* 80s Sun SVG overlay */
-            .retro-sun {
-                position: absolute;
-                bottom: 30%;
-                left: 50%;
-                transform: translateX(-50%);
-                width: 60vh;
-                height: 60vh;
-                border-radius: 50%;
-                background: linear-gradient(180deg, #ffdb00 0%, #ff8a00 45%, #ff007f 100%);
-                box-shadow: 0 0 100px #ff007f, 0 0 200px #ff8a00;
-                z-index: 2;
-                /* Behind the grid */
-                /* Interactive sun for secret */
-                pointer-events: auto;
-                cursor: pointer;
-                clip-path: polygon(0% 0%, 100% 0%, 100% 55%, 0% 55%,
-                        0% 58%, 100% 58%, 100% 65%, 0% 65%,
-                        0% 68%, 100% 68%, 100% 75%, 0% 75%,
-                        0% 78%, 100% 78%, 100% 85%, 0% 85%,
-                        0% 88%, 100% 88%, 100% 95%, 0% 95%,
-                        0% 98%, 100% 98%, 100% 100%, 0% 100%);
-            }
-
-            .background-gradient {
-                position: absolute;
-                top: 0;
-                left: 0;
-                width: 100%;
-                height: 100%;
-                background: linear-gradient(to bottom, var(--sky-top) 0%, var(--sky-bottom) 50%, #000 50%, #000 100%);
-                z-index: 0;
-            }
+        .background-gradient {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(to bottom, var(--sky-top) 0%, var(--sky-bottom) 50%, #000 50%, #000 100%);
+            z-index: 0;
+        }
     </style>
     <!-- Three.js from CDN -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
@@ -447,7 +254,6 @@
         <div class="header">
             <h1>OUTRUN</h1>
             <div class="subtitle">Endless Vaporwave Drive</div>
-            <!-- [hint: the road goes deeper than it looks. search where sound becomes signal.] -->
             <div
                 style="font-size:0.55rem;color:rgba(176,0,255,0.25);letter-spacing:3px;margin-top:6px;font-family:monospace;animation:subtlePulse 4s ease infinite;">
                 103.7 · v o i d · classified
@@ -478,32 +284,26 @@
         const container = document.getElementById('canvas-container');
         const scene = new THREE.Scene();
 
-        // Fog to blend grid into the horizon
         scene.fog = new THREE.FogExp2(0x0a0026, 0.015);
 
         const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
-        // Position camera as if in a car driving down the center
         camera.position.set(0, 5, 20);
         camera.lookAt(0, 5, 0);
 
         const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
         renderer.setSize(window.innerWidth, window.innerHeight);
         renderer.setPixelRatio(window.devicePixelRatio);
-        // Custom blending for neon glow effect
         container.appendChild(renderer.domElement);
 
         // --- PROC-GEN TERRAIN ---
         const cols = 50;
-        const rows = 120; // Long road ahead
-        const size = 3;   // Distance between vertices
+        const rows = 120;
+        const size = 3;
         const geometry = new THREE.PlaneGeometry(cols * size, rows * size, cols, rows);
-
-        // Rotate flat
         geometry.rotateX(-Math.PI / 2);
 
-        // Wireframe material for the grid
         const material = new THREE.LineBasicMaterial({
-            color: 0xff007f, // Neon Pink
+            color: 0xff007f,
             linewidth: 2,
             transparent: true,
             opacity: 0.8
@@ -511,19 +311,15 @@
 
         const wireframe = new THREE.WireframeGeometry(geometry);
         const gridLines = new THREE.LineSegments(wireframe, material);
-
-        // Push it down and far out
         gridLines.position.y = -2;
         gridLines.position.z = -((rows * size) / 2) + 30;
         scene.add(gridLines);
 
         // --- LOGIC VARS ---
         const simplex = new SimplexNoise();
-        let terrainOffset = 0; // Moves forward to simulate driving
+        let terrainOffset = 0;
         let steer = 0;
-        let carZ = 0;
 
-        // UI Inputs
         const uiSpeed = document.getElementById('param-speed');
         const uiGlow = document.getElementById('param-glow');
         const valSpeed = document.getElementById('val-speed');
@@ -532,10 +328,9 @@
         uiGlow.addEventListener('input', e => {
             const val = e.target.value / 100;
             material.opacity = val;
-            gridLines.material.color.setHSL(0.88, 1, val * 0.5 + 0.3); // Brighten as glow increases
+            gridLines.material.color.setHSL(0.88, 1, val * 0.5 + 0.3);
         });
 
-        // Keyboard Driving
         const keys = { left: false, right: false };
         window.addEventListener('keydown', e => {
             if (e.key === 'ArrowLeft' || e.key.toLowerCase() === 'a') keys.left = true;
@@ -546,7 +341,6 @@
             if (e.key === 'ArrowRight' || e.key.toLowerCase() === 'd') keys.right = false;
         });
 
-        // --- ANIMATION LOOP ---
         const clock = new THREE.Clock();
 
         function animate() {
@@ -554,62 +348,36 @@
 
             const delta = clock.getDelta();
             const speed = parseInt(uiSpeed.value);
-
-            // 1. Move the terrain (Update vertices via Noise)
-            // Instead of moving the mesh, we shift the noise map to create the illusion of infinite speed
             terrainOffset -= delta * speed * 0.1;
 
-            // Steering adjustments
             if (keys.left) steer -= 15 * delta;
             if (keys.right) steer += 15 * delta;
-            // Auto drift back to center slowly
             steer *= 0.95;
-
             camera.position.x = steer;
 
-            // Manipulate vertex Heights
-            const positionAttribute = wireframe.attributes.position;
-            const vertex = new THREE.Vector3();
-
-            // Note: Wireframe geometry has duplicated vertices per line segment. 
-            // We use the original PlaneGeometry to calculate heights and update the wireframe.
             const geoPos = geometry.attributes.position;
-
             for (let i = 0; i < geoPos.count; i++) {
-                vertex.fromBufferAttribute(geoPos, i);
-
-                // Calculate position in the noise field
-                const nx = vertex.x * 0.05;
-                // Add terrain offset to Y (which represents Z in world space since plane was rotated)
-                const ny = vertex.z * 0.05 + terrainOffset;
-
-                // Keep the center road flat
-                let distFromCenter = Math.abs(vertex.x);
-                let heightMult = Math.max(0, (distFromCenter - 15) / 20); // Flat until x=15, then rises
-
-                // Add mountains on the sides
+                const x = geoPos.getX(i);
+                const z = geoPos.getZ(i);
+                const nx = x * 0.05;
+                const ny = z * 0.05 + terrainOffset;
+                let distFromCenter = Math.abs(x);
+                let heightMult = Math.max(0, (distFromCenter - 15) / 20);
                 let h = simplex.noise2D(nx, ny) * 15 * heightMult;
-
-                // Apply height
                 geoPos.setY(i, h);
             }
             geoPos.needsUpdate = true;
 
-            // Re-generate wireframe from updated geometry (expensive, but necessary for dynamic vertex manipulation in basic ThreeJS)
-            // Optimization: In a real prod game, use custom Vertex Shaders for this.
             scene.remove(gridLines);
             const newWireframe = new THREE.WireframeGeometry(geometry);
             gridLines.geometry.dispose();
             gridLines.geometry = newWireframe;
             scene.add(gridLines);
 
-            // Subtle camera bobbing
             camera.position.y = 5 + Math.sin(terrainOffset * 5) * 0.3;
-
             renderer.render(scene, camera);
         }
 
-        // Handle Resize
         window.addEventListener('resize', () => {
             camera.aspect = window.innerWidth / window.innerHeight;
             camera.updateProjectionMatrix();
@@ -623,14 +391,12 @@
         function initAudio() {
             if (isAudioStarted) return;
             isAudioStarted = true;
-
             audioCtx = new (window.AudioContext || window.webkitAudioContext)();
 
-            // ── Bass Layer (Drone) ──
             const bass = audioCtx.createOscillator();
             const bassGain = audioCtx.createGain();
             bass.type = 'sawtooth';
-            bass.frequency.setValueAtTime(55, audioCtx.currentTime); // A1
+            bass.frequency.setValueAtTime(55, audioCtx.currentTime);
             bassGain.gain.setValueAtTime(0.05, audioCtx.currentTime);
 
             const filter = audioCtx.createBiquadFilter();
@@ -642,7 +408,6 @@
             filter.connect(audioCtx.destination);
             bass.start();
 
-            // ── Simple Melody Loop ──
             const melody = audioCtx.createOscillator();
             const melGain = audioCtx.createGain();
             melody.type = 'square';
@@ -651,19 +416,16 @@
             melGain.connect(audioCtx.destination);
             melody.start();
 
-            const notes = [110, 123.47, 130.81, 146.83]; // A2, B2, C3, D3
+            const notes = [110, 123.47, 130.81, 146.83];
             let step = 0;
-
             setInterval(() => {
                 const now = audioCtx.currentTime;
                 const freq = notes[step % notes.length];
                 melody.frequency.setTargetAtTime(freq, now, 0.1);
-
                 melGain.gain.cancelScheduledValues(now);
                 melGain.gain.setValueAtTime(0, now);
                 melGain.gain.linearRampToValueAtTime(0.02, now + 0.1);
                 melGain.gain.linearRampToValueAtTime(0, now + 0.4);
-
                 step++;
             }, 500);
         }
@@ -678,10 +440,8 @@
             retroSun.addEventListener('click', (e) => {
                 e.stopPropagation();
                 sunClicks++;
-
-                // Visual feedback
                 retroSun.style.transition = '0.1s';
-                retroSun.style.boxShadow = `0 0 ${100 + sunClicks * 10}px #ff007f`;
+                retroSun.style.boxShadow = `0 0 ${100 + sunClicks * 20}px #ff007f`;
                 setTimeout(() => {
                     retroSun.style.boxShadow = '0 0 100px #ff007f, 0 0 200px #ff8a00';
                 }, 100);
@@ -696,9 +456,7 @@
             });
         }
 
-        // Start
         animate();
-
     </script>
 
     <!-- WWG_NAV_START -->
