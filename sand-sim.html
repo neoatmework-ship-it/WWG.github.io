@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sand Simulator | WWG</title>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: #0a0a10;
+            color: #fff;
+            font-family: 'Space Grotesk', sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            padding: 16px;
+            gap: 12px;
+        }
+
+        h1 {
+            font-size: 1.8rem;
+            background: linear-gradient(135deg, #fbbf24, #f97316);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        #canvas {
+            cursor: crosshair;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            touch-action: none;
+        }
+
+        .toolbar {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .material-btn {
+            padding: 8px 16px;
+            border-radius: 8px;
+            border: 2px solid transparent;
+            cursor: pointer;
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 0.8rem;
+            font-weight: 600;
+            transition: all 0.2s;
+            background: rgba(255, 255, 255, 0.06);
+            color: #ccc;
+        }
+
+        .material-btn.active {
+            border-color: #fff;
+            color: #fff;
+        }
+
+        .material-btn[data-m="sand"] {
+            --mc: #e8c46a;
+        }
+
+        .material-btn[data-m="water"] {
+            --mc: #60a5fa;
+        }
+
+        .material-btn[data-m="fire"] {
+            --mc: #f97316;
+        }
+
+        .material-btn[data-m="smoke"] {
+            --mc: #9ca3af;
+        }
+
+        .material-btn[data-m="stone"] {
+            --mc: #6b7280;
+        }
+
+        .material-btn[data-m="oil"] {
+            --mc: #92400e;
+        }
+
+        .material-btn[data-m="erase"] {
+            --mc: #374151;
+        }
+
+        .material-btn.active {
+            background: rgba(from var(--mc) r g b / 0.2);
+            border-color: var(--mc);
+            color: var(--mc);
+        }
+
+        .size-control {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.8rem;
+            color: #8888aa;
+        }
+
+        .size-control input {
+            accent-color: #a78bfa;
+        }
+
+        .controls-row {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+
+        .btn-sm {
+            padding: 6px 14px;
+            border-radius: 7px;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            background: rgba(255, 255, 255, 0.05);
+            color: #8888aa;
+            cursor: pointer;
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 0.8rem;
+        }
+
+        .btn-sm:hover {
+            color: #fff;
+            border-color: rgba(255, 255, 255, 0.3);
+        }
+
+        a.back {
+            color: #8888aa;
+            text-decoration: none;
+            font-size: 0.85rem;
+            align-self: flex-start;
+        }
+
+        a.back:hover {
+            color: #fff;
+        }
+
+        .particle-count {
+            font-size: 0.75rem;
+            color: #8888aa;
+        }
+    </style>
+</head>
+
+<body>
+    <a class="back" href="index.html">← Gallery</a>
+    <h1>🏖️ Sand Simulator</h1>
+    <canvas id="canvas"></canvas>
+    <div class="toolbar">
+        <button class="material-btn active" data-m="sand">🟡 Sand</button>
+        <button class="material-btn" data-m="water">💧 Water</button>
+        <button class="material-btn" data-m="fire">🔥 Fire</button>
+        <button class="material-btn" data-m="smoke">💨 Smoke</button>
+        <button class="material-btn" data-m="stone">🪨 Stone</button>
+        <button class="material-btn" data-m="oil">🛢 Oil</button>
+        <button class="material-btn" data-m="erase">🧹 Erase</button>
+    </div>
+    <div class="controls-row">
+        <div class="size-control">
+            Brush <input type="range" id="brush-size" min="1" max="8" value="3"> <span id="size-val">3</span>
+        </div>
+        <button class="btn-sm" id="clear-btn">Clear</button>
+        <span class="particle-count" id="particle-count">0 particles</span>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+
+        const isMobile = window.innerWidth < 600;
+        const W = isMobile ? Math.min(window.innerWidth - 32, 320) : 480;
+        const H = isMobile ? 380 : 480;
+        const SCALE = 2; // pixel size
+        const COLS = Math.floor(W / SCALE);
+        const ROWS = Math.floor(H / SCALE);
+
+        canvas.width = COLS * SCALE;
+        canvas.height = ROWS * SCALE;
+
+        // Material IDs
+        const EMPTY = 0, SAND = 1, WATER = 2, FIRE = 3, SMOKE = 4, STONE = 5, OIL = 6;
+
+        // Cell: [type, lifetime, hue_offset]
+        const grid = new Uint8Array(COLS * ROWS);
+        const life = new Uint8Array(COLS * ROWS);
+
+        const idx = (x, y) => y * COLS + x;
+        const inBounds = (x, y) => x >= 0 && x < COLS && y >= 0 && y < ROWS;
+
+        const COLORS = {
+            [SAND]: (l) => `hsl(${42 + (l % 8) - 4},80%,${55 + (l % 10) - 5}%)`,
+            [WATER]: (l) => `hsl(${210 + (l % 10) - 5},80%,${50 + (l % 10)}%)`,
+            [FIRE]: (l) => `hsl(${20 + (l * 3) % 30},100%,${50 + (l % 20)}%)`,
+            [SMOKE]: (l) => `hsla(${220},10%,${40 + l % 20}%,${0.7 - l * 0.005})`,
+            [STONE]: () => '#6b7280',
+            [OIL]: (l) => `hsl(${30 + l % 20},60%,30%)`,
+        };
+
+        let material = SAND;
+        let brushSize = 3;
+        let painting = false;
+        let mouseX = 0, mouseY = 0;
+
+        function setCell(x, y, type) {
+            if (!inBounds(x, y)) return;
+            const i = idx(x, y);
+            grid[i] = type;
+            life[i] = Math.random() * 60 | 0;
+        }
+
+        function getCell(x, y) {
+            if (!inBounds(x, y)) return -1;
+            return grid[idx(x, y)];
+        }
+
+        function swap(x1, y1, x2, y2) {
+            const i1 = idx(x1, y1), i2 = idx(x2, y2);
+            const t = grid[i1]; grid[i1] = grid[i2]; grid[i2] = t;
+            const l = life[i1]; life[i1] = life[i2]; life[i2] = l;
+        }
+
+        const updated = new Uint8Array(COLS * ROWS);
+
+        function step() {
+            updated.fill(0);
+            for (let y = ROWS - 1; y >= 0; y--) {
+                const leftFirst = Math.random() < 0.5;
+                for (let xi = 0; xi < COLS; xi++) {
+                    const x = leftFirst ? xi : (COLS - 1 - xi);
+                    const i = idx(x, y);
+                    if (updated[i]) continue;
+                    const type = grid[i];
+                    if (type === EMPTY) continue;
+
+                    const lv = (life[i] + 1) & 0xff;
+                    life[i] = lv;
+
+                    if (type === SAND) {
+                        if (inBounds(x, y + 1) && grid[idx(x, y + 1)] === EMPTY) {
+                            swap(x, y, x, y + 1); updated[idx(x, y + 1)] = 1;
+                        } else if (inBounds(x, y + 1) && grid[idx(x, y + 1)] === WATER) {
+                            swap(x, y, x, y + 1); updated[idx(x, y + 1)] = 1;
+                        } else {
+                            const d = (Math.random() < 0.5) ? -1 : 1;
+                            if (inBounds(x + d, y + 1) && grid[idx(x + d, y + 1)] === EMPTY) { swap(x, y, x + d, y + 1); updated[idx(x + d, y + 1)] = 1; }
+                            else if (inBounds(x - d, y + 1) && grid[idx(x - d, y + 1)] === EMPTY) { swap(x, y, x - d, y + 1); updated[idx(x - d, y + 1)] = 1; }
+                        }
+                    } else if (type === WATER || type === OIL) {
+                        const density = type === WATER ? 2 : 1;
+                        if (inBounds(x, y + 1)) {
+                            const below = grid[idx(x, y + 1)];
+                            if (below === EMPTY) { swap(x, y, x, y + 1); updated[idx(x, y + 1)] = 1; continue; }
+                            if (type === OIL && below === WATER) { swap(x, y, x, y + 1); updated[idx(x, y + 1)] = 1; continue; }
+                        }
+                        const d = (Math.random() < 0.5) ? -1 : 1;
+                        const spread = type === WATER ? 3 : 2;
+                        for (let s = 1; s <= spread; s++) {
+                            if (inBounds(x + d * s, y) && grid[idx(x + d * s, y)] === EMPTY) { swap(x, y, x + d * s, y); updated[idx(x + d * s, y)] = 1; break; }
+                            else if (grid[idx(x + d * s, y)] !== EMPTY) break;
+                        }
+                    } else if (type === FIRE) {
+                        life[i] = lv;
+                        if (lv > 180) { grid[i] = SMOKE; life[i] = 0; continue; }
+                        // Spread to neighbors
+                        [[-1, 0], [1, 0], [0, -1], [0, 1]].forEach(([dx, dy]) => {
+                            if (!inBounds(x + dx, y + dy)) return;
+                            const ni = idx(x + dx, y + dy);
+                            const nt = grid[ni];
+                            if (nt === OIL && Math.random() < 0.05) { grid[ni] = FIRE; life[ni] = 0; }
+                            if (nt === SAND && Math.random() < 0.001) { grid[ni] = FIRE; life[ni] = 0; }
+                        });
+                        // Rise
+                        if (inBounds(x, y - 1) && grid[idx(x, y - 1)] === EMPTY && Math.random() < 0.4) {
+                            swap(x, y, x, y - 1); updated[idx(x, y - 1)] = 1;
+                        } else {
+                            const d = (Math.random() < 0.5) ? -1 : 1;
+                            if (inBounds(x + d, y - 1) && grid[idx(x + d, y - 1)] === EMPTY && Math.random() < 0.2) {
+                                setCell(x + d, y - 1, FIRE);
+                            }
+                        }
+                    } else if (type === SMOKE) {
+                        if (lv > 200) { grid[i] = EMPTY; continue; }
+                        if (inBounds(x, y - 1) && grid[idx(x, y - 1)] === EMPTY && Math.random() < 0.4) {
+                            swap(x, y, x, y - 1); updated[idx(x, y - 1)] = 1;
+                        } else {
+                            const d = (Math.random() < 0.5) ? -1 : 1;
+                            if (inBounds(x + d, y) && grid[idx(x + d, y)] === EMPTY && Math.random() < 0.3) { swap(x, y, x + d, y); updated[idx(x + d, y)] = 1; }
+                        }
+                    }
+                }
+            }
+        }
+
+        function draw() {
+            const imageData = ctx.createImageData(canvas.width, canvas.height);
+            const data = imageData.data;
+            let count = 0;
+
+            for (let y = 0; y < ROWS; y++) {
+                for (let x = 0; x < COLS; x++) {
+                    const type = grid[idx(x, y)];
+                    if (type === EMPTY) continue;
+                    count++;
+                    const lv = life[idx(x, y)];
+                    let r = 0, g = 0, b = 0, a = 255;
+                    if (type === SAND) { r = 200 + lv % 30 - 15; g = 180 + lv % 20 - 10; b = 80 + lv % 20; }
+                    else if (type === WATER) { r = 40 + lv % 20; g = 100 + lv % 30; b = 200 + lv % 55; a = 200; }
+                    else if (type === FIRE) { r = 255; g = 100 + (lv * 3) % 155; b = 0; a = 200 + lv % 55; }
+                    else if (type === SMOKE) { const c = 80 + lv % 60; r = g = b = c; a = 180 - lv; }
+                    else if (type === STONE) { r = g = b = 100 + lv % 30 - 15; }
+                    else if (type === OIL) { r = 100 + lv % 30; g = 60 + lv % 20; b = 30; a = 220; }
+
+                    for (let py = 0; py < SCALE; py++) {
+                        for (let px = 0; px < SCALE; px++) {
+                            const di = ((y * SCALE + py) * canvas.width + (x * SCALE + px)) * 4;
+                            data[di] = r; data[di + 1] = g; data[di + 2] = b; data[di + 3] = a;
+                        }
+                    }
+                }
+            }
+            ctx.putImageData(imageData, 0, 0);
+            document.getElementById('particle-count').textContent = `${count.toLocaleString()} particles`;
+        }
+
+        function paint(cx, cy) {
+            const gx = Math.floor(cx / SCALE);
+            const gy = Math.floor(cy / SCALE);
+            const r = brushSize;
+            for (let dy = -r; dy <= r; dy++) {
+                for (let dx = -r; dx <= r; dx++) {
+                    if (dx * dx + dy * dy > r * r) continue;
+                    if (material === 'erase') setCell(gx + dx, gy + dy, EMPTY);
+                    else if (Math.random() < 0.6) {
+                        const m = { sand: SAND, water: WATER, fire: FIRE, smoke: SMOKE, stone: STONE, oil: OIL }[material];
+                        setCell(gx + dx, gy + dy, m);
+                    }
+                }
+            }
+        }
+
+        canvas.addEventListener('mousedown', e => { painting = true; const r = canvas.getBoundingClientRect(); paint(e.clientX - r.left, e.clientY - r.top); });
+        canvas.addEventListener('mousemove', e => { if (!painting) return; const r = canvas.getBoundingClientRect(); paint(e.clientX - r.left, e.clientY - r.top); });
+        canvas.addEventListener('mouseup', () => painting = false);
+        canvas.addEventListener('touchstart', e => { e.preventDefault(); painting = true; const r = canvas.getBoundingClientRect(); paint(e.touches[0].clientX - r.left, e.touches[0].clientY - r.top); }, { passive: false });
+        canvas.addEventListener('touchmove', e => { e.preventDefault(); if (!painting) return; const r = canvas.getBoundingClientRect(); paint(e.touches[0].clientX - r.left, e.touches[0].clientY - r.top); }, { passive: false });
+        canvas.addEventListener('touchend', () => painting = false);
+
+        document.querySelectorAll('.material-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.material-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                material = btn.dataset.m;
+            });
+        });
+
+        const brushInput = document.getElementById('brush-size');
+        const sizeVal = document.getElementById('size-val');
+        brushInput.addEventListener('input', () => { brushSize = +brushInput.value; sizeVal.textContent = brushSize; });
+
+        document.getElementById('clear-btn').addEventListener('click', () => { grid.fill(0); life.fill(0); });
+
+        function loop() {
+            step();
+            step(); // two steps per frame for faster simulation
+            draw();
+            requestAnimationFrame(loop);
+        }
+        loop();
+    </script>
+</body>
+
+</html>

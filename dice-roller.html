@@ -1,0 +1,518 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dice Roller Extreme | WWG</title>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: #09060f;
+            color: #fff;
+            font-family: 'Space Grotesk', sans-serif;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+            gap: 18px;
+        }
+
+        h1 {
+            font-size: 2rem;
+            background: linear-gradient(135deg, #f97316, #eab308);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .dice-area {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 14px;
+            justify-content: center;
+            min-height: 100px;
+            align-items: center;
+            padding: 10px;
+        }
+
+        .die {
+            width: 80px;
+            height: 80px;
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            font-weight: 700;
+            animation: rollIn 0.5s cubic-bezier(0.3, 1.5, 0.7, 1) both;
+            position: relative;
+            user-select: none;
+            cursor: default;
+            transition: transform 0.15s;
+            border: 2px solid rgba(255, 255, 255, 0.15);
+        }
+
+        .die:hover {
+            transform: translateY(-4px) scale(1.05);
+        }
+
+        @keyframes rollIn {
+            0% {
+                transform: scale(0) rotate(360deg);
+                opacity: 0
+            }
+
+            100% {
+                transform: scale(1) rotate(0deg);
+                opacity: 1
+            }
+        }
+
+        .die-d4 {
+            background: linear-gradient(135deg, #7c3aed, #6d28d9);
+            box-shadow: 0 0 20px #7c3aed60;
+        }
+
+        .die-d6 {
+            background: linear-gradient(135deg, #0891b2, #0e7490);
+            box-shadow: 0 0 20px #0891b260;
+        }
+
+        .die-d8 {
+            background: linear-gradient(135deg, #059669, #047857);
+            box-shadow: 0 0 20px #05966960;
+        }
+
+        .die-d10 {
+            background: linear-gradient(135deg, #d97706, #b45309);
+            box-shadow: 0 0 20px #d9770660;
+        }
+
+        .die-d12 {
+            background: linear-gradient(135deg, #dc2626, #b91c1c);
+            box-shadow: 0 0 20px #dc262660;
+        }
+
+        .die-d20 {
+            background: linear-gradient(135deg, #db2777, #be185d);
+            box-shadow: 0 0 20px #db277760;
+        }
+
+        .die-d100 {
+            background: linear-gradient(135deg, #475569, #334155);
+            box-shadow: 0 0 20px #47556960;
+            font-size: 1.3rem;
+        }
+
+        .die .face {
+            font-size: 0.6rem;
+            position: absolute;
+            top: 5px;
+            right: 7px;
+            opacity: 0.5;
+        }
+
+        .die.crit {
+            animation: rollIn 0.5s cubic-bezier(0.3, 1.5, 0.7, 1) both, crit-glow 0.6s ease infinite alternate;
+            border-color: gold;
+        }
+
+        @keyframes crit-glow {
+            0% {
+                box-shadow: 0 0 20px gold
+            }
+
+            100% {
+                box-shadow: 0 0 50px gold, 0 0 80px goldenrod
+            }
+        }
+
+        .die.fumble {
+            border-color: #ef4444;
+            box-shadow: 0 0 30px #ef444460 !important;
+        }
+
+        .controls {
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 14px;
+            padding: 18px;
+            width: min(480px, 95vw);
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .dice-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            justify-content: center;
+        }
+
+        .die-pick {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            padding: 8px 12px;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .die-pick:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .die-pick .die-icon {
+            font-size: 1.4rem;
+        }
+
+        .die-pick .die-label {
+            font-size: 0.7rem;
+            color: #8888aa;
+        }
+
+        .die-pick .die-count {
+            font-size: 0.75rem;
+            font-weight: 700;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            padding: 2px 8px;
+            min-width: 24px;
+            text-align: center;
+        }
+
+        .roll-btn {
+            padding: 14px;
+            border-radius: 10px;
+            border: none;
+            cursor: pointer;
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 1.1rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #f97316, #eab308);
+            color: #000;
+            transition: transform 0.2s, box-shadow 0.2s;
+            letter-spacing: 1px;
+        }
+
+        .roll-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(249, 115, 22, 0.4);
+        }
+
+        .roll-btn:active {
+            transform: scale(0.97);
+        }
+
+        .summary {
+            text-align: center;
+            font-size: 0.85rem;
+            color: #8888aa;
+            min-height: 1.4em;
+        }
+
+        .summary b {
+            color: #eab308;
+            font-size: 1.1rem;
+        }
+
+        .totals {
+            display: flex;
+            gap: 16px;
+            justify-content: center;
+            font-size: 0.8rem;
+            color: #8888aa;
+            flex-wrap: wrap;
+        }
+
+        .totals span {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 2px;
+        }
+
+        .totals b {
+            font-size: 1.3rem;
+            color: #fff;
+        }
+
+        .modifier-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .modifier-row label {
+            font-size: 0.75rem;
+            color: #8888aa;
+            white-space: nowrap;
+        }
+
+        .modifier-row input {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 6px 10px;
+            border-radius: 8px;
+            color: #fff;
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 0.9rem;
+            width: 70px;
+            outline: none;
+            text-align: center;
+        }
+
+        .clear-btn {
+            padding: 8px 18px;
+            border-radius: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            background: transparent;
+            color: #8888aa;
+            cursor: pointer;
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 0.8rem;
+        }
+
+        .clear-btn:hover {
+            color: #fff;
+            border-color: rgba(255, 255, 255, 0.3);
+        }
+
+        #history {
+            width: min(480px, 95vw);
+            max-height: 120px;
+            overflow-y: auto;
+            font-size: 0.72rem;
+            color: #8888aa;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .hist-item {
+            background: rgba(255, 255, 255, 0.03);
+            padding: 4px 10px;
+            border-radius: 6px;
+            border-left: 3px solid;
+        }
+
+        a.back {
+            color: #8888aa;
+            text-decoration: none;
+            font-size: 0.85rem;
+            align-self: flex-start;
+        }
+
+        a.back:hover {
+            color: #fff;
+        }
+
+        #canvas-fx {
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            z-index: 999;
+        }
+    </style>
+</head>
+
+<body>
+    <canvas id="canvas-fx"></canvas>
+    <a class="back" href="index.html">← Gallery</a>
+    <h1>🎲 Dice Roller Extreme</h1>
+
+    <div class="dice-area" id="dice-area">
+        <span style="color:#555;font-size:0.9rem">Pick dice below and roll!</span>
+    </div>
+
+    <div class="controls">
+        <div class="dice-row">
+            <div class="die-pick" data-d="4">
+                <div class="die-icon">◆</div>
+                <div class="die-label">d4</div>
+                <div class="die-count" id="c4">0</div>
+            </div>
+            <div class="die-pick" data-d="6">
+                <div class="die-icon">⬛</div>
+                <div class="die-label">d6</div>
+                <div class="die-count" id="c6">0</div>
+            </div>
+            <div class="die-pick" data-d="8">
+                <div class="die-icon">♦</div>
+                <div class="die-label">d8</div>
+                <div class="die-count" id="c8">0</div>
+            </div>
+            <div class="die-pick" data-d="10">
+                <div class="die-icon">⬟</div>
+                <div class="die-label">d10</div>
+                <div class="die-count" id="c10">0</div>
+            </div>
+            <div class="die-pick" data-d="12">
+                <div class="die-icon">⬡</div>
+                <div class="die-label">d12</div>
+                <div class="die-count" id="c12">0</div>
+            </div>
+            <div class="die-pick" data-d="20">
+                <div class="die-icon">⬢</div>
+                <div class="die-label">d20</div>
+                <div class="die-count" id="c20">0</div>
+            </div>
+            <div class="die-pick" data-d="100">
+                <div class="die-icon">○</div>
+                <div class="die-label">d100</div>
+                <div class="die-count" id="c100">0</div>
+            </div>
+        </div>
+        <div class="modifier-row">
+            <label>Modifier:</label>
+            <input type="number" id="modifier" value="0" placeholder="+/-">
+            <button class="clear-btn" id="clear-pick">Reset Dice</button>
+            <button class="clear-btn" id="clear-hist">Clear History</button>
+        </div>
+        <button class="roll-btn" id="roll-btn">🎲 ROLL!</button>
+        <div class="summary" id="summary"></div>
+        <div class="totals" id="totals"></div>
+    </div>
+
+    <div id="history"></div>
+
+    <script>
+        const counts = { 4: 0, 6: 0, 8: 0, 10: 0, 12: 0, 20: 0, 100: 0 };
+        const diceArea = document.getElementById('dice-area');
+        const summary = document.getElementById('summary');
+        const totals = document.getElementById('totals');
+        const history = document.getElementById('history');
+        const modEl = document.getElementById('modifier');
+        let rollCount = 0, grandTotal = 0, maxRoll = 0;
+
+        document.querySelectorAll('.die-pick').forEach(pick => {
+            pick.addEventListener('click', () => {
+                const d = +pick.dataset.d;
+                counts[d] = Math.min(counts[d] + 1, 12);
+                document.getElementById('c' + d).textContent = counts[d];
+            });
+            pick.addEventListener('contextmenu', e => {
+                e.preventDefault();
+                const d = +pick.dataset.d;
+                counts[d] = Math.max(counts[d] - 1, 0);
+                document.getElementById('c' + d).textContent = counts[d];
+            });
+        });
+
+        document.getElementById('clear-pick').addEventListener('click', () => {
+            Object.keys(counts).forEach(k => { counts[k] = 0; document.getElementById('c' + k).textContent = '0'; });
+        });
+        document.getElementById('clear-hist').addEventListener('click', () => { history.innerHTML = ''; rollCount = 0; grandTotal = 0; maxRoll = 0; updateTotals(); });
+
+        const COLORS = { 4: '#7c3aed', 6: '#0891b2', 8: '#059669', 10: '#d97706', 12: '#dc2626', 20: '#db2777', 100: '#475569' };
+
+        // Confetti
+        const fx = document.getElementById('canvas-fx');
+        fx.width = window.innerWidth; fx.height = window.innerHeight;
+        window.addEventListener('resize', () => { fx.width = window.innerWidth; fx.height = window.innerHeight; });
+        const fxCtx = fx.getContext('2d');
+        let particles = [];
+        function spawnConfetti(x, y, color) {
+            for (let i = 0; i < 18; i++) {
+                particles.push({
+                    x, y, vx: (Math.random() - 0.5) * 12, vy: (Math.random() - 2) * 10,
+                    size: 4 + Math.random() * 6, color, alpha: 1, rot: Math.random() * 360, rv: (Math.random() - 0.5) * 15,
+                    life: 0, maxLife: 60 + Math.random() * 40
+                });
+            }
+        }
+        function animFx() {
+            fxCtx.clearRect(0, 0, fx.width, fx.height);
+            particles = particles.filter(p => p.life < p.maxLife);
+            particles.forEach(p => {
+                p.life++; p.x += p.vx; p.y += p.vy; p.vy += 0.4; p.alpha = 1 - p.life / p.maxLife; p.rot += p.rv;
+                fxCtx.save(); fxCtx.globalAlpha = p.alpha; fxCtx.translate(p.x, p.y); fxCtx.rotate(p.rot * Math.PI / 180);
+                fxCtx.fillStyle = p.color;
+                fxCtx.fillRect(-p.size / 2, -p.size / 2, p.size, p.size);
+                fxCtx.restore();
+            });
+            requestAnimationFrame(animFx);
+        }
+        animFx();
+
+        document.getElementById('roll-btn').addEventListener('click', () => {
+            const hasDice = Object.values(counts).some(v => v > 0);
+            if (!hasDice) { summary.textContent = 'Pick some dice first!'; return; }
+
+            diceArea.innerHTML = '';
+            const results = [];
+            let total = 0;
+            let notation = [];
+
+            Object.entries(counts).forEach(([sides, count]) => {
+                if (!count) return;
+                notation.push(`${count}d${sides}`);
+                for (let i = 0; i < count; i++) {
+                    const val = Math.floor(Math.random() * +sides) + 1;
+                    total += val;
+                    results.push({ sides: +sides, val });
+                }
+            });
+
+            const mod = parseInt(modEl.value) || 0;
+            total += mod;
+
+            results.forEach((r, ri) => {
+                const div = document.createElement('div');
+                div.className = `die die-d${r.sides}`;
+                const isCrit = r.val === r.sides;
+                const isFumble = r.val === 1;
+                if (isCrit) div.classList.add('crit');
+                if (isFumble) div.classList.add('fumble');
+                div.innerHTML = `<span class="face">d${r.sides}</span>${r.val}`;
+                div.style.animationDelay = `${ri * 60}ms`;
+                diceArea.appendChild(div);
+                if (isCrit) {
+                    setTimeout(() => {
+                        const rect = div.getBoundingClientRect();
+                        spawnConfetti(rect.left + rect.width / 2, rect.top + rect.height / 2, COLORS[r.sides]);
+                    }, ri * 60 + 200);
+                }
+            });
+
+            const notStr = notation.join(' + ') + (mod !== 0 ? ` ${mod > 0 ? '+' : ''} ${mod}` : '');
+            summary.innerHTML = `${notStr} = <b>${total}</b>${mod !== 0 ? ` (mod ${mod > 0 ? '+' : ''}${mod})` : ''}`;
+
+            rollCount++; grandTotal += total; maxRoll = Math.max(maxRoll, total);
+            updateTotals();
+
+            const hi = document.createElement('div');
+            hi.className = 'hist-item';
+            hi.style.borderColor = COLORS[Object.entries(counts).find(([, v]) => v > 0)?.[0] || 6] || '#888';
+            const crit = results.some(r => r.val === r.sides) ? '⭐ CRIT! ' : '';
+            const fumb = results.some(r => r.val === 1 && results.length === 1) ? '💀 Fumble ' : '';
+            hi.textContent = `#${rollCount} ${notStr} → ${total} ${crit}${fumb}`;
+            history.prepend(hi);
+        });
+
+        function updateTotals() {
+            totals.innerHTML = `
+    <span><b>${rollCount}</b>ROLLS</span>
+    <span><b>${grandTotal}</b>TOTAL</span>
+    <span><b>${rollCount ? Math.round(grandTotal / rollCount) : 0}</b>AVG</span>
+    <span><b>${maxRoll || '—'}</b>BEST</span>
+  `;
+        }
+        updateTotals();
+    </script>
+</body>
+
+</html>

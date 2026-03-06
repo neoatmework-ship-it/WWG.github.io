@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ASCII Art Generator | WWG</title>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: #090909;
+            color: #e0e0e0;
+            font-family: 'Space Grotesk', sans-serif;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+            gap: 16px;
+        }
+
+        h1 {
+            font-size: 2rem;
+            background: linear-gradient(135deg, #22d3ee, #a78bfa);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .input-area {
+            width: min(700px, 95vw);
+            display: flex;
+            gap: 10px;
+        }
+
+        #text-input {
+            flex: 1;
+            padding: 12px 16px;
+            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            background: rgba(255, 255, 255, 0.05);
+            color: #fff;
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 1rem;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        #text-input:focus {
+            border-color: #22d3ee;
+        }
+
+        .btn {
+            padding: 12px 22px;
+            border-radius: 10px;
+            border: none;
+            cursor: pointer;
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 0.9rem;
+            font-weight: 600;
+            background: linear-gradient(135deg, #22d3ee, #a78bfa);
+            color: #000;
+            transition: transform 0.2s, box-shadow 0.2s;
+            white-space: nowrap;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(34, 211, 238, 0.3);
+        }
+
+        .font-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            justify-content: center;
+            width: min(700px, 95vw);
+        }
+
+        .font-btn {
+            padding: 5px 12px;
+            border-radius: 6px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            background: rgba(255, 255, 255, 0.04);
+            color: #8888aa;
+            font-size: 0.75rem;
+            cursor: pointer;
+            transition: 0.2s;
+            font-family: 'Space Grotesk', sans-serif;
+        }
+
+        .font-btn.active,
+        .font-btn:hover {
+            border-color: #22d3ee;
+            color: #22d3ee;
+            background: rgba(34, 211, 238, 0.06);
+        }
+
+        .options-row {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .options-row label {
+            font-size: 0.75rem;
+            color: #8888aa;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .options-row input[type=color] {
+            width: 28px;
+            height: 28px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            padding: 1px;
+            background: none;
+        }
+
+        .output-wrap {
+            width: min(700px, 95vw);
+            background: #050505;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 12px;
+            overflow: hidden;
+        }
+
+        .out-header {
+            padding: 8px 14px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .out-header span {
+            font-size: 0.72rem;
+            color: #8888aa;
+        }
+
+        .copy-btn {
+            padding: 5px 12px;
+            border-radius: 6px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            background: rgba(255, 255, 255, 0.04);
+            color: #8888aa;
+            font-size: 0.72rem;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .copy-btn:hover {
+            color: #fff;
+            border-color: rgba(255, 255, 255, 0.3);
+        }
+
+        #output {
+            padding: 16px;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            line-height: 1.15;
+            white-space: pre;
+            overflow-x: auto;
+            overflow-y: auto;
+            max-height: 60vh;
+            min-height: 100px;
+            word-break: keep-all;
+        }
+
+        a.back {
+            color: #8888aa;
+            text-decoration: none;
+            font-size: 0.85rem;
+            align-self: flex-start;
+        }
+
+        a.back:hover {
+            color: #fff;
+        }
+    </style>
+</head>
+
+<body>
+    <a class="back" href="index.html">← Gallery</a>
+    <h1>ASCII Art Generator</h1>
+
+    <div class="input-area">
+        <input type="text" id="text-input" placeholder="Type something..." maxlength="20" value="HELLO">
+        <button class="btn" id="gen-btn">Generate</button>
+    </div>
+
+    <div class="font-row" id="font-row"></div>
+
+    <div class="options-row">
+        <label>Color: <input type="color" id="color-pick" value="#22d3ee"></label>
+        <label>Char: <input type="text" id="char-pick" value="█" maxlength="1"
+                style="width:36px;padding:4px;text-align:center;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:6px;color:#fff;"></label>
+    </div>
+
+    <div class="output-wrap">
+        <div class="out-header">
+            <span id="out-info">—</span>
+            <button class="copy-btn" id="copy-btn">Copy</button>
+        </div>
+        <div id="output"></div>
+    </div>
+
+    <script>
+        // Pixel font data: each letter is an 5x5 bit array (stored as 5-element arrays, each 5 bits wide, MSB = left-most)
+        const FONT5 = {
+            'A': [[0b01110], [0b10001], [0b11111], [0b10001], [0b10001]],
+            'B': [[0b11110], [0b10001], [0b11110], [0b10001], [0b11110]],
+            'C': [[0b01111], [0b10000], [0b10000], [0b10000], [0b01111]],
+            'D': [[0b11110], [0b10001], [0b10001], [0b10001], [0b11110]],
+            'E': [[0b11111], [0b10000], [0b11110], [0b10000], [0b11111]],
+            'F': [[0b11111], [0b10000], [0b11110], [0b10000], [0b10000]],
+            'G': [[0b01111], [0b10000], [0b10111], [0b10001], [0b01111]],
+            'H': [[0b10001], [0b10001], [0b11111], [0b10001], [0b10001]],
+            'I': [[0b11111], [0b00100], [0b00100], [0b00100], [0b11111]],
+            'J': [[0b11111], [0b00010], [0b00010], [0b10010], [0b01100]],
+            'K': [[0b10001], [0b10010], [0b11100], [0b10010], [0b10001]],
+            'L': [[0b10000], [0b10000], [0b10000], [0b10000], [0b11111]],
+            'M': [[0b10001], [0b11011], [0b10101], [0b10001], [0b10001]],
+            'N': [[0b10001], [0b11001], [0b10101], [0b10011], [0b10001]],
+            'O': [[0b01110], [0b10001], [0b10001], [0b10001], [0b01110]],
+            'P': [[0b11110], [0b10001], [0b11110], [0b10000], [0b10000]],
+            'Q': [[0b01110], [0b10001], [0b10101], [0b10010], [0b01101]],
+            'R': [[0b11110], [0b10001], [0b11110], [0b10010], [0b10001]],
+            'S': [[0b01111], [0b10000], [0b01110], [0b00001], [0b11110]],
+            'T': [[0b11111], [0b00100], [0b00100], [0b00100], [0b00100]],
+            'U': [[0b10001], [0b10001], [0b10001], [0b10001], [0b01110]],
+            'V': [[0b10001], [0b10001], [0b10001], [0b01010], [0b00100]],
+            'W': [[0b10001], [0b10001], [0b10101], [0b11011], [0b10001]],
+            'X': [[0b10001], [0b01010], [0b00100], [0b01010], [0b10001]],
+            'Y': [[0b10001], [0b01010], [0b00100], [0b00100], [0b00100]],
+            'Z': [[0b11111], [0b00010], [0b00100], [0b01000], [0b11111]],
+            '0': [[0b01110], [0b10011], [0b10101], [0b11001], [0b01110]],
+            '1': [[0b00100], [0b01100], [0b00100], [0b00100], [0b01110]],
+            '2': [[0b01110], [0b10001], [0b00110], [0b01000], [0b11111]],
+            '3': [[0b11110], [0b00001], [0b01110], [0b00001], [0b11110]],
+            '4': [[0b10001], [0b10001], [0b11111], [0b00001], [0b00001]],
+            '5': [[0b11111], [0b10000], [0b11110], [0b00001], [0b11110]],
+            '6': [[0b01110], [0b10000], [0b11110], [0b10001], [0b01110]],
+            '7': [[0b11111], [0b00001], [0b00010], [0b00100], [0b00100]],
+            '8': [[0b01110], [0b10001], [0b01110], [0b10001], [0b01110]],
+            '9': [[0b01110], [0b10001], [0b01111], [0b00001], [0b01110]],
+            '!': [[0b00100], [0b00100], [0b00100], [0b00000], [0b00100]],
+            '?': [[0b01110], [0b00001], [0b00110], [0b00000], [0b00100]],
+            '.': [[0b00000], [0b00000], [0b00000], [0b00000], [0b00100]],
+            ',': [[0b00000], [0b00000], [0b00000], [0b00100], [0b01000]],
+            ' ': [[0b00000], [0b00000], [0b00000], [0b00000], [0b00000]],
+        };
+
+        // Style renderers: each takes a (filled, col, row, totalCols, totalRows) and returns a character
+        const STYLES = {
+            'Block': (f) => f ? '█' : ' ',
+            'Light': (f) => f ? '▓' : ' ',
+            'Dots': (f) => f ? '●' : ' ',
+            'Stars': (f) => f ? '★' : ' ',
+            'Slash': (f) => f ? '/' : ' ',
+            'Hash': (f) => f ? '#' : ' ',
+            'Plus': (f) => f ? '+' : ' ',
+            'Custom': null, // handled separately
+        };
+
+        let currentStyle = 'Block';
+        let styleKeys = Object.keys(STYLES);
+
+        const fontRow = document.getElementById('font-row');
+        styleKeys.forEach(s => {
+            const btn = document.createElement('button');
+            btn.className = 'font-btn' + (s === currentStyle ? ' active' : '');
+            btn.textContent = s;
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.font-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                currentStyle = s;
+                generate();
+            });
+            fontRow.appendChild(btn);
+        });
+
+        function getChar() {
+            if (currentStyle === 'Custom') return document.getElementById('char-pick').value || '█';
+            return STYLES[currentStyle] ? '█' : '█'; // fallback
+        }
+
+        function renderChar(f) {
+            if (currentStyle === 'Custom') return f ? (document.getElementById('char-pick').value || '█') : ' ';
+            const fn = STYLES[currentStyle];
+            return fn ? fn(f) : (f ? '█' : ' ');
+        }
+
+        function generate() {
+            const text = document.getElementById('text-input').value.toUpperCase();
+            const color = document.getElementById('color-pick').value;
+            const output = document.getElementById('output');
+            output.style.color = color;
+
+            if (!text.trim()) { output.textContent = ''; return; }
+
+            const chars = text.split('').map(c => FONT5[c] || FONT5[' ']);
+            const rows = 5;
+            const lines = [];
+
+            for (let row = 0; row < rows; row++) {
+                let line = '';
+                chars.forEach((ch, ci) => {
+                    const rowBits = ch[row][0];
+                    for (let col = 4; col >= 0; col--) {
+                        const filled = (rowBits >> col) & 1;
+                        line += renderChar(!!filled);
+                    }
+                    if (ci < chars.length - 1) line += ' ';
+                });
+                lines.push(line);
+            }
+
+            const result = lines.join('\n');
+            output.textContent = result;
+            document.getElementById('out-info').textContent = `${text.length} chars · ${lines[0].length}×${rows} grid`;
+        }
+
+        document.getElementById('gen-btn').addEventListener('click', generate);
+        document.getElementById('text-input').addEventListener('keydown', e => { if (e.key === 'Enter') generate(); });
+        document.getElementById('color-pick').addEventListener('input', generate);
+        document.getElementById('char-pick').addEventListener('input', generate);
+
+        document.getElementById('copy-btn').addEventListener('click', () => {
+            const text = document.getElementById('output').textContent;
+            navigator.clipboard.writeText(text).then(() => {
+                const btn = document.getElementById('copy-btn');
+                btn.textContent = 'Copied!';
+                setTimeout(() => btn.textContent = 'Copy', 1500);
+            });
+        });
+
+        generate();
+    </script>
+</body>
+
+</html>

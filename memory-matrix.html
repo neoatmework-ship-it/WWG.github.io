@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Memory Matrix | WWG</title>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #07070f;
+            --accent: #a78bfa;
+            --glow: rgba(167, 139, 250, 0.4);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: var(--bg);
+            color: #fff;
+            font-family: 'Space Grotesk', sans-serif;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 24px;
+            padding: 20px;
+        }
+
+        h1 {
+            font-size: 2.2rem;
+            background: linear-gradient(135deg, #a78bfa, #ec4899);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .hud {
+            display: flex;
+            gap: 32px;
+            font-size: 0.9rem;
+            color: #8888aa;
+        }
+
+        .hud span {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 2px;
+        }
+
+        .hud b {
+            font-size: 1.6rem;
+            color: #fff;
+        }
+
+        #grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+            width: min(360px, 90vw);
+        }
+
+        .cell {
+            aspect-ratio: 1;
+            border-radius: 12px;
+            cursor: pointer;
+            border: 2px solid rgba(255, 255, 255, 0.08);
+            background: rgba(255, 255, 255, 0.04);
+            transition: transform 0.08s, box-shadow 0.1s;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .cell::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            border-radius: 10px;
+            opacity: 0;
+            transition: opacity 0.15s;
+        }
+
+        .cell.lit {
+            transform: scale(1.06);
+        }
+
+        .cell[data-c="0"].lit {
+            background: #7c3aed;
+            box-shadow: 0 0 30px #7c3aed;
+            border-color: #a78bfa;
+        }
+
+        .cell[data-c="1"].lit {
+            background: #0891b2;
+            box-shadow: 0 0 30px #0891b2;
+            border-color: #22d3ee;
+        }
+
+        .cell[data-c="2"].lit {
+            background: #be185d;
+            box-shadow: 0 0 30px #be185d;
+            border-color: #ec4899;
+        }
+
+        .cell[data-c="3"].lit {
+            background: #065f46;
+            box-shadow: 0 0 30px #065f46;
+            border-color: #34d399;
+        }
+
+        .cell[data-c="4"].lit {
+            background: #b45309;
+            box-shadow: 0 0 30px #b45309;
+            border-color: #fbbf24;
+        }
+
+        .cell[data-c="5"].lit {
+            background: #1e40af;
+            box-shadow: 0 0 30px #1e40af;
+            border-color: #60a5fa;
+        }
+
+        .cell[data-c="6"].lit {
+            background: #9f1239;
+            box-shadow: 0 0 30px #9f1239;
+            border-color: #fb7185;
+        }
+
+        .cell[data-c="7"].lit {
+            background: #3d6b00;
+            box-shadow: 0 0 30px #3d6b00;
+            border-color: #a3e635;
+        }
+
+        .cell[data-c="8"].lit {
+            background: #5b21b6;
+            box-shadow: 0 0 30px #5b21b6;
+            border-color: #c084fc;
+        }
+
+        .cell[data-c="9"].lit {
+            background: #0e7490;
+            box-shadow: 0 0 30px #0e7490;
+            border-color: #67e8f9;
+        }
+
+        .cell[data-c="10"].lit {
+            background: #9d174d;
+            box-shadow: 0 0 30px #9d174d;
+            border-color: #f9a8d4;
+        }
+
+        .cell[data-c="11"].lit {
+            background: #166534;
+            box-shadow: 0 0 30px #166534;
+            border-color: #86efac;
+        }
+
+        .cell[data-c="12"].lit {
+            background: #92400e;
+            box-shadow: 0 0 30px #92400e;
+            border-color: #fcd34d;
+        }
+
+        .cell[data-c="13"].lit {
+            background: #1e3a8a;
+            box-shadow: 0 0 30px #1e3a8a;
+            border-color: #93c5fd;
+        }
+
+        .cell[data-c="14"].lit {
+            background: #881337;
+            box-shadow: 0 0 30px #881337;
+            border-color: #fda4af;
+        }
+
+        .cell[data-c="15"].lit {
+            background: #14532d;
+            box-shadow: 0 0 30px #14532d;
+            border-color: #bbf7d0;
+        }
+
+        #status {
+            font-size: 1.1rem;
+            color: #8888aa;
+            min-height: 1.5em;
+            text-align: center;
+        }
+
+        #status.good {
+            color: #34d399;
+        }
+
+        #status.bad {
+            color: #f87171;
+        }
+
+        .btn {
+            padding: 12px 32px;
+            border-radius: 10px;
+            border: none;
+            cursor: pointer;
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 1rem;
+            font-weight: 600;
+            background: linear-gradient(135deg, var(--accent), #ec4899);
+            color: #fff;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px var(--glow);
+        }
+
+        #progress-bar {
+            width: min(360px, 90vw);
+            height: 4px;
+            background: rgba(255, 255, 255, 0.08);
+            border-radius: 2px;
+            overflow: hidden;
+        }
+
+        #progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--accent), #ec4899);
+            width: 0;
+            transition: width 0.3s;
+        }
+
+        a.back {
+            color: #8888aa;
+            text-decoration: none;
+            font-size: 0.85rem;
+            align-self: flex-start;
+        }
+
+        a.back:hover {
+            color: #fff;
+        }
+    </style>
+</head>
+
+<body>
+    <a class="back" href="index.html">← Gallery</a>
+    <h1>🧠 Memory Matrix</h1>
+    <div class="hud">
+        <span><b id="level-disp">—</b>LEVEL</span>
+        <span><b id="score-disp">0</b>SCORE</span>
+        <span><b id="best-disp">0</b>BEST</span>
+    </div>
+    <div id="progress-bar">
+        <div id="progress-fill"></div>
+    </div>
+    <div id="grid"></div>
+    <div id="status">Press START to play</div>
+    <button class="btn" id="start-btn">START</button>
+
+    <script>
+        const grid = document.getElementById('grid');
+        const status = document.getElementById('status');
+        const startBtn = document.getElementById('start-btn');
+        const levelDisp = document.getElementById('level-disp');
+        const scoreDisp = document.getElementById('score-disp');
+        const bestDisp = document.getElementById('best-disp');
+        const progressFill = document.getElementById('progress-fill');
+
+        const COLS = 4, ROWS = 4, SIZE = COLS * ROWS;
+        let sequence = [], playerSeq = [], level = 0, score = 0, best = 0;
+        let playing = false, accepting = false;
+
+        // Build grid
+        for (let i = 0; i < SIZE; i++) {
+            const cell = document.createElement('div');
+            cell.className = 'cell';
+            cell.dataset.c = i;
+            cell.addEventListener('click', () => onCellClick(i));
+            grid.appendChild(cell);
+        }
+
+        const cells = () => [...document.querySelectorAll('.cell')];
+
+        function flash(idx, duration = 350) {
+            return new Promise(res => {
+                const c = document.querySelector(`.cell[data-c="${idx}"]`);
+                c.classList.add('lit');
+                setTimeout(() => { c.classList.remove('lit'); setTimeout(res, 80); }, duration);
+            });
+        }
+
+        async function playSequence() {
+            accepting = false;
+            startBtn.disabled = true;
+            status.className = '';
+            status.textContent = 'Watch...';
+            const delay = Math.max(150, 550 - level * 20);
+            for (let i = 0; i < sequence.length; i++) {
+                await new Promise(r => setTimeout(r, 80));
+                await flash(sequence[i], Math.max(150, delay - 50));
+            }
+            status.textContent = 'Your turn!';
+            playerSeq = [];
+            updateProgress(0);
+            accepting = true;
+        }
+
+        function updateProgress(done) {
+            progressFill.style.width = `${(done / sequence.length) * 100}%`;
+        }
+
+        async function onCellClick(idx) {
+            if (!accepting || !playing) return;
+            await flash(idx, 200);
+            playerSeq.push(idx);
+            const pos = playerSeq.length - 1;
+
+            if (playerSeq[pos] !== sequence[pos]) {
+                // Wrong!
+                accepting = false;
+                status.className = 'bad';
+                status.textContent = `💥 Wrong! You reached level ${level}.`;
+                if (score > best) { best = score; bestDisp.textContent = best; }
+                playing = false;
+                startBtn.disabled = false;
+                startBtn.textContent = 'TRY AGAIN';
+                // Flash all red
+                cells().forEach(c => { c.classList.add('lit'); });
+                setTimeout(() => cells().forEach(c => c.classList.remove('lit')), 400);
+                return;
+            }
+
+            updateProgress(playerSeq.length);
+
+            if (playerSeq.length === sequence.length) {
+                // Correct!
+                accepting = false;
+                score += level * 10;
+                scoreDisp.textContent = score;
+                status.className = 'good';
+                status.textContent = '✓ Correct!';
+                await new Promise(r => setTimeout(r, 700));
+                nextLevel();
+            }
+        }
+
+        async function nextLevel() {
+            level++;
+            levelDisp.textContent = level;
+            sequence.push(Math.floor(Math.random() * SIZE));
+            await playSequence();
+        }
+
+        startBtn.addEventListener('click', () => {
+            sequence = []; score = 0; level = 0;
+            scoreDisp.textContent = 0;
+            playing = true;
+            startBtn.textContent = 'START';
+            nextLevel();
+        });
+    </script>
+</body>
+
+</html>
