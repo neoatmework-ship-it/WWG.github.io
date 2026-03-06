@@ -353,7 +353,24 @@
             level++;
             levelDisp.textContent = level;
             sequence.push(Math.floor(Math.random() * SIZE));
+            if (level === 10) showUndergroundPortal();
             await playSequence();
+        }
+
+        function showUndergroundPortal() {
+            if (document.getElementById('ug-portal')) return;
+            const p = document.createElement('div');
+            p.id = 'ug-portal';
+            p.style.cssText = 'position:fixed;bottom:20px;right:20px;z-index:300;background:linear-gradient(135deg,rgba(212,175,55,0.1),rgba(212,175,55,0.05));border:1px solid rgba(212,175,55,0.5);border-radius:8px;padding:12px 20px;font-size:0.72rem;color:#d4af37;letter-spacing:2px;cursor:pointer;font-family:"Space Grotesk",sans-serif;';
+            p.textContent = '🎩 A VELVET DOOR APPEARS';
+            document.body.appendChild(p);
+            let v = true;
+            setInterval(() => { p.style.boxShadow = (v = !v) ? '0 0 20px rgba(212,175,55,0.5)' : '0 0 6px rgba(212,175,55,0.2)'; }, 800);
+            p.addEventListener('click', () => {
+                document.body.style.transition = 'opacity 0.8s';
+                document.body.style.opacity = '0';
+                setTimeout(() => window.location.href = 'underground.html', 800);
+            });
         }
 
         startBtn.addEventListener('click', () => {

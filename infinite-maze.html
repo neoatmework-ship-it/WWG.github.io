@@ -1,11 +1,11 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 
 <head>
     <link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20100%20100%22%3E%3Ctext%20y%3D%22.9em%22%20font-size%3D%2290%22%3E%F0%9F%8C%80%3C%2Ftext%3E%3C%2Fsvg%3E">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Infinite Maze — Can You Escape?</title>
+    <title>Infinite Maze â€” Can You Escape?</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
     <style>
         * {
@@ -204,12 +204,12 @@
             </div>
         </div>
     </div>
-    <div class="controls-hint"><kbd>↑</kbd> <kbd>↓</kbd> <kbd>←</kbd> <kbd>→</kbd> or
-        <kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> to move · Reach the green exit</div>
+    <div class="controls-hint"><kbd>â†‘</kbd> <kbd>â†“</kbd> <kbd>â†</kbd> <kbd>â†’</kbd> or
+        <kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> to move Â· Reach the green exit</div>
     <div class="win-overlay" id="win-overlay">
         <h2 id="win-text">Maze Complete!</h2>
         <p id="win-stats">Solved in 0 moves</p>
-        <button class="win-btn" id="btn-next">Next Level →</button>
+        <button class="win-btn" id="btn-next">Next Level â†’</button>
     </div>
     <canvas id="canvas"></canvas>
     <script>
@@ -265,18 +265,12 @@
             ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.arc(ppx + cellSize / 2 - cellSize * .06, ppy + cellSize / 2 - cellSize * .06, cellSize * .08, 0, Math.PI * 2); ctx.fill();
         }
 
-        function movePlayer(dx, dy) {
-            const cell = maze[player.y][player.x];
-            if (dx === 1 && cell.walls.right) return; if (dx === -1 && cell.walls.left) return;
-            if (dy === 1 && cell.walls.bottom) return; if (dy === -1 && cell.walls.top) return;
-            player.x += dx; player.y += dy; moves++; document.getElementById('moves').textContent = moves; draw();
-            if (player.x === exit.x && player.y === exit.y) winLevel();
-        }
+        let wallHits = 0; function movePlayer(dx, dy) { const cell = maze[player.y][player.x]; let blocked = false; if (dx === 1 && cell.walls.right) blocked=true; if (dx === -1 && cell.walls.left) blocked=true; if (dy === 1 && cell.walls.bottom) blocked=true; if (dy === -1 && cell.walls.top) blocked=true; if (blocked) { wallHits++; if (wallHits === 20) showBackroomsDoor(); return; } player.x += dx; player.y += dy; moves++; document.getElementById('moves').textContent = moves; draw(); if (player.x === exit.x && player.y === exit.y) winLevel(); } function showBackroomsDoor() { if (document.getElementById('br-door')) return; const d = document.createElement('div'); d.id = 'br-door'; d.style.cssText = 'position:fixed;bottom:74px;right:16px;z-index:300;background:rgba(200,181,96,0.08);border:1px solid rgba(200,181,96,0.4);border-radius:6px;padding:10px 16px;font-size:0.7rem;color:#c8b560;letter-spacing:2px;cursor:pointer;font-family:monospace;'; d.textContent = 'a door that wasn\u0027t here before'; document.body.appendChild(d); let v=true; setInterval(()=>{d.style.opacity=(v=!v)?'1':'0.3';},600); d.addEventListener('click',()=>{document.body.style.transition='opacity 0.8s';document.body.style.opacity='0';setTimeout(()=>window.location.href='backrooms.html',800);}); }
 
         function winLevel() {
             clearInterval(timerInterval); const s = Math.floor((Date.now() - startTime) / 1000);
             document.getElementById('win-text').textContent = `Level ${level} Complete!`;
-            document.getElementById('win-stats').textContent = `Solved in ${moves} moves · ${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
+            document.getElementById('win-stats').textContent = `Solved in ${moves} moves Â· ${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
             document.getElementById('win-overlay').classList.add('show');
         }
 

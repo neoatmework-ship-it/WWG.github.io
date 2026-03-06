@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Underground | Members Only</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;1,400&family=Space+Grotesk:wght@400;500;600&display=swap"
+        rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: #0a0608;
+            color: #f0d9b5;
+            font-family: 'Space Grotesk', sans-serif;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* Velvet curtain effect */
+        .curtain-left,
+        .curtain-right {
+            position: fixed;
+            top: 0;
+            bottom: 0;
+            width: 80px;
+            z-index: 100;
+            pointer-events: none;
+        }
+
+        .curtain-left {
+            left: 0;
+            background: linear-gradient(90deg, #1a0205, transparent);
+        }
+
+        .curtain-right {
+            right: 0;
+            background: linear-gradient(270deg, #1a0205, transparent);
+        }
+
+        /* Gold particles */
+        #particles-canvas {
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .page {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 40px 24px;
+            position: relative;
+            z-index: 2;
+        }
+
+        .entry-stamp {
+            text-align: center;
+            margin-bottom: 32px;
+            padding: 20px;
+            border: 1px solid rgba(212, 175, 55, 0.2);
+            border-radius: 4px;
+            background: rgba(212, 175, 55, 0.03);
+        }
+
+        .entry-stamp .logo {
+            font-size: 2.5rem;
+            margin-bottom: 8px;
+        }
+
+        .entry-stamp h1 {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: #d4af37;
+            letter-spacing: 2px;
+            margin-bottom: 4px;
+        }
+
+        .entry-stamp p {
+            font-size: 0.7rem;
+            color: rgba(240, 217, 181, 0.4);
+            letter-spacing: 3px;
+        }
+
+        .member-badge {
+            text-align: center;
+            padding: 12px;
+            font-size: 0.65rem;
+            letter-spacing: 3px;
+            color: rgba(212, 175, 55, 0.5);
+            border-bottom: 1px solid rgba(212, 175, 55, 0.1);
+            margin-bottom: 28px;
+        }
+
+        .section {
+            margin-bottom: 32px;
+        }
+
+        .section-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 0.7rem;
+            font-style: italic;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            color: rgba(212, 175, 55, 0.5);
+            border-bottom: 1px solid rgba(212, 175, 55, 0.1);
+            padding-bottom: 8px;
+            margin-bottom: 16px;
+        }
+
+        .secret-card {
+            padding: 16px;
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(212, 175, 55, 0.08);
+            border-radius: 6px;
+            margin-bottom: 10px;
+            font-size: 0.82rem;
+            line-height: 1.7;
+            color: rgba(240, 217, 181, 0.7);
+            transition: 0.3s;
+            cursor: default;
+        }
+
+        .secret-card:hover {
+            background: rgba(212, 175, 55, 0.05);
+            border-color: rgba(212, 175, 55, 0.2);
+        }
+
+        .secret-card strong {
+            color: #d4af37;
+            display: block;
+            margin-bottom: 4px;
+            font-size: 0.75rem;
+            letter-spacing: 1px;
+        }
+
+        .drink-menu {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .drink-menu li {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 14px;
+            border-bottom: 1px solid rgba(212, 175, 55, 0.06);
+            font-size: 0.8rem;
+        }
+
+        .drink-menu li:last-child {
+            border-bottom: none;
+        }
+
+        .drink-name {
+            color: rgba(240, 217, 181, 0.8);
+        }
+
+        .drink-desc {
+            color: rgba(240, 217, 181, 0.35);
+            font-size: 0.7rem;
+            font-style: italic;
+        }
+
+        .leaderboard {
+            list-style: none;
+        }
+
+        .leaderboard li {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+            padding: 8px 0;
+            border-bottom: 1px solid rgba(212, 175, 55, 0.06);
+            font-size: 0.78rem;
+        }
+
+        .rank {
+            color: rgba(212, 175, 55, 0.5);
+            min-width: 24px;
+        }
+
+        .rank.top {
+            color: #d4af37;
+        }
+
+        .visitor-name {
+            color: rgba(240, 217, 181, 0.7);
+            flex: 1;
+        }
+
+        .visitor-score {
+            color: rgba(212, 175, 55, 0.6);
+            font-size: 0.7rem;
+        }
+
+        .wisdom-box {
+            padding: 20px;
+            border-left: 3px solid rgba(212, 175, 55, 0.3);
+            font-family: 'Playfair Display', serif;
+            font-style: italic;
+            font-size: 0.95rem;
+            color: rgba(240, 217, 181, 0.6);
+            line-height: 1.8;
+            margin-bottom: 10px;
+        }
+
+        .hint-note {
+            margin-top: 32px;
+            padding: 16px;
+            border: 1px dashed rgba(212, 175, 55, 0.15);
+            border-radius: 4px;
+            font-size: 0.68rem;
+            color: rgba(240, 217, 181, 0.3);
+            text-align: center;
+            line-height: 2;
+        }
+
+        a.back {
+            color: rgba(212, 175, 55, 0.3);
+            text-decoration: none;
+            font-size: 0.72rem;
+            display: block;
+            margin-bottom: 24px;
+            letter-spacing: 2px;
+            transition: 0.3s;
+        }
+
+        a.back:hover {
+            color: rgba(212, 175, 55, 0.7);
+        }
+    </style>
+</head>
+
+<body>
+    <div class="curtain-left"></div>
+    <div class="curtain-right"></div>
+    <canvas id="particles-canvas"></canvas>
+
+    <div class="page">
+        <a class="back" href="index.html">← back through the mirror</a>
+
+        <div class="entry-stamp">
+            <div class="logo">🎩</div>
+            <h1>THE UNDERGROUND</h1>
+            <p>MEMBERS ONLY — BY INVITATION OF THE MATRIX</p>
+        </div>
+
+        <div class="member-badge">
+            MEMBER SINCE: TODAY // ACCESS TIER: LEVEL 10 SURVIVOR // CLEARANCE: EMERALD
+        </div>
+
+        <div class="section">
+            <div class="section-title">The Secret Menu</div>
+            <ul class="drink-menu">
+                <li><span class="drink-name">🥃 The Void</span><span class="drink-desc">a drink you can't see, from a
+                        bar you can't find</span></li>
+                <li><span class="drink-name">👻 Ghost Broth, Warm</span><span class="drink-desc">the soup oracle was
+                        right all along</span></li>
+                <li><span class="drink-name">📡 103.7 Special</span><span class="drink-desc">served only while the
+                        pirate station is live</span></li>
+                <li><span class="drink-name">🧠 Level 10 Reserve</span><span class="drink-desc">aged in the backrooms,
+                        bottled at midnight</span></li>
+                <li><span class="drink-name">🔑 The Classified</span><span class="drink-desc">you won't know what's in
+                        it until it's too late</span></li>
+            </ul>
+        </div>
+
+        <div class="section">
+            <div class="section-title">Things Only Members Know</div>
+            <div class="secret-card"><strong>SECRET #1</strong>The gallery has been tracking you. Every page you visit
+                adds to what it knows. It doesn't do anything with this knowledge. It just knows.</div>
+            <div class="secret-card"><strong>SECRET #2</strong>The Sand Simulator has a hidden material. Keep the canvas
+                full for exactly 60 seconds without adding anything new.</div>
+            <div class="secret-card"><strong>SECRET #3</strong>If you click the moon on Vaporwave City Drive exactly 7
+                times, a message appears. Not everyone can see it the same way.</div>
+            <div class="secret-card"><strong>SECRET #4</strong>The Neon Clock has hands. Not the ones you can see.</div>
+            <div class="secret-card"><strong>SECRET #5</strong>There are more than 3 secret pages. The others have not
+                been found yet. The pirate radio knows they exist. We recommend listening closely.</div>
+        </div>
+
+        <div class="section">
+            <div class="section-title">Leaderboard of the Brave</div>
+            <ul class="leaderboard">
+                <li><span class="rank top">1</span><span class="visitor-name">You</span><span
+                        class="visitor-score">Survived Level 10 · All secrets found</span></li>
+                <li><span class="rank">2</span><span class="visitor-name">the one who listened to 103.7</span><span
+                        class="visitor-score">tuned in</span></li>
+                <li><span class="rank">3</span><span class="visitor-name">the maze walker</span><span
+                        class="visitor-score">hit 20 walls</span></li>
+                <li><span class="rank">4</span><span class="visitor-name">the soup drinker</span><span
+                        class="visitor-score">brewed ghost broth</span></li>
+                <li><span class="rank">5</span><span class="visitor-name">the signal reader</span><span
+                        class="visitor-score">intercepted all transmissions</span></li>
+            </ul>
+        </div>
+
+        <div class="wisdom-box">
+            "The gallery was built to be explored. But not every room was meant to be found. You found them anyway. That
+            says something about you."
+        </div>
+
+        <div class="hint-note">
+            the sand knows something · the clock has a secret rotation · the vaporwave moon speaks at dusk<br>
+            you have not found everything · keep looking
+        </div>
+    </div>
+
+    <script>
+        // Gold particle rain
+        const canvas = document.getElementById('particles-canvas');
+        const ctx = canvas.getContext('2d');
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+        window.addEventListener('resize', () => { canvas.width = window.innerWidth; canvas.height = window.innerHeight; });
+
+        const particles = [];
+        for (let i = 0; i < 40; i++) {
+            particles.push({
+                x: Math.random() * window.innerWidth,
+                y: Math.random() * window.innerHeight,
+                size: Math.random() * 2 + 0.5,
+                speed: Math.random() * 0.4 + 0.1,
+                alpha: Math.random() * 0.4 + 0.1,
+                drift: (Math.random() - 0.5) * 0.3,
+            });
+        }
+
+        function animParticles() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            particles.forEach(p => {
+                p.y -= p.speed;
+                p.x += p.drift;
+                if (p.y < -5) { p.y = canvas.height + 5; p.x = Math.random() * canvas.width; }
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+                ctx.fillStyle = `rgba(212,175,55,${p.alpha})`;
+                ctx.fill();
+            });
+            requestAnimationFrame(animParticles);
+        }
+        animParticles();
+    </script>
+</body>
+
+</html>
