@@ -2325,6 +2325,20 @@
                 });
             });
 
+            // Secret keyword detection
+            const SECRET_PAGES = { 'void': 'void.html', 'ghost': 'ghost.html', 'classified': 'classified.html' };
+            search.addEventListener('keydown', e => {
+                if (e.key === 'Enter') {
+                    const term = search.value.trim().toLowerCase();
+                    if (SECRET_PAGES[term]) {
+                        // Brief flicker effect before redirect
+                        document.body.style.transition = 'opacity 0.6s';
+                        document.body.style.opacity = '0';
+                        setTimeout(() => { window.location.href = SECRET_PAGES[term]; }, 600);
+                    }
+                }
+            });
+
             // Search
             search.addEventListener('input', filterCards);
 

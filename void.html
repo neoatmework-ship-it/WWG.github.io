@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>void</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html,
+        body {
+            width: 100%;
+            height: 100%;
+            background: #000;
+            overflow: hidden;
+        }
+
+        canvas {
+            display: block;
+        }
+
+        #text {
+            position: fixed;
+            bottom: 40px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: rgba(255, 255, 255, 0.12);
+            font-family: 'Courier New', monospace;
+            font-size: 0.85rem;
+            text-align: center;
+            pointer-events: none;
+            letter-spacing: 2px;
+            transition: color 2s;
+        }
+
+        #text.visible {
+            color: rgba(255, 255, 255, 0.5);
+        }
+
+        #back {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            color: rgba(255, 255, 255, 0.1);
+            text-decoration: none;
+            font-family: 'Courier New', monospace;
+            font-size: 0.75rem;
+            transition: color 0.4s;
+            letter-spacing: 1px;
+        }
+
+        #back:hover {
+            color: rgba(255, 255, 255, 0.6);
+        }
+    </style>
+</head>
+
+<body>
+    <canvas id="c"></canvas>
+    <a id="back" href="index.html">← back to the light</a>
+    <div id="text"></div>
+    <script>
+        const canvas = document.getElementById('c');
+        const ctx = canvas.getContext('2d');
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+        window.addEventListener('resize', () => { canvas.width = window.innerWidth; canvas.height = window.innerHeight; });
+
+        const textEl = document.getElementById('text');
+
+        const MESSAGES = [
+            "you weren't supposed to find this.",
+            "the void has been waiting.",
+            "nothing here. nothing anywhere.",
+            "how long have you been falling?",
+            "there is no floor.",
+            "you found it. now what?",
+            "even the void gets lonely.",
+            "stop. breathe. keep falling.",
+            "this was never on the map.",
+            "you searched for nothing. nothing answered.",
+            "welcome to the place between places.",
+            "...hello?",
+        ];
+
+        let msgIdx = 0;
+        let stars = [];
+        let t = 0;
+
+        // Star field representing falling through void
+        for (let i = 0; i < 200; i++) {
+            stars.push({
+                x: Math.random() * canvas.width,
+                y: Math.random() * canvas.height,
+                z: Math.random() * 1000,
+                size: Math.random() * 1.5,
+                speed: 1 + Math.random() * 3,
+            });
+        }
+
+        // Floating particles slowly drifting up
+        let particles = [];
+        for (let i = 0; i < 40; i++) {
+            particles.push({
+                x: Math.random() * canvas.width,
+                y: canvas.height + Math.random() * canvas.height,
+                vy: -(0.1 + Math.random() * 0.5),
+                alpha: Math.random() * 0.3,
+                size: Math.random() * 2 + 0.5,
+            });
+        }
+
+        function drawScene() {
+            ctx.fillStyle = 'rgba(0,0,0,0.2)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // Depth vignette
+            const radial = ctx.createRadialGradient(canvas.width / 2, canvas.height / 2, 0, canvas.width / 2, canvas.height / 2, canvas.width * 0.7);
+            radial.addColorStop(0, 'rgba(0,0,0,0)');
+            radial.addColorStop(1, 'rgba(0,0,0,0.7)');
+            ctx.fillStyle = radial;
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // Stars falling upward (falling sensation)
+            stars.forEach(s => {
+                s.y -= s.speed * 0.5;
+                s.z -= s.speed * 2;
+                if (s.y < -10 || s.z <= 0) {
+                    s.y = canvas.height + 10;
+                    s.z = 1000;
+                    s.x = Math.random() * canvas.width;
+                }
+                const scale = 1000 / (s.z + 1);
+                const sx = (s.x - canvas.width / 2) * scale + canvas.width / 2;
+                const sy = (s.y - canvas.height / 2) * scale + canvas.height / 2;
+                const sr = s.size * scale * 0.5;
+                const alpha = Math.min(0.9, scale * 0.3);
+                ctx.beginPath();
+                ctx.arc(sx, sy, sr, 0, Math.PI * 2);
+                ctx.fillStyle = `rgba(255,255,255,${alpha})`;
+                ctx.fill();
+            });
+
+            // Drifting particles
+            particles.forEach(p => {
+                p.y += p.vy;
+                if (p.y < -10) {
+                    p.y = canvas.height + 10;
+                    p.x = Math.random() * canvas.width;
+                }
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+                ctx.fillStyle = `rgba(100,80,160,${p.alpha})`;
+                ctx.fill();
+            });
+
+            t++;
+        }
+
+        // Reveal messages over time
+        let msgTimer = 0;
+        let showingMsg = false;
+        function cycleMessages() {
+            if (showingMsg) return;
+            showingMsg = true;
+            textEl.textContent = MESSAGES[msgIdx % MESSAGES.length];
+            textEl.classList.add('visible');
+            setTimeout(() => {
+                textEl.classList.remove('visible');
+                setTimeout(() => {
+                    msgIdx++;
+                    showingMsg = false;
+                }, 2000);
+            }, 4000);
+        }
+
+        setInterval(cycleMessages, 7000);
+        setTimeout(cycleMessages, 1500);
+
+        function loop() {
+            drawScene();
+            requestAnimationFrame(loop);
+        }
+        loop();
+    </script>
+</body>
+
+</html>

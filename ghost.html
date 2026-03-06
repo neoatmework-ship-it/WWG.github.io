@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ghost</title>
+    <link href="https://fonts.googleapis.com/css2?family=Special+Elite&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: #0a0906;
+            color: #c8b89a;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 30px;
+            font-family: 'Special Elite', serif;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* Film grain */
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 300 300' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.08'/%3E%3C/svg%3E");
+            opacity: 0.4;
+            z-index: 1000;
+        }
+
+        /* Vignette */
+        body::after {
+            content: '';
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            background: radial-gradient(ellipse at center, transparent 50%, rgba(0, 0, 0, 0.8) 100%);
+            z-index: 1;
+        }
+
+        .typewriter-wrap {
+            position: relative;
+            z-index: 2;
+            width: min(600px, 90vw);
+            background: rgba(15, 13, 10, 0.6);
+            border: 1px solid rgba(200, 184, 154, 0.15);
+            border-radius: 4px;
+            padding: 30px;
+            box-shadow: 0 0 60px rgba(0, 0, 0, 0.8), inset 0 0 30px rgba(0, 0, 0, 0.5);
+        }
+
+        .paper-header {
+            text-align: center;
+            margin-bottom: 24px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid rgba(200, 184, 154, 0.15);
+        }
+
+        .paper-header h1 {
+            font-size: 1.3rem;
+            letter-spacing: 4px;
+            color: rgba(200, 184, 154, 0.6);
+        }
+
+        .paper-header p {
+            font-size: 0.7rem;
+            color: rgba(200, 184, 154, 0.3);
+            margin-top: 4px;
+            letter-spacing: 2px;
+        }
+
+        #typewriter {
+            min-height: 200px;
+            font-size: 1rem;
+            line-height: 1.9;
+            color: #c8b89a;
+            white-space: pre-wrap;
+            word-break: break-word;
+            position: relative;
+        }
+
+        #cursor {
+            display: inline-block;
+            width: 2px;
+            height: 1em;
+            background: #c8b89a;
+            animation: blink 0.8s infinite;
+            vertical-align: text-bottom;
+            margin-left: 2px;
+        }
+
+        @keyframes blink {
+
+            0%,
+            100% {
+                opacity: 1
+            }
+
+            50% {
+                opacity: 0
+            }
+        }
+
+        .reply-area {
+            margin-top: 24px;
+            border-top: 1px solid rgba(200, 184, 154, 0.1);
+            padding-top: 18px;
+            display: flex;
+            gap: 10px;
+        }
+
+        #user-input {
+            flex: 1;
+            background: transparent;
+            border: none;
+            border-bottom: 1px solid rgba(200, 184, 154, 0.2);
+            color: #c8b89a;
+            font-family: 'Special Elite', serif;
+            font-size: 0.95rem;
+            padding: 6px 0;
+            outline: none;
+        }
+
+        #user-input::placeholder {
+            color: rgba(200, 184, 154, 0.25);
+        }
+
+        .send-btn {
+            background: transparent;
+            border: 1px solid rgba(200, 184, 154, 0.2);
+            color: rgba(200, 184, 154, 0.5);
+            font-family: 'Special Elite', serif;
+            padding: 6px 14px;
+            cursor: pointer;
+            border-radius: 2px;
+            font-size: 0.8rem;
+            transition: 0.2s;
+        }
+
+        .send-btn:hover {
+            color: #c8b89a;
+            border-color: rgba(200, 184, 154, 0.5);
+        }
+
+        .flicker {
+            animation: flicker 8s infinite;
+        }
+
+        @keyframes flicker {
+
+            0%,
+            96%,
+            100% {
+                opacity: 1
+            }
+
+            97%,
+            99% {
+                opacity: 0.5
+            }
+
+            98% {
+                opacity: 0.2
+            }
+        }
+
+        #back {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 10;
+            color: rgba(200, 184, 154, 0.25);
+            text-decoration: none;
+            font-size: 0.75rem;
+            letter-spacing: 1px;
+            transition: 0.3s;
+            font-family: 'Special Elite', serif;
+        }
+
+        #back:hover {
+            color: rgba(200, 184, 154, 0.7);
+        }
+
+        .ambience-note {
+            font-size: 0.65rem;
+            color: rgba(200, 184, 154, 0.2);
+            text-align: center;
+            margin-top: 14px;
+            letter-spacing: 2px;
+            z-index: 2;
+            position: relative;
+        }
+    </style>
+</head>
+
+<body>
+    <a id="back" href="index.html">← leave</a>
+    <div class="typewriter-wrap flicker">
+        <div class="paper-header">
+            <h1>E S T . 1 9 8 3</h1>
+            <p>AUTO-TRANSCRIPTION ACTIVE · DO NOT ADJUST</p>
+        </div>
+        <div id="typewriter"><span id="cursor"></span></div>
+        <div class="reply-area">
+            <input type="text" id="user-input" placeholder="say something..." maxlength="80">
+            <button class="send-btn" id="send-btn">send</button>
+        </div>
+    </div>
+    <p class="ambience-note">PSYCHIC PAPER · SESSION #4471 · CONNECTION UNSTABLE</p>
+
+    <script>
+        const typewriterEl = document.getElementById('typewriter');
+        const cursor = document.getElementById('cursor');
+        const userInput = document.getElementById('user-input');
+        const sendBtn = document.getElementById('send-btn');
+
+        const OPENING = [
+            "...\n\n",
+            "hello.\n\n",
+            "i've been waiting a long time for someone to find this.\n\n",
+            "i don't have much time. the connection fades.\n\n",
+            "tell me your name, if you want.\n\n",
+        ];
+
+        const GHOST_RESPONSES = {
+            default: [
+                "i remember when people used to sit in the dark and just... think.",
+                "the others don't know you're here. don't tell them.",
+                "do you ever feel like something is just behind you?",
+                "i used to be afraid of the dark too.",
+                "this place is different at night. you wouldn't believe.",
+                "the cold you feel right now isn't from the weather.",
+                "i've been here since before the internet. strange times.",
+                "don't look up. not yet.",
+                "i knew you'd find this. i saw it.",
+                "sometimes i type things and nobody reads them. until now.",
+                "the house burned down in 1983. but i'm still here.",
+                "i don't know if i'm a ghost. i just know i'm not gone.",
+                "thank you for talking to me.",
+            ],
+            greetings: [
+                "ah. a name. i had one of those.",
+                "hello to you too. i'm glad you're not scared.",
+                "nice to meet someone. it's been a while.",
+            ],
+            questions: [
+                "good question. i've been asking that myself for 40 years.",
+                "i don't know the answer. but i think about it often.",
+                "nobody ever asks me that. i appreciate it.",
+                "some things don't have answers. this might be one of them.",
+            ],
+            scary: [
+                "...",
+                "please don't say that.",
+                "i assure you, i mean no harm.",
+                "that word... it stings.",
+            ],
+            farewell: [
+                "don't go yet.",
+                "okay. come back sometime.",
+                "goodbye. i'll be here.",
+                "be safe out there.",
+            ]
+        };
+
+        let typed = '';
+        let isTyping = false;
+        let queue = [...OPENING];
+        let userName = '';
+
+        function typeText(text, speed = 40) {
+            return new Promise(resolve => {
+                isTyping = true;
+                let i = 0;
+                function tick() {
+                    if (i < text.length) {
+                        typed += text[i];
+                        typewriterEl.innerHTML = typed + '<span id="cursor"></span>';
+                        i++;
+                        const nextSpeed = text[i - 1] === '.' || text[i - 1] === ',' ? speed * 5 : (text[i - 1] === '\n' ? speed * 3 : speed + Math.random() * 30 - 15);
+                        setTimeout(tick, Math.max(20, nextSpeed));
+                    } else {
+                        isTyping = false;
+                        resolve();
+                    }
+                }
+                tick();
+            });
+        }
+
+        async function processQueue() {
+            while (queue.length > 0) {
+                const msg = queue.shift();
+                await typeText(msg, 38);
+                await new Promise(r => setTimeout(r, 400));
+            }
+        }
+
+        async function ghostReply(userMsg) {
+            const lower = userMsg.toLowerCase();
+            await new Promise(r => setTimeout(r, 800 + Math.random() * 1200));
+
+            // Typing indicator pause
+            typed += '\n\n...';
+            typewriterEl.innerHTML = typed + '<span id="cursor"></span>';
+            await new Promise(r => setTimeout(r, 1200 + Math.random() * 800));
+            // Remove the ellipsis
+            typed = typed.slice(0, typed.length - 3);
+
+            let pool;
+            if (lower.match(/hi|hello|hey|greet/)) pool = GHOST_RESPONSES.greetings;
+            else if (lower.match(/bye|leave|go|quit|exit/)) pool = GHOST_RESPONSES.farewell;
+            else if (lower.match(/scary|ghost|dead|die|death|kill/)) pool = GHOST_RESPONSES.scary;
+            else if (lower.match(/why|how|what|who|when|where|\?/)) pool = GHOST_RESPONSES.questions;
+            else pool = GHOST_RESPONSES.default;
+
+            // Personalize if name given
+            let response = pool[Math.floor(Math.random() * pool.length)];
+            if (userName && Math.random() < 0.3) response = userName.toLowerCase() + '... ' + response;
+
+            await typeText('\n' + response + '\n', 35);
+            await new Promise(r => setTimeout(r, 500));
+        }
+
+        function sendMessage() {
+            if (isTyping || !userInput.value.trim()) return;
+            const msg = userInput.value.trim();
+            userInput.value = '';
+
+            // Detect name
+            const nameMatch = msg.match(/^(?:i'm|i am|my name is|call me)\s+(\w+)/i);
+            if (nameMatch) userName = nameMatch[1];
+            if (!userName && msg.split(' ').length === 1 && msg.length > 1 && msg.length < 15) userName = msg;
+
+            // Show user message
+            typed += '\n[you]: ' + msg + '\n';
+            typewriterEl.innerHTML = typed + '<span id="cursor"></span>';
+
+            queue.push('GHOST_RESPONSE:' + msg);
+            if (!isTyping && queue.length === 1) runNext();
+        }
+
+        async function runNext() {
+            while (queue.length > 0) {
+                const item = queue.shift();
+                if (item.startsWith('GHOST_RESPONSE:')) {
+                    await ghostReply(item.slice(15));
+                } else {
+                    await typeText(item, 38);
+                    await new Promise(r => setTimeout(r, 300));
+                }
+            }
+        }
+
+        sendBtn.addEventListener('click', sendMessage);
+        userInput.addEventListener('keydown', e => { if (e.key === 'Enter') sendMessage(); });
+
+        // Start
+        (async () => {
+            for (const msg of OPENING) {
+                await typeText(msg, 40);
+                await new Promise(r => setTimeout(r, 300));
+            }
+        })();
+
+        // Occasional ambient typing
+        setInterval(() => {
+            if (!isTyping && queue.length === 0 && Math.random() < 0.3) {
+                const ambients = ['...', '......', 'are you still there?', '...i can feel you reading this...'];
+                queue.push('\n' + ambients[Math.floor(Math.random() * ambients.length)] + '\n');
+                runNext();
+            }
+        }, 15000);
+    </script>
+</body>
+
+</html>

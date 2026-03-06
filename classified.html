@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>[CLASSIFIED]</title>
+    <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: #0d0e0a;
+            color: #b8c4a0;
+            font-family: 'Share Tech Mono', monospace;
+            min-height: 100vh;
+            padding: 30px 20px;
+        }
+
+        .stamp-classified {
+            display: block;
+            width: fit-content;
+            margin: 0 auto 30px;
+            color: #8b1a1a;
+            border: 4px solid #8b1a1a;
+            padding: 6px 20px;
+            font-size: 2rem;
+            letter-spacing: 8px;
+            transform: rotate(-3deg);
+            text-shadow: 0 0 10px #8b1a1a80;
+            font-weight: bold;
+            font-family: 'Share Tech Mono', monospace;
+        }
+
+        .doc {
+            max-width: 700px;
+            margin: 0 auto;
+        }
+
+        .doc-header {
+            border-bottom: 2px solid #b8c4a040;
+            padding-bottom: 16px;
+            margin-bottom: 20px;
+        }
+
+        .doc-header h1 {
+            font-size: 0.9rem;
+            letter-spacing: 2px;
+            color: #b8c4a080;
+        }
+
+        .doc-meta {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 6px;
+            margin-top: 10px;
+            font-size: 0.7rem;
+            color: #b8c4a050;
+        }
+
+        .section {
+            margin-bottom: 24px;
+        }
+
+        .section h2 {
+            font-size: 0.75rem;
+            letter-spacing: 3px;
+            color: #b8c4a060;
+            border-bottom: 1px solid #b8c4a020;
+            padding-bottom: 4px;
+            margin-bottom: 12px;
+        }
+
+        .para {
+            font-size: 0.78rem;
+            line-height: 1.9;
+            color: #b8c4a0;
+            margin-bottom: 10px;
+        }
+
+        .redact {
+            background: #b8c4a0;
+            color: #b8c4a0;
+            border-radius: 2px;
+            padding: 0 4px;
+            user-select: none;
+            cursor: default;
+            transition: 0.2s;
+            display: inline;
+        }
+
+        .redact:hover {
+            background: #b8c4a020;
+            color: #b8c4a0;
+        }
+
+        .redact.revealed {
+            background: #b8c4a020;
+            color: #8bffa0;
+        }
+
+        .warning {
+            border: 1px solid #8b1a1a60;
+            background: #1a0a0a;
+            padding: 14px;
+            border-radius: 2px;
+            font-size: 0.72rem;
+            color: #cc4444;
+            margin: 16px 0;
+            line-height: 1.7;
+        }
+
+        .coords {
+            color: #6af0b0;
+        }
+
+        .date {
+            color: #aaa;
+        }
+
+        .clearance {
+            color: #ffd700;
+        }
+
+        .page-num {
+            text-align: center;
+            margin-top: 30px;
+            font-size: 0.65rem;
+            color: #b8c4a030;
+        }
+
+        #back {
+            color: #b8c4a030;
+            text-decoration: none;
+            font-size: 0.72rem;
+            display: block;
+            margin-bottom: 20px;
+            transition: 0.2s;
+        }
+
+        #back:hover {
+            color: #b8c4a080;
+        }
+
+        .hint {
+            font-size: 0.65rem;
+            color: #b8c4a030;
+            margin-top: 40px;
+            text-align: center;
+            letter-spacing: 1px;
+            line-height: 1.8;
+        }
+
+        .blink {
+            animation: bl 1.5s infinite;
+        }
+
+        @keyframes bl {
+
+            0%,
+            100% {
+                opacity: 0.3
+            }
+
+            50% {
+                opacity: 0.8
+            }
+        }
+
+        .scan-effect {
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            background: repeating-linear-gradient(0deg, transparent, transparent 3px, rgba(0, 0, 0, 0.08) 4px);
+            z-index: 1000;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="scan-effect"></div>
+    <div class="doc">
+        <a id="back" href="index.html">← return to gallery</a>
+        <div class="stamp-classified">CLASSIFIED</div>
+
+        <div class="doc-header">
+            <h1>DOCUMENT REF: WWG-7749-DELTA // EYES ONLY</h1>
+            <div class="doc-meta">
+                <span>DATE: <span class="date">██/██/19██</span></span>
+                <span>CLEARANCE: <span class="clearance">ULTRAVIOLET</span></span>
+                <span>PAGES: 1 of <span class="redact">██</span></span>
+                <span>AUTHOR: <span class="redact" title="click to reveal">AGENT ████████</span></span>
+            </div>
+        </div>
+
+        <div class="warning">
+            ⚠ UNAUTHORIZED ACCESS TO THIS DOCUMENT IS A VIOLATION OF <span class="redact">███ USC § ████</span>.
+            IF YOU HAVE ACCESSED THIS PAGE IN ERROR, CLOSE YOUR BROWSER IMMEDIATELY AND CONTACT <span
+                class="redact">███-████-████████</span>.
+            YOU ARE BEING LOGGED.
+        </div>
+
+        <div class="section">
+            <h2>// SUBJECT</h2>
+            <p class="para">The following report details the discovery of an anomalous <span
+                    class="redact">digital</span> structure embedded within the <span class="redact">Weird Website
+                    Gallery</span> infrastructure. First detected on <span class="date">██/██/████</span> by <span
+                    class="redact">AGENT HOLLOWAY</span>. The structure appears to respond to <span
+                    class="redact">search queries</span> in a non-standard way.</p>
+            <p class="para">The anomaly is not visible through standard navigation. Access requires knowledge of <span
+                    class="redact" title="try searching for the name on the gallery page">specific trigger terms</span>.
+                Three (3) such terms have been identified. Two (2) remain unknown to the public.</p>
+        </div>
+
+        <div class="section">
+            <h2>// OBSERVED PHENOMENA</h2>
+            <p class="para">
+                PHENOMENON 1: Upon entering the first trigger term, the interface transitions to a state described by
+                witnesses as <em>"falling through nothing."</em> Coordinates of anomaly: <span class="coords">NULL /
+                    NULL</span>. Duration: indefinite.<br><br>
+                PHENOMENON 2: A <span class="redact">spectral communication channel</span> was established when the
+                second trigger term was used. An entity — designation <span class="redact">E-1983</span> — was observed
+                to respond to typed input with <span class="redact">emotionally coherent</span> outputs.<br><br>
+                PHENOMENON 3: This document. You are reading it. The third trigger term leads here. You already know it.
+            </p>
+        </div>
+
+        <div class="section">
+            <h2>// KNOWN TRIGGER TERMS</h2>
+            <p class="para">
+                TERM 01: [<span class="redact" title="the absence of everything">████</span>] — found via signal in the
+                <span class="redact">radio intercept module</span>.<br>
+                TERM 02: [<span class="redact" title="what the thing in 1983 is">█████</span>] — hint embedded in the
+                <span class="redact">celestial navigator</span>.<br>
+                TERM 03: [<span class="redact">CLASSIFIED</span>] — you are here.
+            </p>
+        </div>
+
+        <div class="section">
+            <h2>// RECOMMENDATION</h2>
+            <p class="para">
+                This office recommends that no further action be taken at this time. The anomalies pose no threat. The
+                entity designated E-1983 appears <span class="redact">benign</span>. The void phenomenon has produced no
+                casualties, though test subject <span class="redact">████████</span> reported "a profound sense of
+                cosmic insignificance lasting approximately <span class="redact">three weeks</span>."
+            </p>
+            <p class="para">
+                The gallery itself shows no awareness of these embedded structures. <span class="redact">We believe the
+                    author does not know.</span> We recommend continued observation only.
+            </p>
+        </div>
+
+        <div class="warning">
+            THIS DOCUMENT WILL SELF-DESTRUCT UPON BROWSER CLOSE. <span class="blink">YOU HAVE BEEN WARNED.</span>
+        </div>
+
+        <div class="page-num">— PAGE 1 / [REDACTED] — DOCUMENT ENDS —</div>
+
+        <div class="hint">
+            [you found all three]<br>
+            [there are no more]<br>
+            [or are there?]<br>
+            [<span class="blink">we're watching</span>]
+        </div>
+    </div>
+
+    <script>
+        // Make redacted elements clickable to peek
+        document.querySelectorAll('.redact').forEach(el => {
+            el.addEventListener('click', () => {
+                el.classList.toggle('revealed');
+            });
+        });
+    </script>
+</body>
+
+</html>
