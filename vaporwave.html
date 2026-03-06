@@ -199,31 +199,224 @@
             bottom: 30%;
             left: 50%;
             transform: translateX(-50%);
-            width: 60vh;
-            height: 60vh;
-            border-radius: 50%;
-            background: linear-gradient(180deg, #ffdb00 0%, #ff8a00 45%, #ff007f 100%);
-            box-shadow: 0 0 100px #ff007f, 0 0 200px #ff8a00;
-            z-index: 2;
-            /* Behind the grid */
-            pointer-events: none;
-            clip-path: polygon(0% 0%, 100% 0%, 100% 55%, 0% 55%,
-                    0% 58%, 100% 58%, 100% 65%, 0% 65%,
-                    0% 68%, 100% 68%, 100% 75%, 0% 75%,
-                    0% 78%, 100% 78%, 100% 85%, 0% 85%,
-                    0% 88%, 100% 88%, 100% 95%, 0% 95%,
-                    0% 98%, 100% 98%, 100% 100%, 0% 100%);
-        }
+            <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Vaporwave City Drive | WWG</title><style>@import url('https://fonts.googleapis.com/css2?family=Righteous&family=Varela+Round&display=swap');
 
-        .background-gradient {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(to bottom, var(--sky-top) 0%, var(--sky-bottom) 50%, #000 50%, #000 100%);
-            z-index: 0;
-        }
+            :root {
+                --neon-pink: #ff007f;
+                --neon-blue: #00f3ff;
+                --neon-purple: #b000ff;
+                --sky-top: #0a0026;
+                --sky-bottom: #240046;
+            }
+
+            body,
+            html {
+                margin: 0;
+                padding: 0;
+                width: 100%;
+                height: 100%;
+                overflow: hidden;
+                background-color: #000;
+                font-family: 'Varela Round', sans-serif;
+                user-select: none;
+            }
+
+            #canvas-container {
+                position: absolute;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                z-index: 1;
+            }
+
+            .ui-layer {
+                position: absolute;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                pointer-events: none;
+                z-index: 10;
+                display: flex;
+                flex-direction: column;
+                justify-content: space-between;
+                padding: 30px;
+                box-sizing: border-box;
+            }
+
+            /* Scanline Overlay for retro CRT effect */
+            .scanlines {
+                position: absolute;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+                background-size: 100% 4px, 6px 100%;
+                pointer-events: none;
+                z-index: 100;
+            }
+
+            .vignette {
+                position: absolute;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                box-shadow: inset 0 0 150px rgba(0, 0, 0, 0.9);
+                pointer-events: none;
+                z-index: 99;
+            }
+
+            .header {
+                text-align: center;
+                pointer-events: auto;
+            }
+
+            h1 {
+                font-family: 'Righteous', cursive;
+                font-size: 4rem;
+                margin: 0;
+                color: #fff;
+                text-transform: uppercase;
+                letter-spacing: 5px;
+                text-shadow: 0 0 10px var(--neon-pink), 0 0 20px var(--neon-pink), 0 0 40px var(--neon-purple);
+                -webkit-text-stroke: 1px var(--neon-blue);
+                transform: skewX(-5deg);
+            }
+
+            .subtitle {
+                font-family: 'Varela Round', sans-serif;
+                color: var(--neon-blue);
+                font-size: 1.2rem;
+                letter-spacing: 8px;
+                text-transform: uppercase;
+                text-shadow: 0 0 10px var(--neon-blue);
+                margin-top: -10px;
+            }
+
+            .controls {
+                align-self: flex-start;
+                pointer-events: auto;
+                background: rgba(10, 0, 38, 0.7);
+                border: 1px solid var(--neon-purple);
+                padding: 20px;
+                border-radius: 8px;
+                backdrop-filter: blur(5px);
+                box-shadow: 0 0 20px rgba(176, 0, 255, 0.3);
+                display: flex;
+                flex-direction: column;
+                gap: 15px;
+                min-width: 250px;
+            }
+
+            .control-group {
+                display: flex;
+                flex-direction: column;
+                gap: 5px;
+            }
+
+            .control-group label {
+                color: var(--neon-blue);
+                font-size: 0.8rem;
+                text-transform: uppercase;
+                letter-spacing: 2px;
+                text-shadow: 0 0 5px var(--neon-blue);
+            }
+
+            input[type="range"] {
+                -webkit-appearance: none;
+                width: 100%;
+                height: 4px;
+                background: rgba(255, 255, 255, 0.2);
+                border-radius: 2px;
+                outline: none;
+            }
+
+            input[type="range"]::-webkit-slider-thumb {
+                -webkit-appearance: none;
+                width: 16px;
+                height: 16px;
+                border-radius: 50%;
+                background: var(--neon-pink);
+                box-shadow: 0 0 10px var(--neon-pink);
+                cursor: pointer;
+            }
+
+            .instructions {
+                position: absolute;
+                bottom: 30px;
+                right: 30px;
+                color: rgba(255, 255, 255, 0.6);
+                font-size: 0.9rem;
+                text-align: right;
+                line-height: 1.5;
+            }
+
+            .instructions kbd {
+                background: rgba(255, 255, 255, 0.1);
+                border: 1px solid rgba(255, 255, 255, 0.3);
+                border-radius: 4px;
+                padding: 2px 6px;
+                font-family: monospace;
+                color: var(--neon-pink);
+            }
+
+            .back-link {
+                position: absolute;
+                top: 20px;
+                left: 20px;
+                color: var(--neon-blue);
+                text-decoration: none;
+                font-size: 1rem;
+                letter-spacing: 1px;
+                display: flex;
+                align-items: center;
+                gap: 8px;
+                pointer-events: auto;
+                transition: 0.2s;
+                text-transform: uppercase;
+            }
+
+            .back-link:hover {
+                color: var(--neon-pink);
+                text-shadow: 0 0 10px var(--neon-pink);
+            }
+
+            /* 80s Sun SVG overlay */
+            .retro-sun {
+                position: absolute;
+                bottom: 30%;
+                left: 50%;
+                transform: translateX(-50%);
+                width: 60vh;
+                height: 60vh;
+                border-radius: 50%;
+                background: linear-gradient(180deg, #ffdb00 0%, #ff8a00 45%, #ff007f 100%);
+                box-shadow: 0 0 100px #ff007f, 0 0 200px #ff8a00;
+                z-index: 2;
+                /* Behind the grid */
+                /* Interactive sun for secret */
+                pointer-events: auto;
+                cursor: pointer;
+                clip-path: polygon(0% 0%, 100% 0%, 100% 55%, 0% 55%,
+                        0% 58%, 100% 58%, 100% 65%, 0% 65%,
+                        0% 68%, 100% 68%, 100% 75%, 0% 75%,
+                        0% 78%, 100% 78%, 100% 85%, 0% 85%,
+                        0% 88%, 100% 88%, 100% 95%, 0% 95%,
+                        0% 98%, 100% 98%, 100% 100%, 0% 100%);
+            }
+
+            .background-gradient {
+                position: absolute;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: linear-gradient(to bottom, var(--sky-top) 0%, var(--sky-bottom) 50%, #000 50%, #000 100%);
+                z-index: 0;
+            }
     </style>
     <!-- Three.js from CDN -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
@@ -478,48 +671,75 @@
         window.addEventListener('keydown', initAudio);
         window.addEventListener('mousedown', initAudio);
 
+        // Eclipse Secret Trigger
+        let sunClicks = 0;
+        const retroSun = document.querySelector('.retro-sun');
+        if (retroSun) {
+            retroSun.addEventListener('click', (e) => {
+                e.stopPropagation();
+                sunClicks++;
+
+                // Visual feedback
+                retroSun.style.transition = '0.1s';
+                retroSun.style.boxShadow = `0 0 ${100 + sunClicks * 10}px #ff007f`;
+                setTimeout(() => {
+                    retroSun.style.boxShadow = '0 0 100px #ff007f, 0 0 200px #ff8a00';
+                }, 100);
+
+                if (sunClicks >= 10) {
+                    const blackOut = document.createElement('div');
+                    blackOut.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:black;z-index:100000;opacity:0;transition:opacity 1s;pointer-events:none;';
+                    document.body.appendChild(blackOut);
+                    setTimeout(() => blackOut.style.opacity = '1', 10);
+                    setTimeout(() => window.location.href = 'eclipse.html', 1500);
+                }
+            });
+        }
+
         // Start
         animate();
 
     </script>
 
-<!-- WWG_NAV_START -->
-<style>
-.wwg-nav {
-    position: fixed;
-    bottom: 20px;
-    right: 20px;
-    display: flex;
-    gap: 10px;
-    z-index: 99999;
-}
-.wwg-nav a {
-    background: rgba(10, 10, 15, 0.7);
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    color: #a78bfa;
-    padding: 8px 16px;
-    border-radius: 20px;
-    font-family: 'Space Grotesk', sans-serif;
-    font-size: 0.8rem;
-    font-weight: 600;
-    text-decoration: none;
-    transition: all 0.3s ease;
-}
-.wwg-nav a:hover {
-    background: rgba(167, 139, 250, 0.2);
-    border-color: rgba(167, 139, 250, 0.4);
-    color: #fff;
-    transform: translateY(-2px);
-    box-shadow: 0 4px 15px rgba(167, 139, 250, 0.3);
-}
-</style>
-<div class="wwg-nav">
-    <a href="harmonograph.html">← Prev</a>
-    <a href="css-artist.html">Next →</a>
-</div>
-<!-- WWG_NAV_END -->
+    <!-- WWG_NAV_START -->
+    <style>
+        .wwg-nav {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            display: flex;
+            gap: 10px;
+            z-index: 99999;
+        }
+
+        .wwg-nav a {
+            background: rgba(10, 10, 15, 0.7);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: #a78bfa;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 0.8rem;
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+
+        .wwg-nav a:hover {
+            background: rgba(167, 139, 250, 0.2);
+            border-color: rgba(167, 139, 250, 0.4);
+            color: #fff;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(167, 139, 250, 0.3);
+        }
+    </style>
+    <div class="wwg-nav">
+        <a href="harmonograph.html">← Prev</a>
+        <a href="css-artist.html">Next →</a>
+    </div>
+    <!-- WWG_NAV_END -->
 </body>
 
 </html>

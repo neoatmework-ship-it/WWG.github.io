@@ -2,7 +2,8 @@
 <html lang="en">
 
 <head>
-    <link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20100%20100%22%3E%3Ctext%20y%3D%22.9em%22%20font-size%3D%2290%22%3E%F0%9F%AA%90%3C%2Ftext%3E%3C%2Fsvg%3E">
+    <link rel="icon"
+        href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20100%20100%22%3E%3Ctext%20y%3D%22.9em%22%20font-size%3D%2290%22%3E%F0%9F%AA%90%3C%2Ftext%3E%3C%2Fsvg%3E">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Gravity Playground — Create Your Own Universe</title>
@@ -215,38 +216,43 @@
 
 <body>
 
-<!-- WWG Back Button -->
-<style>
-.wwg-back-btn {
-    position: fixed;
-    top: 20px;
-    left: 20px;
-    width: 44px;
-    height: 44px;
-    background: rgba(10, 10, 15, 0.7);
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: #a78bfa;
-    z-index: 99999;
-    transition: all 0.3s ease;
-    text-decoration: none;
-}
-.wwg-back-btn:hover {
-    background: rgba(167, 139, 250, 0.2);
-    border-color: rgba(167, 139, 250, 0.4);
-    transform: scale(1.05) translateX(-2px);
-    color: #fff;
-    box-shadow: 0 0 15px rgba(167, 139, 250, 0.3);
-}
-</style>
-<a href="index.html" class="wwg-back-btn" title="Back to Gallery">
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
-</a>
+    <!-- WWG Back Button -->
+    <style>
+        .wwg-back-btn {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            width: 44px;
+            height: 44px;
+            background: rgba(10, 10, 15, 0.7);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #a78bfa;
+            z-index: 99999;
+            transition: all 0.3s ease;
+            text-decoration: none;
+        }
+
+        .wwg-back-btn:hover {
+            background: rgba(167, 139, 250, 0.2);
+            border-color: rgba(167, 139, 250, 0.4);
+            transform: scale(1.05) translateX(-2px);
+            color: #fff;
+            box-shadow: 0 0 15px rgba(167, 139, 250, 0.3);
+        }
+    </style>
+    <a href="index.html" class="wwg-back-btn" title="Back to Gallery">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+            stroke-linecap="round" stroke-linejoin="round">
+            <line x1="19" y1="12" x2="5" y2="12"></line>
+            <polyline points="12 19 5 12 12 5"></polyline>
+        </svg>
+    </a>
 
 
     <canvas id="canvas"></canvas>
@@ -434,7 +440,8 @@
                     const distSq = dx * dx + dy * dy;
                     const dist = Math.sqrt(distSq);
 
-                    // Collision
+                    // Collision disabled by user request to prevent "sucking each other in"
+                    /*
                     if (dist < a.radius + b.radius) {
                         if (a.mass >= b.mass) {
                             a.mass += b.mass * 0.3;
@@ -447,6 +454,7 @@
                         }
                         continue;
                     }
+                    */
 
                     const force = (G * a.mass * b.mass) / (distSq + 100);
                     const fx = force * dx / dist;
@@ -483,6 +491,21 @@
             }
         }
 
+        // ── Secret Trigger ──
+        let bhTriggered = false;
+        function checkBH() {
+            if (bhTriggered) return;
+            if (bodies.length >= 100) {
+                bhTriggered = true;
+                const overlay = document.createElement('div');
+                overlay.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:black;z-index:100000;opacity:0;transition:opacity 2.2s;display:flex;align-items:center;justify-content:center;color:#fff;font-family:Space Grotesk,sans-serif;font-size:1.8rem;letter-spacing:12px;pointer-events:none;';
+                overlay.innerHTML = '<div style="text-align:center">SIGULARITY COLLAPSE<br><span style="font-size:0.8rem;letter-spacing:2px;opacity:0.6;margin-top:20px;display:block;">CRITICAL MASS REACHED</span></div>';
+                document.body.appendChild(overlay);
+                setTimeout(() => overlay.style.opacity = '1', 10);
+                setTimeout(() => window.location.href = 'blackhole.html', 3000);
+            }
+        }
+
         // ── Main Loop ──
         let lastTime = 0;
         let frameCount = 0;
@@ -495,6 +518,7 @@
             frameCount++;
             if (frameCount % 30 === 0) {
                 lastFps = Math.round(1000 / ((time - (lastTime - dt * 16)) || 16));
+                if (lastFps > 60) lastFps = 60;
             }
 
             drawStarfield();
@@ -571,6 +595,7 @@
             bodies.push(new Body(dragStart.x, dragStart.y, vx, vy, selectedType));
             dragStart = null;
             dragEnd = null;
+            checkBH();
         });
 
         // Touch support
@@ -599,6 +624,7 @@
             bodies.push(new Body(dragStart.x, dragStart.y, vx, vy, selectedType));
             dragStart = null;
             dragEnd = null;
+            checkBH();
         });
 
         // ── UI Controls ──
@@ -625,43 +651,45 @@
     </script>
 
 
-<!-- WWG_NAV_START -->
-<style>
-.wwg-nav {
-    position: fixed;
-    bottom: 20px;
-    right: 20px;
-    display: flex;
-    gap: 10px;
-    z-index: 99999;
-}
-.wwg-nav a {
-    background: rgba(10, 10, 15, 0.7);
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    color: #a78bfa;
-    padding: 8px 16px;
-    border-radius: 20px;
-    font-family: 'Space Grotesk', sans-serif;
-    font-size: 0.8rem;
-    font-weight: 600;
-    text-decoration: none;
-    transition: all 0.3s ease;
-}
-.wwg-nav a:hover {
-    background: rgba(167, 139, 250, 0.2);
-    border-color: rgba(167, 139, 250, 0.4);
-    color: #fff;
-    transform: translateY(-2px);
-    box-shadow: 0 4px 15px rgba(167, 139, 250, 0.3);
-}
-</style>
-<div class="wwg-nav">
-    <a href="radio-explorer.html">← Prev</a>
-    <a href="color-piano.html">Next →</a>
-</div>
-<!-- WWG_NAV_END -->
+    <!-- WWG_NAV_START -->
+    <style>
+        .wwg-nav {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            display: flex;
+            gap: 10px;
+            z-index: 99999;
+        }
+
+        .wwg-nav a {
+            background: rgba(10, 10, 15, 0.7);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: #a78bfa;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 0.8rem;
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+
+        .wwg-nav a:hover {
+            background: rgba(167, 139, 250, 0.2);
+            border-color: rgba(167, 139, 250, 0.4);
+            color: #fff;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(167, 139, 250, 0.3);
+        }
+    </style>
+    <div class="wwg-nav">
+        <a href="radio-explorer.html">← Prev</a>
+        <a href="color-piano.html">Next →</a>
+    </div>
+    <!-- WWG_NAV_END -->
 </body>
 
 </html>
