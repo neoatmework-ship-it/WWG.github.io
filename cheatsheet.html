@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WWG — Secret Walkthrough</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=Inter:wght@400;500&display=swap"
+        rel="stylesheet">
+    <style>
+        :root {
+            --bg: #050508;
+            --card-bg: #0e0e14;
+            --accent: #a78bfa;
+            --accent-glow: rgba(167, 139, 250, 0.25);
+            --text: #ededf0;
+            --text-sub: #8888a0;
+            --border: rgba(255, 255, 255, 0.06);
+            --gold: #d4af37;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 60px 20px;
+        }
+
+        h1 {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            color: var(--accent);
+            text-shadow: 0 0 20px var(--accent-glow);
+            text-align: center;
+        }
+
+        p.subtitle {
+            text-align: center;
+            color: var(--text-sub);
+            margin-bottom: 40px;
+            max-width: 600px;
+            line-height: 1.6;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 800px;
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+        }
+
+        .category {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 1.5rem;
+            color: #fff;
+            margin-top: 30px;
+            margin-bottom: 10px;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 10px;
+        }
+
+        .secret-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 24px;
+            transition: 0.3s;
+        }
+
+        .secret-card:hover {
+            border-color: rgba(167, 139, 250, 0.4);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+        }
+
+        .sc-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .sc-title {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: var(--accent);
+        }
+
+        .sc-icon {
+            font-size: 1.5rem;
+        }
+
+        .sc-trigger {
+            background: rgba(167, 139, 250, 0.08);
+            border-left: 3px solid var(--accent);
+            padding: 12px 16px;
+            border-radius: 0 8px 8px 0;
+            font-size: 0.9rem;
+            color: #e2e8f0;
+            margin-bottom: 16px;
+            line-height: 1.5;
+        }
+
+        .sc-trigger strong {
+            color: #fff;
+        }
+
+        .sc-desc {
+            font-size: 0.85rem;
+            color: var(--text-sub);
+            line-height: 1.6;
+        }
+
+        .back-link {
+            display: inline-block;
+            margin-bottom: 40px;
+            color: var(--text-sub);
+            text-decoration: none;
+            font-size: 0.9rem;
+            transition: 0.2s;
+            border: 1px solid var(--border);
+            padding: 8px 16px;
+            border-radius: 20px;
+        }
+
+        .back-link:hover {
+            color: #fff;
+            background: rgba(255, 255, 255, 0.05);
+        }
+    </style>
+</head>
+
+<body>
+
+    <a href="index.html" class="back-link">← Back to Gallery</a>
+
+    <h1>Gallery Secrets Guide</h1>
+    <p class="subtitle">There are currently <strong>11 hidden web pages</strong> completely disconnected from the main
+        gallery grid. Here is exactly how to find every single one of them.</p>
+
+    <div class="container">
+
+        <div class="category">🔍 Search Bar Secrets</div>
+        <p style="color:var(--text-sub);font-size:0.85rem;margin-bottom:10px;">Go to the main gallery page (<code
+                style="color:#fff">index.html</code>) and type these exact words into the search bar, then hit Enter.
+        </p>
+
+        <div class="secret-card">
+            <div class="sc-header">
+                <div class="sc-title">1. The Void</div>
+                <div class="sc-icon">🌑</div>
+            </div>
+            <div class="sc-trigger"><strong>Trigger:</strong> Type <code style="color:var(--accent)">void</code> into
+                the gallery search bar and press Enter.</div>
+            <div class="sc-desc"><strong>What it is:</strong> An infinite falling sequence with floating, cryptic
+                messages implying you have slipped out of the confines of the gallery.</div>
+        </div>
+
+        <div class="secret-card">
+            <div class="sc-header">
+                <div class="sc-title">2. Ghost.exe</div>
+                <div class="sc-icon">👻</div>
+            </div>
+            <div class="sc-trigger"><strong>Trigger:</strong> Type <code style="color:var(--accent)">ghost</code> into
+                the gallery search bar and press Enter.</div>
+            <div class="sc-desc"><strong>What it is:</strong> A haunted, 1980s terminal where you can type questions and
+                have a genuinely unsettling AI conversation with "Entity E-1983".</div>
+        </div>
+
+        <div class="secret-card">
+            <div class="sc-header">
+                <div class="sc-title">3. Classified Document</div>
+                <div class="sc-icon">📄</div>
+            </div>
+            <div class="sc-trigger"><strong>Trigger:</strong> Type <code style="color:var(--accent)">classified</code>
+                into the gallery search bar and press Enter.</div>
+            <div class="sc-desc"><strong>What it is:</strong> A heavily redacted internal government document detailing
+                the containment procedures for the very gallery you are browsing.</div>
+        </div>
+
+
+        <div class="category">🎬 Action-Triggered Secrets</div>
+        <p style="color:var(--text-sub);font-size:0.85rem;margin-bottom:10px;">You must perform specific, hidden actions
+            inside the existing gallery websites to be teleported to these pages.</p>
+
+        <div class="secret-card">
+            <div class="sc-header">
+                <div class="sc-title">4. Mirror Gallery</div>
+                <div class="sc-icon">🪞</div>
+            </div>
+            <div class="sc-trigger"><strong>Website:</strong> Main Gallery (index.html)<br><strong>Trigger:</strong>
+                Click the large gradient "WWG" title at the top of the page <strong>5 times</strong> in quick
+                succession.</div>
+            <div class="sc-desc"><strong>What it is:</strong> A visually inverted clone of the gallery. Everything is
+                backwards, and the previously hidden secret pages are listed but mockingly inaccessible.</div>
+        </div>
+
+        <div class="secret-card">
+            <div class="sc-header">
+                <div class="sc-title">5. The Backrooms</div>
+                <div class="sc-icon">🏨</div>
+            </div>
+            <div class="sc-trigger"><strong>Website:</strong> Infinite Maze<br><strong>Trigger:</strong> Stubbornly run
+                your player square directly into solid walls <strong>20 times</strong>. A flickering door will appear at
+                the bottom.</div>
+            <div class="sc-desc"><strong>What it is:</strong> An endless, humming labyrinth of damp yellow carpet and
+                mono-yellow wallpaper. A pure liminal horror experience.</div>
+        </div>
+
+        <div class="secret-card">
+            <div class="sc-header">
+                <div class="sc-title">6. 103.7 FM Broadcast</div>
+                <div class="sc-icon">📻</div>
+            </div>
+            <div class="sc-trigger"><strong>Website:</strong> Signal Interceptor<br><strong>Trigger:</strong> Carefully
+                drag the frequency slider to exactly <strong>103.7 MHz</strong> and leave it completely still for
+                <strong>3 seconds</strong> until a "LOCK ACQUIRED" button appears.</div>
+            <div class="sc-desc"><strong>What it is:</strong> A simulated pirate radio station broadcasting on a
+                deserted frequency, warning you about the very sites you are exploring.</div>
+        </div>
+
+        <div class="secret-card">
+            <div class="sc-header">
+                <div class="sc-title">7. The Underground</div>
+                <div class="sc-icon">🎩</div>
+            </div>
+            <div class="sc-trigger"><strong>Website:</strong> Memory Matrix<br><strong>Trigger:</strong> Successfully
+                play the memory game and survive until you reach <strong>Level 10</strong>. A glowing velvet door will
+                spawn.</div>
+            <div class="sc-desc"><strong>What it is:</strong> A dark, sophisticated speakeasy website that acts as a
+                haven for those who have "remembered enough."</div>
+        </div>
+
+        <div class="secret-card">
+            <div class="sc-header">
+                <div class="sc-title">8. Department of Waiting (Limbo)</div>
+                <div class="sc-icon">⏳</div>
+            </div>
+            <div class="sc-trigger"><strong>Website:</strong> Neon Clock<br><strong>Trigger:</strong> Click directly on
+                the face of the glowing circle clock <strong>7 times</strong> quickly.</div>
+            <div class="sc-desc"><strong>What it is:</strong> A bureaucratic nightmare dimension where you are given a
+                ticket number and forced to wait as the display slowly, uselessly updates.</div>
+        </div>
+
+        <div class="secret-card">
+            <div class="sc-header">
+                <div class="sc-title">9. The Chosen</div>
+                <div class="sc-icon">⭐</div>
+            </div>
+            <div class="sc-trigger"><strong>Website:</strong> Emoji Slots<br><strong>Trigger:</strong> Keep pulling the
+                lever until you legitimately hit the <strong>7️⃣7️⃣7️⃣</strong> jackpot (a 1-in-3,375 chance).</div>
+            <div class="sc-desc"><strong>What it is:</strong> A dramatic, gold-plated ceremonial decree claiming you
+                have been initiated into the Order of the Triple Seven.</div>
+        </div>
+
+        <div class="secret-card">
+            <div class="sc-header">
+                <div class="sc-title">10. Static Breakthrough</div>
+                <div class="sc-icon">📺</div>
+            </div>
+            <div class="sc-trigger"><strong>Website:</strong> Signal Interceptor<br><strong>Trigger:</strong> Drag the
+                <strong>Noise</strong> slider all the way up to <strong>100%</strong> and leave it there for <strong>5
+                    full seconds</strong>.</div>
+            <div class="sc-desc"><strong>What it is:</strong> A generative, deafening field of TV static that slowly
+                overlays cryptic, faded text.</div>
+        </div>
+
+        <div class="secret-card">
+            <div class="sc-header">
+                <div class="sc-title">11. The Deep</div>
+                <div class="sc-icon">🌊</div>
+            </div>
+            <div class="sc-trigger"><strong>Website:</strong> Terrain Generator<br><strong>Trigger:</strong> Hold the
+                <strong>S</strong> key on your keyboard and continuously <strong>scroll down</strong> with your mouse
+                wheel until you descend out of bounds.</div>
+            <div class="sc-desc"><strong>What it is:</strong> An ominous, dark green underwater void where particles
+                float upwards, prompting you to "ascend".</div>
+        </div>
+
+    </div>
+
+</body>
+
+</html>
