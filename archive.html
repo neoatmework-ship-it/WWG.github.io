@@ -150,21 +150,38 @@
             <p class="desc">A localized mirror of all salvaged fragments. Use the shortcuts to warp back
                 to established dimensions.</p>
         </div>
-        <button id="reset-btn" class="reset-btn" style="
-            background: rgba(255, 50, 50, 0.1);
-            border: 1px solid rgba(255, 50, 50, 0.2);
-            color: #ff5555;
-            padding: 10px 15px;
-            border-radius: 8px;
-            font-family: 'Space Grotesk', sans-serif;
-            font-size: 0.7rem;
-            font-weight: bold;
-            letter-spacing: 1px;
-            cursor: pointer;
-            transition: 0.3s;
-            margin-top: 20px;
-        " onmouseover="this.style.background='rgba(255, 50, 50, 0.2)'"
-            onmouseout="this.style.background='rgba(255, 50, 50, 0.1)'">RESET_VOICE_COLONIES</button>
+        <div id="guide-cont" style="display:none; margin-top:20px;">
+            <a href="cheatsheet.html" class="guide-btn" style="
+                background: rgba(167, 139, 250, 0.1);
+                border: 1px solid var(--accent);
+                color: var(--accent);
+                padding: 10px 20px;
+                border-radius: 50px;
+                text-decoration: none;
+                font-family: 'Space Grotesk', sans-serif;
+                font-size: 0.8rem;
+                font-weight: bold;
+                letter-spacing: 1px;
+                transition: 0.3s;
+                display: inline-block;
+            ">VIEW_DISCOVERY_GUIDE</a>
+        </div>
+
+        <div class="reset-wrap" style="display:flex; gap:10px; margin-top:20px;">
+            <button id="reset-btn" class="reset-btn" style="
+                background: rgba(255, 50, 50, 0.1);
+                border: 1px solid rgba(255, 50, 50, 0.2);
+                color: #ff5555;
+                padding: 10px 15px;
+                border-radius: 8px;
+                font-family: 'Space Grotesk', sans-serif;
+                font-size: 0.7rem;
+                font-weight: bold;
+                letter-spacing: 1px;
+                cursor: pointer;
+                transition: 0.3s;
+            ">RESET_VAULT</button>
+        </div>
     </div>
 
     <div class="grid" id="vault-grid">
@@ -208,6 +225,10 @@
         function render() {
             const discovered = Discovery.getDiscovered();
             discoveryStats.innerText = `LOADED fragments // ${discovered.length} of 25 secure`;
+
+            if (Discovery.isCheatsheetUnlocked()) {
+                document.getElementById('guide-cont').style.display = 'block';
+            }
 
             grid.innerHTML = '';
 

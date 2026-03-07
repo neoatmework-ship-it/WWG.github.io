@@ -2289,11 +2289,13 @@
         <p>WWG — Weird Website Gallery · Made with <span id="footer-logic" style="cursor:help">✦</span> and curiosity
             <br><br>
             <span id="footer-version" style="font-size: 0.6rem; opacity: 0.3; cursor: pointer;">v3.2.1-STABLE</span><br>
+        <div id="guide-link-container" style="display:none;">
             <a href="cheatsheet.html"
                 style="color:rgba(255,255,255,0.2);text-decoration:none;font-size:0.7rem;transition:0.3s;"
                 onmouseover="this.style.color='#fff'" onmouseout="this.style.color='rgba(255,255,255,0.2)'">Archive
                 Guide
-                (20)</a>
+                (25)</a>
+        </div>
         </p>
     </footer>
 
@@ -2491,8 +2493,11 @@
                 setTimeout(() => { versionClicks = 0; }, 2000);
             });
 
-            // Initialize UI
-            filterCards();
+            // Show guide link if unlocked
+            if (Discovery.isCheatsheetUnlocked()) {
+                const guideCont = document.getElementById('guide-link-container');
+                if (guideCont) guideCont.style.display = 'block';
+            }
         })();
 
         // Suggest Idea Logic

@@ -162,6 +162,10 @@
 
     <script src="discovery.js"></script>
     <script>
+        if (!Discovery.isCheatsheetUnlocked()) {
+            window.location.href = 'index.html';
+        }
+
         const secrets = [
             { id: 'void', name: 'The Void', hint: 'Stand perfectly still for 30 seconds. Do not blink (or move the mouse).' },
             { id: 'ghost', name: 'The Ghost', hint: 'Type the greeting "HELLO" anywhere on the main page.' },

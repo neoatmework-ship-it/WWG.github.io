@@ -338,45 +338,45 @@
         function spawnParticles(index, color) { const el = pianoEl.querySelector(`[data-index="${index}"]`); if (!el) return; const rect = el.getBoundingClientRect(); const cx = rect.left + rect.width / 2, cy = rect.top; for (let i = 0; i < 8; i++) { const p = document.createElement('div'); p.className = 'particle'; const sz = 4 + Math.random() * 6; p.style.width = sz + 'px'; p.style.height = sz + 'px'; p.style.background = color; p.style.boxShadow = `0 0 12px ${color}`; p.style.left = cx + 'px'; p.style.top = cy + 'px'; document.body.appendChild(p); const angle = -Math.PI / 2 + (Math.random() - .5) * Math.PI; const spd = 2 + Math.random() * 4; let vx = Math.cos(angle) * spd, vy = Math.sin(angle) * spd, x = cx, y = cy, a = 1; (function anim() { x += vx; y += vy + .5; a -= .02; if (a <= 0) { p.remove(); return } p.style.left = x + 'px'; p.style.top = y + 'px'; p.style.opacity = a; requestAnimationFrame(anim) })() } }
     </script>
 
-    <!-- WWG_NAV_START -->
-    <style>
-        .wwg-nav {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            display: flex;
-            gap: 10px;
-            z-index: 99999;
-        }
+    
 
-        .wwg-nav a {
-            background: rgba(10, 10, 15, 0.7);
-            backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            color: #a78bfa;
-            padding: 8px 16px;
-            border-radius: 20px;
-            font-family: 'Space Grotesk', sans-serif;
-            font-size: 0.8rem;
-            font-weight: 600;
-            text-decoration: none;
-            transition: all 0.3s ease;
-        }
-
-        .wwg-nav a:hover {
-            background: rgba(167, 139, 250, 0.2);
-            border-color: rgba(167, 139, 250, 0.4);
-            color: #fff;
-            transform: translateY(-2px);
-            box-shadow: 0 4px 15px rgba(167, 139, 250, 0.3);
-        }
-    </style>
-    <div class="wwg-nav">
-        <a href="gravity-playground.html">← Prev</a>
-        <a href="harmonograph.html">Next →</a>
-    </div>
-    <!-- WWG_NAV_END -->
+<!-- WWG_NAV_START -->
+<style>
+.wwg-nav {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    display: flex;
+    gap: 10px;
+    z-index: 99999;
+}
+.wwg-nav a {
+    background: rgba(10, 10, 15, 0.7);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: #a78bfa;
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 0.8rem;
+    font-weight: 600;
+    text-decoration: none;
+    transition: all 0.3s ease;
+}
+.wwg-nav a:hover {
+    background: rgba(167, 139, 250, 0.2);
+    border-color: rgba(167, 139, 250, 0.4);
+    color: #fff;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(167, 139, 250, 0.3);
+}
+</style>
+<div class="wwg-nav">
+    <a href="gravity-playground.html">← Prev</a>
+    <a href="harmonograph.html">Next →</a>
+</div>
+<!-- WWG_NAV_END -->
 </body>
 
 </html>

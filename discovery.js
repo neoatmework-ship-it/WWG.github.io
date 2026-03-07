@@ -71,6 +71,16 @@ const Discovery = {
 
     cheat_unlock_all: function () {
         localStorage.setItem(this.STORAGE_KEY, JSON.stringify(this.SITES));
+    },
+
+    CHEATSHEET_KEY: 'wwg_cheatsheet_unlocked',
+
+    unlockCheatsheet: function () {
+        localStorage.setItem(this.CHEATSHEET_KEY, 'true');
+    },
+
+    isCheatsheetUnlocked: function () {
+        return localStorage.getItem(this.CHEATSHEET_KEY) === 'true';
     }
 };
 
