@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GRAVITY SHIFT</title>
+    <script src="discovery.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #050510;
+            --accent: #a78bfa;
+            --rotation: 0deg;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: var(--bg);
+            color: #fff;
+            font-family: 'Space Grotesk', sans-serif;
+            height: 100vh;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: transform 0.8s cubic-bezier(0.65, 0, 0.35, 1);
+            transform: rotate(var(--rotation));
+        }
+
+        .controls {
+            position: fixed;
+            top: 40px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 20px;
+            z-index: 100;
+        }
+
+        button {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: #fff;
+            padding: 10px 20px;
+            border-radius: 50px;
+            cursor: pointer;
+            font-family: inherit;
+            font-weight: bold;
+            letter-spacing: 1px;
+            transition: 0.3s;
+        }
+
+        button:hover {
+            background: var(--accent);
+            border-color: var(--accent);
+            transform: scale(1.1);
+        }
+
+        .world {
+            width: 100vw;
+            height: 100vh;
+            position: relative;
+        }
+
+        .box {
+            position: absolute;
+            width: 60px;
+            height: 60px;
+            background: var(--accent);
+            border: 2px solid #fff;
+            box-shadow: 0 0 20px rgba(167, 139, 250, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            border-radius: 8px;
+            pointer-events: none;
+        }
+
+        .exit-link {
+            position: fixed;
+            bottom: 40px;
+            left: 40px;
+            color: #444;
+            text-decoration: none;
+            letter-spacing: 2px;
+            font-size: 0.8rem;
+            transition: 0.3s;
+            z-index: 100;
+        }
+
+        .exit-link:hover {
+            color: #fff;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="controls">
+        <button onclick="changeGravity(0)">NORTH</button>
+        <button onclick="changeGravity(90)">EAST</button>
+        <button onclick="changeGravity(180)">SOUTH</button>
+        <button onclick="changeGravity(270)">WEST</button>
+    </div>
+
+    <div class="world" id="world"></div>
+    <a href="archive.html" class="exit-link">RETURN TO VAULT</a>
+
+    <script>
+        const world = document.getElementById('world');
+        const boxes = [];
+        let gravityAngle = 180; // 0=up, 90=right, 180=down, 270=left
+
+        function createBox() {
+            const box = document.createElement('div');
+            box.className = 'box';
+            box.innerText = '?';
+
+            const state = {
+                el: box,
+                x: Math.random() * (window.innerWidth - 60),
+                y: Math.random() * (window.innerHeight - 60),
+                vx: (Math.random() - 0.5) * 10,
+                vy: (Math.random() - 0.5) * 10
+            };
+
+            world.appendChild(box);
+            boxes.push(state);
+        }
+
+        for (let i = 0; i < 15; i++) createBox();
+
+        function changeGravity(angle) {
+            gravityAngle = angle;
+            document.documentElement.style.setProperty('--rotation', `${-angle}deg`);
+        }
+
+        function update() {
+            const g = 0.5;
+            const friction = 0.98;
+
+            boxes.forEach(b => {
+                // Apply Gravity relative to screen orientation
+                // But the boxes are in the world div which rotates
+                // Actually, the simplest way is to rotate the physical constants
+                const rad = (gravityAngle + 90) * Math.PI / 180;
+                b.vx += Math.cos(rad) * g;
+                b.vy += Math.sin(rad) * g;
+
+                b.x += b.vx;
+                b.y += b.vy;
+
+                // Bounce
+                if (b.x < 0) { b.x = 0; b.vx *= -0.5; }
+                if (b.x > window.innerWidth - 60) { b.x = window.innerWidth - 60; b.vx *= -0.5; }
+                if (b.y < 0) { b.y = 0; b.vy *= -0.5; }
+                if (b.y > window.innerHeight - 60) { b.y = window.innerHeight - 60; b.vy *= -0.5; }
+
+                b.vx *= friction;
+                b.vy *= friction;
+
+                b.el.style.transform = `translate(${b.x}px, ${b.y}px)`;
+            });
+
+            requestAnimationFrame(update);
+        }
+
+        update();
+
+        // Reveal effect
+        window.onclick = (e) => {
+            if (e.target.tagName !== 'BUTTON' && e.target.tagName !== 'A') {
+                createBox();
+            }
+        };
+    </script>
+</body>
+
+</html>

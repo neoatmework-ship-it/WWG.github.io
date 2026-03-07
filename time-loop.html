@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TIME LOOP // FRAGMENT</title>
+    <script src="discovery.js"></script>
+    <style>
+        body {
+            margin: 0;
+            background: #000;
+            overflow: hidden;
+            color: #fff;
+            font-family: monospace;
+        }
+
+        canvas {
+            display: block;
+        }
+
+        .ui {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            pointer-events: none;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            text-shadow: 0 0 10px #a78bfa;
+        }
+
+        .stats {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            opacity: 0.5;
+            font-size: 10px;
+        }
+
+        .exit {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            color: #444;
+            text-decoration: none;
+            font-size: 12px;
+        }
+
+        .exit:hover {
+            color: #fff;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="ui">
+        Time Loop Protocol<br>
+        <span id="loop-timer">RECOGNITION STARTING...</span>
+    </div>
+    <div class="stats" id="stats">ACTIVE GHOSTS: 0</div>
+    <a href="archive.html" class="exit">EXIT_TEMPORAL_LOOP</a>
+    <canvas id="canvas"></canvas>
+
+    <script>
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        const timerEl = document.getElementById('loop-timer');
+        const statsEl = document.getElementById('stats');
+
+        let width, height;
+        let mouseX = 0, mouseY = 0;
+        let currentRecording = [];
+        let ghosts = [];
+        const LOOP_DURATION = 300; // ~5 seconds at 60fps
+
+        function init() {
+            width = canvas.width = window.innerWidth;
+            height = canvas.height = window.innerHeight;
+            mouseX = width / 2;
+            mouseY = height / 2;
+        }
+
+        window.onresize = init;
+        window.onmousemove = (e) => { mouseX = e.clientX; mouseY = e.clientY; };
+        init();
+
+        function drawGhost(path, index) {
+            const frame = Math.floor(Date.now() / 16) % path.length;
+            const pos = path[frame];
+            if (!pos) return;
+
+            ctx.beginPath();
+            ctx.arc(pos.x, pos.y, 10, 0, Math.PI * 2);
+            ctx.fillStyle = `rgba(167, 139, 250, ${0.1 + (index / 20)})`;
+            ctx.shadowBlur = 15;
+            ctx.shadowColor = '#a78bfa';
+            ctx.fill();
+        }
+
+        function update() {
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.1)';
+            ctx.fillRect(0, 0, width, height);
+
+            // Record
+            currentRecording.push({ x: mouseX, y: mouseY });
+
+            if (currentRecording.length >= LOOP_DURATION) {
+                ghosts.push([...currentRecording]);
+                if (ghosts.length > 15) ghosts.shift();
+                currentRecording = [];
+                statsEl.innerText = `ACTIVE GHOSTS: ${ghosts.length}`;
+            }
+
+            // Draw current player
+            ctx.beginPath();
+            ctx.arc(mouseX, mouseY, 15, 0, Math.PI * 2);
+            ctx.fillStyle = '#fff';
+            ctx.shadowBlur = 20;
+            ctx.shadowColor = '#fff';
+            ctx.fill();
+
+            // Draw Ghosts
+            ghosts.forEach((g, i) => drawGhost(g, i));
+
+            timerEl.innerText = `RECREATING: ${Math.floor(currentRecording.length / LOOP_DURATION * 100)}%`;
+
+            requestAnimationFrame(update);
+        }
+
+        update();
+    </script>
+</body>
+
+</html>

@@ -11,7 +11,8 @@ const Discovery = {
         'limbo', 'static', 'deep', 'underground',
         'starlight', 'eclipse', 'mirror', 'blackhole',
         'chosen', 'useful', 'corner', 'braille',
-        'glitch', 'voidvoid', 'terminal', 'blueprint', 'zenith'
+        'glitch', 'voidvoid', 'terminal', 'blueprint', 'zenith',
+        'gravity', 'timeloop', 'forest', 'observer'
     ],
 
     unlock: function (siteId) {
@@ -86,7 +87,11 @@ const Discovery = {
         'braille-translator': 'braille',
         'glitch-text': 'glitch',
         'glitch-void': 'voidvoid',
-        'zen-garden': 'zenith'
+        'zen-garden': 'zenith',
+        'gravity-shift': 'gravity',
+        'time-loop': 'timeloop',
+        'binary-forest': 'forest',
+        'the-observer': 'observer'
     };
 
     const id = map[filename] || filename;

@@ -198,12 +198,16 @@
             'voidvoid': { name: 'G-Void', icon: '⚠️', file: 'glitch-void.html' },
             'terminal': { name: 'Terminal', icon: '📟' },
             'blueprint': { name: 'Blueprint', icon: '📐' },
-            'zenith': { name: 'Zenith', icon: '🧘', file: 'zen-garden.html' }
+            'zenith': { name: 'Zenith', icon: '🧘', file: 'zen-garden.html' },
+            'gravity': { name: 'G-Shift', icon: '↕️', file: 'gravity-shift.html' },
+            'timeloop': { name: 'Time Loop', icon: '➰', file: 'time-loop.html' },
+            'forest': { name: 'Fractal Forest', icon: '🌲', file: 'binary-forest.html' },
+            'observer': { name: 'The Observer', icon: '👁️', file: 'the-observer.html' }
         };
 
         function render() {
             const discovered = Discovery.getDiscovered();
-            discoveryStats.innerText = `LOADED fragments // ${discovered.length} of 21 secure`;
+            discoveryStats.innerText = `LOADED fragments // ${discovered.length} of 25 secure`;
 
             grid.innerHTML = '';
 
