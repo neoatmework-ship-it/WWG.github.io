@@ -19,14 +19,14 @@ console.log('Found ' + pages.length + ' pages in index.html to add prev/next but
 pages.forEach((page, i) => {
     let prev = i > 0 ? pages[i - 1] : pages[pages.length - 1];
     let next = i < pages.length - 1 ? pages[i + 1] : pages[0];
-    
+
     let filePath = path.join(dir, page);
     if (fs.existsSync(filePath)) {
         let content = fs.readFileSync(filePath, 'utf8');
-        
+
         // Remove existing if any (in case of re-run)
         content = content.replace(/<!-- WWG_NAV_START -->[\s\S]*?<!-- WWG_NAV_END -->/g, '');
-        
+
         const navHtml = `
 <!-- WWG_NAV_START -->
 <style>
@@ -59,6 +59,23 @@ pages.forEach((page, i) => {
     transform: translateY(-2px);
     box-shadow: 0 4px 15px rgba(167, 139, 250, 0.3);
 }
+<script>
+(function() {
+    let sequence = '';
+    const trigger = 'PNPNPN';
+    document.querySelectorAll('.wwg-nav a').forEach(a => {
+        a.addEventListener('click', (e) => {
+            const type = a.textContent.includes('Prev') ? 'P' : 'N';
+            sequence += type;
+            if (sequence.length > 6) sequence = sequence.substring(1);
+            if (sequence === trigger) {
+                e.preventDefault();
+                window.location.href = 'time-loop.html';
+            }
+        });
+    });
+})();
+</script>
 </style>
 <div class="wwg-nav">
     <a href="${prev}">← Prev</a>
@@ -66,7 +83,7 @@ pages.forEach((page, i) => {
 </div>
 <!-- WWG_NAV_END -->
 </body>`;
-        
+
         content = content.replace(/<\/body>/i, navHtml);
         fs.writeFileSync(filePath, content);
     }

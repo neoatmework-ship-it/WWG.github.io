@@ -109,11 +109,31 @@
             font-size: 0.85rem;
             line-height: 1.5;
             color: #666;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
         }
 
         .found .hint {
             color: #aaa;
             background: rgba(0, 0, 0, 0.2);
+        }
+
+        .hint b {
+            color: var(--accent);
+            font-family: 'Space Grotesk', sans-serif;
+            text-transform: uppercase;
+            font-size: 0.65rem;
+            letter-spacing: 1px;
+            display: block;
+            margin-bottom: 2px;
+        }
+
+        .hint-block {
+            background: rgba(255, 255, 255, 0.03);
+            padding: 10px;
+            border-radius: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
         }
 
         .status {
@@ -167,31 +187,31 @@
         }
 
         const secrets = [
-            { id: 'void', name: 'The Void', hint: 'Stand perfectly still for 30 seconds. Do not blink (or move the mouse).' },
-            { id: 'ghost', name: 'The Ghost', hint: 'Type the greeting "HELLO" anywhere on the main page.' },
-            { id: 'classified', name: 'Classified Records', hint: 'Audit the creator. Click the footer symbol three times.' },
-            { id: 'backrooms', name: 'The Backrooms', hint: 'Exhaust the search bar. Type "backrooms" to fall through.' },
-            { id: 'limbo', name: 'Dep. of Waiting', hint: 'Wait is a keyword. Type "limbo" in the search bar.' },
-            { id: 'static', name: '103.7 Broadcast', hint: 'The airwaves are "static". Search for the signal.' },
-            { id: 'deep', name: 'The Deep', hint: 'Go down, "deep" down into the search bar.' },
-            { id: 'underground', name: 'The Underground', hint: 'The bar below knows the "underground" well.' },
-            { id: 'starlight', name: 'Starlight', hint: 'A sky-high search for "starlight" reveals the maps.' },
-            { id: 'eclipse', name: 'Solar Eclipse', hint: 'When the search bar goes dark, look for the "eclipse".' },
-            { id: 'mirror', name: 'Broken Mirror', hint: 'Click the WWG logo five times to see your reflection.' },
-            { id: 'blackhole', name: 'Black Hole', hint: 'Gravity pulls the "blackhole" into the search query.' },
-            { id: 'chosen', name: 'The Chosen', hint: 'Search for "chosen" to see if you are the one.' },
-            { id: 'useful', name: 'Useful Button', hint: 'Find the "useful" query in the search bar.' },
-            { id: 'corner', name: 'DVD Secret', hint: 'Wait for the "corner" hit in the search bar.' },
-            { id: 'braille', name: 'Braille Labs', hint: 'Translate the "braille" via the search bar.' },
-            { id: 'glitch', name: 'Nexus Corrupt', hint: 'Feed the "glitch" to the search engine.' },
-            { id: 'voidvoid', name: 'Void Matrix', hint: 'A double void? Search for "glitchvoid".' },
-            { id: 'terminal', name: 'System Terminal', hint: 'Type "cmd" or "root" anywhere on the main page.' },
-            { id: 'blueprint', name: 'Blueprint', hint: 'Inspect the version number in the footer. Click it three times.' },
-            { id: 'zenith', name: 'Zenith Sanctuary', hint: 'The ultimate peace is found via "zenith" search.' },
-            { id: 'gravity', name: 'G-Shift', hint: 'Flipping perspective is key. Search for "gravityshift".' },
-            { id: 'timeloop', name: 'Time Loop', hint: 'Repeat history until it breaks. Search for "timeloop".' },
-            { id: 'forest', name: 'Fractal Forest', hint: 'Discover the digital growth. Search for "binaryforest".' },
-            { id: 'observer', name: 'The Observer', hint: 'Something is watching. Search for "observer".' }
+            { id: 'void', name: 'The Void', keyword: 'void', action: 'Remain perfectly still for 30 seconds (no mouse/key movement).' },
+            { id: 'ghost', name: 'The Ghost', keyword: 'ghost', action: 'Type the greeting "HELLO" anywhere on the main page.' },
+            { id: 'classified', name: 'Classified Records', keyword: 'classified', action: 'Triple-click the ✦ symbol in the footer.' },
+            { id: 'backrooms', name: 'The Backrooms', keyword: 'backrooms', action: 'Click the dark background area of the footer 5 times.' },
+            { id: 'limbo', name: 'Dep. of Waiting', keyword: 'limbo', action: 'Search for anything, and stay on the "No Results" page for 20 seconds.' },
+            { id: 'static', name: '103.7 Broadcast', keyword: 'static', action: 'Rapidly focus the search bar 5 times within 2 seconds.' },
+            { id: 'deep', name: 'The Deep', keyword: 'deep', action: 'Double-click the blue "Scroll to Top" button.' },
+            { id: 'underground', name: 'The Underground', keyword: 'underground', action: 'Triple-click the "Suggest Idea" bulb button.' },
+            { id: 'starlight', name: 'Starlight Observatory', keyword: 'starlight', action: 'Hold Shift and click the "WWG" title in the hero section.' },
+            { id: 'eclipse', name: 'Solar Eclipse', keyword: 'eclipse', action: 'Hold Control and click the "WWG" title.' },
+            { id: 'mirror', name: 'Broken Mirror', keyword: 'mirror', action: 'Click the "WWG" title 5 times rapidly.' },
+            { id: 'blackhole', name: 'Black Hole', keyword: 'blackhole', action: 'Triple-click the 🔍 emoji on the "No Results" screen.' },
+            { id: 'chosen', name: 'The Chosen', keyword: 'chosen', action: 'Hold Alt and click the "WWG" title.' },
+            { id: 'useful', name: 'The Useful Button', keyword: 'useful', action: 'Input the classic Konami code in "Useless Button Museum".' },
+            { id: 'corner', name: 'The Corner Room', keyword: 'corner', action: 'Wait for a perfect corner hit in "DVD Logo Simulator".' },
+            { id: 'braille', name: 'Braille Labs', keyword: 'braille', action: 'Triple-click the braille icon on its gallery card.' },
+            { id: 'glitch', name: 'Nexus Corrupt', keyword: 'glitch', action: 'Rapidly click any category tag (e.g., 🧪 Physics) 7 times.' },
+            { id: 'voidvoid', name: 'The Void Matrix', keyword: 'glitchvoid', action: 'Type "void" into the search bar and press Shift + Enter.' },
+            { id: 'terminal', name: 'System Terminal', keyword: 'terminal', action: 'Type "cmd" or "root" anywhere on the home page.' },
+            { id: 'blueprint', name: 'Technical Blueprint', keyword: 'blueprint', action: 'Triple-click the version number (e.g. v3.x.x) in the footer.' },
+            { id: 'zenith', name: 'Zenith Sanctuary', keyword: 'zenith', action: 'Triple-click the "Find my secrets" text in the hero section.' },
+            { id: 'gravity', name: 'Gravity Shift', keyword: 'gravityshift', action: 'Type "flip" anywhere on the home page.' },
+            { id: 'timeloop', name: 'The Time Loop', keyword: 'timeloop', action: 'Rapidly alternate clicking Prev-Next-Prev-Next-Prev-Next in page navigation.' },
+            { id: 'forest', name: 'The Binary Forest', keyword: 'binaryforest', action: 'Type "tree" anywhere on the home page.' },
+            { id: 'observer', name: 'The Observer', keyword: 'observer', action: 'Type "eye" anywhere on the home page.' }
         ];
 
         function render() {
@@ -206,7 +226,10 @@
                 card.innerHTML = `
                     <div class="tag">Fragment ID: ${s.id.toUpperCase()}</div>
                     <div class="name">${isFound ? s.name : 'HIDDEN_FRAGMENT'}</div>
-                    <div class="hint">${s.hint}</div>
+                    <div class="hint">
+                        <div class="hint-block"><b>Access via Keyword</b> Search for: "${s.keyword}"</div>
+                        <div class="hint-block"><b>Access via Action</b> ${s.action}</div>
+                    </div>
                     <div class="status ${isFound ? 'found-text' : 'unfound'}">
                         ${isFound ? '✓ SALVAGED' : '👀 MISSING'}
                     </div>
