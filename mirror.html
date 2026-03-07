@@ -4,10 +4,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>WWG — Mirror Gallery</title>
-    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&display=swap"
-        rel="stylesheet">
+    <title>BROKEN MIRROR</title>
+    <script src="discovery.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500&display=swap" rel="stylesheet">
     <style>
+        :root {
+            --recursion-depth: 0;
+        }
+
         * {
             margin: 0;
             padding: 0;
@@ -15,278 +19,210 @@
         }
 
         body {
-            background: #f0f0f0;
-            color: #0a0a0f;
+            background: #fff;
+            color: #000;
             font-family: 'Space Grotesk', sans-serif;
             min-height: 100vh;
-            /* Everything inverted */
-            filter: invert(1) hue-rotate(180deg);
-            animation: comeIn 1.2s ease both;
-        }
-
-        @keyframes comeIn {
-            0% {
-                filter: invert(1) hue-rotate(180deg) brightness(0)
-            }
-
-            100% {
-                filter: invert(1) hue-rotate(180deg) brightness(1)
-            }
-        }
-
-        header {
-            background: rgba(255, 255, 255, 0.95);
-            border-bottom: 1px solid rgba(0, 0, 0, 0.08);
-            padding: 20px 32px;
+            overflow: hidden;
             display: flex;
             align-items: center;
-            gap: 16px;
-            position: sticky;
-            top: 0;
-            z-index: 100;
-            /* flip horizontally */
-            transform: scaleX(-1);
+            justify-content: center;
+            filter: invert(1) hue-rotate(180deg);
         }
 
-        .logo {
-            font-size: 1.5rem;
-            font-weight: 700;
-            letter-spacing: -0.5px;
-        }
-
-        .logo span {
-            opacity: 0.3;
-            margin: 0 4px;
-        }
-
-        .mirror-tag {
-            font-size: 0.65rem;
-            letter-spacing: 3px;
-            color: rgba(10, 10, 15, 0.4);
-        }
-
-        nav {
-            margin-left: auto;
+        .layer {
+            position: absolute;
+            inset: 0;
             display: flex;
-            gap: 8px;
+            align-items: center;
+            justify-content: center;
+            pointer-events: none;
+            transition: transform 0.3s;
         }
 
-        nav a {
-            padding: 6px 14px;
-            font-size: 0.8rem;
-            border-radius: 20px;
-            text-decoration: none;
-            color: rgba(10, 10, 15, 0.5);
-            border: 1px solid rgba(10, 10, 15, 0.1);
-            transition: 0.2s;
-        }
-
-        nav a:hover {
-            color: rgba(10, 10, 15, 0.9);
-            border-color: rgba(10, 10, 15, 0.3);
-        }
-
-        .hero {
-            padding: 48px 32px 32px;
-            text-align: center;
+        /* Recursive Frame */
+        .mirror-frame {
+            width: 80%;
+            height: 80%;
+            border: 20px solid #222;
+            background: #eee;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 0 100px rgba(0, 0, 0, 0.5);
+            pointer-events: auto;
             transform: scaleX(-1);
         }
 
-        .hero h1 {
-            font-size: 2rem;
-            font-weight: 700;
-            margin-bottom: 8px;
-            letter-spacing: -0.5px;
-        }
-
-        .hero p {
-            color: rgba(10, 10, 15, 0.5);
-            font-size: 0.9rem;
-        }
-
-        .grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-            gap: 16px;
-            padding: 0 24px 48px;
-            max-width: 1200px;
-            margin: 0 auto;
-            transform: scaleX(-1);
-        }
-
-        .card {
-            background: rgba(255, 255, 255, 0.8);
-            border: 1px solid rgba(10, 10, 15, 0.08);
-            border-radius: 12px;
-            padding: 20px;
-            cursor: pointer;
-            transition: 0.2s;
+        .recursion-content {
+            width: 100%;
+            height: 100%;
             display: flex;
             flex-direction: column;
-            gap: 8px;
+            align-items: center;
+            justify-content: center;
+            position: relative;
         }
 
-        .card:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+        iframe {
+            width: 60%;
+            height: 60%;
+            border: 10px solid #444;
+            pointer-events: none;
+            opacity: 0.8;
         }
 
-        .card-icon {
-            font-size: 1.8rem;
+        .shatter-overlay {
+            position: absolute;
+            inset: 0;
+            z-index: 100;
+            pointer-events: none;
         }
 
-        .card-title {
-            font-weight: 600;
-            font-size: 0.88rem;
+        .shard {
+            position: absolute;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(0, 0, 0, 0.1);
+            pointer-events: auto;
+            cursor: pointer;
+            transition: transform 0.5s, opacity 0.5s;
         }
 
-        .card-desc {
-            font-size: 0.75rem;
-            color: rgba(10, 10, 15, 0.45);
-            line-height: 1.5;
+        .shard:hover {
+            background: rgba(255, 255, 255, 0.3);
         }
 
-        .card-glitch {
-            font-size: 0.6rem;
+        .ui-label {
+            position: fixed;
+            top: 40px;
+            left: 40px;
+            font-size: 0.7rem;
+            letter-spacing: 5px;
+            transform: scaleX(-1);
+            opacity: 0.5;
+        }
+
+        .back-link {
+            position: fixed;
+            bottom: 40px;
+            right: 40px;
+            color: #888;
+            text-decoration: none;
+            font-size: 0.8rem;
             letter-spacing: 2px;
-            color: rgba(10, 10, 15, 0.2);
-            animation: glitch 4s infinite;
+            z-index: 200;
+            transform: scaleX(-1);
         }
 
-        @keyframes glitch {
+        .back-link:hover {
+            color: #000;
+        }
+
+        .ghost-flicker {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 5rem;
+            opacity: 0;
+            pointer-events: none;
+            z-index: 50;
+        }
+
+        @keyframes flicker {
 
             0%,
-            92%,
             100% {
-                opacity: 1;
-                transform: none
+                opacity: 0;
             }
 
-            93% {
-                opacity: 0.5;
-                transform: translateX(2px)
+            50% {
+                opacity: 0.2;
             }
-
-            94% {
-                opacity: 1;
-                transform: translateX(-2px)
-            }
-
-            95% {
-                opacity: 0.3;
-                transform: none
-            }
-
-            96% {
-                transform: translateX(1px)
-            }
-
-            97% {
-                transform: none
-            }
-        }
-
-        .card.secret {
-            border-color: rgba(120, 0, 180, 0.2);
-            background: rgba(120, 0, 180, 0.04);
-        }
-
-        .card.secret .card-title {
-            color: rgba(120, 0, 180, 0.6);
-        }
-
-        .note {
-            text-align: center;
-            padding: 20px;
-            font-size: 0.8rem;
-            color: rgba(10, 10, 15, 0.4);
-            font-style: italic;
-            line-height: 2;
-            border-top: 1px solid rgba(10, 10, 15, 0.06);
-            transform: scaleX(-1);
-        }
-
-        a.back-real {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            z-index: 200;
-            background: rgba(10, 10, 15, 0.06);
-            border: 1px solid rgba(10, 10, 15, 0.1);
-            border-radius: 20px;
-            padding: 8px 16px;
-            font-size: 0.75rem;
-            color: rgba(10, 10, 15, 0.5);
-            text-decoration: none;
-            transition: 0.2s;
-            letter-spacing: 1px;
-            transform: scaleX(-1);
-        }
-
-        a.back-real:hover {
-            color: rgba(10, 10, 15, 0.9);
         }
     </style>
 </head>
 
 <body>
-    <header>
-        <div class="logo">WWG <span>·</span> <span style="opacity:0.4">GWW</span></div>
-        <div class="mirror-tag">MIRROR INSTANCE — INVERTED</div>
-        <nav>
-            <a href="#">ALL</a>
-            <a href="#">WEIRD</a>
-            <a href="#">TOOLS</a>
-            <a href="#">HIDDEN</a>
-        </nav>
-    </header>
+    <div class="ui-label">REFLECTION INSTANCE // RECURSIVE</div>
+    <a href="index.html" class="back-link">← EXIT MIRROR</a>
 
-    <div class="hero">
-        <h1>The Gallery, Reflected</h1>
-        <p>You clicked the title five times. The mirror showed itself.</p>
-        <p style="margin-top:8px;font-size:0.75rem;opacity:0.4;">Everything here is the same. Everything here is wrong.
-        </p>
+    <div class="mirror-frame" id="frame">
+        <div class="recursion-content">
+            <h1 style="font-size: 3rem; margin-bottom: 20px; letter-spacing: -2px;">THE MIRROR</h1>
+            <p style="opacity: 0.4; margin-bottom: 40px;">Deep within the glass, the gallery reflects itself infinitely.
+            </p>
+
+            <!-- Recursion Simulation -->
+            <div
+                style="width: 60%; height: 60%; border: 15px solid #333; display: flex; align-items: center; justify-content: center; background: #ddd;">
+                <div
+                    style="width: 60%; height: 60%; border: 10px solid #444; display: flex; align-items: center; justify-content: center; background: #ccc;">
+                    <div style="width: 60%; height: 60%; border: 5px solid #555; background: #bbb;"></div>
+                </div>
+            </div>
+
+            <div class="ghost-flicker" id="ghost">👻</div>
+        </div>
+        <div class="shatter-overlay" id="shatter-layer"></div>
     </div>
-
-    <div class="grid" id="grid"></div>
-
-    <div class="note">
-        In the mirror version, all secret pages are visible but cannot be entered.<br>
-        Except one. The one that was always already there.<br>
-        Try typing <span style="font-family:monospace;letter-spacing:2px">classified</span> in the real gallery's search
-        bar.
-    </div>
-
-    <a class="back-real" href="index.html">← flip back</a>
 
     <script>
-        const CARDS = [
-            { icon: '🌑', title: 'The Void', desc: 'found by searching the unsearchable', secret: true },
-            { icon: '👻', title: 'Ghost.exe', desc: 'it has been running since 1983', secret: true },
-            { icon: '📄', title: 'Classified', desc: 'you already found this one', secret: true },
-            { icon: '🏨', title: 'The Backrooms', desc: 'hit every wall until one gives way', secret: true },
-            { icon: '📻', title: '103.7 FM', desc: 'hold the dial steady', secret: true },
-            { icon: '🎩', title: 'The Underground', desc: 'survive long enough to see the door', secret: true },
-            { icon: '⏳', title: 'Limbo', desc: 'click the clock until time stops caring', secret: true },
-            { icon: '⭐', title: 'The Chosen', desc: 'three sevens knows who it wants', secret: true },
-            { icon: '🪞', title: 'You Are Here', desc: 'this page. you found it by being stubborn.', secret: true },
-            { icon: '🌊', title: 'The Deep', desc: 'unreachable. scroll down past everything.', secret: true },
-            // Normal cards, inverted
-            { icon: '🎮', title: 'yromeM xirtaM', desc: 'a game about remembering, or forgetting' },
-            { icon: '⏰', title: 'kcolC noeN', desc: 'click it seven times. go on.' },
-            { icon: '🎰', title: 'stoLS ijoME', desc: 'the sevens were always going to align for you' },
-            { icon: '📻', title: 'rotpecretretnI langiS', desc: 'you know the frequency' },
-            { icon: '🏜️', title: 'imS dnaS', desc: 'watch it long enough' },
-            { icon: '🌀', title: 'ezaM etinifinI', desc: 'the exit is real. the door in the wall is realer.' },
-        ];
+        const frame = document.getElementById('frame');
+        const shatterLayer = document.getElementById('shatter-layer');
+        const ghost = document.getElementById('ghost');
 
-        const grid = document.getElementById('grid');
-        CARDS.forEach(c => {
-            const d = document.createElement('div');
-            d.className = 'card' + (c.secret ? ' secret' : '');
-            d.innerHTML = `<div class="card-icon">${c.icon}</div><div class="card-title">${c.title}</div><div class="card-desc">${c.desc}</div><div class="card-glitch">${c.secret ? '⚠ MIRROR ONLY' : '···'}</div>`;
-            grid.appendChild(d);
-        });
+        // Create initial shards
+        function createShards() {
+            for (let i = 0; i < 15; i++) {
+                const shard = document.createElement('div');
+                shard.className = 'shard';
+                const w = 150 + Math.random() * 200;
+                const h = 150 + Math.random() * 200;
+                shard.style.width = w + 'px';
+                shard.style.height = h + 'px';
+                shard.style.left = Math.random() * 100 + '%';
+                shard.style.top = Math.random() * 100 + '%';
+                shard.style.clipPath = `polygon(${Math.random() * 100}% 0%, 100% ${Math.random() * 100}%, ${Math.random() * 100}% 100%, 0% ${Math.random() * 100}%)`;
+
+                shard.onclick = (e) => {
+                    e.stopPropagation();
+                    shard.style.transform = `translate(${(Math.random() - 0.5) * 200}px, ${(Math.random() - 0.5) * 200}px) rotate(${(Math.random() - 0.5) * 90}deg)`;
+                    shard.style.opacity = '0';
+                    playShatter();
+                    setTimeout(() => shard.remove(), 500);
+                };
+                shatterLayer.appendChild(shard);
+            }
+        }
+        createShards();
+
+        // Ghost Flicker
+        setInterval(() => {
+            if (Math.random() < 0.1) {
+                ghost.style.animation = 'flicker 0.2s';
+                setTimeout(() => ghost.style.animation = '', 200);
+            }
+        }, 5000);
+
+        // Audio Shatter
+        let audioCtx;
+        function playShatter() {
+            if (!audioCtx) audioCtx = new AudioContext();
+            const osc = audioCtx.createOscillator();
+            const noise = audioCtx.createBufferSource();
+            const gain = audioCtx.createGain();
+
+            osc.type = 'triangle';
+            osc.frequency.setValueAtTime(100 + Math.random() * 1000, audioCtx.currentTime);
+            gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.3);
+
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            osc.start();
+            osc.stop(audioCtx.currentTime + 0.3);
+        }
+
     </script>
 </body>
 

@@ -4,11 +4,19 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>The Underground | Members Only</title>
+    <title>Underground | Lore Mixology</title>
+    <script src="discovery.js"></script>
     <link
-        href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;1,400&family=Space+Grotesk:wght@400;500;600&display=swap"
+        href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;1,400&family=Space+Grotesk:wght@400;500;600&family=VT323&display=swap"
         rel="stylesheet">
     <style>
+        :root {
+            --gold: #d4af37;
+            --amber: #ffbf00;
+            --void: #1a0205;
+            --glass: rgba(255, 255, 255, 0.1);
+        }
+
         * {
             margin: 0;
             padding: 0;
@@ -20,334 +28,284 @@
             color: #f0d9b5;
             font-family: 'Space Grotesk', sans-serif;
             min-height: 100vh;
-            overflow-x: hidden;
+            overflow: hidden;
+            display: flex;
         }
 
-        /* Velvet curtain effect */
-        .curtain-left,
-        .curtain-right {
-            position: fixed;
-            top: 0;
-            bottom: 0;
-            width: 80px;
-            z-index: 100;
-            pointer-events: none;
+        /* Lab Aesthetics */
+        .lab-container {
+            display: grid;
+            grid-template-columns: 1fr 350px;
+            width: 100%;
+            height: 100vh;
         }
 
-        .curtain-left {
-            left: 0;
-            background: linear-gradient(90deg, #1a0205, transparent);
-        }
-
-        .curtain-right {
-            right: 0;
-            background: linear-gradient(270deg, #1a0205, transparent);
-        }
-
-        /* Gold particles */
-        #particles-canvas {
-            position: fixed;
-            inset: 0;
-            pointer-events: none;
-            z-index: 1;
-        }
-
-        .page {
-            max-width: 600px;
-            margin: 0 auto;
-            padding: 40px 24px;
-            position: relative;
-            z-index: 2;
-        }
-
-        .entry-stamp {
-            text-align: center;
-            margin-bottom: 32px;
-            padding: 20px;
-            border: 1px solid rgba(212, 175, 55, 0.2);
-            border-radius: 4px;
-            background: rgba(212, 175, 55, 0.03);
-        }
-
-        .entry-stamp .logo {
-            font-size: 2.5rem;
-            margin-bottom: 8px;
-        }
-
-        .entry-stamp h1 {
-            font-family: 'Playfair Display', serif;
-            font-size: 1.8rem;
-            font-weight: 700;
-            color: #d4af37;
-            letter-spacing: 2px;
-            margin-bottom: 4px;
-        }
-
-        .entry-stamp p {
-            font-size: 0.7rem;
-            color: rgba(240, 217, 181, 0.4);
-            letter-spacing: 3px;
-        }
-
-        .member-badge {
-            text-align: center;
-            padding: 12px;
-            font-size: 0.65rem;
-            letter-spacing: 3px;
-            color: rgba(212, 175, 55, 0.5);
-            border-bottom: 1px solid rgba(212, 175, 55, 0.1);
-            margin-bottom: 28px;
-        }
-
-        .section {
-            margin-bottom: 32px;
-        }
-
-        .section-title {
-            font-family: 'Playfair Display', serif;
-            font-size: 0.7rem;
-            font-style: italic;
-            text-transform: uppercase;
-            letter-spacing: 3px;
-            color: rgba(212, 175, 55, 0.5);
-            border-bottom: 1px solid rgba(212, 175, 55, 0.1);
-            padding-bottom: 8px;
-            margin-bottom: 16px;
-        }
-
-        .secret-card {
-            padding: 16px;
-            background: rgba(255, 255, 255, 0.02);
-            border: 1px solid rgba(212, 175, 55, 0.08);
-            border-radius: 6px;
-            margin-bottom: 10px;
-            font-size: 0.82rem;
-            line-height: 1.7;
-            color: rgba(240, 217, 181, 0.7);
-            transition: 0.3s;
-            cursor: default;
-        }
-
-        .secret-card:hover {
-            background: rgba(212, 175, 55, 0.05);
-            border-color: rgba(212, 175, 55, 0.2);
-        }
-
-        .secret-card strong {
-            color: #d4af37;
-            display: block;
-            margin-bottom: 4px;
-            font-size: 0.75rem;
-            letter-spacing: 1px;
-        }
-
-        .drink-menu {
-            list-style: none;
+        .bench {
+            padding: 60px;
             display: flex;
             flex-direction: column;
-            gap: 8px;
-        }
-
-        .drink-menu li {
-            display: flex;
-            justify-content: space-between;
-            padding: 10px 14px;
-            border-bottom: 1px solid rgba(212, 175, 55, 0.06);
-            font-size: 0.8rem;
-        }
-
-        .drink-menu li:last-child {
-            border-bottom: none;
-        }
-
-        .drink-name {
-            color: rgba(240, 217, 181, 0.8);
-        }
-
-        .drink-desc {
-            color: rgba(240, 217, 181, 0.35);
-            font-size: 0.7rem;
-            font-style: italic;
-        }
-
-        .leaderboard {
-            list-style: none;
-        }
-
-        .leaderboard li {
-            display: flex;
-            gap: 12px;
             align-items: center;
-            padding: 8px 0;
-            border-bottom: 1px solid rgba(212, 175, 55, 0.06);
-            font-size: 0.78rem;
+            justify-content: center;
+            position: relative;
         }
 
-        .rank {
-            color: rgba(212, 175, 55, 0.5);
-            min-width: 24px;
+        .inventory {
+            background: rgba(0, 0, 0, 0.3);
+            border-left: 1px solid rgba(212, 175, 55, 0.1);
+            padding: 40px;
+            overflow-y: auto;
         }
 
-        .rank.top {
-            color: #d4af37;
+        /* Beaker Styling */
+        .glassware {
+            position: relative;
+            width: 300px;
+            height: 400px;
+            border: 4px solid var(--glass);
+            border-top: none;
+            border-radius: 0 0 150px 150px;
+            overflow: hidden;
+            background: rgba(255, 255, 255, 0.02);
+            box-shadow: 0 0 50px rgba(0, 0, 0, 0.5), inset 0 0 30px rgba(255, 255, 255, 0.05);
         }
 
-        .visitor-name {
-            color: rgba(240, 217, 181, 0.7);
-            flex: 1;
+        canvas#liquid-canvas {
+            width: 100%;
+            height: 100%;
         }
 
-        .visitor-score {
-            color: rgba(212, 175, 55, 0.6);
+        /* Ingredients */
+        .ingredient {
+            background: #1a1a1a;
+            border: 1px solid var(--gold);
+            padding: 15px;
+            margin-bottom: 15px;
+            cursor: pointer;
+            transition: 0.2s;
+            text-align: center;
+            border-radius: 4px;
+        }
+
+        .ingredient:hover {
+            background: var(--gold);
+            color: #000;
+            box-shadow: 0 0 20px rgba(212, 175, 55, 0.3);
+        }
+
+        .ingredient h4 {
             font-size: 0.7rem;
+            letter-spacing: 2px;
+            margin-bottom: 5px;
         }
 
-        .wisdom-box {
-            padding: 20px;
-            border-left: 3px solid rgba(212, 175, 55, 0.3);
+        .ingredient p {
+            font-size: 0.6rem;
+            opacity: 0.6;
+        }
+
+        /* Lore Display */
+        #lore-output {
+            position: absolute;
+            bottom: 40px;
+            left: 60px;
+            max-width: 400px;
             font-family: 'Playfair Display', serif;
             font-style: italic;
-            font-size: 0.95rem;
-            color: rgba(240, 217, 181, 0.6);
-            line-height: 1.8;
-            margin-bottom: 10px;
+            font-size: 1.1rem;
+            color: var(--gold);
+            opacity: 0;
+            transition: opacity 1s;
         }
 
-        .hint-note {
-            margin-top: 32px;
-            padding: 16px;
-            border: 1px dashed rgba(212, 175, 55, 0.15);
-            border-radius: 4px;
-            font-size: 0.68rem;
-            color: rgba(240, 217, 181, 0.3);
-            text-align: center;
-            line-height: 2;
-        }
-
-        a.back {
-            color: rgba(212, 175, 55, 0.3);
+        .back-link {
+            position: fixed;
+            top: 30px;
+            left: 30px;
+            color: rgba(212, 175, 55, 0.2);
             text-decoration: none;
-            font-size: 0.72rem;
-            display: block;
-            margin-bottom: 24px;
+            font-size: 0.7rem;
             letter-spacing: 2px;
-            transition: 0.3s;
+            z-index: 100;
         }
 
-        a.back:hover {
-            color: rgba(212, 175, 55, 0.7);
+        .back-link:hover {
+            color: var(--gold);
+        }
+
+        .beaker-label {
+            position: absolute;
+            top: -30px;
+            font-size: 0.6rem;
+            letter-spacing: 3px;
+            opacity: 0.5;
         }
     </style>
 </head>
 
 <body>
-    <div class="curtain-left"></div>
-    <div class="curtain-right"></div>
-    <canvas id="particles-canvas"></canvas>
+    <a href="index.html" class="back-link">← EXIT LAB</a>
 
-    <div class="page">
-        <a class="back" href="index.html">← back through the mirror</a>
-
-        <div class="entry-stamp">
-            <div class="logo">🎩</div>
-            <h1>THE UNDERGROUND</h1>
-            <p>MEMBERS ONLY — BY INVITATION OF THE MATRIX</p>
+    <div class="lab-container">
+        <div class="bench">
+            <div class="beaker-label">EXPERIMENTAL LORE BREWING STATION</div>
+            <div class="glassware">
+                <canvas id="liquid-canvas"></canvas>
+            </div>
+            <div id="lore-output">
+                "Mixing the truth reveals the cracks."
+            </div>
         </div>
 
-        <div class="member-badge">
-            MEMBER SINCE: TODAY // ACCESS TIER: LEVEL 10 SURVIVOR // CLEARANCE: EMERALD
-        </div>
+        <div class="inventory">
+            <h3 style="font-size: 0.8rem; margin-bottom: 25px; letter-spacing: 4px; color: var(--gold);">INGREDIENTS
+            </h3>
 
-        <div class="section">
-            <div class="section-title">The Secret Menu</div>
-            <ul class="drink-menu">
-                <li><span class="drink-name">🥃 The Void</span><span class="drink-desc">a drink you can't see, from a
-                        bar you can't find</span></li>
-                <li><span class="drink-name">👻 Ghost Broth, Warm</span><span class="drink-desc">the soup oracle was
-                        right all along</span></li>
-                <li><span class="drink-name">📡 103.7 Special</span><span class="drink-desc">served only while the
-                        pirate station is live</span></li>
-                <li><span class="drink-name">🧠 Level 10 Reserve</span><span class="drink-desc">aged in the backrooms,
-                        bottled at midnight</span></li>
-                <li><span class="drink-name">🔑 The Classified</span><span class="drink-desc">you won't know what's in
-                        it until it's too late</span></li>
-            </ul>
-        </div>
+            <div class="ingredient"
+                onclick="pour('rgba(255, 0, 100, 0.6)', 'The red tincture represents the server fire of 1983.')">
+                <h4>1983 DISTILLATE</h4>
+                <p>Hot, volatile, and heavy.</p>
+            </div>
 
-        <div class="section">
-            <div class="section-title">Things Only Members Know</div>
-            <div class="secret-card"><strong>SECRET #1</strong>The gallery has been tracking you. Every page you visit
-                adds to what it knows. It doesn't do anything with this knowledge. It just knows.</div>
-            <div class="secret-card"><strong>SECRET #2</strong>The Sand Simulator has a hidden material. Keep the canvas
-                full for exactly 60 seconds without adding anything new.</div>
-            <div class="secret-card"><strong>SECRET #3</strong>If you click the moon on Vaporwave City Drive exactly 7
-                times, a message appears. Not everyone can see it the same way.</div>
-            <div class="secret-card"><strong>SECRET #4</strong>The Neon Clock has hands. Not the ones you can see.</div>
-            <div class="secret-card"><strong>SECRET #5</strong>There are more than 3 secret pages. The others have not
-                been found yet. The pirate radio knows they exist. We recommend listening closely.</div>
-        </div>
+            <div class="ingredient"
+                onclick="pour('rgba(0, 200, 255, 0.6)', 'The cyan solution is the pure code of the gallery hub.')">
+                <h4>DATA SERUM</h4>
+                <p>Cold, logical, and buoyant.</p>
+            </div>
 
-        <div class="section">
-            <div class="section-title">Leaderboard of the Brave</div>
-            <ul class="leaderboard">
-                <li><span class="rank top">1</span><span class="visitor-name">You</span><span
-                        class="visitor-score">Survived Level 10 · All secrets found</span></li>
-                <li><span class="rank">2</span><span class="visitor-name">the one who listened to 103.7</span><span
-                        class="visitor-score">tuned in</span></li>
-                <li><span class="rank">3</span><span class="visitor-name">the maze walker</span><span
-                        class="visitor-score">hit 20 walls</span></li>
-                <li><span class="rank">4</span><span class="visitor-name">the soup drinker</span><span
-                        class="visitor-score">brewed ghost broth</span></li>
-                <li><span class="rank">5</span><span class="visitor-name">the signal reader</span><span
-                        class="visitor-score">intercepted all transmissions</span></li>
-            </ul>
-        </div>
+            <div class="ingredient"
+                onclick="pour('rgba(212, 175, 55, 0.6)', 'Gold represents the memories of the visitors.')">
+                <h4>GOLDEN MEMORY</h4>
+                <p>Rich, shimmering, and thick.</p>
+            </div>
 
-        <div class="wisdom-box">
-            "The gallery was built to be explored. But not every room was meant to be found. You found them anyway. That
-            says something about you."
-        </div>
+            <div class="ingredient" onclick="pour('rgba(0, 0, 0, 0.8)', 'Void extract is the absence of everything.')">
+                <h4>VOID EXTRACT</h4>
+                <p>Consumes all other colors.</p>
+            </div>
 
-        <div class="hint-note">
-            the sand knows something · the clock has a secret rotation · the vaporwave moon speaks at dusk<br>
-            you have not found everything · keep looking
+            <button onclick="drain()"
+                style="width:100%; padding: 10px; background: transparent; border: 1px solid #444; color: #666; cursor: pointer; margin-top: 20px;">DRAIN
+                BEAKER</button>
+
+            <div style="margin-top: 40px; font-size: 0.65rem; opacity: 0.3; line-height: 1.8;">
+                COMBINATION HINTS:<br>
+                - FIRE + DATA = [???]<br>
+                - MEMORY + VOID = [???]<br>
+                - ALL COLORS = TOTAL REVEAL
+            </div>
         </div>
     </div>
 
     <script>
-        // Gold particle rain
-        const canvas = document.getElementById('particles-canvas');
+        /** @type {HTMLCanvasElement} */
+        const canvas = document.getElementById('liquid-canvas');
         const ctx = canvas.getContext('2d');
-        canvas.width = window.innerWidth;
-        canvas.height = window.innerHeight;
-        window.addEventListener('resize', () => { canvas.width = window.innerWidth; canvas.height = window.innerHeight; });
+        const loreOutput = document.getElementById('lore-output');
 
-        const particles = [];
-        for (let i = 0; i < 40; i++) {
-            particles.push({
-                x: Math.random() * window.innerWidth,
-                y: Math.random() * window.innerHeight,
-                size: Math.random() * 2 + 0.5,
-                speed: Math.random() * 0.4 + 0.1,
-                alpha: Math.random() * 0.4 + 0.1,
-                drift: (Math.random() - 0.5) * 0.3,
-            });
+        let width, height;
+        function resize() {
+            width = canvas.width = 300;
+            height = canvas.height = 400;
         }
+        resize();
 
-        function animParticles() {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            particles.forEach(p => {
-                p.y -= p.speed;
-                p.x += p.drift;
-                if (p.y < -5) { p.y = canvas.height + 5; p.x = Math.random() * canvas.width; }
+        let particles = [];
+        const MAX_PARTICLES = 1200;
+
+        class LiquidParticle {
+            constructor(x, y, color) {
+                this.x = x;
+                this.y = y;
+                this.vx = (Math.random() - 0.5) * 2;
+                this.vy = Math.random() * 2;
+                this.radius = 4;
+                this.color = color;
+            }
+
+            update() {
+                this.vy += 0.2; // Gravity
+                this.x += this.vx;
+                this.y += this.vy;
+
+                // Collisions with beaker
+                if (this.y > height - 10) {
+                    this.y = height - 10;
+                    this.vy *= -0.3;
+                }
+
+                // Curved bottom collision (Rough approximation)
+                const dx = this.x - width / 2;
+                const dy = this.y - (height - 150);
+                if (this.y > height - 150) {
+                    const dist = Math.sqrt(dx * dx + (this.y - (height - 150)) * (this.y - (height - 150)));
+                    if (dist > 145) {
+                        const angle = Math.atan2(this.y - (height - 150), dx);
+                        this.x = width / 2 + Math.cos(angle) * 145;
+                        this.y = (height - 150) + Math.sin(angle) * 145;
+                        this.vx *= -0.5;
+                        this.vy *= -0.5;
+                    }
+                }
+
+                if (this.x < 10) { this.x = 10; this.vx *= -0.5; }
+                if (this.x > width - 10) { this.x = width - 10; this.vx *= -0.5; }
+            }
+
+            draw() {
+                ctx.fillStyle = this.color;
                 ctx.beginPath();
-                ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
-                ctx.fillStyle = `rgba(212,175,55,${p.alpha})`;
+                ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
                 ctx.fill();
-            });
-            requestAnimationFrame(animParticles);
+            }
         }
-        animParticles();
+
+        function pour(color, lore) {
+            for (let i = 0; i < 50; i++) {
+                if (particles.length < MAX_PARTICLES) {
+                    particles.push(new LiquidParticle(width / 2 + (Math.random() * 20 - 10), -10, color));
+                }
+            }
+            loreOutput.textContent = lore;
+            loreOutput.style.opacity = 1;
+            setTimeout(() => { loreOutput.style.opacity = 0; }, 4000);
+        }
+
+        function drain() {
+            particles = [];
+            loreOutput.style.opacity = 0;
+        }
+
+        function loop() {
+            ctx.clearRect(0, 0, width, height);
+
+            // Simple physics pass
+            particles.forEach(p => {
+                p.update();
+                p.draw();
+            });
+
+            requestAnimationFrame(loop);
+        }
+
+        loop();
+
+        // Audio bubbling
+        try {
+            const ac = new AudioContext();
+            const gain = ac.createGain();
+            gain.gain.value = 0.05;
+            gain.connect(ac.destination);
+
+            window.pourAudio = () => {
+                const osc = ac.createOscillator();
+                osc.type = 'square';
+                osc.frequency.setValueAtTime(100 + Math.random() * 200, ac.currentTime);
+                osc.connect(gain);
+                osc.start();
+                osc.stop(ac.currentTime + 0.1);
+            };
+        } catch (e) { }
+
     </script>
 </body>
 

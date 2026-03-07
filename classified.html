@@ -4,9 +4,20 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>[CLASSIFIED]</title>
-    <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap" rel="stylesheet">
+    <title>[CLASSIFIED] | Eyes Only</title>
+    <script src="discovery.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Special+Elite&display=swap"
+        rel="stylesheet">
     <style>
+        :root {
+            --bg: #0b0c09;
+            --text: #a0b090;
+            --accent: #8b1a1a;
+            --uv: #8b1ac8;
+            --flash-x: 50%;
+            --flash-y: 50%;
+        }
+
         * {
             margin: 0;
             padding: 0;
@@ -14,265 +25,267 @@
         }
 
         body {
-            background: #0d0e0a;
-            color: #b8c4a0;
+            background: var(--bg);
+            color: var(--text);
             font-family: 'Share Tech Mono', monospace;
             min-height: 100vh;
-            padding: 30px 20px;
+            overflow-x: hidden;
+            cursor: none;
         }
 
-        .stamp-classified {
-            display: block;
-            width: fit-content;
-            margin: 0 auto 30px;
-            color: #8b1a1a;
-            border: 4px solid #8b1a1a;
-            padding: 6px 20px;
-            font-size: 2rem;
-            letter-spacing: 8px;
-            transform: rotate(-3deg);
-            text-shadow: 0 0 10px #8b1a1a80;
+        /* Flashlight Layer */
+        .discovery-layer {
+            position: fixed;
+            inset: 0;
+            background: #000;
+            z-index: 100;
+            pointer-events: none;
+            mask-image: radial-gradient(circle at var(--flash-x) var(--flash-y), transparent 100px, black 300px);
+            -webkit-mask-image: radial-gradient(circle at var(--flash-x) var(--flash-y), transparent 100px, black 300px);
+        }
+
+        /* Flashlight Visual (The actual light cone) */
+        .flashlight {
+            position: fixed;
+            width: 400px;
+            height: 400px;
+            background: radial-gradient(circle at center, rgba(255, 255, 200, 0.15) 0%, transparent 70%);
+            left: calc(var(--flash-x) - 200px);
+            top: calc(var(--flash-y) - 200px);
+            pointer-events: none;
+            z-index: 101;
+            mix-blend-mode: screen;
+        }
+
+        .thermal-mode .discovery-layer {
+            display: none;
+        }
+
+        .thermal-mode {
+            --bg: #050a1a;
+            --text: #50ffaa;
+            filter: contrast(120%) brightness(120%) hue-rotate(90deg);
+        }
+
+        .thermal-mode .uv-secret {
+            display: inline-block !important;
+            color: var(--uv);
+            animation: pulse 1s infinite alternate;
+        }
+
+        @keyframes pulse {
+            from {
+                opacity: 0.2;
+            }
+
+            to {
+                opacity: 1;
+            }
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 50px auto;
+            position: relative;
+            z-index: 50;
+            padding: 40px;
+            background: #12140f;
+            border: 1px solid rgba(160, 176, 144, 0.1);
+            box-shadow: 0 0 50px rgba(0, 0, 0, 0.5);
+        }
+
+        .stamp {
+            position: absolute;
+            top: 20px;
+            right: 40px;
+            border: 4px solid var(--accent);
+            color: var(--accent);
+            padding: 10px 20px;
             font-weight: bold;
-            font-family: 'Share Tech Mono', monospace;
+            font-size: 1.5rem;
+            transform: rotate(15deg);
+            opacity: 0.7;
         }
 
-        .doc {
-            max-width: 700px;
-            margin: 0 auto;
-        }
-
-        .doc-header {
-            border-bottom: 2px solid #b8c4a040;
-            padding-bottom: 16px;
-            margin-bottom: 20px;
-        }
-
-        .doc-header h1 {
-            font-size: 0.9rem;
-            letter-spacing: 2px;
-            color: #b8c4a080;
-        }
-
-        .doc-meta {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 6px;
-            margin-top: 10px;
-            font-size: 0.7rem;
-            color: #b8c4a050;
-        }
-
-        .section {
-            margin-bottom: 24px;
-        }
-
-        .section h2 {
-            font-size: 0.75rem;
-            letter-spacing: 3px;
-            color: #b8c4a060;
-            border-bottom: 1px solid #b8c4a020;
-            padding-bottom: 4px;
-            margin-bottom: 12px;
-        }
-
-        .para {
-            font-size: 0.78rem;
-            line-height: 1.9;
-            color: #b8c4a0;
-            margin-bottom: 10px;
+        .header-meta {
+            border-bottom: 2px solid rgba(160, 176, 144, 0.2);
+            padding-bottom: 20px;
+            margin-bottom: 30px;
+            font-size: 0.8rem;
+            opacity: 0.6;
         }
 
         .redact {
-            background: #b8c4a0;
-            color: #b8c4a0;
+            background: #000;
+            color: #000;
+            padding: 0 5px;
             border-radius: 2px;
-            padding: 0 4px;
-            user-select: none;
-            cursor: default;
-            transition: 0.2s;
-            display: inline;
+            transition: 0.3s;
         }
 
         .redact:hover {
-            background: #b8c4a020;
-            color: #b8c4a0;
+            background: rgba(160, 176, 144, 0.2);
+            color: var(--text);
+            cursor: pointer;
         }
 
-        .redact.revealed {
-            background: #b8c4a020;
-            color: #8bffa0;
+        .uv-secret {
+            display: none;
+            font-weight: bold;
         }
 
-        .warning {
-            border: 1px solid #8b1a1a60;
-            background: #1a0a0a;
-            padding: 14px;
-            border-radius: 2px;
-            font-size: 0.72rem;
-            color: #cc4444;
-            margin: 16px 0;
-            line-height: 1.7;
+        .evidence-card {
+            width: 150px;
+            background: #fff;
+            padding: 5px;
+            padding-bottom: 15px;
+            box-shadow: 5px 5px 15px rgba(0, 0, 0, 0.5);
+            transform: rotate(-5deg);
+            position: absolute;
+            z-index: 60;
+            cursor: grab;
+            pointer-events: auto;
         }
 
-        .coords {
-            color: #6af0b0;
+        .evidence-card img {
+            width: 100%;
+            display: block;
+            filter: grayscale(1) sepia(0.5);
         }
 
-        .date {
-            color: #aaa;
-        }
-
-        .clearance {
-            color: #ffd700;
-        }
-
-        .page-num {
-            text-align: center;
-            margin-top: 30px;
-            font-size: 0.65rem;
-            color: #b8c4a030;
+        .evidence-card:active {
+            cursor: grabbing;
         }
 
         #back {
-            color: #b8c4a030;
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            color: rgba(160, 176, 144, 0.3);
             text-decoration: none;
-            font-size: 0.72rem;
-            display: block;
-            margin-bottom: 20px;
-            transition: 0.2s;
+            font-size: 0.8rem;
+            z-index: 150;
         }
 
-        #back:hover {
-            color: #b8c4a080;
-        }
-
-        .hint {
-            font-size: 0.65rem;
-            color: #b8c4a030;
-            margin-top: 40px;
-            text-align: center;
-            letter-spacing: 1px;
-            line-height: 1.8;
-        }
-
-        .blink {
-            animation: bl 1.5s infinite;
-        }
-
-        @keyframes bl {
-
-            0%,
-            100% {
-                opacity: 0.3
-            }
-
-            50% {
-                opacity: 0.8
-            }
-        }
-
-        .scan-effect {
+        .scanlines {
             position: fixed;
             inset: 0;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+            z-index: 200;
+            background-size: 100% 2px, 3px 100%;
             pointer-events: none;
-            background: repeating-linear-gradient(0deg, transparent, transparent 3px, rgba(0, 0, 0, 0.08) 4px);
-            z-index: 1000;
+        }
+
+        .controls-hint {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 0.7rem;
+            letter-spacing: 2px;
+            opacity: 0.3;
+            z-index: 150;
         }
     </style>
 </head>
 
 <body>
-    <div class="scan-effect"></div>
-    <div class="doc">
-        <a id="back" href="index.html">← return to gallery</a>
-        <div class="stamp-classified">CLASSIFIED</div>
+    <div class="discovery-layer"></div>
+    <div class="flashlight"></div>
+    <div class="scanlines"></div>
 
-        <div class="doc-header">
-            <h1>DOCUMENT REF: WWG-7749-DELTA // EYES ONLY</h1>
-            <div class="doc-meta">
-                <span>DATE: <span class="date">██/██/19██</span></span>
-                <span>CLEARANCE: <span class="clearance">ULTRAVIOLET</span></span>
-                <span>PAGES: 1 of <span class="redact">██</span></span>
-                <span>AUTHOR: <span class="redact" title="click to reveal">AGENT ████████</span></span>
-            </div>
+    <a id="back" href="index.html">← RETURN</a>
+
+    <div class="container" id="doc-container">
+        <div class="stamp">CLASSIFIED</div>
+
+        <div class="header-meta">
+            REF: DEP-7749 // EYES ONLY<br>
+            AUTHOR: AGENT <span class="redact">HOLLOWAY</span><br>
+            PRIORITY: <span style="color:red">CRITICAL</span>
         </div>
 
-        <div class="warning">
-            ⚠ UNAUTHORIZED ACCESS TO THIS DOCUMENT IS A VIOLATION OF <span class="redact">███ USC § ████</span>.
-            IF YOU HAVE ACCESSED THIS PAGE IN ERROR, CLOSE YOUR BROWSER IMMEDIATELY AND CONTACT <span
-                class="redact">███-████-████████</span>.
-            YOU ARE BEING LOGGED.
-        </div>
+        <section style="margin-bottom: 30px;">
+            <p style="margin-bottom: 15px;">The following structures were identified within the Weird Website Gallery
+                (WWG) core. They appear to be "leaks" from a secondary, parallel reality, often referred to as the <span
+                    class="redact">Digital Afterlife</span>.</p>
+            <p style="margin-bottom: 15px;">Initial contact with Entity E-1983 suggests that the gallery is not a
+                collection, but a <span class="redact">containment facility</span>. Every site added increases the
+                gravitational weight of the central hub.</p>
+        </section>
 
-        <div class="section">
-            <h2>// SUBJECT</h2>
-            <p class="para">The following report details the discovery of an anomalous <span
-                    class="redact">digital</span> structure embedded within the <span class="redact">Weird Website
-                    Gallery</span> infrastructure. First detected on <span class="date">██/██/████</span> by <span
-                    class="redact">AGENT HOLLOWAY</span>. The structure appears to respond to <span
-                    class="redact">search queries</span> in a non-standard way.</p>
-            <p class="para">The anomaly is not visible through standard navigation. Access requires knowledge of <span
-                    class="redact" title="try searching for the name on the gallery page">specific trigger terms</span>.
-                Three (3) such terms have been identified. Two (2) remain unknown to the public.</p>
-        </div>
+        <section style="margin-bottom: 30px;">
+            <h3 style="border-bottom: 1px solid rgba(160,176,144,0.1); padding-bottom: 10px; margin-bottom: 15px;">//
+                ANOMALOUS SITES</h3>
+            <p>1. <strong>VOID</strong>: A localized collapse of spacetime. Test subjects reported feeling <span
+                    class="redact">infinite</span> while falling.</p>
+            <p>2. <strong>GHOST</strong>: A leftover consciousness from the 1983 server fire. Responds to vocal
+                resonance via <span class="redact">Spirit Box</span>.</p>
+            <p>3. <strong>BACKROOMS</strong>: Access confirmed. The maze is dynamic. Do not stop walking.</p>
+        </section>
 
-        <div class="section">
-            <h2>// OBSERVED PHENOMENA</h2>
-            <p class="para">
-                PHENOMENON 1: Upon entering the first trigger term, the interface transitions to a state described by
-                witnesses as <em>"falling through nothing."</em> Coordinates of anomaly: <span class="coords">NULL /
-                    NULL</span>. Duration: indefinite.<br><br>
-                PHENOMENON 2: A <span class="redact">spectral communication channel</span> was established when the
-                second trigger term was used. An entity — designation <span class="redact">E-1983</span> — was observed
-                to respond to typed input with <span class="redact">emotionally coherent</span> outputs.<br><br>
-                PHENOMENON 3: This document. You are reading it. The third trigger term leads here. You already know it.
-            </p>
-        </div>
+        <section>
+            <h3 style="border-bottom: 1px solid rgba(160,176,144,0.1); padding-bottom: 10px; margin-bottom: 15px;">//
+                THERMAL OVERLAY DATA</h3>
+            <p>Warning: Hidden heat signatures detected. <span class="uv-secret">THE COORDINATES ARE HIDDEN IN THE
+                    STARS.</span></p>
+            <p>Use the thermal scanner (T) to reveal invisible markings. <span class="uv-secret">TERMINAL PASSWORD:
+                    "ROOT"</span></p>
+        </section>
 
-        <div class="section">
-            <h2>// KNOWN TRIGGER TERMS</h2>
-            <p class="para">
-                TERM 01: [<span class="redact" title="the absence of everything">████</span>] — found via signal in the
-                <span class="redact">radio intercept module</span>.<br>
-                TERM 02: [<span class="redact" title="what the thing in 1983 is">█████</span>] — hint embedded in the
-                <span class="redact">celestial navigator</span>.<br>
-                TERM 03: [<span class="redact">CLASSIFIED</span>] — you are here.
-            </p>
-        </div>
-
-        <div class="section">
-            <h2>// RECOMMENDATION</h2>
-            <p class="para">
-                This office recommends that no further action be taken at this time. The anomalies pose no threat. The
-                entity designated E-1983 appears <span class="redact">benign</span>. The void phenomenon has produced no
-                casualties, though test subject <span class="redact">████████</span> reported "a profound sense of
-                cosmic insignificance lasting approximately <span class="redact">three weeks</span>."
-            </p>
-            <p class="para">
-                The gallery itself shows no awareness of these embedded structures. <span class="redact">We believe the
-                    author does not know.</span> We recommend continued observation only.
-            </p>
-        </div>
-
-        <div class="warning">
-            THIS DOCUMENT WILL SELF-DESTRUCT UPON BROWSER CLOSE. <span class="blink">YOU HAVE BEEN WARNED.</span>
-        </div>
-
-        <div class="page-num">— PAGE 1 / [REDACTED] — DOCUMENT ENDS —</div>
-
-        <div class="hint">
-            [you found all three]<br>
-            [there are no more]<br>
-            [or are there?]<br>
-            [<span class="blink">we're watching</span>]
+        <div class="evidence-card" style="top: 20%; left: 80%;">
+            <div
+                style="background: #222; height: 100px; display: flex; align-items: center; justify-content: center; color: #555; font-size: 0.5rem; text-align: center;">
+                IMAGE_77_A<br>(REDACTED)</div>
+            <div style="font-size: 0.4rem; padding-top: 5px; color: #333;">SUBJECT: E-1983</div>
         </div>
     </div>
 
+    <div class="controls-hint">WASH MOUSE TO EXPLORE · PRESS 'T' FOR THERMAL MODE</div>
+
     <script>
-        // Make redacted elements clickable to peek
-        document.querySelectorAll('.redact').forEach(el => {
-            el.addEventListener('click', () => {
-                el.classList.toggle('revealed');
+        const root = document.documentElement;
+        const body = document.body;
+
+        window.addEventListener('mousemove', e => {
+            root.style.setProperty('--flash-x', e.clientX + 'px');
+            root.style.setProperty('--flash-y', e.clientY + 'px');
+        });
+
+        window.addEventListener('keydown', e => {
+            if (e.key.toLowerCase() === 't') {
+                body.classList.toggle('thermal-mode');
+            }
+        });
+
+        // Simple Drag for evidence
+        const evidence = document.querySelector('.evidence-card');
+        let isDragging = false;
+        let offset = { x: 0, y: 0 };
+
+        evidence.addEventListener('mousedown', e => {
+            isDragging = true;
+            offset.x = e.clientX - evidence.offsetLeft;
+            offset.y = e.clientY - evidence.offsetTop;
+            evidence.style.zIndex = 200;
+        });
+
+        window.addEventListener('mousemove', e => {
+            if (!isDragging) return;
+            evidence.style.left = (e.clientX - offset.x) + 'px';
+            evidence.style.top = (e.clientY - offset.y) + 'px';
+        });
+
+        window.addEventListener('mouseup', () => {
+            isDragging = false;
+            evidence.style.zIndex = 60;
+        });
+
+        // Make redacts clickable
+        document.querySelectorAll('.redact').forEach(r => {
+            r.addEventListener('click', () => {
+                r.style.background = 'transparent';
+                r.style.color = 'var(--text)';
             });
         });
     </script>

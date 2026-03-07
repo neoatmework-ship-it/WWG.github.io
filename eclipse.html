@@ -4,313 +4,274 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Eclipse</title>
-    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@700&display=swap" rel="stylesheet">
+    <title>SOLAR ECLIPSE</title>
+    <script src="discovery.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500&display=swap" rel="stylesheet">
     <style>
-        body {
-            margin: 0;
-            padding: 0;
-            background-color: #050000;
-            overflow: hidden;
-            font-family: 'Space Grotesk', sans-serif;
-            color: #ff0000;
+        :root {
+            --exposure: 0;
+            --sun-x: 50%;
+            --sun-y: 50%;
+            --moon-x: 52%;
+            --moon-y: 48%;
         }
 
-        /* The Black Sun */
-        .sun-container {
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: #000;
+            color: #ff3300;
+            font-family: 'Space Grotesk', sans-serif;
+            min-height: 100vh;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.5s;
+        }
+
+        canvas#flare-canvas {
+            position: fixed;
+            inset: 0;
+            z-index: 1;
+        }
+
+        .sun-system {
+            position: relative;
+            width: 400px;
+            height: 400px;
+            z-index: 10;
+        }
+
+        .sun-core {
             position: absolute;
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            width: 300px;
-            height: 300px;
-            z-index: 2;
+            width: 200px;
+            height: 200px;
+            background: #fff;
+            border-radius: 50%;
+            box-shadow: 0 0 100px 40px #ff3300, 0 0 200px 80px rgba(255, 50, 0, 0.2);
+            z-index: 5;
         }
 
-        .sun {
-            width: 100%;
-            height: 100%;
+        .moon {
+            position: absolute;
+            width: 210px;
+            height: 210px;
             background: #000;
             border-radius: 50%;
-            box-shadow: 0 0 50px 10px #ff0000, inset 0 0 20px #ff0000;
-            position: relative;
-            z-index: 2;
-            animation: pulse-sun 4s infinite alternate ease-in-out;
+            cursor: grab;
+            z-index: 15;
+            box-shadow: inset 0 0 20px rgba(255, 255, 255, 0.05);
+            transition: transform 0.1s;
         }
 
-        /* Corona / Flares */
-        .corona {
-            position: absolute;
-            top: -20px;
-            left: -20px;
-            right: -20px;
-            bottom: -20px;
-            border-radius: 50%;
-            background: radial-gradient(circle, rgba(255, 0, 0, 0.8) 0%, transparent 70%);
-            z-index: 1;
-            filter: blur(10px);
-            animation: rotate-corona 10s linear infinite;
+        .moon:active {
+            cursor: grabbing;
+            width: 215px;
+            height: 215px;
         }
 
-        @keyframes pulse-sun {
-            0% {
-                box-shadow: 0 0 30px 5px #ff0000, inset 0 0 10px #ff0000;
-            }
-
-            100% {
-                box-shadow: 0 0 80px 20px #ff0000, inset 0 0 30px #ff0000;
-            }
+        .ui-layer {
+            position: fixed;
+            top: 40px;
+            left: 40px;
+            z-index: 50;
+            pointer-events: none;
         }
 
-        @keyframes rotate-corona {
-            0% {
-                transform: scale(1) rotate(0deg);
-                opacity: 0.8;
-            }
-
-            50% {
-                transform: scale(1.1) rotate(180deg);
-                opacity: 1;
-            }
-
-            100% {
-                transform: scale(1) rotate(360deg);
-                opacity: 0.8;
-            }
-        }
-
-        /* Corrupted Grid */
-        .grid {
-            position: absolute;
-            bottom: -50vh;
-            left: -50vw;
-            width: 200vw;
-            height: 100vh;
-            background-image:
-                linear-gradient(rgba(255, 0, 0, 0.4) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(255, 0, 0, 0.4) 1px, transparent 1px);
-            background-size: 40px 40px;
-            transform: perspective(500px) rotateX(60deg);
-            animation: grid-move 2s linear infinite;
-            z-index: 1;
-            box-shadow: inset 0 100px 100px #050000;
-        }
-
-        @keyframes grid-move {
-            0% {
-                background-position: 0 0;
-            }
-
-            100% {
-                background-position: 0 40px;
-            }
-        }
-
-        /* Glitched Text */
-        .title {
-            position: absolute;
-            top: 20%;
-            width: 100%;
-            text-align: center;
-            font-size: 5rem;
-            letter-spacing: 20px;
-            text-transform: uppercase;
-            z-index: 3;
-            text-shadow: 4px 0px 0px rgba(255, 0, 0, 0.8), -4px 0px 0px rgba(0, 0, 255, 0.8);
-            animation: glitch-skew 3s infinite linear alternate-reverse;
-        }
-
-        .title::before,
-        .title::after {
-            content: 'ECLIPSE';
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: #050000;
-        }
-
-        .title::before {
-            left: 2px;
-            text-shadow: -2px 0 red;
-            clip: rect(44px, 450px, 56px, 0);
-            animation: glitch-anim 5s infinite linear alternate-reverse;
-        }
-
-        .title::after {
-            left: -2px;
-            text-shadow: -2px 0 blue;
-            clip: rect(44px, 450px, 56px, 0);
-            animation: glitch-anim2 5s infinite linear alternate-reverse;
-        }
-
-        @keyframes glitch-anim {
-            0% {
-                clip: rect(10px, 9999px, 86px, 0);
-            }
-
-            20% {
-                clip: rect(32px, 9999px, 14px, 0);
-            }
-
-            40% {
-                clip: rect(79px, 9999px, 93px, 0);
-            }
-
-            60% {
-                clip: rect(5px, 9999px, 23px, 0);
-            }
-
-            80% {
-                clip: rect(45px, 9999px, 63px, 0);
-            }
-
-            100% {
-                clip: rect(15px, 9999px, 44px, 0);
-            }
-        }
-
-        @keyframes glitch-anim2 {
-            0% {
-                clip: rect(45px, 9999px, 21px, 0);
-            }
-
-            20% {
-                clip: rect(81px, 9999px, 6px, 0);
-            }
-
-            40% {
-                clip: rect(12px, 9999px, 85px, 0);
-            }
-
-            60% {
-                clip: rect(92px, 9999px, 45px, 0);
-            }
-
-            80% {
-                clip: rect(25px, 9999px, 13px, 0);
-            }
-
-            100% {
-                clip: rect(55px, 9999px, 66px, 0);
-            }
-        }
-
-        @keyframes glitch-skew {
-            0% {
-                transform: skew(0deg);
-            }
-
-            10% {
-                transform: skew(2deg);
-            }
-
-            20% {
-                transform: skew(-2deg);
-            }
-
-            30% {
-                transform: skew(1deg);
-            }
-
-            40% {
-                transform: skew(0deg);
-            }
-
-            100% {
-                transform: skew(0deg);
-            }
+        h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            letter-spacing: 15px;
+            opacity: 0.8;
+            margin-bottom: 10px;
         }
 
         .back-link {
-            position: absolute;
+            position: fixed;
             bottom: 40px;
             left: 50%;
             transform: translateX(-50%);
-            color: #ff0000;
+            color: rgba(255, 51, 0, 0.3);
             text-decoration: none;
-            font-size: 1rem;
-            letter-spacing: 4px;
-            transition: 0.3s;
-            z-index: 10;
-            opacity: 0.5;
-            text-transform: uppercase;
+            font-size: 0.8rem;
+            letter-spacing: 2px;
+            z-index: 50;
         }
 
         .back-link:hover {
-            opacity: 1;
-            text-shadow: 0 0 10px #ff0000;
+            color: #ff3300;
+            text-shadow: 0 0 10px #ff3300;
         }
 
-        /* Static overlay */
-        .static {
-            position: absolute;
+        #exposure-hud {
+            position: fixed;
+            top: 40px;
+            right: 40px;
+            font-size: 0.7rem;
+            letter-spacing: 3px;
+            opacity: 0.4;
+            text-align: right;
+        }
+
+        .heat-haze {
+            position: fixed;
             inset: 0;
             z-index: 20;
-            opacity: 0.05;
             pointer-events: none;
-            background-image: url('data:image/svg+xml,%3Csvg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg"%3E%3Cfilter id="noiseFilter"%3E%3CfeTurbulence type="fractalNoise" baseFrequency="0.65" numOctaves="3" stitchTiles="stitch"/%3E%3C/filter%3E%3Crect width="100%25" height="100%25" filter="url(%23noiseFilter)"/%3E%3C/svg%3E');
+            backdrop-filter: blur(calc(var(--exposure) * 10px));
+            opacity: calc(var(--exposure) * 0.5);
         }
     </style>
 </head>
 
 <body>
+    <canvas id="flare-canvas"></canvas>
+    <div class="heat-haze"></div>
 
-    <div class="static"></div>
-    <div class="grid"></div>
-
-    <div class="title">ECLIPSE</div>
-
-    <div class="sun-container">
-        <div class="corona"></div>
-        <div class="sun"></div>
+    <div class="ui-layer">
+        <h1>ECLIPSE</h1>
+        <p style="font-size: 0.7rem; opacity: 0.5; letter-spacing: 2px;">DRAG THE MOON TO ALIGN THE TRUTH</p>
     </div>
 
-    <a href="index.html" class="back-link">Escape the dark</a>
+    <div id="exposure-hud">EXPOSURE: 0.0%<br>TEMP: 5778K</div>
+
+    <div class="sun-system">
+        <div class="sun-core"></div>
+        <div class="moon" id="moon"></div>
+    </div>
+
+    <a href="index.html" class="back-link">← RETURN TO THE GRID</a>
 
     <script>
-        // Intense bass drone Synthesis
-        window.addEventListener('click', () => {
-            const AudioContext = window.AudioContext || window.webkitAudioContext;
-            const ctx = new AudioContext();
+        const canvas = document.getElementById('flare-canvas');
+        const ctx = canvas.getContext('2d');
+        const moon = document.getElementById('moon');
+        const hud = document.getElementById('exposure-hud');
 
-            const osc1 = ctx.createOscillator();
-            const osc2 = ctx.createOscillator();
-            const lfo = ctx.createOscillator();
-            const gain = ctx.createGain();
-            const filter = ctx.createBiquadFilter();
+        let width, height;
+        function resize() {
+            width = canvas.width = window.innerWidth;
+            height = canvas.height = window.innerHeight;
+        }
+        window.onresize = resize;
+        resize();
 
-            osc1.type = 'sawtooth';
-            osc1.frequency.value = 40; // Super low E
+        let moonPos = { x: width / 2 + 50, y: height / 2 - 20 };
+        let isDragging = false;
+        let offset = { x: 0, y: 0 };
 
-            osc2.type = 'square';
-            osc2.frequency.value = 40.5; // Slight detune for phasing
+        moon.addEventListener('mousedown', e => {
+            isDragging = true;
+            offset.x = e.clientX - moon.offsetLeft;
+            offset.y = e.clientY - moon.offsetTop;
+        });
 
-            lfo.type = 'sine';
-            lfo.frequency.value = 0.2; // Slow pulse
+        window.addEventListener('mousemove', e => {
+            if (!isDragging) return;
+            const x = e.clientX - offset.x;
+            const y = e.clientY - offset.y;
+            moon.style.left = x + 'px';
+            moon.style.top = y + 'px';
+            moonPos.x = x + 105;
+            moonPos.y = y + 105;
+        });
 
-            filter.type = 'lowpass';
-            filter.frequency.value = 200;
+        window.addEventListener('mouseup', () => isDragging = false);
 
-            // Modulate filter cutoff with LFO
-            const lfoGain = ctx.createGain();
-            lfoGain.gain.value = 100;
-            lfo.connect(lfoGain);
-            lfoGain.connect(filter.frequency);
+        // Initial Position
+        moon.style.left = (width / 2 - 50) + 'px';
+        moon.style.top = (height / 2 - 120) + 'px';
 
-            gain.gain.setValueAtTime(0, ctx.currentTime);
-            gain.gain.linearRampToValueAtTime(0.3, ctx.currentTime + 3);
+        const flares = [];
 
-            osc1.connect(filter);
-            osc2.connect(filter);
-            filter.connect(gain);
-            gain.connect(ctx.destination);
+        function drawEclipse() {
+            ctx.fillStyle = '#000';
+            ctx.fillRect(0, 0, width, height);
 
-            osc1.start();
-            osc2.start();
-            lfo.start();
-        }, { once: true });
+            const dx = moonPos.x - width / 2;
+            const dy = moonPos.y - height / 2;
+            const dist = Math.sqrt(dx * dx + dy * dy);
+
+            // Alignment / Exposure
+            const alignment = Math.max(0, 1 - (dist / 150));
+            const exposure = alignment > 0.95 ? (1 - (alignment - 0.95) * 20) : 1;
+
+            hud.innerHTML = `EXPOSURE: ${(alignment * 100).toFixed(1)}%<br>ALIGNMENT: ${alignment > 0.99 ? "TOTALITY" : "PARTIAL"}`;
+            document.documentElement.style.setProperty('--exposure', alignment);
+
+            // Draw Sun Glow
+            const grd = ctx.createRadialGradient(width / 2, height / 2, 80, width / 2, height / 2, 300);
+            grd.addColorStop(0, `rgba(255, 50, 0, ${0.8 * exposure})`);
+            grd.addColorStop(1, 'transparent');
+            ctx.fillStyle = grd;
+            ctx.fillRect(0, 0, width, height);
+
+            // Flares
+            if (Math.random() < 0.3) {
+                const angle = Math.random() * Math.PI * 2;
+                flares.push({
+                    x: width / 2 + Math.cos(angle) * 100,
+                    y: height / 2 + Math.sin(angle) * 100,
+                    vx: Math.cos(angle) * (1 + Math.random() * 2),
+                    vy: Math.sin(angle) * (1 + Math.random() * 2),
+                    life: 1,
+                    size: 2 + Math.random() * 5
+                });
+            }
+
+            flares.forEach((f, i) => {
+                f.x += f.vx;
+                f.y += f.vy;
+                f.life -= 0.01;
+                if (f.life <= 0) flares.splice(i, 1);
+
+                // Flare reactivity to moon
+                const mdx = f.x - moonPos.x;
+                const mdy = f.y - moonPos.y;
+                const mdist = Math.sqrt(mdx * mdx + mdy * mdy);
+                if (mdist < 105) f.life = 0; // Moon blocks flares
+
+                ctx.fillStyle = `rgba(255, 100, 0, ${f.life})`;
+                ctx.beginPath();
+                ctx.arc(f.x, f.y, f.size, 0, Math.PI * 2);
+                ctx.fill();
+            });
+
+            requestAnimationFrame(drawEclipse);
+        }
+
+        drawEclipse();
+
+        // Audio
+        let audioCtx;
+        function playDrone() {
+            if (!audioCtx) {
+                audioCtx = new AudioContext();
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(40, audioCtx.currentTime);
+                gain.gain.setValueAtTime(0.02, audioCtx.currentTime);
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+                osc.start();
+
+                window.addEventListener('mousemove', () => {
+                    const alignment = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--exposure'));
+                    osc.frequency.setTargetAtTime(40 + alignment * 20, audioCtx.currentTime, 0.1);
+                });
+            }
+        }
+        window.addEventListener('mousedown', playDrone, { once: true });
+
     </script>
 </body>
 

@@ -4,177 +4,266 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Starlight</title>
+    <title>Starlight | Constellation Creator</title>
+    <script src="discovery.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400&display=swap" rel="stylesheet">
     <style>
-        body {
+        :root {
+            --bg: #02010a;
+            --star-white: #fff;
+            --nebula-1: rgba(30, 10, 80, 0.4);
+            --nebula-2: rgba(10, 40, 80, 0.4);
+        }
+
+        * {
             margin: 0;
             padding: 0;
-            background-color: #02010a;
-            color: white;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: var(--bg);
+            color: #fff;
             font-family: 'Space Grotesk', sans-serif;
+            min-height: 100vh;
             overflow: hidden;
             display: flex;
             align-items: center;
             justify-content: center;
-            height: 100vh;
         }
 
-        .star {
-            position: absolute;
-            background: white;
-            border-radius: 50%;
-            animation: twinkle var(--duration) ease-in-out infinite alternate;
-            opacity: 0;
+        canvas#cosmic-canvas {
+            position: fixed;
+            inset: 0;
+            z-index: 1;
+            cursor: crosshair;
         }
 
-        @keyframes twinkle {
-            0% {
-                opacity: 0.1;
-                transform: scale(1);
-                box-shadow: 0 0 2px white;
+        .nebula {
+            position: fixed;
+            inset: -50%;
+            width: 200%;
+            height: 200%;
+            background:
+                radial-gradient(circle at 30% 30%, var(--nebula-1) 0%, transparent 40%),
+                radial-gradient(circle at 70% 70%, var(--nebula-2) 0%, transparent 40%);
+            z-index: 0;
+            filter: blur(80px);
+            animation: nebula-float 60s infinite alternate;
+        }
+
+        @keyframes nebula-float {
+            from {
+                transform: rotate(0deg) scale(1.0);
             }
 
-            100% {
-                opacity: 1;
-                transform: scale(1.5);
-                box-shadow: 0 0 10px white, 0 0 20px rgba(255, 255, 255, 0.5);
+            to {
+                transform: rotate(10deg) scale(1.1);
             }
         }
 
-        .message {
+        .ui-overlay {
+            position: relative;
             z-index: 10;
             text-align: center;
-            opacity: 0;
-            animation: fadeIn 4s ease-in 2s forwards;
             pointer-events: none;
         }
 
-        .message h1 {
+        h1 {
             font-size: 3rem;
             font-weight: 300;
-            letter-spacing: 12px;
-            margin-bottom: 20px;
-            text-shadow: 0 0 30px rgba(255, 255, 255, 0.8);
-        }
-
-        .message p {
-            font-size: 1rem;
-            letter-spacing: 4px;
-            color: #a0a0b0;
-        }
-
-        @keyframes fadeIn {
-            to {
-                opacity: 1;
-            }
+            letter-spacing: 15px;
+            opacity: 0.8;
+            margin-bottom: 10px;
         }
 
         .back-link {
-            position: absolute;
+            position: fixed;
             bottom: 40px;
+            left: 50%;
+            transform: translateX(-50%);
             color: rgba(255, 255, 255, 0.3);
             text-decoration: none;
             font-size: 0.8rem;
             letter-spacing: 2px;
-            transition: 0.3s;
             z-index: 20;
-            opacity: 0;
-            animation: fadeIn 2s ease-in 6s forwards;
+            pointer-events: auto;
         }
 
         .back-link:hover {
-            color: white;
-            text-shadow: 0 0 10px white;
+            color: #fff;
+            text-shadow: 0 0 10px #fff;
         }
 
-        /* Subtle glowing horizon */
-        .horizon {
-            position: absolute;
-            bottom: -50vh;
-            left: -50vw;
-            width: 200vw;
-            height: 100vh;
-            background: radial-gradient(ellipse at top, rgba(20, 30, 80, 0.4) 0%, transparent 60%);
-            z-index: 1;
+        #hint {
+            font-size: 0.7rem;
+            letter-spacing: 3px;
+            opacity: 0.4;
+            margin-top: 20px;
+        }
+
+        .glow-overlay {
+            position: fixed;
+            inset: 0;
+            background: radial-gradient(circle at center, transparent 30%, rgba(2, 1, 10, 0.8) 100%);
+            z-index: 5;
             pointer-events: none;
         }
     </style>
 </head>
 
 <body>
+    <div class="nebula"></div>
+    <div class="glow-overlay"></div>
+    <canvas id="cosmic-canvas"></canvas>
 
-    <div class="horizon"></div>
-
-    <div class="message">
+    <div class="ui-overlay">
         <h1>STARLIGHT</h1>
-        <p>A gentle melody carries you far away.</p>
+        <div id="hint">Connect the stars. Draw your legacy.</div>
     </div>
 
-    <a href="index.html" class="back-link">Return to the gallery</a>
+    <a href="index.html" class="back-link">← RETURN TO REALITY</a>
 
     <script>
-        // Generate stars
-        const numStars = 200;
-        for (let i = 0; i < numStars; i++) {
-            const star = document.createElement('div');
-            star.classList.add('star');
+        const canvas = document.getElementById('cosmic-canvas');
+        const ctx = canvas.getContext('2d');
+        const hint = document.getElementById('hint');
 
-            // Random position
-            star.style.left = `${Math.random() * 100}vw`;
-            star.style.top = `${Math.random() * 100}vh`;
+        let width, height;
+        function resize() {
+            width = canvas.width = window.innerWidth;
+            height = canvas.height = window.innerHeight;
+            initStars();
+        }
+        window.onresize = resize;
 
-            // Random size
-            const size = Math.random() * 2 + 1;
-            star.style.width = `${size}px`;
-            star.style.height = `${size}px`;
+        let stars = [];
+        let connections = [];
+        let activeStars = [];
+        let mouse = { x: 0, y: 0 };
 
-            // Random animation duration and delay
-            star.style.setProperty('--duration', `${Math.random() * 3 + 1.5}s`);
-            star.style.animationDelay = `${Math.random() * 5}s`;
-
-            // Random warm/cool star colors occasionally
-            const rand = Math.random();
-            if (rand > 0.9) {
-                star.style.background = '#ffd2a6'; // Warm
-            } else if (rand < 0.1) {
-                star.style.background = '#a6c8ff'; // Cool
+        function initStars() {
+            stars = [];
+            for (let i = 0; i < 150; i++) {
+                stars.push({
+                    x: Math.random() * width,
+                    y: Math.random() * height,
+                    size: Math.random() * 2 + 0.5,
+                    brightness: Math.random(),
+                    twinkle: Math.random() * 0.02 + 0.01,
+                    parallax: Math.random() * 0.5 + 0.1
+                });
             }
-
-            document.body.appendChild(star);
         }
 
-        // Play a soft, ambient generative chord on load
-        window.addEventListener('click', () => {
-            const AudioContext = window.AudioContext || window.webkitAudioContext;
-            const ctx = new AudioContext();
+        window.addEventListener('mousemove', e => {
+            mouse.x = e.clientX;
+            mouse.y = e.clientY;
+        });
 
-            function playNote(freq, delay) {
-                const osc = ctx.createOscillator();
-                const gain = ctx.createGain();
+        window.addEventListener('mousedown', e => {
+            // Find closest star
+            let closest = null;
+            let minDist = 30;
+            stars.forEach(s => {
+                const dx = (s.x + (mouse.x - width / 2) * s.parallax) - e.clientX;
+                const dy = (s.y + (mouse.y - height / 2) * s.parallax) - e.clientY;
+                const d = Math.sqrt(dx * dx + dy * dy);
+                if (d < minDist) {
+                    minDist = d;
+                    closest = s;
+                }
+            });
 
-                osc.type = 'sine';
-                osc.frequency.value = freq;
+            if (closest) {
+                if (activeStars.length > 0) {
+                    connections.push([activeStars[activeStars.length - 1], closest]);
+                    playTone();
+                }
+                activeStars.push(closest);
+                if (activeStars.length > 5) hint.textContent = "The sky remembers your pattern.";
+            } else {
+                activeStars = [];
+                connections = [];
+                hint.textContent = "Click a star to begin a constellation.";
+            }
+        });
 
-                gain.gain.setValueAtTime(0, ctx.currentTime + delay);
-                gain.gain.linearRampToValueAtTime(0.1, ctx.currentTime + delay + 2);
-                gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + delay + 8);
+        function draw() {
+            ctx.clearRect(0, 0, width, height);
 
-                osc.connect(gain);
-                gain.connect(ctx.destination);
+            // Draw Connections
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.4)';
+            ctx.lineWidth = 1;
+            ctx.setLineDash([5, 5]);
+            connections.forEach(c => {
+                const s1 = c[0];
+                const s2 = c[1];
+                const x1 = s1.x + (mouse.x - width / 2) * s1.parallax;
+                const y1 = s1.y + (mouse.y - height / 2) * s1.parallax;
+                const x2 = s2.x + (mouse.x - width / 2) * s2.parallax;
+                const y2 = s2.y + (mouse.y - height / 2) * s2.parallax;
 
-                osc.start(ctx.currentTime + delay);
-                osc.stop(ctx.currentTime + delay + 8);
+                ctx.beginPath();
+                ctx.moveTo(x1, y1);
+                ctx.lineTo(x2, y2);
+                ctx.stroke();
+            });
+            ctx.setLineDash([]);
+
+            // Draw Stars
+            stars.forEach(s => {
+                s.brightness += s.twinkle;
+                if (s.brightness > 1 || s.brightness < 0) s.twinkle *= -1;
+
+                const px = s.x + (mouse.x - width / 2) * s.parallax;
+                const py = s.y + (mouse.y - height / 2) * s.parallax;
+
+                ctx.fillStyle = `rgba(255, 255, 255, ${0.3 + s.brightness * 0.7})`;
+                ctx.beginPath();
+                ctx.arc(px, py, s.size, 0, Math.PI * 2);
+                ctx.fill();
+
+                if (activeStars.includes(s)) {
+                    ctx.strokeStyle = 'rgba(255, 255, 255, 0.8)';
+                    ctx.beginPath();
+                    ctx.arc(px, py, s.size + 4, 0, Math.PI * 2);
+                    ctx.stroke();
+                }
+            });
+
+            // Active Line
+            if (activeStars.length > 0) {
+                const last = activeStars[activeStars.length - 1];
+                const lx = last.x + (mouse.x - width / 2) * last.parallax;
+                const ly = last.y + (mouse.y - height / 2) * last.parallax;
+                ctx.strokeStyle = 'rgba(255, 255, 255, 0.2)';
+                ctx.beginPath();
+                ctx.moveTo(lx, ly);
+                ctx.lineTo(mouse.x, mouse.y);
+                ctx.stroke();
             }
 
-            // An ethereal CMaj7 add9 chord
-            playNote(130.81, 0);   // C3
-            playNote(261.63, 0.5); // C4
-            playNote(392.00, 1.0); // G4
-            playNote(493.88, 1.5); // B4
-            playNote(659.25, 2.0); // E5
-            playNote(587.33, 2.5); // D5
-        }, { once: true });
+            requestAnimationFrame(draw);
+        }
+
+        // Audio logic
+        let audioCtx;
+        function playTone() {
+            if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.frequency.setValueAtTime(440 + Math.random() * 440, audioCtx.currentTime);
+            gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 1);
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            osc.start();
+            osc.stop(audioCtx.currentTime + 1);
+        }
+
+        resize();
+        draw();
     </script>
 </body>
 

@@ -340,6 +340,25 @@
             pointer-events: none;
         }
 
+        .vault-btn {
+            position: absolute;
+            right: 14px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-sub);
+            text-decoration: none;
+            font-size: 1.2rem;
+            line-height: 1;
+            transition: 0.3s;
+            display: flex;
+            align-items: center;
+        }
+
+        .vault-btn:hover {
+            color: var(--accent);
+            transform: translateY(-50%) scale(1.1);
+        }
+
         .filter-bar {
             display: flex;
             justify-content: center;
@@ -646,6 +665,7 @@
             border-radius: 3px;
         }
     </style>
+    <script src="discovery.js"></script>
 </head>
 
 <body>
@@ -654,12 +674,18 @@
         <span class="hero-badge">✦ Curated Collection</span>
         <h1><span class="gradient-text" id="wwg-title" style="cursor:pointer;user-select:none;" title="WWG">WWG</span>
         </h1>
+        <p
+            style="font-size: 0.9rem; opacity: 0.5; margin-top: -10px; margin-bottom: 20px; font-weight: 600; text-transform: uppercase; letter-spacing: 3px;">
+            Find my secrets</p>
         <p>Weird Website Gallery — a hand-picked collection of strange, wonderful, and interactive web experiences</p>
         <div class="hero-count"><strong>68</strong> sites and counting</div>
         <div class="search-wrap">
             <span class="search-icon">🔍</span>
             <input class="search-input" id="search" type="text"
                 placeholder="Search 68+ sites by name, description, or tag...">
+            <a href="archive.html" class="vault-btn" title="View Fragment Vault">
+                <span class="vault-icon">📁</span>
+            </a>
         </div>
         <div class="filter-bar">
             <button class="filter-pill active" data-filter="all">All</button>
@@ -2260,10 +2286,15 @@
     <button class="scroll-top" id="scroll-top" onclick="window.scrollTo({top:0,behavior:'smooth'})">↑</button>
 
     <footer>
-        <p>WWG — Weird Website Gallery · Made with ✦ and curiosity <br><br> <a href="cheatsheet.html"
+        <p>WWG — Weird Website Gallery · Made with <span id="footer-logic" style="cursor:help">✦</span> and curiosity
+            <br><br>
+            <span id="footer-version" style="font-size: 0.6rem; opacity: 0.3; cursor: pointer;">v3.2.1-STABLE</span><br>
+            <a href="cheatsheet.html"
                 style="color:rgba(255,255,255,0.2);text-decoration:none;font-size:0.7rem;transition:0.3s;"
-                onmouseover="this.style.color='#fff'" onmouseout="this.style.color='rgba(255,255,255,0.2)'">Spoilers
-                (16)</a></p>
+                onmouseover="this.style.color='#fff'" onmouseout="this.style.color='rgba(255,255,255,0.2)'">Archive
+                Guide
+                (20)</a>
+        </p>
     </footer>
 
     <script>
@@ -2409,6 +2440,50 @@
             // Scroll to top
             window.addEventListener('scroll', () => {
                 scrollBtn.classList.toggle('visible', window.scrollY > 400);
+            });
+
+            // Hidden Key Triggers
+            let keySequence = '';
+            window.addEventListener('keydown', (e) => {
+                if (document.activeElement.tagName === 'INPUT' || document.activeElement.tagName === 'TEXTAREA') return;
+
+                keySequence += e.key.toLowerCase();
+                if (keySequence.length > 20) keySequence = keySequence.substring(1);
+
+                if (keySequence.endsWith('hello')) window.location.href = 'ghost.html';
+                if (keySequence.endsWith('cmd')) window.location.href = 'terminal.html';
+                if (keySequence.endsWith('root')) window.location.href = 'terminal.html';
+                if (keySequence.endsWith('3sc4p3')) window.location.href = 'archive.html';
+            });
+
+            // The Void Inactivity Trigger
+            let voidTimer;
+            const startVoidTimer = () => {
+                clearTimeout(voidTimer);
+                voidTimer = setTimeout(() => {
+                    document.body.style.transition = 'opacity 5s';
+                    document.body.style.opacity = '0';
+                    setTimeout(() => window.location.href = 'void.html', 5000);
+                }, 30000); // 30 seconds of stillness
+            };
+            window.addEventListener('mousemove', startVoidTimer);
+            window.addEventListener('keydown', startVoidTimer);
+            startVoidTimer();
+
+            // Footer Secret: Classified Trigger
+            let footerClicks = 0;
+            document.getElementById('footer-logic').addEventListener('click', () => {
+                footerClicks++;
+                if (footerClicks === 3) window.location.href = 'classified.html';
+                setTimeout(() => { footerClicks = 0; }, 2000);
+            });
+
+            // Footer Secret: Blueprint Trigger
+            let versionClicks = 0;
+            document.getElementById('footer-version').addEventListener('click', () => {
+                versionClicks++;
+                if (versionClicks === 3) window.location.href = 'blueprint.html';
+                setTimeout(() => { versionClicks = 0; }, 2000);
             });
 
             // Initialize UI

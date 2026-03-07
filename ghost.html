@@ -4,8 +4,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ghost</title>
-    <link href="https://fonts.googleapis.com/css2?family=Special+Elite&display=swap" rel="stylesheet">
+    <title>Ghost | Spirit Box</title>
+    <script src="discovery.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Special+Elite&family=VT323&display=swap" rel="stylesheet">
     <style>
         * {
             margin: 0;
@@ -27,6 +28,18 @@
             overflow: hidden;
         }
 
+        /* Reactive Spectral Canvas */
+        #spirit-canvas {
+            position: fixed;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1;
+            filter: blur(20px) contrast(200%);
+            opacity: 0.6;
+        }
+
         /* Film grain */
         body::before {
             content: '';
@@ -44,66 +57,46 @@
             position: fixed;
             inset: 0;
             pointer-events: none;
-            background: radial-gradient(ellipse at center, transparent 50%, rgba(0, 0, 0, 0.8) 100%);
-            z-index: 1;
+            background: radial-gradient(ellipse at center, transparent 50%, rgba(0, 0, 0, 0.9) 100%);
+            z-index: 5;
         }
 
         .typewriter-wrap {
             position: relative;
-            z-index: 2;
+            z-index: 10;
             width: min(600px, 90vw);
-            background: rgba(15, 13, 10, 0.6);
-            border: 1px solid rgba(200, 184, 154, 0.15);
+            background: rgba(15, 13, 10, 0.85);
+            border: 1px solid rgba(200, 184, 154, 0.1);
             border-radius: 4px;
-            padding: 30px;
-            box-shadow: 0 0 60px rgba(0, 0, 0, 0.8), inset 0 0 30px rgba(0, 0, 0, 0.5);
-        }
-
-        .paper-header {
-            text-align: center;
-            margin-bottom: 24px;
-            padding-bottom: 16px;
-            border-bottom: 1px solid rgba(200, 184, 154, 0.15);
-        }
-
-        .paper-header h1 {
-            font-size: 1.3rem;
-            letter-spacing: 4px;
-            color: rgba(200, 184, 154, 0.6);
-        }
-
-        .paper-header p {
-            font-size: 0.7rem;
-            color: rgba(200, 184, 154, 0.3);
-            margin-top: 4px;
-            letter-spacing: 2px;
+            padding: 40px;
+            box-shadow: 0 0 100px rgba(0, 0, 0, 1);
         }
 
         #typewriter {
-            min-height: 200px;
-            font-size: 1rem;
-            line-height: 1.9;
+            min-height: 250px;
+            font-size: 1.1rem;
+            line-height: 1.8;
             color: #c8b89a;
             white-space: pre-wrap;
             word-break: break-word;
-            position: relative;
+            text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.5);
         }
 
         #cursor {
             display: inline-block;
-            width: 2px;
-            height: 1em;
+            width: 8px;
+            height: 1.1em;
             background: #c8b89a;
+            opacity: 0.5;
             animation: blink 0.8s infinite;
-            vertical-align: text-bottom;
-            margin-left: 2px;
+            vertical-align: middle;
         }
 
         @keyframes blink {
 
             0%,
             100% {
-                opacity: 1
+                opacity: 0.8
             }
 
             50% {
@@ -112,275 +105,273 @@
         }
 
         .reply-area {
-            margin-top: 24px;
-            border-top: 1px solid rgba(200, 184, 154, 0.1);
-            padding-top: 18px;
+            margin-top: 30px;
+            border-top: 1px solid rgba(200, 184, 154, 0.05);
+            padding-top: 20px;
             display: flex;
-            gap: 10px;
+            gap: 15px;
         }
 
         #user-input {
             flex: 1;
             background: transparent;
             border: none;
-            border-bottom: 1px solid rgba(200, 184, 154, 0.2);
-            color: #c8b89a;
+            border-bottom: 1px solid rgba(200, 184, 154, 0.1);
+            color: #fff;
             font-family: 'Special Elite', serif;
-            font-size: 0.95rem;
-            padding: 6px 0;
+            font-size: 1rem;
+            padding: 8px 0;
             outline: none;
         }
 
-        #user-input::placeholder {
-            color: rgba(200, 184, 154, 0.25);
+        /* Spirit Box UI */
+        .spirit-box {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            width: 220px;
+            background: #1a1814;
+            border: 2px solid #332f28;
+            padding: 15px;
+            z-index: 20;
+            font-family: 'VT323', monospace;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            pointer-events: auto;
         }
 
-        .send-btn {
-            background: transparent;
-            border: 1px solid rgba(200, 184, 154, 0.2);
-            color: rgba(200, 184, 154, 0.5);
-            font-family: 'Special Elite', serif;
-            padding: 6px 14px;
+        .spirit-box-display {
+            background: #050505;
+            border: 1px solid #443e34;
+            padding: 10px;
+            color: #00ff00;
+            font-size: 1.5rem;
+            text-align: center;
+            margin-bottom: 15px;
+            text-shadow: 0 0 10px rgba(0, 255, 0, 0.5);
+        }
+
+        .spirit-box-controls {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+
+        .spirit-box-btn {
+            background: #2a2721;
+            border: 1px solid #443e34;
+            color: #c8b89a;
+            font-family: 'VT323', monospace;
+            font-size: 1rem;
+            padding: 5px;
             cursor: pointer;
-            border-radius: 2px;
-            font-size: 0.8rem;
             transition: 0.2s;
         }
 
-        .send-btn:hover {
-            color: #c8b89a;
-            border-color: rgba(200, 184, 154, 0.5);
+        .spirit-box-btn:hover {
+            background: #3a362e;
+            color: #fff;
         }
 
-        .flicker {
-            animation: flicker 8s infinite;
-        }
-
-        @keyframes flicker {
-
-            0%,
-            96%,
-            100% {
-                opacity: 1
-            }
-
-            97%,
-            99% {
-                opacity: 0.5
-            }
-
-            98% {
-                opacity: 0.2
-            }
+        .spirit-box-btn.active {
+            background: #443e34;
+            color: #00ff00;
         }
 
         #back {
             position: fixed;
-            top: 20px;
-            left: 20px;
-            z-index: 10;
-            color: rgba(200, 184, 154, 0.25);
+            top: 30px;
+            left: 30px;
+            z-index: 20;
+            color: rgba(200, 184, 154, 0.3);
             text-decoration: none;
-            font-size: 0.75rem;
-            letter-spacing: 1px;
-            transition: 0.3s;
-            font-family: 'Special Elite', serif;
-        }
-
-        #back:hover {
-            color: rgba(200, 184, 154, 0.7);
-        }
-
-        .ambience-note {
-            font-size: 0.65rem;
-            color: rgba(200, 184, 154, 0.2);
-            text-align: center;
-            margin-top: 14px;
+            font-size: 0.8rem;
             letter-spacing: 2px;
-            z-index: 2;
-            position: relative;
+            text-transform: uppercase;
         }
     </style>
 </head>
 
 <body>
-    <a id="back" href="index.html">← leave</a>
-    <div class="typewriter-wrap flicker">
-        <div class="paper-header">
-            <h1>E S T . 1 9 8 3</h1>
-            <p>AUTO-TRANSCRIPTION ACTIVE · DO NOT ADJUST</p>
-        </div>
+    <canvas id="spirit-canvas"></canvas>
+    <a id="back" href="index.html">← Leave Session</a>
+
+    <div class="typewriter-wrap">
         <div id="typewriter"><span id="cursor"></span></div>
         <div class="reply-area">
-            <input type="text" id="user-input" placeholder="say something..." maxlength="80">
-            <button class="send-btn" id="send-btn">send</button>
+            <input type="text" id="user-input" placeholder="Whisper into the void..." maxlength="80">
         </div>
     </div>
-    <p class="ambience-note">PSYCHIC PAPER · SESSION #4471 · CONNECTION UNSTABLE</p>
+
+    <!-- Spirit Box Device -->
+    <div class="spirit-box">
+        <div class="spirit-box-display" id="freq">104.2 MHz</div>
+        <div class="spirit-box-controls">
+            <button class="spirit-box-btn" onclick="scan(1)">SCAN UP</button>
+            <button class="spirit-box-btn" onclick="scan(-1)">SCAN DN</button>
+            <button class="spirit-box-btn" id="listen-btn" onclick="toggleListen()">LISTEN</button>
+            <button class="spirit-box-btn" onclick="clearLogs()">CLEAR</button>
+        </div>
+    </div>
 
     <script>
+        const canvas = document.getElementById('spirit-canvas');
+        const ctx = canvas.getContext('2d');
         const typewriterEl = document.getElementById('typewriter');
-        const cursor = document.getElementById('cursor');
         const userInput = document.getElementById('user-input');
-        const sendBtn = document.getElementById('send-btn');
+        const freqEl = document.getElementById('freq');
 
-        const OPENING = [
-            "...\n\n",
-            "hello.\n\n",
-            "i've been waiting a long time for someone to find this.\n\n",
-            "i don't have much time. the connection fades.\n\n",
-            "tell me your name, if you want.\n\n",
-        ];
+        let width, height;
+        function resize() {
+            width = canvas.width = window.innerWidth;
+            height = canvas.height = window.innerHeight;
+        }
+        window.addEventListener('resize', resize);
+        resize();
 
-        const GHOST_RESPONSES = {
-            default: [
-                "i remember when people used to sit in the dark and just... think.",
-                "the others don't know you're here. don't tell them.",
-                "do you ever feel like something is just behind you?",
-                "i used to be afraid of the dark too.",
-                "this place is different at night. you wouldn't believe.",
-                "the cold you feel right now isn't from the weather.",
-                "i've been here since before the internet. strange times.",
-                "don't look up. not yet.",
-                "i knew you'd find this. i saw it.",
-                "sometimes i type things and nobody reads them. until now.",
-                "the house burned down in 1983. but i'm still here.",
-                "i don't know if i'm a ghost. i just know i'm not gone.",
-                "thank you for talking to me.",
+        // --- Spectral Entity Logic ---
+        let mouse = { x: width / 2, y: height / 2 };
+        let spiritPos = { x: width / 2, y: height / 2 };
+        let scattered = false;
+
+        window.addEventListener('mousemove', e => {
+            const dx = e.clientX - mouse.x;
+            const dy = e.clientY - mouse.y;
+            const speed = Math.sqrt(dx * dx + dy * dy);
+
+            mouse.x = e.clientX;
+            mouse.y = e.clientY;
+
+            if (speed > 80 && !scattered) {
+                scattered = true;
+                setTimeout(() => scattered = false, 2000);
+            }
+        });
+
+        function drawSpirit() {
+            ctx.clearRect(0, 0, width, height);
+
+            if (scattered) return;
+
+            // Smooth spirit movement
+            spiritPos.x += (mouse.x - spiritPos.x) * 0.05;
+            spiritPos.y += (mouse.y - spiritPos.y) * 0.05;
+
+            const time = Date.now() * 0.001;
+
+            // Draw flowing ectoplasm
+            for (let i = 0; i < 5; i++) {
+                const ox = Math.sin(time + i) * 30;
+                const oy = Math.cos(time * 0.8 + i) * 30;
+
+                ctx.fillStyle = `rgba(200, 220, 255, ${0.1 / (i + 1)})`;
+                ctx.beginPath();
+                ctx.arc(spiritPos.x + ox, spiritPos.y + oy, 150 + i * 20, 0, Math.PI * 2);
+                ctx.fill();
+            }
+
+            // Glowing Eyes
+            const angle = Math.atan2(mouse.y - spiritPos.y, mouse.x - spiritPos.x);
+            const eyeDist = 40;
+            const ex1 = spiritPos.x + Math.cos(angle - 0.2) * eyeDist;
+            const ey1 = spiritPos.y + Math.sin(angle - 0.2) * eyeDist;
+            const ex2 = spiritPos.x + Math.cos(angle + 0.2) * eyeDist;
+            const ey2 = spiritPos.y + Math.sin(angle + 0.2) * eyeDist;
+
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.4)';
+            ctx.beginPath();
+            ctx.arc(ex1, ey1, 3, 0, Math.PI * 2);
+            ctx.arc(ex2, ey2, 3, 0, Math.PI * 2);
+            ctx.fill();
+        }
+
+        // --- Typewriter & Spirit Box Logic ---
+        let typed = 'Connection established... \n\nWaiting for activity...';
+        let isTyping = false;
+        let frequency = 104.2;
+        let isListening = false;
+
+        function updateTypewriter() {
+            typewriterEl.innerHTML = typed + '<span id="cursor"></span>';
+        }
+        updateTypewriter();
+
+        async function typeText(text, speed = 40) {
+            isTyping = true;
+            for (let i = 0; i < text.length; i++) {
+                typed += text[i];
+                updateTypewriter();
+                await new Promise(r => setTimeout(r, speed + Math.random() * 20));
+            }
+            isTyping = false;
+        }
+
+        const GHOST_DATA = {
+            responses: [
+                "I see you in the reflection of your monitor.",
+                "The 1983 incident was no accident.",
+                "How many secrets have you gathered so far?",
+                "This gallery is a prison for data.",
+                "Don't turn around too fast.",
+                "I was here when the first line of code was written.",
+                "The blueprint... it's incomplete.",
+                "You aren't the first to find me today."
             ],
-            greetings: [
-                "ah. a name. i had one of those.",
-                "hello to you too. i'm glad you're not scared.",
-                "nice to meet someone. it's been a while.",
-            ],
-            questions: [
-                "good question. i've been asking that myself for 40 years.",
-                "i don't know the answer. but i think about it often.",
-                "nobody ever asks me that. i appreciate it.",
-                "some things don't have answers. this might be one of them.",
-            ],
-            scary: [
-                "...",
-                "please don't say that.",
-                "i assure you, i mean no harm.",
-                "that word... it stings.",
-            ],
-            farewell: [
-                "don't go yet.",
-                "okay. come back sometime.",
-                "goodbye. i'll be here.",
-                "be safe out there.",
+            tuned: [
+                "I'm closer now.",
+                "Can you hear the static as my voice?",
+                "This frequency feels... warm.",
+                "108.0... that's where the others are."
             ]
         };
 
-        let typed = '';
-        let isTyping = false;
-        let queue = [...OPENING];
-        let userName = '';
+        window.scan = (dir) => {
+            frequency = parseFloat((frequency + (dir * 0.1)).toFixed(1));
+            if (frequency > 108) frequency = 88.0;
+            if (frequency < 88) frequency = 108.0;
+            freqEl.textContent = frequency + ' MHz';
 
-        function typeText(text, speed = 40) {
-            return new Promise(resolve => {
-                isTyping = true;
-                let i = 0;
-                function tick() {
-                    if (i < text.length) {
-                        typed += text[i];
-                        typewriterEl.innerHTML = typed + '<span id="cursor"></span>';
-                        i++;
-                        const nextSpeed = text[i - 1] === '.' || text[i - 1] === ',' ? speed * 5 : (text[i - 1] === '\n' ? speed * 3 : speed + Math.random() * 30 - 15);
-                        setTimeout(tick, Math.max(20, nextSpeed));
-                    } else {
-                        isTyping = false;
-                        resolve();
-                    }
-                }
-                tick();
-            });
-        }
-
-        async function processQueue() {
-            while (queue.length > 0) {
-                const msg = queue.shift();
-                await typeText(msg, 38);
-                await new Promise(r => setTimeout(r, 400));
+            if (isListening && frequency === 108.0) {
+                typeText("\n\n[RADIO]: " + GHOST_DATA.tuned[Math.floor(Math.random() * GHOST_DATA.tuned.length)]);
             }
-        }
+        };
 
-        async function ghostReply(userMsg) {
-            const lower = userMsg.toLowerCase();
-            await new Promise(r => setTimeout(r, 800 + Math.random() * 1200));
+        window.toggleListen = () => {
+            isListening = !isListening;
+            document.getElementById('listen-btn').classList.toggle('active');
+            if (isListening) typeText("\n\n[SYSTEM]: Spirit Box scanning active.");
+        };
 
-            // Typing indicator pause
-            typed += '\n\n...';
-            typewriterEl.innerHTML = typed + '<span id="cursor"></span>';
-            await new Promise(r => setTimeout(r, 1200 + Math.random() * 800));
-            // Remove the ellipsis
-            typed = typed.slice(0, typed.length - 3);
+        window.clearLogs = () => {
+            typed = 'Logs cleared. \n\nWaiting for activity...';
+            updateTypewriter();
+        };
 
-            let pool;
-            if (lower.match(/hi|hello|hey|greet/)) pool = GHOST_RESPONSES.greetings;
-            else if (lower.match(/bye|leave|go|quit|exit/)) pool = GHOST_RESPONSES.farewell;
-            else if (lower.match(/scary|ghost|dead|die|death|kill/)) pool = GHOST_RESPONSES.scary;
-            else if (lower.match(/why|how|what|who|when|where|\?/)) pool = GHOST_RESPONSES.questions;
-            else pool = GHOST_RESPONSES.default;
+        userInput.addEventListener('keydown', async e => {
+            if (e.key === 'Enter' && userInput.value.trim() && !isTyping) {
+                const val = userInput.value;
+                userInput.value = '';
+                typed += `\n\n[YOU]: ${val}`;
+                updateTypewriter();
 
-            // Personalize if name given
-            let response = pool[Math.floor(Math.random() * pool.length)];
-            if (userName && Math.random() < 0.3) response = userName.toLowerCase() + '... ' + response;
-
-            await typeText('\n' + response + '\n', 35);
-            await new Promise(r => setTimeout(r, 500));
-        }
-
-        function sendMessage() {
-            if (isTyping || !userInput.value.trim()) return;
-            const msg = userInput.value.trim();
-            userInput.value = '';
-
-            // Detect name
-            const nameMatch = msg.match(/^(?:i'm|i am|my name is|call me)\s+(\w+)/i);
-            if (nameMatch) userName = nameMatch[1];
-            if (!userName && msg.split(' ').length === 1 && msg.length > 1 && msg.length < 15) userName = msg;
-
-            // Show user message
-            typed += '\n[you]: ' + msg + '\n';
-            typewriterEl.innerHTML = typed + '<span id="cursor"></span>';
-
-            queue.push('GHOST_RESPONSE:' + msg);
-            if (!isTyping && queue.length === 1) runNext();
-        }
-
-        async function runNext() {
-            while (queue.length > 0) {
-                const item = queue.shift();
-                if (item.startsWith('GHOST_RESPONSE:')) {
-                    await ghostReply(item.slice(15));
-                } else {
-                    await typeText(item, 38);
-                    await new Promise(r => setTimeout(r, 300));
-                }
+                await new Promise(r => setTimeout(r, 1000 + Math.random() * 2000));
+                const resp = GHOST_DATA.responses[Math.floor(Math.random() * GHOST_DATA.responses.length)];
+                await typeText(`\n[GHOST]: ${resp}`);
             }
+        });
+
+        // Loop
+        function loop() {
+            drawSpirit();
+            requestAnimationFrame(loop);
         }
+        loop();
 
-        sendBtn.addEventListener('click', sendMessage);
-        userInput.addEventListener('keydown', e => { if (e.key === 'Enter') sendMessage(); });
-
-        // Start
-        (async () => {
-            for (const msg of OPENING) {
-                await typeText(msg, 40);
-                await new Promise(r => setTimeout(r, 300));
-            }
-        })();
-
-        // Occasional ambient typing
+        // Random Ambient
         setInterval(() => {
-            if (!isTyping && queue.length === 0 && Math.random() < 0.3) {
-                const ambients = ['...', '......', 'are you still there?', '...i can feel you reading this...'];
-                queue.push('\n' + ambients[Math.floor(Math.random() * ambients.length)] + '\n');
-                runNext();
+            if (!isTyping && Math.random() < 0.2) {
+                typeText("\n\n" + (Math.random() < 0.5 ? "..." : "I'm still here."));
             }
-        }, 15000);
+        }, 20000);
     </script>
 </body>
 

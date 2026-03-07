@@ -4,29 +4,36 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Zenith Sanctuary</title>
+    <title>Zenith Sanctuary | Sanctuary of Stillness</title>
+    <script src="discovery.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300&display=swap" rel="stylesheet">
     <style>
         :root {
-            --bg: #fdfdfd;
-            --accent: #1a1a1a;
-            --pale: #e9ecef;
+            --bg: #fff;
+            --text: #1a1a1a;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            user-select: none;
         }
 
         body {
-            margin: 0;
-            padding: 0;
-            background-color: var(--bg);
+            background: var(--bg);
+            color: var(--text);
+            font-family: 'Space Grotesk', sans-serif;
+            height: 100vh;
+            overflow: hidden;
             display: flex;
             align-items: center;
             justify-content: center;
-            height: 100vh;
-            overflow: hidden;
-            font-family: 'Inter', system-ui, sans-serif;
-            color: var(--accent);
+            transition: background 2s ease, filter 2s ease;
         }
 
-        canvas {
-            position: absolute;
+        canvas#zen-canvas {
+            position: fixed;
             inset: 0;
             z-index: 1;
         }
@@ -36,174 +43,156 @@
             z-index: 10;
             text-align: center;
             pointer-events: none;
-            transition: opacity 2s ease;
+            opacity: 0.5;
+            transition: opacity 1s;
         }
 
         h1 {
-            font-weight: 200;
-            letter-spacing: 20px;
+            font-size: 0.8rem;
+            letter-spacing: 15px;
             text-transform: uppercase;
-            font-size: 1.2rem;
-            margin: 0;
-            opacity: 0.6;
+            font-weight: 300;
         }
 
-        .status {
+        .instruction {
+            margin-top: 20px;
             font-size: 0.6rem;
             letter-spacing: 5px;
-            margin-top: 20px;
-            opacity: 0.3;
-            text-transform: uppercase;
+            opacity: 0.4;
         }
 
-        .home-link {
+        .back-link {
             position: fixed;
             bottom: 40px;
-            color: var(--accent);
+            left: 50%;
+            transform: translateX(-50%);
+            color: var(--text);
             text-decoration: none;
             font-size: 0.7rem;
-            letter-spacing: 2px;
+            letter-spacing: 3px;
             opacity: 0.2;
-            transition: opacity 0.5s;
-            pointer-events: auto;
-            text-transform: uppercase;
+            z-index: 50;
+            transition: 0.3s;
         }
 
-        .home-link:hover {
+        .back-link:hover {
             opacity: 0.8;
         }
 
-        #zen-indicator {
-            position: fixed;
-            top: 40px;
-            width: 100px;
-            height: 1px;
-            background: var(--accent);
-            opacity: 0;
-            transition: opacity 1s;
+        .bloom body {
+            background: #000;
+            filter: invert(1);
         }
     </style>
 </head>
 
 <body>
     <canvas id="zen-canvas"></canvas>
+    <a href="index.html" class="back-link">← EXIT_SANCTUARY</a>
 
     <div class="ui-overlay" id="ui">
-        <h1>Zenith</h1>
-        <div class="status" id="status">Adjusting Frequency</div>
+        <h1>ZENITH</h1>
+        <div class="instruction">DO NOTHING.</div>
     </div>
-
-    <div id="zen-indicator"></div>
-
-    <a href="index.html" class="home-link">Return to Core</a>
 
     <script>
         const canvas = document.getElementById('zen-canvas');
         const ctx = canvas.getContext('2d');
         const ui = document.getElementById('ui');
-        const status = document.getElementById('status');
 
-        let w, h;
-        let particles = [];
-        let mouse = { x: -100, y: -100 };
-        let lastMove = Date.now();
-        let zenMode = false;
-
+        let width, height;
         function resize() {
-            w = canvas.width = window.innerWidth;
-            h = canvas.height = window.innerHeight;
+            width = canvas.width = window.innerWidth;
+            height = canvas.height = window.innerHeight;
         }
-        window.addEventListener('resize', resize);
+        window.onresize = resize;
         resize();
 
-        class Particle {
-            constructor() {
-                this.reset();
+        let shapes = [];
+        let lastAction = Date.now();
+        let blooming = false;
+
+        class Shape {
+            constructor(x, y) {
+                this.x = x;
+                this.y = y;
+                this.radius = 0;
+                this.points = 3 + Math.floor(Math.random() * 5);
+                this.life = 1;
             }
-            reset() {
-                this.x = Math.random() * w;
-                this.y = Math.random() * h;
-                this.size = Math.random() * 2 + 1;
-                this.speedX = Math.random() * 0.5 - 0.25;
-                this.speedY = Math.random() * 0.5 - 0.25;
-                this.opacity = Math.random() * 0.5;
-            }
+
             update() {
-                this.x += this.speedX;
-                this.y += this.speedY;
-
-                // Mouse influence
-                const dx = mouse.x - this.x;
-                const dy = mouse.y - this.y;
-                const dist = Math.sqrt(dx * dx + dy * dy);
-                if (dist < 200) {
-                    this.x -= dx * 0.01;
-                    this.y -= dy * 0.01;
-                }
-
-                if (this.x < 0 || this.x > w || this.y < 0 || this.y > h) this.reset();
+                this.radius += 2;
+                this.life -= 0.005;
             }
+
             draw() {
                 ctx.beginPath();
-                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
-                ctx.fillStyle = `rgba(26, 26, 26, ${this.opacity})`;
-                ctx.fill();
+                for (let i = 0; i <= this.points; i++) {
+                    const angle = (i / this.points) * Math.PI * 2;
+                    const sx = this.x + Math.cos(angle) * this.radius;
+                    const sy = this.y + Math.sin(angle) * this.radius;
+                    if (i === 0) ctx.moveTo(sx, sy);
+                    else ctx.lineTo(sx, sy);
+                }
+                ctx.strokeStyle = `rgba(26, 26, 26, ${this.life})`;
+                ctx.stroke();
             }
         }
 
-        for (let i = 0; i < 150; i++) particles.push(new Particle());
+        window.onmousedown = (e) => {
+            shapes.push(new Shape(e.clientX, e.clientY));
+            lastAction = Date.now();
+            if (blooming) stopBloom();
+            playResonance();
+        };
 
-        function animate() {
-            ctx.clearRect(0, 0, w, h);
+        window.onmousemove = () => {
+            lastAction = Date.now();
+            if (blooming) stopBloom();
+        };
 
-            // Draw connections
-            particles.forEach((p1, i) => {
-                p1.update();
-                p1.draw();
-                for (let j = i + 1; j < particles.length; j++) {
-                    const p2 = particles[j];
-                    const dx = p1.x - p2.x;
-                    const dy = p1.y - p2.y;
-                    const dist = Math.sqrt(dx * dx + dy * dy);
-                    if (dist < 100) {
-                        ctx.beginPath();
-                        ctx.strokeStyle = `rgba(26, 26, 26, ${0.1 * (1 - dist / 100)})`;
-                        ctx.lineWidth = 0.5;
-                        ctx.moveTo(p1.x, p1.y);
-                        ctx.lineTo(p2.x, p2.y);
-                        ctx.stroke();
-                    }
-                }
+        function startBloom() {
+            blooming = true;
+            document.documentElement.classList.add('bloom');
+            ui.style.opacity = '1';
+            ui.querySelector('h1').textContent = "BLOOMING";
+        }
+
+        function stopBloom() {
+            blooming = false;
+            document.documentElement.classList.remove('bloom');
+            ui.style.opacity = '0.5';
+            ui.querySelector('h1').textContent = "ZENITH";
+        }
+
+        function loop() {
+            ctx.clearRect(0, 0, width, height);
+
+            shapes.forEach((s, i) => {
+                s.update();
+                s.draw();
+                if (s.life <= 0) shapes.splice(i, 1);
             });
 
-            // Zen check
-            if (Date.now() - lastMove > 5000 && !zenMode) {
-                enterZen();
+            if (Date.now() - lastAction > 10000 && !blooming) {
+                startBloom();
             }
 
-            requestAnimationFrame(animate);
+            requestAnimationFrame(loop);
         }
-        animate();
+        loop();
 
-        window.addEventListener('mousemove', (e) => {
-            mouse.x = e.clientX;
-            mouse.y = e.clientY;
-            lastMove = Date.now();
-            if (zenMode) exitZen();
-        });
-
-        function enterZen() {
-            zenMode = true;
-            ui.style.opacity = '0';
-            document.body.style.backgroundColor = '#fff';
-            status.innerText = 'Sanctuary Active';
-        }
-
-        function exitZen() {
-            zenMode = false;
-            ui.style.opacity = '1';
-            document.body.style.backgroundColor = '#fdfdfd';
-            status.innerText = 'Monitoring Presence';
+        // Audio
+        const ac = new AudioContext();
+        function playResonance() {
+            const osc = ac.createOscillator();
+            const gain = ac.createGain();
+            osc.frequency.setValueAtTime(220 + Math.random() * 220, ac.currentTime);
+            gain.gain.setValueAtTime(0.05, ac.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.001, ac.currentTime + 3);
+            osc.connect(gain); gain.connect(ac.destination);
+            osc.start(); osc.stop(ac.currentTime + 3);
         }
     </script>
 </body>

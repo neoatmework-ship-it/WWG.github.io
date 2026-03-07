@@ -4,7 +4,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>void</title>
+    <title>THE VOID</title>
+    <script src="discovery.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500&display=swap" rel="stylesheet">
     <style>
         * {
             margin: 0;
@@ -12,178 +14,370 @@
             box-sizing: border-box;
         }
 
-        html,
-        body {
+        body,
+        html {
             width: 100%;
             height: 100%;
             background: #000;
             overflow: hidden;
+            font-family: 'Space Grotesk', sans-serif;
+            color: #fff;
+            cursor: crosshair;
         }
 
         canvas {
             display: block;
+            position: fixed;
+            inset: 0;
+            z-index: 1;
         }
 
-        #text {
+        .ui {
             position: fixed;
-            bottom: 40px;
-            left: 50%;
-            transform: translateX(-50%);
-            color: rgba(255, 255, 255, 0.12);
-            font-family: 'Courier New', monospace;
-            font-size: 0.85rem;
-            text-align: center;
+            z-index: 10;
             pointer-events: none;
-            letter-spacing: 2px;
-            transition: color 2s;
+            inset: 0;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            padding: 30px;
         }
 
-        #text.visible {
-            color: rgba(255, 255, 255, 0.5);
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
         }
 
-        #back {
-            position: fixed;
-            top: 20px;
-            left: 20px;
-            color: rgba(255, 255, 255, 0.1);
+        .back-link {
+            color: rgba(255, 255, 255, 0.3);
             text-decoration: none;
-            font-family: 'Courier New', monospace;
-            font-size: 0.75rem;
-            transition: color 0.4s;
-            letter-spacing: 1px;
+            font-size: 0.8rem;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            transition: 0.3s;
+            pointer-events: auto;
         }
 
-        #back:hover {
-            color: rgba(255, 255, 255, 0.6);
+        .back-link:hover {
+            color: #fff;
+            text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+        }
+
+        .depth-meter {
+            font-size: 0.7rem;
+            letter-spacing: 3px;
+            color: rgba(255, 255, 255, 0.2);
+            text-transform: uppercase;
+        }
+
+        .footer {
+            text-align: center;
+            opacity: 0.2;
+            font-size: 0.7rem;
+            letter-spacing: 4px;
+        }
+
+        .hint {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: rgba(255, 255, 255, 0.1);
+            font-size: 0.9rem;
+            letter-spacing: 5px;
+            text-transform: uppercase;
+            pointer-events: none;
+            transition: opacity 1s;
         }
     </style>
 </head>
 
 <body>
-    <canvas id="c"></canvas>
-    <a id="back" href="index.html">← back to the light</a>
-    <div id="text"></div>
+    <canvas id="canvas"></canvas>
+
+    <div class="ui">
+        <div class="header">
+            <a href="index.html" class="back-link">← Escape the Dark</a>
+            <div class="depth-meter">Tier: <span id="depth-tier">Surface</span></div>
+        </div>
+        <div class="footer">CLICK TO WARP · SCROLL TO DESCEND · ESCAPE IS OPTIONAL</div>
+    </div>
+
+    <div class="hint" id="hint">Welcome to Nothing</div>
+
     <script>
-        const canvas = document.getElementById('c');
+        const canvas = document.getElementById('canvas');
         const ctx = canvas.getContext('2d');
-        canvas.width = window.innerWidth;
-        canvas.height = window.innerHeight;
-        window.addEventListener('resize', () => { canvas.width = window.innerWidth; canvas.height = window.innerHeight; });
+        const depthTierEl = document.getElementById('depth-tier');
+        const hintEl = document.getElementById('hint');
 
-        const textEl = document.getElementById('text');
+        let width, height;
+        function resize() {
+            width = canvas.width = window.innerWidth;
+            height = canvas.height = window.innerHeight;
+        }
+        window.addEventListener('resize', resize);
+        resize();
 
+        // --- Configuration ---
         const MESSAGES = [
-            "you weren't supposed to find this.",
-            "the void has been waiting.",
-            "nothing here. nothing anywhere.",
-            "how long have you been falling?",
-            "there is no floor.",
-            "you found it. now what?",
-            "even the void gets lonely.",
-            "stop. breathe. keep falling.",
-            "this was never on the map.",
-            "you searched for nothing. nothing answered.",
-            "welcome to the place between places.",
-            "...hello?",
+            "You were not invited.",
+            "The void remembers your cursor.",
+            "Distance is a construct.",
+            "Stop fighting the fall.",
+            "Everything shatters eventually.",
+            "Why do you keep looking?",
+            "The silence is loud here.",
+            "A place between data.",
+            "Hello? Can you hear the code?",
+            "You are falling through a dream."
         ];
 
         let msgIdx = 0;
-        let stars = [];
-        let t = 0;
-
-        // Star field representing falling through void
-        for (let i = 0; i < 200; i++) {
-            stars.push({
-                x: Math.random() * canvas.width,
-                y: Math.random() * canvas.height,
-                z: Math.random() * 1000,
-                size: Math.random() * 1.5,
-                speed: 1 + Math.random() * 3,
-            });
-        }
-
-        // Floating particles slowly drifting up
         let particles = [];
-        for (let i = 0; i < 40; i++) {
-            particles.push({
-                x: Math.random() * canvas.width,
-                y: canvas.height + Math.random() * canvas.height,
-                vy: -(0.1 + Math.random() * 0.5),
-                alpha: Math.random() * 0.3,
-                size: Math.random() * 2 + 0.5,
-            });
-        }
+        let fragments = [];
+        let singularities = [];
+        let depth = 0;
+        let targetDepth = 0;
 
-        function drawScene() {
-            ctx.fillStyle = 'rgba(0,0,0,0.2)';
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
+        class Particle {
+            constructor(x, y, isStar = false) {
+                this.x = x;
+                this.y = y;
+                this.vx = (Math.random() - 0.5) * 0.5;
+                this.vy = isStar ? -(1 + Math.random() * 3) : -(0.2 + Math.random() * 0.8);
+                this.size = isStar ? Math.random() * 1.5 : Math.random() * 3 + 1;
+                this.color = isStar ? `rgba(255,255,255,${0.1 + Math.random() * 0.4})` : `rgba(160,140,255,${0.1 + Math.random() * 0.3})`;
+                this.isStar = isStar;
+                this.mass = this.size;
+            }
 
-            // Depth vignette
-            const radial = ctx.createRadialGradient(canvas.width / 2, canvas.height / 2, 0, canvas.width / 2, canvas.height / 2, canvas.width * 0.7);
-            radial.addColorStop(0, 'rgba(0,0,0,0)');
-            radial.addColorStop(1, 'rgba(0,0,0,0.7)');
-            ctx.fillStyle = radial;
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            update() {
+                // Gravity from singularities
+                singularities.forEach(s => {
+                    const dx = s.x - this.x;
+                    const dy = s.y - this.y;
+                    const dSq = dx * dx + dy * dy;
+                    const dist = Math.sqrt(dSq);
+                    if (dist < s.range) {
+                        const force = (s.strength * this.mass) / (dSq + 100);
+                        this.vx += (dx / dist) * force;
+                        this.vy += (dy / dist) * force;
+                        this.vx *= 0.98; // Friction in event horizon
+                        this.vy *= 0.98;
+                    }
+                });
 
-            // Stars falling upward (falling sensation)
-            stars.forEach(s => {
-                s.y -= s.speed * 0.5;
-                s.z -= s.speed * 2;
-                if (s.y < -10 || s.z <= 0) {
-                    s.y = canvas.height + 10;
-                    s.z = 1000;
-                    s.x = Math.random() * canvas.width;
-                }
-                const scale = 1000 / (s.z + 1);
-                const sx = (s.x - canvas.width / 2) * scale + canvas.width / 2;
-                const sy = (s.y - canvas.height / 2) * scale + canvas.height / 2;
-                const sr = s.size * scale * 0.5;
-                const alpha = Math.min(0.9, scale * 0.3);
+                this.x += this.vx;
+                this.y += this.vy;
+
+                // Infinite wrap/loop
+                if (this.y < -50) this.y = height + 50;
+                if (this.y > height + 50) this.y = -50;
+                if (this.x < -50) this.x = width + 50;
+                if (this.x > width + 50) this.x = -50;
+            }
+
+            draw() {
+                ctx.fillStyle = this.color;
                 ctx.beginPath();
-                ctx.arc(sx, sy, sr, 0, Math.PI * 2);
-                ctx.fillStyle = `rgba(255,255,255,${alpha})`;
+                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
                 ctx.fill();
-            });
+            }
+        }
 
-            // Drifting particles
-            particles.forEach(p => {
-                p.y += p.vy;
-                if (p.y < -10) {
-                    p.y = canvas.height + 10;
-                    p.x = Math.random() * canvas.width;
+        class TextFragment {
+            constructor(text, x, y) {
+                this.text = text;
+                this.x = x;
+                this.y = y;
+                this.vx = (Math.random() - 0.5) * 1;
+                this.vy = -(0.5 + Math.random() * 0.5);
+                this.alpha = 0;
+                this.targetAlpha = 0.5;
+                this.shattered = false;
+                this.pieces = [];
+                this.life = 1;
+            }
+
+            shatter() {
+                if (this.shattered) return;
+                this.shattered = true;
+                const words = this.text.split(' ');
+                words.forEach((w, i) => {
+                    this.pieces.push({
+                        text: w,
+                        x: this.x + (i * 20),
+                        y: this.y,
+                        vx: (Math.random() - 0.5) * 4,
+                        vy: (Math.random() - 0.5) * 4,
+                        rot: Math.random() * Math.PI * 2,
+                        vr: (Math.random() - 0.5) * 0.1
+                    });
+                });
+            }
+
+            update() {
+                if (this.shattered) {
+                    this.life -= 0.005;
+                    this.pieces.forEach(p => {
+                        singularities.forEach(s => {
+                            const dx = s.x - p.x;
+                            const dy = s.y - p.y;
+                            const dSq = dx * dx + dy * dy;
+                            const dist = Math.sqrt(dSq);
+                            if (dist < s.range) {
+                                const force = (s.strength * 2) / (dSq + 100);
+                                p.vx += (dx / dist) * force;
+                                p.vy += (dy / dist) * force;
+                            }
+                        });
+                        p.x += p.vx;
+                        p.y += p.vy;
+                        p.rot += p.vr;
+                        p.vx *= 0.99;
+                        p.vy *= 0.99;
+                    });
+                } else {
+                    this.alpha += (this.targetAlpha - this.alpha) * 0.05;
+                    this.y += this.vy;
+
+                    singularities.forEach(s => {
+                        const dx = s.x - this.x;
+                        const dy = s.y - this.y;
+                        const dist = Math.sqrt(dx * dx + dy * dy);
+                        if (dist < s.range * 0.5) this.shatter();
+                    });
+
+                    if (this.y < -100) this.life = 0;
                 }
+            }
+
+            draw() {
+                if (this.shattered) {
+                    ctx.font = '300 14px Space Grotesk';
+                    this.pieces.forEach(p => {
+                        ctx.save();
+                        ctx.translate(p.x, p.y);
+                        ctx.rotate(p.rot);
+                        ctx.fillStyle = `rgba(255,255,255,${this.life * 0.3})`;
+                        ctx.fillText(p.text, 0, 0);
+                        ctx.restore();
+                    });
+                } else {
+                    ctx.font = '300 18px Space Grotesk';
+                    ctx.fillStyle = `rgba(255,255,255,${this.alpha})`;
+                    ctx.textAlign = 'center';
+                    ctx.fillText(this.text, this.x, this.y);
+                }
+            }
+        }
+
+        class Singularity {
+            constructor(x, y) {
+                this.x = x;
+                this.y = y;
+                this.range = 300;
+                this.strength = 15;
+                this.life = 200;
+                this.pulse = 0;
+            }
+
+            update() {
+                this.life--;
+                this.pulse += 0.1;
+                this.range = 300 + Math.sin(this.pulse) * 50;
+            }
+
+            draw() {
+                const alpha = Math.min(1, this.life / 50);
+                const grd = ctx.createRadialGradient(this.x, this.y, 0, this.x, this.y, this.range * 0.5);
+                grd.addColorStop(0, `rgba(0,0,0,${alpha})`);
+                grd.addColorStop(0.2, `rgba(20,0,40,${alpha * 0.8})`);
+                grd.addColorStop(0.5, `rgba(100,0,255,${alpha * 0.2})`);
+                grd.addColorStop(1, 'transparent');
+
+                ctx.fillStyle = grd;
                 ctx.beginPath();
-                ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
-                ctx.fillStyle = `rgba(100,80,160,${p.alpha})`;
+                ctx.arc(this.x, this.y, this.range, 0, Math.PI * 2);
                 ctx.fill();
+
+                // Core event horizon
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, 5 + Math.sin(this.pulse) * 2, 0, Math.PI * 2);
+                ctx.fillStyle = `rgba(255,255,255,${alpha * 0.5})`;
+                ctx.fill();
+            }
+        }
+
+        // --- Initialization ---
+        for (let i = 0; i < 150; i++) particles.push(new Particle(Math.random() * width, Math.random() * height, true));
+        for (let i = 0; i < 50; i++) particles.push(new Particle(Math.random() * width, Math.random() * height, false));
+
+        function spawnMessage() {
+            fragments.push(new TextFragment(MESSAGES[msgIdx % MESSAGES.length], width / 2, height + 50));
+            msgIdx++;
+            setTimeout(spawnMessage, 6000 + Math.random() * 4000);
+        }
+        setTimeout(spawnMessage, 2000);
+
+        // --- Interaction ---
+        window.addEventListener('mousedown', e => {
+            singularities.push(new Singularity(e.clientX, e.clientY));
+
+            // Check for shatter on click
+            fragments.forEach(f => {
+                const dist = Math.sqrt((e.clientX - f.x) ** 2 + (e.clientY - f.y) ** 2);
+                if (dist < 100) f.shatter();
             });
+        });
 
-            t++;
-        }
+        window.addEventListener('wheel', e => {
+            targetDepth += e.deltaY * 0.1;
+            if (targetDepth < 0) targetDepth = 0;
 
-        // Reveal messages over time
-        let msgTimer = 0;
-        let showingMsg = false;
-        function cycleMessages() {
-            if (showingMsg) return;
-            showingMsg = true;
-            textEl.textContent = MESSAGES[msgIdx % MESSAGES.length];
-            textEl.classList.add('visible');
-            setTimeout(() => {
-                textEl.classList.remove('visible');
-                setTimeout(() => {
-                    msgIdx++;
-                    showingMsg = false;
-                }, 2000);
-            }, 4000);
-        }
+            const tier = Math.floor(targetDepth / 500);
+            const tiers = ["Surface", "Abyss", "The Deep", "Singularity Zone", "Data Horizon", "Eternal Fall"];
+            depthTierEl.textContent = tiers[Math.min(tier, tiers.length - 1)];
 
-        setInterval(cycleMessages, 7000);
-        setTimeout(cycleMessages, 1500);
+            if (tier > 0) hintEl.style.opacity = '0';
+        });
 
+        // --- Loop ---
         function loop() {
-            drawScene();
+            // Background clearing with "persistence" effect
+            ctx.fillStyle = 'rgba(0,0,0,0.15)';
+            ctx.fillRect(0, 0, width, height);
+
+            depth += (targetDepth - depth) * 0.05;
+
+            // Update & Draw Singularities
+            singularities = singularities.filter(s => s.life > 0);
+            singularities.forEach(s => {
+                s.update();
+                s.draw();
+            });
+
+            // Update & Draw Particles
+            particles.forEach(p => {
+                p.update();
+                p.draw();
+            });
+
+            // Update & Draw Fragments
+            fragments = fragments.filter(f => f.life > 0);
+            fragments.forEach(f => {
+                f.update();
+                f.draw();
+            });
+
+            // Tier shifting visual offsets (parallax by depth)
+            ctx.save();
+            ctx.translate(0, -depth % height);
+            // (Could add more vertical transition elements here)
+            ctx.restore();
+
             requestAnimationFrame(loop);
         }
         loop();

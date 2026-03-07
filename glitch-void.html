@@ -5,241 +5,216 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>FATAL_ERROR: GLITCH_VOID</title>
+    <script src="discovery.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap" rel="stylesheet">
     <style>
         :root {
-            --neon-pink: #ff00ff;
-            --neon-cyan: #00ffff;
-            --neon-yellow: #ffff00;
+            --glitch-pink: #ff00ff;
+            --glitch-cyan: #00ffff;
+            --glitch-green: #00ff41;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            cursor: crosshair;
         }
 
         body {
-            margin: 0;
-            padding: 0;
-            background-color: #000;
+            background: #000;
+            color: #fff;
+            font-family: 'Share Tech Mono', monospace;
+            height: 100vh;
             overflow: hidden;
             display: flex;
             align-items: center;
             justify-content: center;
-            height: 100vh;
-            color: #fff;
-            font-family: 'Courier New', Courier, monospace;
-            cursor: none;
         }
 
-        #glitch-canvas {
-            position: absolute;
+        canvas#glitch-canvas {
+            position: fixed;
             inset: 0;
             z-index: 1;
         }
 
-        #ui {
+        .ui-overlay {
             position: relative;
             z-index: 10;
-            background: rgba(0, 0, 0, 0.9);
-            padding: 30px;
-            border: 1px solid var(--neon-pink);
-            box-shadow:
-                0 0 20px var(--neon-pink),
-                inset 0 0 10px var(--neon-cyan);
             text-align: center;
-            max-width: 400px;
+            padding: 40px;
+            background: rgba(0, 0, 0, 0.9);
+            border: 2px solid var(--glitch-pink);
+            box-shadow: 0 0 50px rgba(255, 0, 255, 0.5);
+            max-width: 500px;
+            transition: transform 0.1s;
             pointer-events: auto;
-            transform: skew(-2deg);
         }
 
-        .error-code {
+        h1 {
             font-size: 3rem;
-            font-weight: 900;
-            margin: 0;
-            color: var(--neon-cyan);
-            text-shadow:
-                2px 2px 0 var(--neon-pink),
-                -2px -2px 0 #fff;
-            animation: text-glitch 0.2s infinite;
+            color: var(--glitch-cyan);
+            text-shadow: 3px 3px var(--glitch-pink);
+            margin-bottom: 20px;
+            animation: jitter 0.1s infinite;
         }
 
-        @keyframes text-glitch {
+        @keyframes jitter {
             0% {
                 transform: translate(0);
             }
 
-            20% {
-                transform: translate(-5px, 2px);
-            }
-
-            40% {
-                transform: translate(-2px, -2px);
-            }
-
-            60% {
-                transform: translate(5px, 2px);
-            }
-
-            80% {
+            50% {
                 transform: translate(2px, -2px);
             }
 
             100% {
-                transform: translate(0);
+                transform: translate(-2px, 2px);
             }
         }
 
-        .details {
-            margin-top: 15px;
-            font-size: 0.8rem;
+        .status-box {
+            font-size: 0.9rem;
             line-height: 1.6;
-            color: var(--neon-yellow);
-            opacity: 0.8;
-            text-transform: uppercase;
+            text-align: left;
+            border-top: 1px solid rgba(255, 255, 255, 0.2);
+            padding-top: 20px;
+            margin-top: 20px;
         }
 
-        .back-link {
+        .reboot-btn {
             display: inline-block;
-            margin-top: 25px;
+            margin-top: 30px;
+            padding: 10px 30px;
+            border: 1px solid #fff;
             color: #fff;
             text-decoration: none;
-            border: 1px solid #fff;
-            padding: 10px 20px;
-            font-weight: bold;
-            letter-spacing: 2px;
+            text-transform: uppercase;
+            letter-spacing: 5px;
             transition: 0.3s;
-            background: transparent;
         }
 
-        .back-link:hover {
+        .reboot-btn:hover {
             background: #fff;
             color: #000;
             box-shadow: 0 0 30px #fff;
-            transform: scale(1.1) rotate(-1deg);
         }
 
-        /* Custom Corrupted Cursor */
-        #cursor {
-            width: 20px;
-            height: 20px;
-            background: #fff;
+        .scanline {
             position: fixed;
+            width: 100%;
+            height: 10px;
+            background: rgba(0, 255, 65, 0.1);
+            z-index: 20;
             pointer-events: none;
-            z-index: 1000;
-            mix-blend-mode: difference;
+            animation: sweep 5s linear infinite;
         }
 
-        .popup {
-            position: absolute;
-            background: #fff;
-            color: #000;
-            padding: 5px;
-            border: 2px solid #000;
-            font-size: 10px;
-            font-weight: bold;
-            z-index: 50;
-            pointer-events: none;
+        @keyframes sweep {
+            from {
+                top: -10%;
+            }
+
+            to {
+                top: 110%;
+            }
         }
     </style>
 </head>
 
 <body>
     <canvas id="glitch-canvas"></canvas>
-    <div id="cursor"></div>
+    <div class="scanline"></div>
 
-    <div id="ui">
-        <h1 class="error-code">0xFF_VOID</h1>
-        <div class="details">
-            FATAL_RENDER_BUFFER_OVERFLOW<br>
-            ADDR: 0x000WWG_CORRUPTED<br>
-            STATUS: ENTROPY_MAXIMIZED<br>
-            --------------------------<br>
-            SYSTEM_INTEGRITY: 0.04%
+    <div class="ui-overlay" id="ui">
+        <h1>0xFF_VOID</h1>
+        <div class="status-box">
+            STATUS: [MAX_ENTROPY]<br>
+            INTEGRITY: <span id="integrity">0.04%</span><br>
+            THREAT_LVL: OMEGA<br>
+            <br>
+            <span style="color: var(--glitch-green)">> PAIN_CORRUPTION_INTO_THE_BUFFER</span>
         </div>
-        <a href="index.html" class="back-link">REBOOT_SYSTEM</a>
+        <a href="index.html" class="reboot-btn">REBOOT_SYS</a>
     </div>
 
     <script>
         const canvas = document.getElementById('glitch-canvas');
         const ctx = canvas.getContext('2d');
-        const cursor = document.getElementById('cursor');
+        const ui = document.getElementById('ui');
+        const integrity = document.getElementById('integrity');
 
-        let w, h;
+        let width, height;
         function resize() {
-            w = canvas.width = window.innerWidth;
-            h = canvas.height = window.innerHeight;
+            width = canvas.width = window.innerWidth;
+            height = canvas.height = window.innerHeight;
         }
-        window.addEventListener('resize', resize);
+        window.onresize = resize;
         resize();
 
-        const colors = ['#ff00ff', '#00ffff', '#ffff00', '#ffffff', '#ff0000', '#0000ff'];
+        let corruption = 0;
+        let brushSize = 50;
 
-        function drawGlitch() {
-            // Randomly clear parts
-            if (Math.random() > 0.8) {
-                ctx.fillStyle = 'rgba(0,0,0,0.1)';
-                ctx.fillRect(0, 0, w, h);
-            }
-
-            // Draw random blocks
-            for (let i = 0; i < 5; i++) {
-                ctx.fillStyle = colors[Math.floor(Math.random() * colors.length)];
-                const bw = Math.random() * 300;
-                const bh = Math.random() * 20;
-                ctx.fillRect(Math.random() * w, Math.random() * h, bw, bh);
-            }
-
-            // Draw "dead pixel" rows
+        // Corruption Brush
+        window.onmousemove = (e) => {
             if (Math.random() > 0.5) {
-                const rowY = Math.random() * h;
-                ctx.fillStyle = colors[Math.floor(Math.random() * colors.length)];
-                ctx.fillRect(0, rowY, w, 1);
-            }
+                const x = e.clientX;
+                const y = e.clientY;
+                ctx.fillStyle = Math.random() > 0.5 ? '#ff00ff' : '#00ffff';
+                ctx.globalAlpha = 0.5;
+                ctx.fillRect(x - brushSize / 2, y - brushSize / 2, brushSize, brushSize);
+                ctx.globalAlpha = 1;
 
-            // Screen tear (move chunk)
+                corruption += 0.01;
+                integrity.textContent = Math.max(0, (0.04 - corruption * 0.001)).toFixed(4) + '%';
+            }
+        };
+
+        function draw() {
+            // Periodic screen tear
             if (Math.random() > 0.95) {
-                const sy = Math.random() * h;
+                const sy = Math.random() * height;
                 const sh = Math.random() * 100;
-                const sx = Math.random() * 50 - 25;
-                ctx.drawImage(canvas, 0, sy, w, sh, sx, sy, w, sh);
+                const sx = Math.random() * 40 - 20;
+                ctx.drawImage(canvas, 0, sy, width, sh, sx, sy, width, sh);
             }
 
-            requestAnimationFrame(drawGlitch);
+            // RGB Split effect occasionally
+            if (Math.random() > 0.98) {
+                ctx.globalCompositeOperation = 'screen';
+                ctx.drawImage(canvas, 10, 0);
+                ctx.drawImage(canvas, -10, 0);
+                ctx.globalCompositeOperation = 'source-over';
+            }
+
+            // Random Noise
+            if (Math.random() > 0.8) {
+                for (let i = 0; i < 5; i++) {
+                    ctx.fillStyle = `rgba(${Math.random() * 255}, ${Math.random() * 255}, ${Math.random() * 255}, 0.1)`;
+                    ctx.fillRect(Math.random() * width, Math.random() * height, Math.random() * 200, 2);
+                }
+            }
+
+            // UI Jitter
+            ui.style.transform = `translate(${(Math.random() - 0.5) * 10}px, ${(Math.random() - 0.5) * 10}px) skew(${(Math.random() - 0.5) * 10}deg)`;
+
+            requestAnimationFrame(draw);
         }
-        drawGlitch();
+        draw();
 
-        // Mouse trail & Cursor
-        document.addEventListener('mousemove', (e) => {
-            cursor.style.left = e.clientX + 'px';
-            cursor.style.top = e.clientY + 'px';
-            cursor.style.transform = `scale(${Math.random() * 2 + 0.5}) rotate(${Math.random() * 360}deg)`;
-
-            if (Math.random() > 0.9) {
-                const popup = document.createElement('div');
-                popup.className = 'popup';
-                popup.style.left = e.clientX + 'px';
-                popup.style.top = e.clientY + 'px';
-                popup.innerText = 'DATA_LEAK: ' + Math.random().toString(16).slice(2, 10);
-                document.body.appendChild(popup);
-                setTimeout(() => popup.remove(), 1000);
-            }
-        });
-
-        // Click interaction
-        document.addEventListener('mousedown', () => {
-            ctx.fillStyle = '#fff';
-            ctx.fillRect(0, 0, w, h);
-            document.getElementById('ui').style.transform = `scale(1.2) rotate(${Math.random() * 10 - 5}deg)`;
-            setTimeout(() => {
-                document.getElementById('ui').style.transform = 'skew(-2deg)';
-            }, 100);
-        });
-
-        // BSOD Chance
-        setInterval(() => {
-            if (Math.random() > 0.99) {
-                ctx.fillStyle = '#0000aa';
-                ctx.fillRect(0, 0, w, h);
-                ctx.fillStyle = '#fff';
-                ctx.font = '20px monospace';
-                ctx.fillText('A problem has been detected and WWG has been shut down to prevent damage.', 50, 100);
-            }
-        }, 5000);
+        // Audio Glitch
+        const ac = new AudioContext();
+        function playError() {
+            const osc = ac.createOscillator();
+            const gain = ac.createGain();
+            osc.type = 'sawtooth';
+            osc.frequency.setValueAtTime(50 + Math.random() * 100, ac.currentTime);
+            gain.gain.setValueAtTime(0.01, ac.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.001, ac.currentTime + 0.1);
+            osc.connect(gain); gain.connect(ac.destination);
+            osc.start(); osc.stop(ac.currentTime + 0.1);
+        }
+        window.onclick = playError;
 
     </script>
 </body>

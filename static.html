@@ -4,9 +4,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Static Broadcast</title>
-    <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap" rel="stylesheet">
+    <title>103.7 BROADCAST</title>
+    <script src="discovery.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=VT323&display=swap" rel="stylesheet">
     <style>
+        :root {
+            --static: #fff;
+            --freq: 88.0;
+        }
+
         * {
             margin: 0;
             padding: 0;
@@ -14,141 +20,241 @@
         }
 
         body {
-            background: #030303;
+            background: #000;
             color: #aaa;
             font-family: 'Share Tech Mono', monospace;
             min-height: 100vh;
             overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
         }
 
-        #static {
+        canvas#static-canvas {
             position: fixed;
             inset: 0;
-            opacity: 0;
-            transition: opacity 4s;
-            mix-blend-mode: screen;
-            pointer-events: none;
-            z-index: 10;
-        }
-
-        .box {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            text-align: center;
-            z-index: 2;
-            opacity: 0;
-            animation: fadeIn 4s 3s forwards;
-        }
-
-        @keyframes fadeIn {
-            to {
-                opacity: 1
-            }
-        }
-
-        .words {
-            font-size: 1.5rem;
-            letter-spacing: 4px;
-            line-height: 2;
-            text-transform: uppercase;
-            color: #fff;
-            text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
-        }
-
-        .hint {
-            margin-top: 40px;
-            font-size: 0.8rem;
-            color: #666;
-            letter-spacing: 2px;
-        }
-
-        canvas#wave {
-            position: absolute;
-            inset: 0;
             z-index: 1;
-            opacity: 0;
-            transition: opacity 2s;
+            opacity: 0.15;
+            pointer-events: none;
+        }
+
+        .crt-overlay {
+            position: fixed;
+            inset: 0;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+            background-size: 100% 2px, 3px 100%;
+            z-index: 10;
+            pointer-events: none;
+        }
+
+        .screen-content {
+            position: relative;
+            z-index: 5;
+            text-align: center;
+            width: 100%;
+            max-width: 800px;
+            padding: 40px;
+        }
+
+        #ascii-display {
+            font-family: 'VT323', monospace;
+            font-size: 1.2rem;
+            line-height: 1;
+            white-space: pre;
+            color: #fff;
+            margin-bottom: 40px;
+            height: 300px;
+            overflow: hidden;
+            transition: filter 0.1s, opacity 0.5s;
+            filter: blur(5px) contrast(200%);
+            opacity: 0.3;
+        }
+
+        .tuner-ui {
+            background: rgba(40, 40, 40, 0.8);
+            border: 2px solid #555;
+            padding: 20px;
+            width: 300px;
+            margin: 0 auto;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+        }
+
+        #freq-display {
+            font-family: 'VT323', monospace;
+            font-size: 2rem;
+            color: #0f0;
+            text-shadow: 0 0 10px rgba(0, 255, 0, 0.5);
+            margin-bottom: 15px;
+        }
+
+        input[type=range] {
+            width: 100%;
+            appearance: none;
+            background: #222;
+            height: 4px;
+            outline: none;
+        }
+
+        input[type=range]::-webkit-slider-thumb {
+            appearance: none;
+            width: 15px;
+            height: 15px;
+            background: #0f0;
+            cursor: pointer;
+            box-shadow: 0 0 5px #0f0;
+        }
+
+        .back-link {
+            position: fixed;
+            top: 30px;
+            left: 30px;
+            color: rgba(255, 255, 255, 0.2);
+            text-decoration: none;
+            font-size: 0.7rem;
+            letter-spacing: 2px;
+            z-index: 20;
+        }
+
+        .back-link:hover {
+            color: #fff;
+        }
+
+        .signal-lock {
+            color: #f00 !important;
+            animation: blink 0.5s infinite;
+        }
+
+        @keyframes blink {
+            50% {
+                opacity: 0;
+            }
         }
     </style>
 </head>
 
 <body>
+    <canvas id="static-canvas"></canvas>
+    <div class="crt-overlay"></div>
+    <a href="index.html" class="back-link">← DISCONNECT</a>
 
-    <canvas id="static"></canvas>
-    <canvas id="wave"></canvas>
+    <div class="screen-content">
+        <div id="ascii-display">
+            <!-- Signal goes here -->
+        </div>
 
-    <div class="box">
-        <div class="words" id="msg"></div>
-        <div class="hint">THE NOISE IS THE SIGNAL</div>
-        <a href="index.html" style="display:block;margin-top:40px;color:#444;text-decoration:none;font-size:0.7rem;">←
-            leave</a>
+        <div class="tuner-ui">
+            <div id="freq-display">OFFLINE</div>
+            <input type="range" id="tuner" min="88.0" max="108.0" step="0.1" value="88.0">
+            <p style="font-size: 0.6rem; margin-top: 10px; opacity: 0.5;">FIND THE FREQUENCY OF TRUTH</p>
+        </div>
     </div>
 
     <script>
-        // Static
-        const st = document.getElementById('static');
-        const sCtx = st.getContext('2d');
-        st.width = innerWidth; st.height = innerHeight;
-        setTimeout(() => { st.style.opacity = '0.3'; }, 200);
+        const canvas = document.getElementById('static-canvas');
+        const ctx = canvas.getContext('2d');
+        const tuner = document.getElementById('tuner');
+        const freqDisplay = document.getElementById('freq-display');
+        const asciiDisplay = document.getElementById('ascii-display');
 
+        let width, height;
+        function resize() {
+            width = canvas.width = window.innerWidth;
+            height = canvas.height = window.innerHeight;
+        }
+        window.onresize = resize;
+        resize();
+
+        // White Noise
         function drawStatic() {
-            const imgData = sCtx.createImageData(st.width, st.height);
-            const data = imgData.data;
+            const idata = ctx.createImageData(width, height);
+            const data = idata.data;
             for (let i = 0; i < data.length; i += 4) {
                 const v = Math.random() * 255;
                 data[i] = v; data[i + 1] = v; data[i + 2] = v; data[i + 3] = 255;
             }
-            sCtx.putImageData(imgData, 0, 0);
+            ctx.putImageData(idata, 0, 0);
             requestAnimationFrame(drawStatic);
         }
         drawStatic();
 
-        // Wave
-        const wv = document.getElementById('wave');
-        const wCtx = wv.getContext('2d');
-        wv.width = innerWidth; wv.height = innerHeight;
-        setTimeout(() => { wv.style.opacity = '1'; }, 5000);
+        const SIGNALS = {
+            "92.4": "HELLO?\nCAN ANYONE HEAR THIS?\nTHE VOID IS EXPANDING.",
+            "98.1": "THE 1983 INCIDENT.\nIT WASN'T A FIRE.\nIT WAS A DOWNLOAD.",
+            "104.2": "SEARCH FOR 'VOID'.\nSEARCH FOR 'GHOST'.\nTHE GALLERY IS WATCHING.",
+            "108.0": "WE ARE ALL JUST BITS\nFLOATING IN THE STATIC.\nE-1983 IS ONE OF US."
+        };
 
-        let t = 0;
-        function drawWave() {
-            wCtx.fillStyle = 'rgba(3,3,3,0.1)';
-            wCtx.fillRect(0, 0, wv.width, wv.height);
+        const ASCII_ART = `
+         _________
+        |         |
+        |  SIGNAL |
+        |   LOST  |
+        |_________|
+           |   |
+           |   |
+        `;
 
-            wCtx.beginPath();
-            wCtx.strokeStyle = 'rgba(255,255,255,0.1)';
-            wCtx.lineWidth = 1;
-            const cy = wv.height / 2;
+        function updateSignal() {
+            const freq = parseFloat(tuner.value).toFixed(1);
+            freqDisplay.textContent = freq + " MHz";
 
-            for (let x = 0; x < wv.width; x += 5) {
-                const y = cy + Math.sin(x * 0.01 + t) * 100 * Math.sin(x * 0.003 - t * 0.5) * (Math.random() * 0.2 + 0.8);
-                if (x === 0) wCtx.moveTo(x, y); else wCtx.lineTo(x, y);
+            let blur = 10;
+            let opacity = 0.1;
+            let text = ASCII_ART;
+
+            // Check proximity to signals
+            for (let targetFreq in SIGNALS) {
+                const diff = Math.abs(parseFloat(targetFreq) - parseFloat(freq));
+                if (diff < 2.0) {
+                    blur = diff * 5;
+                    opacity = Math.max(0.1, 1.0 - (diff / 2));
+                    text = SIGNALS[targetFreq];
+
+                    if (diff < 0.2) {
+                        freqDisplay.classList.add('signal-lock');
+                        blur = 0;
+                    } else {
+                        freqDisplay.classList.remove('signal-lock');
+                    }
+                }
             }
-            wCtx.stroke();
-            t += 0.05;
-            requestAnimationFrame(drawWave);
-        }
-        drawWave();
 
-        const lines = [
-            "You turned the noise all the way up.",
-            "You listened to the static for 5 seconds.",
-            "Are you looking for something that isn't here?",
-            "The gallery is a closed system.",
-            "Except for the cracks.",
-            "Find the edge of the world and keep going.",
-        ];
-        let lineIdx = 0;
-        const msgEl = document.getElementById('msg');
-        setInterval(() => {
-            msgEl.style.opacity = '0';
-            setTimeout(() => {
-                msgEl.textContent = lines[lineIdx];
-                msgEl.style.opacity = '1';
-                lineIdx = (lineIdx + 1) % lines.length;
-            }, 1000);
-        }, 6000);
+            asciiDisplay.style.filter = `blur(${blur}px) contrast(200%)`;
+            asciiDisplay.style.opacity = opacity;
+            asciiDisplay.textContent = text;
+        }
+
+        tuner.oninput = updateSignal;
+        updateSignal();
+
+        // Audio Ambience
+        try {
+            const ac = new (window.AudioContext || window.webkitAudioContext)();
+            const noiseBuffer = ac.createBuffer(1, ac.sampleRate * 2, ac.sampleRate);
+            const output = noiseBuffer.getChannelData(0);
+            for (let i = 0; i < ac.sampleRate * 2; i++) output[i] = Math.random() * 2 - 1;
+
+            const noise = ac.createBufferSource();
+            noise.buffer = noiseBuffer;
+            noise.loop = true;
+
+            const filter = ac.createBiquadFilter();
+            filter.type = 'lowpass';
+
+            const gain = ac.createGain();
+            gain.gain.value = 0.05;
+
+            noise.connect(filter);
+            filter.connect(gain);
+            gain.connect(ac.destination);
+            noise.start();
+
+            tuner.addEventListener('input', () => {
+                const freqValue = parseFloat(tuner.value);
+                filter.frequency.setTargetAtTime(freqValue * 10, ac.currentTime, 0.1);
+            });
+        } catch (e) { }
     </script>
 </body>
 

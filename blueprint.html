@@ -4,391 +4,308 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>WWG Engine Schematic</title>
+    <title>WWG Architecture | Power Schematic</title>
+    <script src="discovery.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;700&family=Share+Tech+Mono&display=swap"
+        rel="stylesheet">
     <style>
         :root {
-            --blue: #001a33;
-            --blue-bright: #0088ff;
-            --white: rgba(255, 255, 255, 0.95);
-            --grid: rgba(0, 136, 255, 0.15);
+            --bg: #001221;
+            --blueprint: #005a9e;
             --accent: #00f2ff;
+            --danger: #ff0055;
         }
 
         * {
+            margin: 0;
+            padding: 0;
             box-sizing: border-box;
             user-select: none;
         }
 
         body {
-            background-color: var(--blue);
-            color: var(--white);
-            font-family: 'Inter', system-ui, -apple-system, sans-serif;
-            margin: 0;
-            padding: 0;
-            overflow: hidden;
-            display: flex;
-            flex-direction: column;
+            background: var(--bg);
+            color: #fff;
+            font-family: 'Space Grotesk', sans-serif;
             height: 100vh;
+            overflow: hidden;
         }
 
-        /* Technical Grid */
-        .grid-bg {
-            position: absolute;
+        .grid-overlay {
+            position: fixed;
             inset: 0;
             background-image:
-                linear-gradient(var(--grid) 1px, transparent 1px),
-                linear-gradient(90deg, var(--grid) 1px, transparent 1px);
-            background-size: 40px 40px;
+                linear-gradient(rgba(0, 242, 255, 0.05) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 242, 255, 0.05) 1px, transparent 1px);
+            background-size: 50px 50px;
             pointer-events: none;
-            z-index: 1;
         }
 
-        .header {
-            position: relative;
-            z-index: 10;
-            background: rgba(0, 26, 51, 0.8);
-            backdrop-filter: blur(10px);
-            border-bottom: 2px solid var(--accent);
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-end;
-            padding: 20px 40px;
-        }
-
-        .title {
-            font-size: 2.2rem;
-            font-weight: 900;
-            text-transform: uppercase;
-            letter-spacing: 4px;
-            color: var(--accent);
-            text-shadow: 0 0 15px rgba(0, 242, 255, 0.4);
-        }
-
-        .meta {
-            text-align: right;
-            font-family: 'Courier New', Courier, monospace;
-            font-size: 0.8rem;
-            opacity: 0.7;
-        }
-
-        .view-port {
-            flex-grow: 1;
-            position: relative;
-            overflow: hidden;
+        #blueprint-viewport {
+            width: 100vw;
+            height: 100vh;
             cursor: grab;
-            z-index: 5;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
-        .view-port:active {
+        #blueprint-viewport:active {
             cursor: grabbing;
         }
 
-        .pan-zoom-container {
-            position: absolute;
-            width: 3000px;
-            height: 2000px;
-            transform-origin: 0 0;
+        .schematic-container {
+            position: relative;
+            transform-origin: center;
+            transition: transform 0.1s;
         }
 
         svg {
-            width: 100%;
-            height: 100%;
-            stroke: var(--white);
-            fill: none;
-            stroke-width: 1.5;
+            width: 1200px;
+            height: 800px;
+            filter: drop-shadow(0 0 20px rgba(0, 242, 255, 0.1));
         }
 
         .node {
             cursor: pointer;
-            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            transition: 0.3s;
         }
 
-        .node:hover {
+        .node:hover circle {
+            stroke-width: 4;
             filter: drop-shadow(0 0 10px var(--accent));
-            stroke: var(--accent);
-            stroke-width: 3;
         }
 
-        .node-path {
-            stroke: var(--blue-bright);
+        .power-line {
+            stroke: var(--blueprint);
+            stroke-width: 2;
             stroke-dasharray: 10;
-            opacity: 0.3;
+            fill: none;
             transition: 0.5s;
         }
 
-        .node-path.active {
-            opacity: 1;
+        .power-line.active {
             stroke: var(--accent);
-            stroke-dashoffset: 100;
             animation: flow 2s linear infinite;
         }
 
         @keyframes flow {
             to {
-                stroke-dashoffset: 0;
+                stroke-dashoffset: -20;
             }
         }
 
-        .label {
-            font-size: 14px;
-            fill: var(--white);
-            font-family: monospace;
-            text-transform: uppercase;
-            pointer-events: none;
-        }
-
-        .node-hover-info {
+        .ui-panel {
             position: fixed;
-            background: rgba(0, 26, 51, 0.9);
-            border: 1px solid var(--accent);
-            padding: 10px;
-            font-family: monospace;
-            font-size: 0.7rem;
-            color: var(--accent);
-            pointer-events: none;
-            display: none;
+            background: rgba(0, 18, 33, 0.8);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(0, 242, 255, 0.2);
+            padding: 20px;
             z-index: 100;
-            width: 200px;
-            box-shadow: 0 0 20px rgba(0, 242, 255, 0.2);
         }
 
-        .mouse-coords {
+        .top-left {
+            top: 20px;
+            left: 20px;
+            border-left: 5px solid var(--accent);
+        }
+
+        .bottom-right {
+            bottom: 20px;
+            right: 20px;
+            width: 300px;
+        }
+
+        h1 {
+            font-size: 1.2rem;
+            letter-spacing: 5px;
+            color: var(--accent);
+            margin-bottom: 5px;
+        }
+
+        .meta {
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 0.7rem;
+            opacity: 0.6;
+        }
+
+        .gauge {
+            height: 4px;
+            background: rgba(255, 255, 255, 0.1);
+            margin: 10px 0;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .gauge-fill {
+            height: 100%;
+            background: var(--accent);
+            width: 0%;
+            transition: width 0.5s;
+            box-shadow: 0 0 10px var(--accent);
+        }
+
+        .back-link {
             position: fixed;
             bottom: 20px;
             left: 20px;
-            font-family: monospace;
-            font-size: 0.75rem;
-            color: var(--accent);
-            background: rgba(0, 26, 51, 0.6);
-            padding: 5px 10px;
-            border-left: 2px solid var(--accent);
-            z-index: 50;
-        }
-
-        .home-btn {
-            position: fixed;
-            top: 25px;
-            right: 40px;
-            color: var(--accent);
+            color: rgba(255, 255, 255, 0.3);
             text-decoration: none;
-            font-family: monospace;
-            border: 1px solid var(--accent);
-            padding: 8px 15px;
-            z-index: 100;
-            transition: 0.3s;
-            text-transform: uppercase;
-            font-weight: bold;
             font-size: 0.8rem;
-        }
-
-        .home-btn:hover {
-            background: var(--accent);
-            color: var(--blue);
-            box-shadow: 0 0 20px var(--accent);
-        }
-
-        .tech-specs {
-            position: fixed;
-            bottom: 40px;
-            right: 40px;
-            width: 280px;
-            background: rgba(0, 26, 51, 0.8);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            padding: 20px;
-            backdrop-filter: blur(5px);
-            z-index: 20;
-        }
-
-        .tech-specs h3 {
-            margin: 0 0 10px 0;
-            font-size: 0.9rem;
             letter-spacing: 2px;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
-            padding-bottom: 5px;
+            z-index: 100;
         }
 
-        .spec-item {
-            display: flex;
-            justify-content: space-between;
-            font-size: 0.7rem;
-            font-family: monospace;
-            margin-bottom: 5px;
-            opacity: 0.7;
+        .back-link:hover {
+            color: var(--accent);
         }
 
-        .core-pulse {
-            stroke: var(--accent);
-            stroke-width: 2;
-            animation: pulse 2s infinite ease-in-out;
-        }
-
-        @keyframes pulse {
-
-            0%,
-            100% {
-                r: 60;
-                opacity: 0.5;
-            }
-
-            50% {
-                r: 85;
-                opacity: 0.1;
-            }
+        .node-label {
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 14px;
+            fill: #fff;
+            pointer-events: none;
         }
     </style>
 </head>
 
 <body>
-    <div class="grid-bg"></div>
-    <a href="index.html" class="home-btn">INIT_EXIT_SEQUENCE</a>
+    <div class="grid-overlay"></div>
+    <a href="index.html" class="back-link">← EXIT_BLUEPRINT</a>
 
-    <div class="header">
-        <div class="title">WWG Engine Schematic</div>
-        <div class="meta">
-            UNIT_ID: SEC-99-ALPHA // REV_4.3<br>
-            COORDS: 44.2384 / -120.8402<br>
-            STATUS: [ENCRYPTED_STREAM_STABLE]
+    <div class="ui-panel top-left">
+        <h1>SYSTEM ARCHITECTURE</h1>
+        <div class="meta">REF_ID: WWG-99 // STATUS: [ENCRYPTED]</div>
+    </div>
+
+    <div class="ui-panel bottom-right">
+        <div class="meta">GRID_LOAD: <span id="load-val">42%</span></div>
+        <div class="gauge">
+            <div class="gauge-fill" id="load-gauge" style="width: 42%;"></div>
+        </div>
+        <div class="meta">CORE_TEMP: <span id="temp-val">34°C</span></div>
+        <div class="gauge">
+            <div class="gauge-fill" id="temp-gauge" style="width: 34%;"></div>
+        </div>
+        <div style="margin-top: 15px; font-size: 0.8rem; line-height: 1.4;">
+            <span style="color: var(--accent)">></span> Click nodes to toggle power routing.<br>
+            <span style="color: var(--accent)">></span> Drag to explore the schematic.
         </div>
     </div>
 
-    <div class="view-port" id="viewport">
-        <div class="pan-zoom-container" id="container">
-            <svg viewBox="0 0 1500 1000" id="blueprint-svg">
-                <!-- Outer Border -->
-                <rect x="50" y="50" width="1400" height="900" stroke-opacity="0.2" />
-
-                <!-- Connecting Paths -->
-                <path class="node-path" d="M300 300 L 750 500" />
-                <path class="node-path" d="M300 700 L 750 500" />
-                <path class="node-path" d="M1200 300 L 750 500" />
-                <path class="node-path" d="M1200 700 L 750 500" />
+    <div id="blueprint-viewport">
+        <div class="schematic-container" id="container">
+            <svg viewBox="0 0 1200 800">
+                <!-- Power Lines -->
+                <path id="line1" class="power-line" d="M200 200 L 600 400" />
+                <path id="line2" class="power-line" d="M200 600 L 600 400" />
+                <path id="line3" class="power-line" d="M1000 200 L 600 400" />
+                <path id="line4" class="power-line" d="M1000 600 L 600 400" />
 
                 <!-- Central Core -->
-                <g class="core-group">
-                    <circle cx="750" cy="500" r="100" stroke-width="4" stroke-dasharray="10,5" />
-                    <circle cx="750" cy="500" r="70" stroke-width="1" />
-                    <circle cx="750" cy="500" r="60" class="core-pulse" fill="var(--accent)" fill-opacity="0.1" />
-                    <text x="750" y="505" class="label" text-anchor="middle"
-                        style="font-size: 18px; fill: var(--accent);">CORE_OS</text>
+                <g class="node" onclick="toggleNode(this, 'core')">
+                    <circle cx="600" cy="400" r="80" fill="rgba(0, 242, 255, 0.05)" stroke="var(--accent)"
+                        stroke-width="2" />
+                    <circle cx="600" cy="400" r="60" fill="none" stroke="var(--accent)" stroke-width="1"
+                        stroke-dasharray="5" />
+                    <text x="600" y="405" class="node-label" text-anchor="middle">CORE_OS</text>
                 </g>
 
-                <!-- System Nodes -->
-                <g class="node"
-                    data-info="Interactive Site Processor. Handles real-time DOM manipulation across 40+ nodes.">
-                    <rect x="200" y="250" width="200" height="100" rx="5" />
-                    <text x="300" y="305" class="label" text-anchor="middle">NODE_INTERACTIVE</text>
+                <!-- Peripheral Nodes -->
+                <g class="node" onclick="toggleNode(this, 'line1')">
+                    <circle cx="200" cy="200" r="40" fill="rgba(255,255,255,0.02)" stroke="#fff" stroke-width="1" />
+                    <text x="200" y="205" class="node-label" text-anchor="middle">VOID_ENG</text>
                 </g>
 
-                <g class="node" data-info="Creative Asset Injector. Manages dynamic SVG and Canvas filters.">
-                    <rect x="200" y="650" width="200" height="100" rx="5" />
-                    <text x="300" y="705" class="label" text-anchor="middle">NODE_CREATIVE</text>
+                <g class="node" onclick="toggleNode(this, 'line2')">
+                    <circle cx="200" cy="600" r="40" fill="rgba(255,255,255,0.02)" stroke="#fff" stroke-width="1" />
+                    <text x="200" y="605" class="node-label" text-anchor="middle">GHOST_MOD</text>
                 </g>
 
-                <g class="node" data-info="Entropy Engine. Generates procedural randomness for 'Weird' experiments.">
-                    <rect x="1100" y="250" width="200" height="100" rx="5" />
-                    <text x="1200" y="305" class="label" text-anchor="middle">NODE_WEIRD</text>
+                <g class="node" onclick="toggleNode(this, 'line3')">
+                    <circle cx="1000" cy="200" r="40" fill="rgba(255,255,255,0.02)" stroke="#fff" stroke-width="1" />
+                    <text x="1000" y="205" class="node-label" text-anchor="middle">LIMIT_SYS</text>
                 </g>
 
-                <g class="node" data-info="Game Logic Coordinator. Synchronizes state and collision detection.">
-                    <rect x="1100" y="650" width="200" height="100" rx="5" />
-                    <text x="1200" y="705" class="label" text-anchor="middle">NODE_GAME</text>
+                <g class="node" onclick="toggleNode(this, 'line4')">
+                    <circle cx="1000" cy="600" r="40" fill="rgba(255,255,255,0.02)" stroke="#fff" stroke-width="1" />
+                    <text x="1000" y="605" class="node-label" text-anchor="middle">DATA_BRCH</text>
                 </g>
-
-                <!-- Data Stream Decorations -->
-                <path d="M750 100 V 400" stroke-dasharray="2,2" opacity="0.3" />
-                <path d="M750 600 V 900" stroke-dasharray="2,2" opacity="0.3" />
-                <circle cx="750" cy="100" r="5" fill="var(--white)" />
-                <circle cx="750" cy="900" r="5" fill="var(--white)" />
             </svg>
         </div>
     </div>
 
-    <div class="mouse-coords" id="coords">X: 0000 // Y: 0000</div>
-
-    <div class="node-hover-info" id="node-info"></div>
-
-    <div class="tech-specs">
-        <h3>ENGINE_Vitals</h3>
-        <div class="spec-item"><span>THROUGHPUT</span><span id="spec-throughput">1.2 GB/s</span></div>
-        <div class="spec-item"><span>LATENCY</span><span id="spec-latency">0.4 ms</span></div>
-        <div class="spec-item"><span>UPTIME</span><span id="spec-uptime">99.99%</span></div>
-        <div class="spec-item"><span>NODES_ACTIVE</span><span>20/20</span></div>
-        <div class="spec-item" style="color: var(--accent); margin-top: 10px;">
-            <span>OBSERVER</span><span>PIKAV_01</span></div>
-    </div>
-
     <script>
-        const viewport = document.getElementById('viewport');
         const container = document.getElementById('container');
-        const coords = document.getElementById('coords');
-        const nodeInfo = document.getElementById('node-info');
-        const nodes = document.querySelectorAll('.node');
-        const paths = document.querySelectorAll('.node-path');
+        const viewport = document.getElementById('blueprint-viewport');
+        const loadVal = document.getElementById('load-val');
+        const loadGauge = document.getElementById('load-gauge');
+        const tempVal = document.getElementById('temp-val');
+        const tempGauge = document.getElementById('temp-gauge');
 
-        let zoom = 0.5;
-        let panX = 100;
-        let panY = 100;
+        let zoom = 1;
+        let panX = 0;
+        let panY = 0;
         let isDragging = false;
         let startX, startY;
 
-        // Init position
-        updateTransform();
+        // Pan & Zoom
+        viewport.onmousedown = (e) => {
+            isDragging = true;
+            startX = e.clientX - panX;
+            startY = e.clientY - panY;
+        };
+        window.onmousemove = (e) => {
+            if (!isDragging) return;
+            panX = e.clientX - startX;
+            panY = e.clientY - startY;
+            updateTransform();
+        };
+        window.onmouseup = () => isDragging = false;
+        window.onwheel = (e) => {
+            zoom -= e.deltaY * 0.001;
+            zoom = Math.min(Math.max(0.5, zoom), 2);
+            updateTransform();
+        };
 
         function updateTransform() {
             container.style.transform = `translate(${panX}px, ${panY}px) scale(${zoom})`;
         }
 
-        viewport.addEventListener('mousedown', e => {
-            isDragging = true;
-            startX = e.clientX - panX;
-            startY = e.clientY - panY;
-        });
-
-        window.addEventListener('mousemove', e => {
-            if (isDragging) {
-                panX = e.clientX - startX;
-                panY = e.clientY - startY;
-                updateTransform();
+        function toggleNode(el, lineId) {
+            const line = document.getElementById(lineId);
+            if (line) {
+                line.classList.toggle('active');
+                updateStats();
             }
+            el.querySelector('circle').style.stroke = line && line.classList.contains('active') ? 'var(--accent)' : '#fff';
+            playTone();
+        }
 
-            // Stats update
-            coords.innerText = `X: ${Math.round(e.clientX).toString().padStart(4, '0')} // Y: ${Math.round(e.clientY).toString().padStart(4, '0')}`;
+        function updateStats() {
+            const activeCount = document.querySelectorAll('.power-line.active').length;
+            const load = 20 + (activeCount * 20);
+            loadVal.textContent = load + '%';
+            loadGauge.style.width = load + '%';
 
-            // Info box position
-            if (nodeInfo.style.display === 'block') {
-                nodeInfo.style.left = (e.clientX + 20) + 'px';
-                nodeInfo.style.top = (e.clientY + 20) + 'px';
-            }
-        });
+            const temp = 30 + (activeCount * 5);
+            tempVal.textContent = temp + '°C';
+            tempGauge.style.width = temp + '%';
+        }
 
-        window.addEventListener('mouseup', () => isDragging = false);
-
-        viewport.addEventListener('wheel', e => {
-            e.preventDefault();
-            const delta = e.deltaY > 0 ? 0.9 : 1.1;
-            zoom = Math.min(Math.max(zoom * delta, 0.2), 3);
-            updateTransform();
-        });
-
-        // Node Interactivity
-        nodes.forEach((node, index) => {
-            node.addEventListener('mouseenter', () => {
-                nodeInfo.style.display = 'block';
-                nodeInfo.innerHTML = `<strong>${node.querySelector('text').textContent}</strong><br><br>${node.dataset.info}`;
-                paths[index].classList.add('active');
-            });
-            node.addEventListener('mouseleave', () => {
-                nodeInfo.style.display = 'none';
-                paths[index].classList.remove('active');
-            });
-        });
-
-        // Randomize stats
-        setInterval(() => {
-            document.getElementById('spec-throughput').innerText = (1.1 + Math.random() * 0.5).toFixed(2) + ' GB/s';
-            document.getElementById('spec-latency').innerText = (0.3 + Math.random() * 0.2).toFixed(2) + ' ms';
-        }, 1500);
-
+        function playTone() {
+            try {
+                const ac = new AudioContext();
+                const osc = ac.createOscillator();
+                const gain = ac.createGain();
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(800, ac.currentTime);
+                gain.gain.setValueAtTime(0.05, ac.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.001, ac.currentTime + 0.1);
+                osc.connect(gain); gain.connect(ac.destination);
+                osc.start(); osc.stop(ac.currentTime + 0.1);
+            } catch (e) { }
+        }
     </script>
 </body>
 

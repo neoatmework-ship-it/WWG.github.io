@@ -4,9 +4,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>The Deep</title>
-    <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap" rel="stylesheet">
+    <title>THE DEEP</title>
+    <script src="discovery.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=VT323&display=swap" rel="stylesheet">
     <style>
+        :root {
+            --depth: 0;
+            --pressure: 0;
+            --bg-top: #102a43;
+            --bg-bottom: #010203;
+        }
+
         * {
             margin: 0;
             padding: 0;
@@ -14,112 +22,231 @@
         }
 
         body {
-            background: #010203;
+            background: #000;
             color: #4a8270;
             font-family: 'Share Tech Mono', monospace;
             min-height: 100vh;
             overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
         }
 
-        canvas#abyss {
-            display: block;
+        #abyss-canvas {
             position: fixed;
             inset: 0;
             z-index: 1;
+            pointer-events: none;
         }
 
-        .over {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            text-align: center;
-            z-index: 2;
-            text-shadow: 0 0 10px rgba(74, 130, 112, 0.8);
-        }
-
-        .words {
-            font-size: 3rem;
-            letter-spacing: 10px;
-            text-transform: uppercase;
-            margin-bottom: 20px;
-            animation: float 4s ease infinite;
-        }
-
-        @keyframes float {
-
-            0%,
-            100% {
-                transform: translateY(0)
-            }
-
-            50% {
-                transform: translateY(-10px)
-            }
-        }
-
-        .hint {
-            font-size: 1rem;
-            opacity: 0.6;
-        }
-
-        .back {
-            position: fixed;
-            top: 20px;
-            left: 20px;
+        .viewport {
+            position: relative;
             z-index: 10;
-            color: #4a8270;
+            text-align: center;
+            transition: transform 0.1s, filter 0.2s;
+            transform: scale(calc(1 - var(--pressure) * 0.05)) skewX(calc(var(--pressure) * 2deg));
+            filter: blur(calc(var(--pressure) * 1px));
+        }
+
+        h1 {
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 5rem;
+            letter-spacing: 20px;
+            text-transform: uppercase;
+            color: #fff;
+            text-shadow: 0 0 20px rgba(255, 255, 255, 0.2);
+            margin-bottom: 20px;
+        }
+
+        .hud {
+            position: fixed;
+            top: 40px;
+            right: 40px;
+            z-index: 50;
+            font-family: 'VT323', monospace;
+            text-align: right;
+            border-right: 4px solid #4a8270;
+            padding-right: 20px;
+        }
+
+        .hud-val {
+            font-size: 2.5rem;
+            color: #fff;
+        }
+
+        .hud-label {
+            font-size: 0.8rem;
+            letter-spacing: 2px;
+            opacity: 0.5;
+        }
+
+        .back-link {
+            position: fixed;
+            top: 40px;
+            left: 40px;
+            z-index: 50;
+            color: rgba(74, 130, 112, 0.3);
             text-decoration: none;
-            opacity: 0.3;
+            font-size: 0.8rem;
+            letter-spacing: 2px;
             transition: 0.3s;
         }
 
-        .back:hover {
-            opacity: 1;
+        .back-link:hover {
+            color: #fff;
+        }
+
+        .pressure-warning {
+            position: fixed;
+            bottom: 40px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: #ff4444;
+            font-size: 0.7rem;
+            letter-spacing: 5px;
+            display: none;
+            animation: blink 0.5s infinite;
+        }
+
+        @keyframes blink {
+            50% {
+                opacity: 0;
+            }
+        }
+
+        .grain {
+            position: fixed;
+            inset: 0;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.05'/%3E%3C/svg%3E");
+            z-index: 100;
+            pointer-events: none;
+            opacity: 0.2;
         }
     </style>
 </head>
 
 <body>
-
-    <a class="back" href="index.html">ascend</a>
-    <canvas id="abyss"></canvas>
-
-    <div class="over">
-        <div class="words">T H E D E E P</div>
-        <div class="hint">You pressed 'S' and scrolled too far down.</div>
+    <div class="grain"></div>
+    <div class="hud">
+        <div class="hud-label">DEPTH</div>
+        <div class="hud-val" id="depth-display">0 M</div>
+        <div class="hud-label" style="margin-top: 10px;">PRESSURE</div>
+        <div class="hud-val" id="pressure-display">1.0 ATM</div>
     </div>
 
-    <script>
-        const cvs = document.getElementById('abyss');
-        const ctx = cvs.getContext('2d');
-        cvs.width = innerWidth; cvs.height = innerHeight;
+    <a href="index.html" class="back-link">← ASCEND</a>
 
-        const particles = Array.from({ length: 300 }, () => ({
-            x: Math.random() * cvs.width, y: Math.random() * cvs.height,
-            s: Math.random() * 2 + 0.5, a: Math.random() * 360
+    <div class="viewport" id="vp">
+        <p style="opacity: 0.4; letter-spacing: 5px; margin-bottom: 20px;">ZONE: ABYSSAL</p>
+        <h1>DEEP</h1>
+        <p id="msg" style="max-width: 400px; margin: 0 auto; line-height: 1.8; opacity: 0.6;">Scroll to descend into the
+            crushing silence.</p>
+    </div>
+
+    <div class="pressure-warning" id="warning">⚠ PRESSURE CRITICAL ⚠</div>
+
+    <canvas id="abyss-canvas"></canvas>
+
+    <script>
+        const canvas = document.getElementById('abyss-canvas');
+        const ctx = canvas.getContext('2d');
+        const vp = document.getElementById('vp');
+        const depthDisplay = document.getElementById('depth-display');
+        const pressureDisplay = document.getElementById('pressure-display');
+        const warning = document.getElementById('warning');
+        const msg = document.getElementById('msg');
+
+        let width, height;
+        function resize() {
+            width = canvas.width = window.innerWidth;
+            height = canvas.height = window.innerHeight;
+        }
+        window.onresize = resize;
+        resize();
+
+        let depth = 0;
+        let targetDepth = 0;
+        let pressure = 0;
+
+        // Particles (Marine Snow)
+        const snow = Array.from({ length: 400 }, () => ({
+            x: Math.random() * width,
+            y: Math.random() * height,
+            s: Math.random() * 2 + 1,
+            v: Math.random() * 0.5 + 0.1
         }));
 
-        function draw() {
-            ctx.fillStyle = 'rgba(1,2,3,0.1)';
-            ctx.fillRect(0, 0, cvs.width, cvs.height);
+        function drawAbyss() {
+            // Smoothly move towards target depth
+            depth += (targetDepth - depth) * 0.1;
+            pressure = Math.max(0, (depth / 10000));
 
-            ctx.fillStyle = 'rgba(74,130,112,0.6)';
-            particles.forEach(p => {
+            // Update UI
+            depthDisplay.textContent = Math.floor(depth).toLocaleString() + " M";
+            pressureDisplay.textContent = (1.0 + (depth / 10)).toFixed(1) + " ATM";
+
+            document.documentElement.style.setProperty('--pressure', pressure);
+
+            if (pressure > 0.8) warning.style.display = 'block';
+            else warning.style.display = 'none';
+
+            // Background color shift
+            const bgAlpha = Math.min(1, depth / 2000);
+            ctx.fillStyle = `rgb(${16 - bgAlpha * 15}, ${42 - bgAlpha * 40}, ${67 - bgAlpha * 65})`;
+            ctx.fillRect(0, 0, width, height);
+
+            // Draw Snow
+            ctx.fillStyle = 'rgba(74, 130, 112, 0.5)';
+            snow.forEach(p => {
                 ctx.beginPath();
                 ctx.arc(p.x, p.y, p.s, 0, Math.PI * 2);
                 ctx.fill();
 
-                p.y -= p.s * 0.5;
-                if (p.y < 0) {
-                    p.y = cvs.height;
-                    p.x = Math.random() * cvs.width;
-                }
+                // Move based on descent speed
+                p.y -= (targetDepth - depth) * 0.05 + p.v;
+                if (p.y < 0) p.y = height;
+                if (p.y > height) p.y = 0;
             });
 
-            requestAnimationFrame(draw);
+            // Random bioluminescence
+            if (depth > 5000 && Math.random() < 0.01) {
+                ctx.fillStyle = 'rgba(0, 255, 200, 0.1)';
+                ctx.beginPath();
+                ctx.arc(Math.random() * width, Math.random() * height, 100, 0, Math.PI * 2);
+                ctx.fill();
+            }
+
+            // Message update
+            if (depth > 1000) msg.textContent = "The light of the surface is gone.";
+            if (depth > 5000) msg.textContent = "You are where nothing should survive.";
+            if (depth > 9000) msg.textContent = "Welcome to the Challenger Deep.";
+
+            requestAnimationFrame(drawAbyss);
         }
-        draw();
+
+        window.addEventListener('wheel', e => {
+            targetDepth += e.deltaY;
+            if (targetDepth < 0) targetDepth = 0;
+        });
+
+        drawAbyss();
+
+        // Ambient Hum
+        try {
+            const ac = new AudioContext();
+            const osc = ac.createOscillator();
+            const gain = ac.createGain();
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(40, ac.currentTime);
+            gain.gain.setValueAtTime(0.1, ac.currentTime);
+            osc.connect(gain); gain.connect(ac.destination);
+            osc.start();
+
+            window.addEventListener('wheel', () => {
+                osc.frequency.setTargetAtTime(40 + Math.min(100, targetDepth / 100), ac.currentTime, 0.5);
+            });
+        } catch (e) { }
     </script>
 </body>
 

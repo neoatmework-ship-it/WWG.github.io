@@ -4,281 +4,214 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Braille Translator | WWG</title>
+    <title>BRAILLE LABS</title>
+    <script src="discovery.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;700&display=swap" rel="stylesheet">
     <style>
         :root {
-            --bg: #fdf6e3;
-            --text-color: #586e75;
-            --accent: #268bd2;
-            --paper: #eee8d5;
-            --dot-active: #268bd2;
-            --dot-inactive: #ddd;
+            --bg: #073642;
+            --clay: #586e75;
+            --dot: #93a1a1;
+            --active: #268bd2;
+            --glitch: #d33682;
         }
 
-        body,
-        html {
+        * {
             margin: 0;
             padding: 0;
-            width: 100%;
-            height: 100%;
-            background-color: var(--bg);
-            color: var(--text-color);
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
+            box-sizing: border-box;
         }
 
-        .container {
+        body {
+            background: var(--bg);
+            color: #93a1a1;
+            font-family: 'Share Tech Mono', monospace;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow-x: hidden;
+        }
+
+        .screen {
             max-width: 800px;
             width: 90%;
-            margin-top: 50px;
-            background: white;
-            padding: 40px;
-            border-radius: 20px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+            padding: 60px;
+            background: #002b36;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.5);
+            border-radius: 4px;
         }
 
         h1 {
+            font-size: 1.5rem;
+            letter-spacing: 10px;
             text-align: center;
-            margin-bottom: 30px;
-            font-size: 2.5rem;
-            color: var(--accent);
-        }
-
-        .input-group {
-            margin-bottom: 30px;
+            margin-bottom: 40px;
+            color: var(--active);
         }
 
         textarea {
             width: 100%;
-            height: 120px;
-            border: 2px solid var(--paper);
-            border-radius: 10px;
-            padding: 15px;
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid var(--clay);
+            color: #eee;
+            padding: 20px;
+            font-family: inherit;
             font-size: 1.2rem;
-            color: var(--text-color);
             resize: none;
             outline: none;
-            transition: border-color 0.2s;
+            margin-bottom: 40px;
+            border-radius: 4px;
         }
 
-        textarea:focus {
-            border-color: var(--accent);
-        }
-
-        .output-group {
-            background: var(--paper);
-            padding: 20px;
-            border-radius: 10px;
-            min-height: 120px;
-            font-size: 2rem;
-            word-wrap: break-word;
-            margin-bottom: 20px;
-            letter-spacing: 5px;
-            position: relative;
-        }
-
-        .copy-btn {
-            position: absolute;
-            top: 10px;
-            right: 10px;
-            background: var(--accent);
-            color: white;
-            border: none;
-            padding: 5px 15px;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 0.8rem;
-            transition: background 0.2s;
-        }
-
-        .copy-btn:hover {
-            background: #1e6ea7;
-        }
-
-        .visual-grid {
+        .braille-strip {
             display: flex;
             flex-wrap: wrap;
-            gap: 20px;
+            gap: 15px;
             justify-content: center;
+            min-height: 100px;
         }
 
-        .braille-char {
-            display: inline-grid;
+        .braille-cell {
+            display: grid;
             grid-template-columns: repeat(2, 12px);
             grid-template-rows: repeat(3, 12px);
-            gap: 6px;
-            padding: 10px;
-            background: white;
+            gap: 8px;
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.02);
             border-radius: 8px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
-            border: 1px solid #eee;
+            position: relative;
+            transition: transform 0.2s, background 0.2s;
+        }
+
+        .braille-cell:hover {
+            background: rgba(255, 255, 255, 0.05);
+            transform: scale(1.1);
         }
 
         .dot {
             width: 12px;
             height: 12px;
+            background: rgba(255, 255, 255, 0.05);
             border-radius: 50%;
-            background: var(--dot-inactive);
-            transition: background 0.2s, transform 0.2s;
+            box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.5);
         }
 
         .dot.active {
-            background: var(--dot-active);
-            box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.2), 0 1px 2px rgba(0, 0, 0, 0.1);
-            transform: scale(1.1);
+            background: var(--active);
+            box-shadow: 0 0 10px var(--active), inset 0 -2px 4px rgba(0, 0, 0, 0.3);
         }
 
         .back-link {
-            position: absolute;
-            top: 20px;
-            left: 20px;
-            color: var(--text-color);
+            position: fixed;
+            top: 40px;
+            left: 40px;
+            color: var(--clay);
             text-decoration: none;
-            font-weight: bold;
-            opacity: 0.7;
+            font-size: 0.8rem;
+            letter-spacing: 2px;
         }
 
         .back-link:hover {
-            opacity: 1;
+            color: var(--active);
         }
 
-        .char-label {
-            grid-column: span 2;
+        .lore-glitch {
+            color: var(--glitch) !important;
+            animation: glitch 0.5s infinite;
+        }
+
+        @keyframes glitch {
+            50% {
+                opacity: 0.5;
+                transform: translateX(2px);
+            }
+        }
+
+        #lore-box {
+            margin-top: 40px;
             text-align: center;
-            font-size: 0.7rem;
-            color: #999;
-            margin-top: 5px;
+            font-size: 0.8rem;
+            opacity: 0.5;
+            letter-spacing: 3px;
         }
     </style>
 </head>
 
 <body>
-    <a href="index.html" class="back-link">← Back to Gallery</a>
+    <a href="index.html" class="back-link">← TERMINAL EXIT</a>
 
-    <div class="container">
-        <h1>Braille Translator</h1>
+    <div class="screen">
+        <h1>TACTILE ENCRYPTOR</h1>
 
-        <div class="input-group">
-            <textarea id="input" placeholder="Type here to translate to Braille..."></textarea>
+        <textarea id="input" placeholder="INPUT LINGUA FRANCA..." spellcheck="false"></textarea>
+
+        <div class="braille-strip" id="braille-strip">
+            <!-- Cells generated here -->
         </div>
 
-        <div class="output-group" id="output-text">
-            <button class="copy-btn" id="copy">Copy</button>
-            <span id="braille-output"></span>
-        </div>
-
-        <div class="visual-grid" id="visual-output"></div>
+        <div id="lore-box">THE VOID ACCEPTS ALL INPUTS.</div>
     </div>
 
     <script>
         const brailleMap = {
             'a': '1', 'b': '12', 'c': '14', 'd': '145', 'e': '15', 'f': '124', 'g': '1245', 'h': '125', 'i': '24', 'j': '245',
             'k': '13', 'l': '123', 'm': '134', 'n': '1345', 'o': '135', 'p': '1234', 'q': '12345', 'r': '1235', 's': '234', 't': '2345',
-            'u': '136', 'v': '1236', 'w': '2456', 'x': '1346', 'y': '13456', 'z': '1356',
-            '1': '1', '2': '12', '3': '14', '4': '145', '5': '15', '6': '124', '7': '1245', '8': '125', '9': '24', '0': '245',
-            ' ': '0', '.': '256', ',': '2', ';': '23', ':': '25', '!': '235', '?': '236', '"': '356', '(': '2356', ')': '2356', '-': '36'
+            'u': '136', 'v': '1236', 'w': '2456', 'x': '1346', 'y': '13456', 'z': '1356', ' ': '0'
         };
-
-        const unicodeBase = 0x2800;
-
-        function getBrailleUnicode(dots) {
-            if (dots === '0') return String.fromCharCode(unicodeBase);
-            let val = 0;
-            for (let dot of dots) {
-                val += Math.pow(2, parseInt(dot) - 1);
-            }
-            return String.fromCharCode(unicodeBase + val);
-        }
 
         const input = document.getElementById('input');
-        const brailleOutput = document.getElementById('braille-output');
-        const visualOutput = document.getElementById('visual-output');
-        const copyBtn = document.getElementById('copy');
+        const strip = document.getElementById('braille-strip');
+        const loreBox = document.getElementById('lore-box');
 
-        function update() {
-            const text = input.value.toLowerCase();
-            let unicodeResult = '';
-            visualOutput.innerHTML = '';
+        input.oninput = () => {
+            const val = input.value.toLowerCase();
+            strip.innerHTML = '';
 
-            for (let char of text) {
+            for (let char of val) {
                 const dots = brailleMap[char] || '0';
-                unicodeResult += getBrailleUnicode(dots);
-
-                // Build visual dot grid
-                if (char !== ' ') {
-                    const charDiv = document.createElement('div');
-                    charDiv.className = 'braille-char';
-
-                    for (let i = 1; i <= 6; i++) {
-                        const dot = document.createElement('div');
-                        dot.className = 'dot' + (dots.includes(i.toString()) ? ' active' : '');
-                        charDiv.appendChild(dot);
-                    }
-
-                    const label = document.createElement('div');
-                    label.className = 'char-label';
-                    label.textContent = char;
-                    charDiv.appendChild(label);
-
-                    visualOutput.appendChild(charDiv);
-                }
+                createCell(dots);
             }
 
-            brailleOutput.textContent = unicodeResult;
-        }
+            // Lore Check
+            if (val.includes('classified')) revealLore("SECTOR 7 HAS BEEN COMPROMISED SINCE '83.");
+            else if (val.includes('ghost')) revealLore("SOME BITS NEVER TRULY DIE.");
+            else loreBox.textContent = "THE VOID ACCEPTS ALL INPUTS.";
 
-        input.addEventListener('input', update);
-
-        copyBtn.onclick = () => {
-            navigator.clipboard.writeText(brailleOutput.textContent);
-            copyBtn.textContent = 'Copied!';
-            setTimeout(() => copyBtn.textContent = 'Copy', 2000);
+            playClick();
         };
 
-        // Initial update
-        input.value = "Hello World";
-        update();
-    </script>
+        function createCell(dots) {
+            const cell = document.createElement('div');
+            cell.className = 'braille-cell';
+            for (let i = 1; i <= 6; i++) {
+                const dot = document.createElement('div');
+                dot.className = 'dot' + (dots.includes(i.toString()) ? ' active' : '');
+                cell.appendChild(dot);
+            }
+            strip.appendChild(cell);
+        }
 
-<!-- WWG_NAV_START -->
-<style>
-.wwg-nav {
-    position: fixed;
-    bottom: 20px;
-    right: 20px;
-    display: flex;
-    gap: 10px;
-    z-index: 99999;
-}
-.wwg-nav a {
-    background: rgba(10, 10, 15, 0.7);
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    color: #a78bfa;
-    padding: 8px 16px;
-    border-radius: 20px;
-    font-family: 'Space Grotesk', sans-serif;
-    font-size: 0.8rem;
-    font-weight: 600;
-    text-decoration: none;
-    transition: all 0.3s ease;
-}
-.wwg-nav a:hover {
-    background: rgba(167, 139, 250, 0.2);
-    border-color: rgba(167, 139, 250, 0.4);
-    color: #fff;
-    transform: translateY(-2px);
-    box-shadow: 0 4px 15px rgba(167, 139, 250, 0.3);
-}
-</style>
-<div class="wwg-nav">
-    <a href="sine-wave-ocean.html">← Prev</a>
-    <a href="lissajous-drawer.html">Next →</a>
-</div>
-<!-- WWG_NAV_END -->
+        function revealLore(m) {
+            loreBox.textContent = m;
+            loreBox.classList.add('lore-glitch');
+            setTimeout(() => loreBox.classList.remove('lore-glitch'), 3000);
+        }
+
+        // Web Audio
+        const ac = new (window.AudioContext || window.webkitAudioContext)();
+        function playClick() {
+            const osc = ac.createOscillator();
+            const gain = ac.createGain();
+            osc.frequency.setValueAtTime(1000 + Math.random() * 500, ac.currentTime);
+            gain.gain.setValueAtTime(0.05, ac.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.001, ac.currentTime + 0.05);
+            osc.connect(gain); gain.connect(ac.destination);
+            osc.start(); osc.stop(ac.currentTime + 0.05);
+        }
+
+    </script>
 </body>
 
 </html>

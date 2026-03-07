@@ -4,20 +4,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>WWG — Secret Walkthrough</title>
+    <title>WWG Discovery Guide | The 20 Fragments</title>
     <link
-        href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=Inter:wght@400;500&display=swap"
+        href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;700&family=Inter:wght@400;600&display=swap"
         rel="stylesheet">
     <style>
         :root {
-            --bg: #050508;
-            --card-bg: #0e0e14;
+            --bg: #050510;
             --accent: #a78bfa;
-            --accent-glow: rgba(167, 139, 250, 0.25);
-            --text: #ededf0;
-            --text-sub: #8888a0;
-            --border: rgba(255, 255, 255, 0.06);
-            --gold: #d4af37;
+            --zinc: #18181b;
+            --glass: rgba(255, 255, 255, 0.03);
+            --border: rgba(255, 255, 255, 0.1);
         }
 
         * {
@@ -27,382 +24,191 @@
         }
 
         body {
-            font-family: 'Inter', sans-serif;
             background: var(--bg);
-            color: var(--text);
+            color: #fff;
+            font-family: 'Inter', sans-serif;
             min-height: 100vh;
+            padding: 80px 40px;
             display: flex;
             flex-direction: column;
             align-items: center;
-            padding: 60px 20px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 80px;
+            max-width: 800px;
         }
 
         h1 {
             font-family: 'Space Grotesk', sans-serif;
-            font-size: 2.5rem;
-            margin-bottom: 10px;
+            font-size: 3rem;
+            letter-spacing: -2px;
+            margin-bottom: 20px;
             color: var(--accent);
-            text-shadow: 0 0 20px var(--accent-glow);
-            text-align: center;
         }
 
-        p.subtitle {
-            text-align: center;
-            color: var(--text-sub);
-            margin-bottom: 40px;
-            max-width: 600px;
+        .desc {
+            color: #a1a1aa;
             line-height: 1.6;
+            font-size: 1.1rem;
         }
 
-        .container {
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 30px;
             width: 100%;
-            max-width: 800px;
-            display: flex;
-            flex-direction: column;
-            gap: 24px;
+            max-width: 1400px;
         }
 
-        .category {
-            font-family: 'Space Grotesk', sans-serif;
-            font-size: 1.5rem;
-            color: #fff;
-            margin-top: 30px;
-            margin-bottom: 10px;
-            border-bottom: 1px solid var(--border);
-            padding-bottom: 10px;
-        }
-
-        .secret-card {
-            background: var(--card-bg);
+        .card {
+            background: var(--glass);
             border: 1px solid var(--border);
-            border-radius: 12px;
-            padding: 24px;
-            transition: 0.3s;
+            border-radius: 20px;
+            padding: 30px;
+            transition: 0.4s;
+            position: relative;
+            opacity: 0.6;
         }
 
-        .secret-card:hover {
-            border-color: rgba(167, 139, 250, 0.4);
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+        .card.found {
+            opacity: 1;
+            border-color: var(--accent);
+            background: rgba(167, 139, 250, 0.05);
         }
 
-        .sc-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 12px;
+        .tag {
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: #444;
+            margin-bottom: 10px;
         }
 
-        .sc-title {
-            font-family: 'Space Grotesk', sans-serif;
-            font-size: 1.2rem;
-            font-weight: 700;
+        .found .tag {
             color: var(--accent);
         }
 
-        .sc-icon {
+        .name {
+            font-family: 'Space Grotesk', sans-serif;
             font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 15px;
+            color: #444;
         }
 
-        .sc-trigger {
-            background: rgba(167, 139, 250, 0.08);
-            border-left: 3px solid var(--accent);
-            padding: 12px 16px;
-            border-radius: 0 8px 8px 0;
-            font-size: 0.9rem;
-            color: #e2e8f0;
-            margin-bottom: 16px;
-            line-height: 1.5;
-        }
-
-        .sc-trigger strong {
+        .found .name {
             color: #fff;
         }
 
-        .sc-desc {
+        .hint {
+            background: rgba(255, 255, 255, 0.02);
+            padding: 15px;
+            border-radius: 12px;
             font-size: 0.85rem;
-            color: var(--text-sub);
-            line-height: 1.6;
+            line-height: 1.5;
+            color: #666;
+        }
+
+        .found .hint {
+            color: #aaa;
+            background: rgba(0, 0, 0, 0.2);
+        }
+
+        .status {
+            margin-top: 20px;
+            font-size: 0.7rem;
+            font-weight: bold;
+            letter-spacing: 1px;
+        }
+
+        .status.unfound {
+            color: #444;
+        }
+
+        .status.found-text {
+            color: var(--accent);
         }
 
         .back-link {
-            display: inline-block;
-            margin-bottom: 40px;
-            color: var(--text-sub);
+            position: fixed;
+            top: 40px;
+            left: 40px;
+            color: #666;
             text-decoration: none;
-            font-size: 0.9rem;
-            transition: 0.2s;
-            border: 1px solid var(--border);
-            padding: 8px 16px;
-            border-radius: 20px;
+            font-size: 0.8rem;
+            letter-spacing: 2px;
         }
 
         .back-link:hover {
             color: #fff;
-            background: rgba(255, 255, 255, 0.05);
         }
     </style>
 </head>
 
 <body>
+    <a href="index.html" class="back-link">← RETURN</a>
 
-    <a href="index.html" class="back-link">← Back to Gallery</a>
-
-    <h1>Gallery Secrets Guide</h1>
-    <p class="subtitle">There are currently <strong>20 hidden web pages</strong> completely disconnected from the main
-        gallery grid. Here is exactly how to find every single one of them.</p>
-
-    <div class="container">
-
-        <div class="category">🔍 Search Shortcuts</div>
-        <p style="color:var(--text-sub);font-size:0.85rem;margin-bottom:10px;">The search bar on the main page acts
-            as a command line. Type these keywords to warp directly to hidden pages.</p>
-
-        <div class="secret-card">
-            <div class="sc-header">
-                <div class="sc-title">1. The Void</div>
-                <div class="sc-icon">🌑</div>
-            </div>
-            <div class="sc-trigger"><strong>Search Keyword:</strong> <code style="color:var(--accent)">void</code>
-            </div>
-            <div class="sc-desc"><strong>What it is:</strong> The original minimalist void. Particles, darkness, and
-                silence.</div>
-        </div>
-
-        <div class="secret-card">
-            <div class="sc-header">
-                <div class="sc-title">2. Ghost Mode</div>
-                <div class="sc-icon">👻</div>
-            </div>
-            <div class="sc-trigger"><strong>Search Keyword:</strong> <code style="color:var(--accent)">ghost</code>
-            </div>
-            <div class="sc-desc"><strong>What it is:</strong> A translucent version of the gallery where everything
-                fades in and out of existence.</div>
-        </div>
-
-        <div class="secret-card">
-            <div class="sc-header">
-                <div class="sc-title">3. Classified Records</div>
-                <div class="sc-icon">📁</div>
-            </div>
-            <div class="sc-trigger"><strong>Search Keyword:</strong> <code style="color:var(--accent)">classified</code>
-            </div>
-            <div class="sc-desc"><strong>What it is:</strong> A redacted document containing the true history of WWG.
-            </div>
-        </div>
-
-        <div class="secret-card">
-            <div class="sc-header">
-                <div class="sc-title">4. Core Terminal</div>
-                <div class="sc-icon">📟</div>
-            </div>
-            <div class="sc-trigger"><strong>Search Keyword:</strong> <code style="color:var(--accent)">terminal</code>
-                or <code style="color:var(--accent)">root</code>
-            </div>
-            <div class="sc-desc"><strong>What it is:</strong> A retro CRT terminal for browsing the gallery's internal
-                file system.</div>
-        </div>
-
-        <div class="secret-card">
-            <div class="sc-header">
-                <div class="sc-title">5. Engine Schematic</div>
-                <div class="sc-icon">📐</div>
-            </div>
-            <div class="sc-trigger"><strong>Search Keyword:</strong> <code style="color:var(--accent)">blueprint</code>
-                or <code style="color:var(--accent)">schematic</code>
-            </div>
-            <div class="sc-desc"><strong>What it is:</strong> A technical blueprint layout of the "WWG Engine".</div>
-        </div>
-
-
-
-
-        <div class="category">🎬 Action-Triggered Secrets</div>
-        <p style="color:var(--text-sub);font-size:0.85rem;margin-bottom:10px;">You must perform specific, hidden actions
-            inside the existing gallery websites to be teleported to these pages.</p>
-
-        <div class="secret-card">
-            <div class="sc-header">
-                <div class="sc-title">4. Mirror Gallery</div>
-                <div class="sc-icon">🪞</div>
-            </div>
-            <div class="sc-trigger"><strong>Website:</strong> Main Gallery (index.html)<br><strong>Trigger:</strong>
-                5-click "WWG" title. <br><strong>Shortcut:</strong> <code style="color:var(--accent)">mirror</code>
-            </div>
-            <div class="sc-desc"><strong>What it is:</strong> A visually inverted clone of the gallery. Everything is
-                backwards, and the previously hidden secret pages are listed but mockingly inaccessible.</div>
-        </div>
-
-        <div class="secret-card">
-            <div class="sc-header">
-                <div class="sc-title">5. The Backrooms</div>
-                <div class="sc-icon">🏨</div>
-            </div>
-            <div class="sc-trigger"><strong>Website:</strong> Infinite Maze<br><strong>Trigger:</strong> Run into walls
-                20 times. <br><strong>Shortcut:</strong> <code style="color:var(--accent)">backrooms</code>
-            </div>
-            <div class="sc-desc"><strong>What it is:</strong> An endless, humming labyrinth of damp yellow carpet and
-                mono-yellow wallpaper. A pure liminal horror experience.</div>
-        </div>
-
-        <div class="secret-card">
-            <div class="sc-header">
-                <div class="sc-title">6. 103.7 FM Broadcast</div>
-                <div class="sc-icon">📻</div>
-            </div>
-            <div class="sc-trigger"><strong>Website:</strong> Signal Interceptor<br><strong>Trigger:</strong> Set
-                frequency to 103.7. <br><strong>Shortcut:</strong> <code style="color:var(--accent)">static</code>
-            </div>
-            <div class="sc-desc"><strong>What it is:</strong> A simulated pirate radio station broadcasting on a
-                deserted frequency, warning you about the very sites you are exploring.</div>
-        </div>
-
-        <div class="secret-card">
-            <div class="sc-header">
-                <div class="sc-title">7. The Underground</div>
-                <div class="sc-icon">🎩</div>
-            </div>
-            <div class="sc-trigger"><strong>Website:</strong> Memory Matrix<br><strong>Trigger:</strong> Reach Level 10.
-                <br><strong>Shortcut:</strong> <code style="color:var(--accent)">underground</code>
-            </div>
-            <div class="sc-desc"><strong>What it is:</strong> A dark, sophisticated speakeasy website that acts as a
-                haven for those who have "remembered enough."</div>
-        </div>
-
-        <div class="secret-card">
-            <div class="sc-header">
-                <div class="sc-title">8. Department of Waiting (Limbo)</div>
-                <div class="sc-icon">⏳</div>
-            </div>
-            <div class="sc-trigger"><strong>Website:</strong> Neon Clock<br><strong>Trigger:</strong> Click clock 7
-                times. <br><strong>Shortcut:</strong> <code style="color:var(--accent)">limbo</code>
-            </div>
-            <div class="sc-desc"><strong>What it is:</strong> A bureaucratic nightmare dimension where you are given a
-                ticket number and forced to wait as the display slowly, uselessly updates.</div>
-        </div>
-
-        <div class="secret-card">
-            <div class="sc-header">
-                <div class="sc-title">9. The Chosen</div>
-                <div class="sc-icon">⭐</div>
-            </div>
-            <div class="sc-trigger"><strong>Website:</strong> Emoji Slots<br><strong>Trigger:</strong> 7️⃣7️⃣7️⃣
-                Jackpot. <br><strong>Shortcut:</strong> <code style="color:var(--accent)">chosen</code>
-            </div>
-            <div class="sc-desc"><strong>What it is:</strong> A dramatic, gold-plated ceremonial decree claiming you
-                have been initiated into the Order of the Triple Seven.</div>
-        </div>
-
-        <div class="secret-card">
-            <div class="sc-header">
-                <div class="sc-title">10. Static Breakthrough</div>
-                <div class="sc-icon">📺</div>
-            </div>
-            <div class="sc-trigger"><strong>Website:</strong> Signal Interceptor<br><strong>Trigger:</strong> Noise at
-                100% for 5s. <br><strong>Shortcut:</strong> <code style="color:var(--accent)">static</code>
-            </div>
-            <div class="sc-desc"><strong>What it is:</strong> A generative, deafening field of TV static that slowly
-                overlays cryptic, faded text.</div>
-        </div>
-
-        <div class="secret-card">
-            <div class="sc-header">
-                <div class="sc-title">11. The Deep</div>
-                <div class="sc-icon">🌊</div>
-            </div>
-            <div class="sc-trigger"><strong>Website:</strong> Terrain Generator<br><strong>Trigger:</strong> Descend out
-                of bounds. <br><strong>Shortcut:</strong> <code style="color:var(--accent)">deep</code>
-            </div>
-            <div class="sc-desc"><strong>What it is:</strong> An ominous, dark green underwater void where particles
-                float upwards, prompting you to "ascend".</div>
-        </div>
-
-        <div class="secret-card">
-            <div class="sc-header">
-                <div class="sc-title">12. The Corner Room</div>
-                <div class="sc-icon">💽</div>
-            </div>
-            <div class="sc-trigger"><strong>Website:</strong> DVD Simulator<br><strong>Trigger:</strong> Corner bounce.
-                <br><strong>Shortcut:</strong> <code style="color:var(--accent)">corner</code>
-            </div>
-            <div class="sc-desc"><strong>What it is:</strong> A room celebrating the ultimate satisfaction of the
-                perfect corner bounce.</div>
-        </div>
-
-        <div class="secret-card">
-            <div class="sc-header">
-                <div class="sc-title">13. The Useful Button</div>
-                <div class="sc-icon">🟢</div>
-            </div>
-            <div class="sc-trigger"><strong>Website:</strong> Useless Buttons<br><strong>Trigger:</strong> Konami Code.
-                <br><strong>Shortcut:</strong> <code style="color:var(--accent)">useful</code>
-            </div>
-            <div class="sc-desc"><strong>What it is:</strong> Finally, a button that actually does something productive
-                (sort of).</div>
-        </div>
-
-        <div class="secret-card">
-            <div class="sc-header">
-                <div class="sc-title">14. Starlight</div>
-                <div class="sc-icon">⭐</div>
-            </div>
-            <div class="sc-trigger"><strong>Website:</strong> Color Piano<br><strong>Trigger:</strong> Twinkle Twinkle.
-                <br><strong>Shortcut:</strong> <code style="color:var(--accent)">starlight</code>
-            </div>
-            <div class="sc-desc"><strong>What it is:</strong> A serene, starry night sky with gentle ambient music.
-            </div>
-        </div>
-
-        <div class="secret-card">
-            <div class="sc-header">
-                <div class="sc-title">15. The Eclipse</div>
-                <div class="sc-icon">🌑</div>
-            </div>
-            <div class="sc-trigger"><strong>Website:</strong> Vaporwave City Drive<br><strong>Trigger:</strong> Click
-                sun 10 times. <br><strong>Shortcut:</strong> <code style="color:var(--accent)">eclipse</code>
-            </div>
-            <div class="sc-desc"><strong>What it is:</strong> A corrupted, dark outrun aesthetic where the sun turns
-                black and the grid turns red.</div>
-        </div>
-
-        <div class="secret-card">
-            <div class="sc-header">
-                <div class="sc-title">18. The Singularity</div>
-                <div class="sc-icon">🕳️</div>
-            </div>
-            <div class="sc-trigger"><strong>Website:</strong> Gravity Playground<br><strong>Trigger:</strong> 100+
-                bodies. <br><strong>Shortcut:</strong> <code style="color:var(--accent)">gravity</code>
-            </div>
-            <div class="sc-desc"><strong>What it is:</strong> A black hole singularity that begins to suck in all
-                surrounding light and particles.</div>
-        </div>
-
-        <div class="secret-card">
-            <div class="sc-header">
-                <div class="sc-title">19. Glitch Void</div>
-                <div class="sc-icon">👾</div>
-            </div>
-            <div class="sc-trigger"><strong>Website:</strong> Glitch Text Utility<br><strong>Trigger:</strong> Click
-                "Corrupt" 10 times. <br><strong>Shortcut:</strong> <code style="color:var(--accent)">glitch</code>
-            </div>
-            <div class="sc-desc"><strong>What it is:</strong> A fatal render error dimension of pure pixel entropy.
-            </div>
-        </div>
-
-        <div class="secret-card">
-            <div class="sc-header">
-                <div class="sc-title">20. Zenith Sanctuary</div>
-                <div class="sc-icon">🧘</div>
-            </div>
-            <div class="sc-trigger"><strong>Website:</strong> Rain Simulator<br><strong>Trigger:</strong> Perfect
-                silence
-                (0 rain, 0 lightning). <br><strong>Shortcut:</strong> <code style="color:var(--accent)">zenith</code>
-            </div>
-            <div class="sc-desc"><strong>What it is:</strong> A minimalist space for quiet reflection and geometric
-                meditation.</div>
-        </div>
-
+    <div class="header">
+        <h1>DISCOVERY GUIDE</h1>
+        <p class="desc">There are 20 core fragments hidden within this gallery. Use the hints below to salvage them for
+            your Vault.</p>
     </div>
 
+    <div class="grid" id="guide-grid">
+        <!-- Generated by JS -->
+    </div>
+
+    <script src="discovery.js"></script>
+    <script>
+        const secrets = [
+            { id: 'void', name: 'The Void', hint: 'Stand perfectly still for 30 seconds. Do not blink (or move the mouse).' },
+            { id: 'ghost', name: 'The Ghost', hint: 'Type the greeting "HELLO" anywhere on the main page.' },
+            { id: 'classified', name: 'Classified Records', hint: 'Audit the creator. Click the footer symbol three times.' },
+            { id: 'backrooms', name: 'The Backrooms', hint: 'Exhaust the search bar. Type "backrooms" to fall through.' },
+            { id: 'limbo', name: 'Dep. of Waiting', hint: 'Wait is a keyword. Type "limbo" in the search bar.' },
+            { id: 'static', name: '103.7 Broadcast', hint: 'The airwaves are "static". Search for the signal.' },
+            { id: 'deep', name: 'The Deep', hint: 'Go down, "deep" down into the search bar.' },
+            { id: 'underground', name: 'The Underground', hint: 'The bar below knows the "underground" well.' },
+            { id: 'starlight', name: 'Starlight', hint: 'A sky-high search for "starlight" reveals the maps.' },
+            { id: 'eclipse', name: 'Solar Eclipse', hint: 'When the search bar goes dark, look for the "eclipse".' },
+            { id: 'mirror', name: 'Broken Mirror', hint: 'Click the WWG logo five times to see your reflection.' },
+            { id: 'blackhole', name: 'Black Hole', hint: 'Gravity pulls the "blackhole" into the search query.' },
+            { id: 'chosen', name: 'The Chosen', hint: 'Search for "chosen" to see if you are the one.' },
+            { id: 'useful', name: 'Useful Button', hint: 'Find the "useful" query in the search bar.' },
+            { id: 'corner', name: 'DVD Secret', hint: 'Wait for the "corner" hit in the search bar.' },
+            { id: 'braille', name: 'Braille Labs', hint: 'Translate the "braille" via the search bar.' },
+            { id: 'glitch', name: 'Nexus Corrupt', hint: 'Feed the "glitch" to the search engine.' },
+            { id: 'voidvoid', name: 'Void Matrix', hint: 'A double void? Search for "glitchvoid".' },
+            { id: 'terminal', name: 'System Terminal', hint: 'Type "cmd" or "root" anywhere on the main page.' },
+            { id: 'blueprint', name: 'Blueprint', hint: 'Inspect the version number in the footer. Click it three times.' },
+            { id: 'zenith', name: 'Zenith Sanctuary', hint: 'The ultimate peace is found via "zenith" search.' }
+        ];
+
+        function render() {
+            const discovered = Discovery.getDiscovered();
+            const grid = document.getElementById('guide-grid');
+            grid.innerHTML = '';
+
+            secrets.forEach(s => {
+                const isFound = discovered.includes(s.id);
+                const card = document.createElement('div');
+                card.className = `card ${isFound ? 'found' : ''}`;
+                card.innerHTML = `
+                    <div class="tag">Fragment ID: ${s.id.toUpperCase()}</div>
+                    <div class="name">${isFound ? s.name : 'HIDDEN_FRAGMENT'}</div>
+                    <div class="hint">${s.hint}</div>
+                    <div class="status ${isFound ? 'found-text' : 'unfound'}">
+                        ${isFound ? '✓ SALVAGED' : '👀 MISSING'}
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        render();
+    </script>
 </body>
 
 </html>

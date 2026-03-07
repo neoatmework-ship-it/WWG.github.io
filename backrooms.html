@@ -4,7 +4,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>The Backrooms — Level 0</title>
+    <title>THE BACKROOMS</title>
+    <script src="discovery.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap" rel="stylesheet">
     <style>
         * {
             margin: 0;
@@ -12,317 +14,304 @@
             box-sizing: border-box;
         }
 
-        html,
-        body {
+        body,
+        html {
             width: 100%;
             height: 100%;
+            background: #000;
             overflow: hidden;
-            cursor: none;
-        }
-
-        body {
-            background: #c8b560;
-            font-family: 'Courier New', monospace;
             color: #8a7a30;
+            font-family: 'Courier New', monospace;
         }
 
-        /* Wallpaper tile pattern */
-        .wallpaper {
-            position: fixed;
-            inset: 0;
-            background-image:
-                repeating-linear-gradient(0deg, transparent, transparent 39px, rgba(0, 0, 0, 0.06) 40px),
-                repeating-linear-gradient(90deg, transparent, transparent 39px, rgba(0, 0, 0, 0.06) 40px),
-                radial-gradient(ellipse at 50% 50%, rgba(200, 181, 96, 0) 60%, rgba(140, 120, 20, 0.15) 100%);
-            background-size: 40px 40px, 40px 40px, 100% 100%;
+        canvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+            image-rendering: pixelated;
         }
 
-        /* Fluorescent flicker */
-        .light-flicker {
+        .overlay {
             position: fixed;
             inset: 0;
             pointer-events: none;
-            background: rgba(255, 255, 200, 0.08);
-            animation: flicker 8s infinite;
-            z-index: 2;
-        }
-
-        @keyframes flicker {
-
-            0%,
-            2%,
-            4%,
-            6%,
-            100% {
-                opacity: 1
-            }
-
-            1%,
-            3%,
-            5% {
-                opacity: 0.4
-            }
-
-            60%,
-            62% {
-                opacity: 0.7
-            }
-
-            61% {
-                opacity: 0.2
-            }
-
-            80% {
-                opacity: 0.9
-            }
-
-            81% {
-                opacity: 0.6
-            }
-        }
-
-        /* Corridor illusion - nested boxes */
-        .corridor {
-            position: fixed;
-            inset: 0;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            perspective: 800px;
-            z-index: 1;
-        }
-
-        .hall {
-            position: absolute;
-            border: 3px solid rgba(100, 85, 20, 0.25);
-            animation: hallway 12s linear infinite;
-        }
-
-        @keyframes hallway {
-            0% {
-                transform: scale(0.05) translateZ(0);
-                opacity: 0;
-            }
-
-            20% {
-                opacity: 0.8;
-            }
-
-            80% {
-                opacity: 0.8;
-            }
-
-            100% {
-                transform: scale(1.4) translateZ(0);
-                opacity: 0;
-            }
-        }
-
-        /* Ceiling light strip */
-        .ceiling-strip {
-            position: fixed;
-            top: 0;
-            left: 5%;
-            right: 5%;
-            height: 12px;
-            background: linear-gradient(90deg, transparent, rgba(255, 255, 200, 0.6) 30%, rgba(255, 255, 200, 0.6) 70%, transparent);
-            filter: blur(4px);
-            animation: flicker 8s infinite;
-            z-index: 3;
-        }
-
-        /* Text */
-        #msg {
-            position: fixed;
-            bottom: 80px;
-            left: 50%;
-            transform: translateX(-50%);
-            text-align: center;
             z-index: 10;
+        }
+
+        .scanlines {
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.05), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.05));
+            background-size: 100% 2px, 3px 100%;
+            inset: 0;
+            position: fixed;
+        }
+
+        .vignette {
+            background: radial-gradient(circle at center, transparent 30%, rgba(0, 0, 0, 0.9) 100%);
+            inset: 0;
+            position: fixed;
+        }
+
+        .ui {
+            position: fixed;
+            top: 30px;
+            left: 30px;
+            z-index: 20;
             pointer-events: none;
+        }
+
+        .back-link {
+            color: rgba(138, 122, 48, 0.4);
+            text-decoration: none;
             font-size: 0.8rem;
             letter-spacing: 2px;
-            color: rgba(80, 70, 20, 0.8);
-            white-space: nowrap;
-            line-height: 2;
-        }
-
-        #msg.active {
-            animation: msgfade 0.5s ease;
-        }
-
-        @keyframes msgfade {
-            0% {
-                opacity: 0;
-                transform: translateX(-50%) translateY(10px)
-            }
-
-            100% {
-                opacity: 1;
-                transform: translateX(-50%) translateY(0)
-            }
-        }
-
-        #enter-msg {
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            text-align: center;
-            z-index: 10;
-            pointer-events: none;
-            opacity: 0;
-            transition: opacity 3s;
-            font-size: 1.1rem;
-            letter-spacing: 4px;
-            color: rgba(80, 70, 15, 0.7);
-            line-height: 2.2;
-        }
-
-        #enter-msg.show {
-            opacity: 1;
-        }
-
-        #back {
-            position: fixed;
-            top: 16px;
-            left: 16px;
-            z-index: 20;
-            color: rgba(80, 70, 15, 0.4);
-            text-decoration: none;
-            font-size: 0.7rem;
-            letter-spacing: 2px;
+            pointer-events: auto;
             transition: 0.3s;
         }
 
-        #back:hover {
-            color: rgba(80, 70, 15, 0.8);
+        .back-link:hover {
+            color: #8a7a30;
+            text-shadow: 0 0 10px rgba(138, 122, 48, 0.5);
         }
 
-        .custom-cursor {
+        .controls-hint {
             position: fixed;
-            width: 8px;
-            height: 8px;
-            border-radius: 50%;
-            background: rgba(80, 70, 15, 0.5);
-            pointer-events: none;
-            z-index: 999;
-            transform: translate(-50%, -50%);
-            transition: opacity 0.5s;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 0.7rem;
+            letter-spacing: 3px;
+            opacity: 0.3;
+            text-transform: uppercase;
+            text-align: center;
         }
 
-        .ambient-dot {
+        #location {
             position: fixed;
-            border-radius: 50%;
-            pointer-events: none;
-            background: rgba(100, 90, 30, 0.1);
-            filter: blur(40px);
-            animation: drift linear infinite;
+            top: 30px;
+            right: 30px;
+            font-size: 0.7rem;
+            letter-spacing: 2px;
+            opacity: 0.4;
         }
 
-        @keyframes drift {
+        @keyframes noise {
             0% {
-                transform: translateY(0)
+                transform: translate(0, 0)
+            }
+
+            10% {
+                transform: translate(-5%, -5%)
+            }
+
+            20% {
+                transform: translate(-10%, 5%)
+            }
+
+            30% {
+                transform: translate(5%, -10%)
+            }
+
+            40% {
+                transform: translate(-5%, 15%)
+            }
+
+            50% {
+                transform: translate(-10%, 5%)
+            }
+
+            60% {
+                transform: translate(15%, 0)
+            }
+
+            70% {
+                transform: translate(0, 10%)
+            }
+
+            80% {
+                transform: translate(-15%, 0)
+            }
+
+            90% {
+                transform: translate(10%, 5%)
             }
 
             100% {
-                transform: translateY(-30px)
+                transform: translate(5%, 0)
             }
+        }
+
+        .film-noise {
+            position: fixed;
+            inset: -50%;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.05'/%3E%3C/svg%3E");
+            animation: noise 0.2s infinite;
+            opacity: 0.2;
+            pointer-events: none;
+            z-index: 5;
         }
     </style>
 </head>
 
 <body>
-    <div class="wallpaper"></div>
-    <div class="light-flicker"></div>
-    <div class="ceiling-strip"></div>
-    <div class="corridor" id="corridor"></div>
-    <div class="custom-cursor" id="cursor"></div>
-    <a id="back" href="index.html">← find your way back</a>
-    <div id="enter-msg"></div>
-    <div id="msg"></div>
+    <canvas id="screen"></canvas>
+
+    <div class="overlay">
+        <div class="vignette"></div>
+        <div class="scanlines"></div>
+        <div class="film-noise"></div>
+    </div>
+
+    <div class="ui">
+        <a href="index.html" class="back-link">← EXIT REALITY</a>
+    </div>
+
+    <div id="location">ZONE: LEVEL 0 // LOBBY</div>
+
+    <div class="controls-hint">
+        WASD to Move · Q/E to Look · Don't look back
+    </div>
 
     <script>
-        // Cursor
-        const cur = document.getElementById('cursor');
-        document.addEventListener('mousemove', e => { cur.style.left = e.clientX + 'px'; cur.style.top = e.clientY + 'px'; });
+        /** @type {HTMLCanvasElement} */
+        const canvas = document.getElementById('screen');
+        const ctx = canvas.getContext('2d');
 
-        // Corridor boxes
-        const corridor = document.getElementById('corridor');
-        const SIZES = [50, 120, 200, 290, 390, 500, 620, 750, 890, 1040];
-        SIZES.forEach((sz, i) => {
-            const div = document.createElement('div');
-            div.className = 'hall';
-            div.style.cssText = `width:${sz}px;height:${sz * 0.7}px;animation-delay:${-i * (12 / SIZES.length)}s;`;
-            corridor.appendChild(div);
-        });
-
-        // Ambient sound via Web Audio
-        try {
-            const ac = new AudioContext();
-            const hum = ac.createOscillator();
-            const gain = ac.createGain();
-            const dist = ac.createWaveShaper();
-
-            // Distortion curve
-            const curve = new Float32Array(256);
-            for (let i = 0; i < 256; i++) { const x = i * 2 / 256 - 1; curve[i] = Math.tanh(x * 2); }
-            dist.curve = curve;
-
-            hum.type = 'sine';
-            hum.frequency.setValueAtTime(60, ac.currentTime);
-            hum.frequency.setValueAtTime(120, ac.currentTime + 0.5);
-            gain.gain.setValueAtTime(0, ac.currentTime);
-            gain.gain.linearRampToValueAtTime(0.08, ac.currentTime + 3);
-
-            hum.connect(dist); dist.connect(gain); gain.connect(ac.destination);
-            hum.start();
-
-            // Random pitch drift
-            setInterval(() => {
-                hum.frequency.linearRampToValueAtTime(55 + Math.random() * 15, ac.currentTime + 2);
-                gain.gain.linearRampToValueAtTime(0.04 + Math.random() * 0.06, ac.currentTime + 2);
-            }, 3000);
-        } catch (e) { }
-
-        const MESSAGES = [
-            "YOU CLIPPED THROUGH THE WALL.",
-            "no-clip achieved.",
-            "LEVEL 0 — THE BACKROOMS",
-            "estimated area: 600 million sq mi.",
-            "you are not alone.",
-            "DO NOT RUN. DO NOT STOP.",
-            "the humming never stops.",
-            "you are somewhere between a dream and a hallway.",
-            "find a staircase. keep going down.",
-            "moist carpet. buzzing lights. stale air.",
-            "entity count in this wing: unknown.",
-            "you have been here for 0 days, 0 hours, ∞ minutes.",
-            "there is no exit on this level.",
-            "keep moving. don't think about the sound.",
-            "LEVEL 0 HAS NO EXIT.",
+        // Map Scale & World
+        const map = [
+            [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+            [1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1],
+            [1, 0, 1, 1, 0, 1, 0, 1, 0, 1, 1, 1, 1, 1, 0, 1],
+            [1, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1],
+            [1, 0, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 0, 1],
+            [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 1],
+            [1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 0, 1, 0, 0, 0, 1],
+            [1, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0, 1, 1, 1, 0, 1],
+            [1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 1],
+            [1, 0, 1, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 0, 1],
+            [1, 0, 1, 1, 1, 1, 1, 0, 1, 0, 0, 0, 0, 1, 0, 1],
+            [1, 0, 0, 0, 0, 0, 1, 0, 1, 0, 1, 1, 0, 1, 0, 1],
+            [1, 1, 1, 1, 1, 0, 1, 0, 0, 0, 1, 0, 0, 1, 0, 1],
+            [1, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1],
+            [1, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+            [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
         ];
 
-        const msgEl = document.getElementById('msg');
-        const enterMsg = document.getElementById('enter-msg');
+        let player = {
+            x: 1.5,
+            y: 1.5,
+            dirX: -1,
+            dirY: 0,
+            planeX: 0,
+            planeY: 0.66
+        };
 
-        let mi = 0;
-        function showMsg() {
-            msgEl.textContent = MESSAGES[mi % MESSAGES.length];
-            msgEl.classList.remove('active');
-            void msgEl.offsetWidth;
-            msgEl.classList.add('active');
-            mi++;
+        let keys = {};
+        window.onkeydown = (e) => keys[e.code] = true;
+        window.onkeyup = (e) => keys[e.code] = false;
+
+        function resize() {
+            canvas.width = window.innerWidth / 2; // Low res for aesthetic
+            canvas.height = window.innerHeight / 2;
+        }
+        window.onresize = resize;
+        resize();
+
+        function move(dir) {
+            let moveSpeed = 0.04 * dir;
+            let newX = player.x + player.dirX * moveSpeed;
+            let newY = player.y + player.dirY * moveSpeed;
+            if (map[Math.floor(newX)][Math.floor(player.y)] === 0) player.x = newX;
+            if (map[Math.floor(player.x)][Math.floor(newY)] === 0) player.y = newY;
         }
 
-        setTimeout(() => {
-            enterMsg.innerHTML = 'YOU HAVE ENTERED<br>THE BACKROOMS<br><span style="font-size:0.7rem;opacity:0.6">LEVEL 0 — THE LOBBY</span>';
-            enterMsg.classList.add('show');
-            setTimeout(() => { enterMsg.style.opacity = '0'; enterMsg.style.transition = 'opacity 2s'; }, 3000);
-        }, 1000);
+        function rotate(dir) {
+            let rotSpeed = 0.03 * dir;
+            let oldDirX = player.dirX;
+            player.dirX = player.dirX * Math.cos(rotSpeed) - player.dirY * Math.sin(rotSpeed);
+            player.dirY = oldDirX * Math.sin(rotSpeed) + player.dirY * Math.cos(rotSpeed);
+            let oldPlaneX = player.planeX;
+            player.planeX = player.planeX * Math.cos(rotSpeed) - player.planeY * Math.sin(rotSpeed);
+            player.planeY = oldPlaneX * Math.sin(rotSpeed) + player.planeY * Math.cos(rotSpeed);
+        }
 
-        showMsg();
-        setInterval(showMsg, 5000);
+        function render() {
+            // Keys
+            if (keys['KeyW']) move(1);
+            if (keys['KeyS']) move(-1);
+            if (keys['KeyA'] || keys['KeyQ']) rotate(1);
+            if (keys['KeyD'] || keys['KeyE']) rotate(-1);
+
+            // Draw ceiling/floor
+            ctx.fillStyle = "#c8b560"; // Backrooms yellow floor
+            ctx.fillRect(0, canvas.height / 2, canvas.width, canvas.height / 2);
+            ctx.fillStyle = "#a89540"; // Ceiling
+            ctx.fillRect(0, 0, canvas.width, canvas.height / 2);
+
+            // Raycasting
+            for (let x = 0; x < canvas.width; x++) {
+                let cameraX = 2 * x / canvas.width - 1;
+                let rayDirX = player.dirX + player.planeX * cameraX;
+                let rayDirY = player.dirY + player.planeY * cameraX;
+
+                let mapX = Math.floor(player.x);
+                let mapY = Math.floor(player.y);
+
+                let deltaDistX = Math.abs(1 / rayDirX);
+                let deltaDistY = Math.abs(1 / rayDirY);
+
+                let sideDistX, sideDistY;
+                let stepX, stepY;
+
+                if (rayDirX < 0) { stepX = -1; sideDistX = (player.x - mapX) * deltaDistX; }
+                else { stepX = 1; sideDistX = (mapX + 1.0 - player.x) * deltaDistX; }
+                if (rayDirY < 0) { stepY = -1; sideDistY = (player.y - mapY) * deltaDistY; }
+                else { stepY = 1; sideDistY = (mapY + 1.0 - player.y) * deltaDistY; }
+
+                let hit = 0, side;
+                while (hit === 0) {
+                    if (sideDistX < sideDistY) { sideDistX += deltaDistX; mapX += stepX; side = 0; }
+                    else { sideDistY += deltaDistY; mapY += stepY; side = 1; }
+                    if (map[mapX][mapY] > 0) hit = 1;
+                }
+
+                let perpWallDist;
+                if (side === 0) perpWallDist = (mapX - player.x + (1 - stepX) / 2) / rayDirX;
+                else perpWallDist = (mapY - player.y + (1 - stepY) / 2) / rayDirY;
+
+                let lineHeight = Math.floor(canvas.height / perpWallDist);
+                let drawStart = -lineHeight / 2 + canvas.height / 2;
+                let drawEnd = lineHeight / 2 + canvas.height / 2;
+
+                // Color mapping (Wallpaper simulation)
+                let color = side === 1 ? "#7a6a20" : "#8a7a30";
+
+                // Shadow / Distance fading
+                let shadow = Math.min(1.0, 1.5 - (perpWallDist / 12));
+                ctx.globalAlpha = Math.max(0, shadow);
+                ctx.strokeStyle = color;
+                ctx.lineWidth = 1;
+                ctx.beginPath();
+                ctx.moveTo(x, drawStart);
+                ctx.lineTo(x, drawEnd);
+                ctx.stroke();
+                ctx.globalAlpha = 1.0;
+            }
+
+            requestAnimationFrame(render);
+        }
+
+        // Ambient Hum
+        try {
+            const ac = new AudioContext();
+            const osc = ac.createOscillator();
+            const gain = ac.createGain();
+            osc.frequency.setValueAtTime(60, ac.currentTime);
+            gain.gain.setValueAtTime(0.05, ac.currentTime);
+            osc.connect(gain); gain.connect(ac.destination);
+            osc.start();
+        } catch (e) { }
+
+        render();
     </script>
 </body>
 
