@@ -63,12 +63,16 @@ pages.forEach((page, i) => {
 (function() {
     let sequence = '';
     const trigger = 'PNPNPN';
+    const tTrigger = 'PNPNPNPN';
     document.querySelectorAll('.wwg-nav a').forEach(a => {
         a.addEventListener('click', (e) => {
-            const type = a.textContent.includes('Prev') ? 'P' : 'N';
+            const type = a.innerText.includes('Prev') ? 'P' : 'N';
             sequence += type;
-            if (sequence.length > 6) sequence = sequence.substring(1);
-            if (sequence === trigger) {
+            if (sequence.length > 10) sequence = sequence.substring(1);
+            if (sequence.endsWith(tTrigger)) {
+                e.preventDefault();
+                window.location.href = 'time-loop.html?tainted=true';
+            } else if (sequence.endsWith(trigger)) {
                 e.preventDefault();
                 window.location.href = 'time-loop.html';
             }
@@ -121,33 +125,5 @@ let idxHtml = fs.readFileSync(path.join(dir, 'index.html'), 'utf8');
 idxHtml = idxHtml.replace(/>Spoilers \(11\)<\/a>/g, '>Spoilers (13)</a>');
 fs.writeFileSync(path.join(dir, 'index.html'), idxHtml);
 
-// 5. Update cheatsheet.html
-const cheatPath = path.join(dir, 'cheatsheet.html');
-let cheatHtml = fs.readFileSync(cheatPath, 'utf8');
-if (!cheatHtml.includes('The Corner Room')) {
-    cheatHtml = cheatHtml.replace('11 hidden web pages', '13 hidden web pages');
-    const newSecrets = `
-        <div class="secret-card">
-            <div class="sc-header">
-                <div class="sc-title">12. The Corner Room</div>
-                <div class="sc-icon">💽</div>
-            </div>
-            <div class="sc-trigger"><strong>Website:</strong> DVD Simulator<br><strong>Trigger:</strong> Adjust speed and size until the DVD logo hits exactly into the corner of the screen <strong>1 time</strong>.</div>
-            <div class="sc-desc"><strong>What it is:</strong> A room celebrating the ultimate satisfaction of the perfect corner bounce.</div>
-        </div>
-
-        <div class="secret-card">
-            <div class="sc-header">
-                <div class="sc-title">13. The Useful Button</div>
-                <div class="sc-icon">🟢</div>
-            </div>
-            <div class="sc-trigger"><strong>Website:</strong> Useless Buttons<br><strong>Trigger:</strong> Type the classic Konami code anywhere on the page: <strong style="color:var(--accent)">Up, Up, Down, Down, Left, Right, Left, Right, B, A</strong>.</div>
-            <div class="sc-desc"><strong>What it is:</strong> Finally, a button that actually does something productive (sort of).</div>
-        </div>
-
-    </div>`;
-    cheatHtml = cheatHtml.replace('</div>\n\n</body>', newSecrets + '\n\n</body>');
-    fs.writeFileSync(cheatPath, cheatHtml);
-}
-
+// 5. Update complete
 console.log('Update Complete.');

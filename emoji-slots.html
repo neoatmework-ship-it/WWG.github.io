@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 
 <head>
@@ -6,7 +6,7 @@
         href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20100%20100%22%3E%3Ctext%20y%3D%22.9em%22%20font-size%3D%2290%22%3E%F0%9F%8E%B0%3C%2Ftext%3E%3C%2Fsvg%3E">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Emoji Slots 🎰</title>
+    <title>Emoji Slots ðŸŽ°</title>
     <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
         * {
@@ -38,7 +38,7 @@
         }
 
         .machine::before {
-            content: '🎰';
+            content: 'ðŸŽ°';
             position: absolute;
             top: -30px;
             left: 50%;
@@ -303,11 +303,11 @@
         <h1>EMOJI SLOTS</h1>
         <div class="sub">match 3 to win absolutely nothing of value</div>
         <div class="window">
-            <div class="reel" id="r0"><span class="emoji">🎲</span></div>
-            <div class="reel" id="r1"><span class="emoji">🎲</span></div>
-            <div class="reel" id="r2"><span class="emoji">🎲</span></div>
+            <div class="reel" id="r0"><span class="emoji">ðŸŽ²</span></div>
+            <div class="reel" id="r1"><span class="emoji">ðŸŽ²</span></div>
+            <div class="reel" id="r2"><span class="emoji">ðŸŽ²</span></div>
         </div>
-        <button class="pull-btn" id="pull">🎰 PULL THE LEVER</button>
+        <button class="pull-btn" id="pull">ðŸŽ° PULL THE LEVER</button>
         <div class="stats">
             Spins: <span id="spins">0</span> | Wins: <span id="wins">0</span> | Best: <span id="best">---</span>
         </div>
@@ -316,7 +316,7 @@
     </div>
 
     <script>
-        const symbols = ['🍒', '🍋', '🍊', '🍇', '🔔', '💎', '7️⃣', '🍀', '⭐', '🎪', '🌈', '👑', '🦄', '🎭', '🐉'];
+        const symbols = ['ðŸ’', 'ðŸ‹', 'ðŸŠ', 'ðŸ‡', '🔔', '💎', '7ï¸âƒ£', 'ðŸ€', 'â­', '🎪', '🌈', '👑', '🦄', '🎭', 'ðŸ‰'];
         const reels = [document.getElementById('r0'), document.getElementById('r1'), document.getElementById('r2')];
         const pullBtn = document.getElementById('pull');
         const resultEl = document.getElementById('result');
@@ -334,12 +334,12 @@
         }
 
         const prizes = {
-            '🍒🍒🍒': { name: 'Cherry Bomb!', reward: '🍒 Three cherries! You win a stomach ache!' },
+            'ðŸ’ðŸ’ðŸ’': { name: 'Cherry Bomb!', reward: 'ðŸ’ Three cherries! You win a stomach ache!' },
             '💎💎💎': { name: 'DIAMOND JACKPOT!', reward: '💎 You are now theoretically rich!' },
-            '7️⃣7️⃣7️⃣': { name: 'TRIPLE SEVEN!', reward: '7️⃣ The luckiest combo! Nothing happens!' },
-            '🍀🍀🍀': { name: 'LUCKY CLOVER!', reward: '🍀 Incredible luck! Still no real prize though!' },
+            '7ï¸âƒ£7ï¸âƒ£7ï¸âƒ£': { name: 'TRIPLE SEVEN!', reward: '7ï¸âƒ£ The luckiest combo! Nothing happens!' },
+            'ðŸ€ðŸ€ðŸ€': { name: 'LUCKY CLOVER!', reward: 'ðŸ€ Incredible luck! Still no real prize though!' },
             '👑👑👑': { name: 'ROYAL FLUSH!', reward: '👑 You are now King/Queen of slot machines!' },
-            '🐉🐉🐉': { name: 'DRAGON JACKPOT!', reward: '🐉 Three dragons! Fear you!' },
+            'ðŸ‰ðŸ‰ðŸ‰': { name: 'DRAGON JACKPOT!', reward: 'ðŸ‰ Three dragons! Fear you!' },
             '🦄🦄🦄': { name: 'MYTHICAL WIN!', reward: '🦄 Rarer than rare! Mythologically impossible!' },
         };
 
@@ -401,17 +401,17 @@
                 resultEl.innerHTML = `<div class="prize jackpot">${prize.name}</div><div style="color:rgba(255,255,255,.5);font-size:.75rem;margin-top:4px">${prize.reward}</div>`;
                 document.getElementById('best').textContent = prize.name;
 
-                if (key === '7️⃣7️⃣7️⃣') {
+                if (key === '7ï¸âƒ£7ï¸âƒ£7ï¸âƒ£') {
                     document.body.style.transition = 'opacity 2s ease';
                     document.body.style.opacity = '0';
-                    setTimeout(() => window.location.href = 'the-chosen.html', 1500);
+                    setTimeout(() => window.location.href = 'the-chosen.html?tainted=true', 1500);
                 }
 
                 // Coin rain!
                 for (let i = 0; i < 20; i++) {
                     const c = document.createElement('div');
                     c.className = 'coin';
-                    c.textContent = '🪙';
+                    c.textContent = 'ðŸª™';
                     c.style.left = Math.random() * 100 + '%';
                     c.style.top = '-20px';
                     c.style.fontSize = (1 + Math.random()) + 'rem';
@@ -427,7 +427,7 @@
 
             // History
             const entry = document.createElement('div');
-            entry.textContent = `#${spins}: ${results.join(' ')} — ${allSame ? 'WIN!' : 'nope'}`;
+            entry.textContent = `#${spins}: ${results.join(' ')} â€” ${allSame ? 'WIN!' : 'nope'}`;
             historyEl.prepend(entry);
             if (historyEl.children.length > 20) historyEl.lastChild.remove();
 
@@ -490,8 +490,8 @@
 </script>
 </style>
 <div class="wwg-nav">
-    <a href="reaction-lies.html">← Prev</a>
-    <a href="fake-loading.html">Next →</a>
+    <a href="reaction-lies.html">â† Prev</a>
+    <a href="fake-loading.html">Next â†’</a>
 </div>
 <!-- WWG_NAV_END -->
 </body>

@@ -223,8 +223,9 @@
         };
 
         function render() {
-            const discovered = Discovery.getDiscovered();
-            discoveryStats.innerText = `LOADED fragments // ${discovered.length} of 25 secure`;
+            const discovered = Discovery.getDiscovered(false);
+            const tainted = Discovery.getDiscovered(true);
+            discoveryStats.innerText = `SALVAGED: ${discovered.length} Normal · ${tainted.length} Tainted`;
 
             if (Discovery.isCheatsheetUnlocked()) {
                 document.getElementById('guide-cont').style.display = 'block';
@@ -234,24 +235,41 @@
 
             Object.keys(siteData).forEach(id => {
                 const data = siteData[id];
-                const isUnlocked = discovered.includes(id);
 
-                const slot = document.createElement(isUnlocked ? 'a' : 'div');
-                slot.className = `slot ${isUnlocked ? 'unlocked' : ''}`;
-                if (isUnlocked) slot.href = data.file || `${id}.html`;
-
-                slot.innerHTML = `
-                    <div class="icon">${isUnlocked ? data.icon : '🔒'}</div>
-                    <div class="name">${isUnlocked ? data.name : '???'}</div>
+                // Normal Slot
+                const isNormal = discovered.includes(id);
+                const nSlot = document.createElement(isNormal ? 'a' : 'div');
+                nSlot.className = `slot ${isNormal ? 'unlocked' : ''}`;
+                if (isNormal) nSlot.href = data.file || `${id}.html`;
+                nSlot.innerHTML = `
+                    <div class="icon">${isNormal ? data.icon : '🔒'}</div>
+                    <div class="name">${isNormal ? data.name : '???'}</div>
                 `;
+                grid.appendChild(nSlot);
 
-                grid.appendChild(slot);
+                // Tainted Slot
+                const isTainted = tainted.includes(id);
+                const tSlot = document.createElement(isTainted ? 'a' : 'div');
+                tSlot.className = `slot ${isTainted ? 'unlocked' : ''}`;
+                tSlot.style.borderStyle = 'dashed';
+                if (isTainted) {
+                    tSlot.href = (data.file || `${id}.html`) + '?tainted=true';
+                    tSlot.style.borderColor = '#ef4444';
+                    tSlot.style.background = 'rgba(239, 68, 68, 0.05)';
+                }
+                tSlot.innerHTML = `
+                    <div class="icon" style="${isTainted ? 'filter: hue-rotate(-50deg) saturate(2);' : ''}">${isTainted ? data.icon : '💀'}</div>
+                    <div class="name">${isTainted ? 'TAINTED ' + data.name : 'TAINTED ???'}</div>
+                `;
+                grid.appendChild(tSlot);
             });
         }
 
         resetButton.addEventListener('click', () => {
-            if (confirm('CRITICAL: This will purge all salvaged fragments from your local cache. Continue?')) {
+            if (confirm('CRITICAL: This will purge all salvaged fragments (Normal & Tainted) from your local cache. Continue?')) {
                 localStorage.removeItem('wwg_discovered_secrets');
+                localStorage.removeItem('wwg_tainted_secrets');
+                localStorage.removeItem('wwg_cheatsheet_unlocked');
                 window.location.reload();
             }
         });

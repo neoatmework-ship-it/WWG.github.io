@@ -2260,6 +2260,9 @@
         <div class="no-results" id="no-results">
             <div class="nr-emoji">🔍</div>
             <p>No sites found matching your search.</p>
+            <button class="suggest-btn" onclick="openSuggestModal()" style="margin-top:20px; position:static;">
+                <span style="font-size: 1.2rem;">💡</span> Suggest Idea
+            </button>
         </div>
     </main>
 
@@ -2286,7 +2289,8 @@
     <button class="scroll-top" id="scroll-top" onclick="window.scrollTo({top:0,behavior:'smooth'})">↑</button>
 
     <footer>
-        <p>WWG — Weird Website Gallery · Made with <span id="footer-logic" style="cursor:help">✦</span> and curiosity
+        <p><span id="footer-text" style="cursor:help">WWG — Weird Website Gallery</span> · Made with <span
+                id="footer-logic" style="cursor:help">✦</span> and curiosity
             <br><br>
             <span id="footer-version" style="font-size: 0.6rem; opacity: 0.3; cursor: pointer;">v3.2.1-STABLE</span><br>
         <div id="guide-link-container" style="display:none;">
@@ -2438,23 +2442,32 @@
             });
 
             // WWG Title 5-click secret (Mirror)
-            let wwgClicks = 0;
-            let wwgTimer = null;
+            // WWG Title Secrets
             document.getElementById('wwg-title').addEventListener('click', (e) => {
+                const now = Date.now();
+                if (now - window.wwgTimer > 800) window.wwgClicks = 0;
+                window.wwgClicks = (window.wwgClicks || 0) + 1;
+                window.wwgTimer = now;
+
                 if (e.altKey) { window.location.href = 'the-chosen.html'; return; }
                 if (e.shiftKey) { window.location.href = 'starlight.html'; return; }
+                if (e.ctrlKey && e.altKey) { window.location.href = 'eclipse.html?tainted=true'; return; }
                 if (e.ctrlKey) { window.location.href = 'eclipse.html'; return; }
 
-                wwgClicks++;
-                clearTimeout(wwgTimer);
-                if (wwgClicks === 5) {
-                    document.body.style.transition = 'filter 1.5s ease, opacity 1s ease';
-                    document.body.style.filter = 'invert(1) hue-rotate(180deg)';
-                    document.body.style.opacity = '0';
-                    setTimeout(() => window.location.href = 'mirror.html', 1500);
-                    return;
+                if (window.wwgClicks === 5) {
+                    window.location.href = 'mirror.html';
+                } else if (window.wwgClicks === 10) {
+                    window.location.href = 'mirror.html?tainted=true';
                 }
-                wwgTimer = setTimeout(() => { wwgClicks = 0; }, 800);
+            });
+
+            document.getElementById('wwg-title').addEventListener('dblclick', () => {
+                window.location.href = 'deep.html?tainted=true';
+            });
+
+            const footerText = document.getElementById('footer-text');
+            footerText.addEventListener('dblclick', () => {
+                window.location.href = 'classified.html?tainted=true';
             });
 
             // Scroll to top
@@ -2472,32 +2485,44 @@
                     if (keySequence.length > 20) keySequence = keySequence.substring(1);
 
                     if (keySequence.endsWith('hello')) window.location.href = 'ghost.html';
+                    if (keySequence.endsWith('valley')) window.location.href = 'ghost.html?tainted=true';
                     if (keySequence.endsWith('cmd')) window.location.href = 'terminal.html';
-                    if (keySequence.endsWith('root')) window.location.href = 'terminal.html';
+                    if (keySequence.endsWith('rootroot')) window.location.href = 'terminal.html?tainted=true';
+                    else if (keySequence.endsWith('root')) window.location.href = 'terminal.html';
                     if (keySequence.endsWith('3sc4p3')) window.location.href = 'archive.html';
                     if (keySequence.endsWith('flip')) window.location.href = 'gravity-shift.html';
+                    if (keySequence.endsWith('invert')) window.location.href = 'gravity-shift.html?tainted=true';
                     if (keySequence.endsWith('eye')) window.location.href = 'the-observer.html';
+                    if (keySequence.endsWith('stalker')) window.location.href = 'the-observer.html?tainted=true';
                     if (keySequence.endsWith('tree')) window.location.href = 'binary-forest.html';
+                    if (keySequence.endsWith('forest')) window.location.href = 'binary-forest.html?tainted=true';
                 }
 
-                // G-Void: Shift+Enter in search for "void"
-                if (e.key === 'Enter' && e.shiftKey && isInput && search.value.toLowerCase().trim() === 'void') {
-                    window.location.href = 'glitch-void.html';
+                if (e.key === 'Enter' && isInput) {
+                    const term = search.value.trim().toLowerCase();
+                    if (e.shiftKey && term === 'void') window.location.href = 'glitch-void.html';
+                    if (e.ctrlKey && term === 'glitchvoid') window.location.href = 'glitch-void.html?tainted=true';
                 }
             });
 
-            // The Void Inactivity Trigger
+            // Inactivity (Void Tainted)
             let voidTimer;
             const startVoidTimer = () => {
                 clearTimeout(voidTimer);
                 voidTimer = setTimeout(() => {
-                    document.body.style.transition = 'opacity 5s';
-                    document.body.style.opacity = '0';
-                    setTimeout(() => window.location.href = 'void.html', 5000);
-                }, 30000); // 30 seconds of stillness
+                    window.location.href = 'void.html?tainted=true';
+                }, 60000); // 60s for Tainted
+
+                // Track normal void (30s)
+                setTimeout(() => {
+                    if (Date.now() - (window.lastMove || 0) > 30000) {
+                        if (!window.location.search.includes('tainted'))
+                            window.location.href = 'void.html';
+                    }
+                }, 30000);
             };
-            window.addEventListener('mousemove', startVoidTimer);
-            window.addEventListener('keydown', startVoidTimer);
+            window.addEventListener('mousemove', () => { window.lastMove = Date.now(); startVoidTimer(); });
+            window.addEventListener('keydown', () => { window.lastMove = Date.now(); startVoidTimer(); });
             startVoidTimer();
 
             // Footer Secret: Classified Trigger
@@ -2513,68 +2538,87 @@
             document.getElementById('footer-version').addEventListener('click', () => {
                 versionClicks++;
                 if (versionClicks === 3) window.location.href = 'blueprint.html';
-                setTimeout(() => { versionClicks = 0; }, 2000);
+                if (versionClicks === 7) window.location.href = 'blueprint.html?tainted=true';
+                setTimeout(() => { versionClicks = 0; }, 3000);
             });
 
             // Underground Action: Triple-click Suggest Button
             let suggestClicks = 0;
-            document.querySelector('.suggest-btn').addEventListener('click', (e) => {
-                if (!e.isTrusted) return; // ignore programmed clicks
-                suggestClicks++;
-                if (suggestClicks === 3) {
-                    window.location.href = 'underground.html';
-                }
-                setTimeout(() => { suggestClicks = 0; }, 2000);
+            document.querySelectorAll('.suggest-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    suggestClicks++;
+                    if (suggestClicks === 3) window.location.href = 'underground.html';
+                    setTimeout(() => { suggestClicks = 0; }, 2000);
+                });
+            });
+            document.querySelector('.modal h2').addEventListener('click', () => {
+                window.modalTitleClicks = (window.modalTitleClicks || 0) + 1;
+                if (window.modalTitleClicks === 3) window.location.href = 'underground.html?tainted=true';
+                setTimeout(() => { window.modalTitleClicks = 0; }, 2000);
             });
 
-            // Blackhole Action: Triple click search emoji
+            // Blackhole Tainted: Triple click nr-emoji (Normal) and suggest button (Tainted)
             document.querySelector('.nr-emoji').addEventListener('click', () => {
                 window.location.href = 'blackhole.html';
             });
-
-            // Zenith Action: Click "Find my secrets" text
-            document.querySelector('.hero p[style*="letter-spacing: 3px"]').addEventListener('click', () => {
-                window.location.href = 'zen-garden.html';
+            document.querySelector('#no-results .suggest-btn').addEventListener('click', () => {
+                window.nrSuggestClicks = (window.nrSuggestClicks || 0) + 1;
+                if (window.nrSuggestClicks === 3) window.location.href = 'blackhole.html?tainted=true';
+                setTimeout(() => { window.nrSuggestClicks = 0; }, 2000);
             });
 
-            // Glitch Action: Rapidly click any tag
+            // Zenith Tainted: 7 clicks hero subtext
+            const heroSub = document.querySelector('.hero p[style*="letter-spacing: 3px"]');
+            heroSub.addEventListener('click', () => {
+                window.zenithClicks = (window.zenithClicks || 0) + 1;
+                if (window.zenithClicks === 3) window.location.href = 'zen-garden.html';
+                if (window.zenithClicks === 7) window.location.href = 'zen-garden.html?tainted=true';
+                setTimeout(() => { window.zenithClicks = 0; }, 2000);
+            });
+
+            // Glitch/Braille Tainted
             document.addEventListener('click', e => {
                 if (e.target.classList.contains('card-tag')) {
                     window.tagClicks = (window.tagClicks || 0) + 1;
                     if (window.tagClicks === 7) window.location.href = 'glitch-text.html';
+                    if (window.tagClicks === 15) window.location.href = 'glitch-text.html?tainted=true';
                     setTimeout(() => { window.tagClicks = 0; }, 2000);
                 }
-                // Braille Action: Click card icons
                 if (e.target.classList.contains('card-preview-icon')) {
                     window.iconClicks = (window.iconClicks || 0) + 1;
                     if (window.iconClicks === 5) window.location.href = 'braille-translator.html';
+                    if (window.iconClicks === 10) window.location.href = 'braille-translator.html?tainted=true';
                     setTimeout(() => { window.iconClicks = 0; }, 2000);
                 }
             });
 
-            // Deep Action: Double click scroll-top button while visible
-            scrollBtn.addEventListener('dblclick', () => {
-                window.location.href = 'deep.html';
-            });
-
-            // Limbo Action: Stay on no-results
+            // Limbo Tainted
             setInterval(() => {
                 if (noResults.classList.contains('visible')) {
                     window.limboTime = (window.limboTime || 0) + 1;
-                    if (window.limboTime >= 20) window.location.href = 'limbo.html';
+                    if (window.limboTime === 20) window.location.href = 'limbo.html';
+                    if (window.limboTime === 60) window.location.href = 'limbo.html?tainted=true';
                 } else {
                     window.limboTime = 0;
                 }
             }, 1000);
 
-            // Backrooms Action: Click footer area 5 times
-            let bgClicks = 0;
+            // Backrooms Tainted
             document.querySelector('footer').addEventListener('click', (e) => {
                 if (e.target === document.querySelector('footer') || e.target.tagName === 'P') {
-                    bgClicks++;
-                    if (bgClicks === 5) window.location.href = 'backrooms.html';
-                    setTimeout(() => { bgClicks = 0; }, 3000);
+                    window.bgClicks = (window.bgClicks || 0) + 1;
+                    if (e.altKey && window.bgClicks === 5) window.location.href = 'backrooms.html?tainted=true';
+                    else if (window.bgClicks === 5) window.location.href = 'backrooms.html';
+                    setTimeout(() => { window.bgClicks = 0; }, 3000);
                 }
+            });
+
+            // Static Tainted
+            search.addEventListener('focus', () => {
+                window.focusClicks = (window.focusClicks || 0) + 1;
+                if (window.focusClicks === 5) window.location.href = 'static.html';
+                if (window.focusClicks === 10) window.location.href = 'static.html?tainted=true';
+                setTimeout(() => { window.focusClicks = 0; }, 3000);
             });
 
             // Show guide link if unlocked
