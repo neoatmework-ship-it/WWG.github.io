@@ -293,17 +293,30 @@
         const pianoEl = document.getElementById('piano');
         function buildPiano() { pianoEl.innerHTML = ''; let wi = 0; NOTES.forEach((n, i) => { if (n.type === 'white') { const el = document.createElement('div'); el.className = 'key white-key'; el.dataset.index = i; el.style.setProperty('--key-color', n.color); el.innerHTML = `<span class="key-label">${n.key.toUpperCase()}</span>`; pianoEl.appendChild(el); wi++ } }); wi = 0; NOTES.forEach((n, i) => { if (n.type === 'white') { wi++; return } const el = document.createElement('div'); el.className = 'key black-key'; el.dataset.index = i; el.style.setProperty('--key-color', n.color); const ww = pianoEl.querySelector('.white-key')?.offsetWidth || 56; el.style.left = ((wi - 1) * ww + ww * .7) + 'px'; el.innerHTML = `<span class="key-label">${n.key.toUpperCase()}</span>`; pianoEl.appendChild(el) }) }
         buildPiano(); window.addEventListener('resize', () => setTimeout(buildPiano, 100));
-        // Secret Sequence tracker
+
+        // Secret: Spectrum (Hover all keys in 3s)
+        let hoveredKeys = new Set();
+        let hoverTimer = null;
+        function checkSpectrum(idx) {
+            hoveredKeys.add(idx);
+            if (hoveredKeys.size === NOTES.length) {
+                window.location.href = 'spectrum.html';
+            }
+            clearTimeout(hoverTimer);
+            hoverTimer = setTimeout(() => hoveredKeys.clear(), 3000);
+        }
+
+        // Secret Sequence tracker (Starlight)
         const secretSequence = ['C4', 'C4', 'G4', 'G4', 'A4', 'A4', 'G4'];
         let currentSequence = [];
 
         function pressKey(i) {
             const n = NOTES[i];
             if (!n) return;
-
             playNote(n.freq);
             triggerVisual(n.color, n.hue);
             spawnParticles(i, n.color);
+            checkSpectrum(i);
 
             const el = pianoEl.querySelector(`[data-index="${i}"]`);
             if (el) {
@@ -311,17 +324,13 @@
                 setTimeout(() => el.classList.remove('pressed'), 200);
             }
 
-            // Starlight Secret Logic
             currentSequence.push(n.note);
-            if (currentSequence.length > secretSequence.length) {
-                currentSequence.shift();
-            }
-
+            if (currentSequence.length > secretSequence.length) currentSequence.shift();
             if (currentSequence.join(',') === secretSequence.join(',')) {
                 setTimeout(() => {
                     document.body.style.transition = 'opacity 2s ease';
                     document.body.style.opacity = '0';
-                    setTimeout(() => window.location.href = 'starlight.html?tainted=true', 1500);
+                    setTimeout(() => window.location.href = 'starlight.html', 1500);
                 }, 1000);
             }
         }
@@ -338,64 +347,68 @@
         function spawnParticles(index, color) { const el = pianoEl.querySelector(`[data-index="${index}"]`); if (!el) return; const rect = el.getBoundingClientRect(); const cx = rect.left + rect.width / 2, cy = rect.top; for (let i = 0; i < 8; i++) { const p = document.createElement('div'); p.className = 'particle'; const sz = 4 + Math.random() * 6; p.style.width = sz + 'px'; p.style.height = sz + 'px'; p.style.background = color; p.style.boxShadow = `0 0 12px ${color}`; p.style.left = cx + 'px'; p.style.top = cy + 'px'; document.body.appendChild(p); const angle = -Math.PI / 2 + (Math.random() - .5) * Math.PI; const spd = 2 + Math.random() * 4; let vx = Math.cos(angle) * spd, vy = Math.sin(angle) * spd, x = cx, y = cy, a = 1; (function anim() { x += vx; y += vy + .5; a -= .02; if (a <= 0) { p.remove(); return } p.style.left = x + 'px'; p.style.top = y + 'px'; p.style.opacity = a; requestAnimationFrame(anim) })() } }
     </script>
 
-    
 
 
 
-<!-- WWG_NAV_START -->
-<style>
-.wwg-nav {
-    position: fixed;
-    bottom: 20px;
-    right: 20px;
-    display: flex;
-    gap: 10px;
-    z-index: 99999;
-}
-.wwg-nav a {
-    background: rgba(10, 10, 15, 0.7);
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    color: #a78bfa;
-    padding: 8px 16px;
-    border-radius: 20px;
-    font-family: 'Space Grotesk', sans-serif;
-    font-size: 0.8rem;
-    font-weight: 600;
-    text-decoration: none;
-    transition: all 0.3s ease;
-}
-.wwg-nav a:hover {
-    background: rgba(167, 139, 250, 0.2);
-    border-color: rgba(167, 139, 250, 0.4);
-    color: #fff;
-    transform: translateY(-2px);
-    box-shadow: 0 4px 15px rgba(167, 139, 250, 0.3);
-}
-<script>
-(function() {
-    let sequence = '';
-    const trigger = 'PNPNPN';
-    document.querySelectorAll('.wwg-nav a').forEach(a => {
-        a.addEventListener('click', (e) => {
-            const type = a.textContent.includes('Prev') ? 'P' : 'N';
-            sequence += type;
-            if (sequence.length > 6) sequence = sequence.substring(1);
-            if (sequence === trigger) {
-                e.preventDefault();
-                window.location.href = 'time-loop.html';
-            }
-        });
-    });
-})();
-</script>
-</style>
-<div class="wwg-nav">
-    <a href="gravity-playground.html">â† Prev</a>
-    <a href="harmonograph.html">Next â†’</a>
-</div>
-<!-- WWG_NAV_END -->
+
+
+
+    <!-- WWG_NAV_START -->
+    <style>
+        .wwg-nav {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            display: flex;
+            gap: 10px;
+            z-index: 99999;
+        }
+
+        .wwg-nav a {
+            background: rgba(10, 10, 15, 0.7);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: #a78bfa;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 0.8rem;
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+
+        .wwg-nav a:hover {
+            background: rgba(167, 139, 250, 0.2);
+            border-color: rgba(167, 139, 250, 0.4);
+            color: #fff;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(167, 139, 250, 0.3);
+        }
+    </style>
+    <script>
+        (function () {
+            let sequence = '';
+            const trigger = 'PNPNPN';
+            document.querySelectorAll('.wwg-nav a').forEach(a => {
+                a.addEventListener('click', (e) => {
+                    const type = a.innerText.includes('Prev') ? 'P' : 'N';
+                    sequence += type;
+                    if (sequence.length > 6) sequence = sequence.substring(1);
+                    if (sequence === trigger) {
+                        e.preventDefault();
+                        window.location.href = 'time-loop.html';
+                    }
+                });
+            });
+        })();
+    </script>
+    <div class="wwg-nav">
+        <a href="gravity-playground.html">← Prev</a>
+        <a href="harmonograph.html">Next →</a>
+    </div>
+    <!-- WWG_NAV_END -->
 </body>
 
 </html>

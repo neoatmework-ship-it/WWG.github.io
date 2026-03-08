@@ -272,6 +272,14 @@
         }
         window.addEventListener('mousedown', playDrone, { once: true });
 
+        // Secret: Solstice (Type "sun" on eclipse page)
+        let sunBuf = '';
+        window.addEventListener('keydown', e => {
+            sunBuf += e.key.toLowerCase();
+            if (sunBuf.endsWith('sun')) window.location.href = 'solstice.html';
+            if (sunBuf.length > 10) sunBuf = sunBuf.substring(1);
+        });
+
     </script>
 </body>
 

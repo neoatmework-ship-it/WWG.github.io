@@ -2405,7 +2405,27 @@
                 'gravityshift': 'gravity-shift.html',
                 'timeloop': 'time-loop.html',
                 'binaryforest': 'binary-forest.html',
-                'observer': 'the-observer.html'
+                'observer': 'the-observer.html',
+                'vhstape': 'analog.html',
+                'rainbow': 'spectrum.html',
+                'decode': 'cipher.html',
+                'reverb': 'echo.html',
+                'fairytale': 'fable.html',
+                'sparkle': 'glimmer.html',
+                'singularity': 'horizon.html',
+                'history': 'imprint.html',
+                'solution': 'jigsaw.html',
+                'momentum': 'kinetic.html',
+                'structure': 'lattice.html',
+                'obelisk': 'monolith.html',
+                'gascloud': 'nebula.html',
+                'prophecy': 'oracle.html',
+                'depth': 'parallax.html',
+                'gem': 'quartz.html',
+                'ping': 'resonance.html',
+                'longestday': 'solstice.html',
+                'anchor': 'tether.html',
+                'power': 'ultra.html'
             };
 
             search.addEventListener('keydown', e => {
@@ -2442,7 +2462,6 @@
             });
 
             // WWG Title 5-click secret (Mirror)
-            // WWG Title Secrets
             document.getElementById('wwg-title').addEventListener('click', (e) => {
                 const now = Date.now();
                 if (now - window.wwgTimer > 800) window.wwgClicks = 0;
@@ -2451,24 +2470,13 @@
 
                 if (e.altKey) { window.location.href = 'the-chosen.html'; return; }
                 if (e.shiftKey) { window.location.href = 'starlight.html'; return; }
-                if (e.ctrlKey && e.altKey) { window.location.href = 'eclipse.html?tainted=true'; return; }
                 if (e.ctrlKey) { window.location.href = 'eclipse.html'; return; }
 
                 if (window.wwgClicks === 5) {
                     window.location.href = 'mirror.html';
-                } else if (window.wwgClicks === 10) {
-                    window.location.href = 'mirror.html?tainted=true';
                 }
             });
 
-            document.getElementById('wwg-title').addEventListener('dblclick', () => {
-                window.location.href = 'deep.html?tainted=true';
-            });
-
-            const footerText = document.getElementById('footer-text');
-            footerText.addEventListener('dblclick', () => {
-                window.location.href = 'classified.html?tainted=true';
-            });
 
             // Scroll to top
             window.addEventListener('scroll', () => {
@@ -2485,41 +2493,58 @@
                     if (keySequence.length > 20) keySequence = keySequence.substring(1);
 
                     if (keySequence.endsWith('hello')) window.location.href = 'ghost.html';
-                    if (keySequence.endsWith('valley')) window.location.href = 'ghost.html?tainted=true';
                     if (keySequence.endsWith('cmd')) window.location.href = 'terminal.html';
-                    if (keySequence.endsWith('rootroot')) window.location.href = 'terminal.html?tainted=true';
                     else if (keySequence.endsWith('root')) window.location.href = 'terminal.html';
                     if (keySequence.endsWith('3sc4p3')) window.location.href = 'archive.html';
                     if (keySequence.endsWith('flip')) window.location.href = 'gravity-shift.html';
-                    if (keySequence.endsWith('invert')) window.location.href = 'gravity-shift.html?tainted=true';
                     if (keySequence.endsWith('eye')) window.location.href = 'the-observer.html';
-                    if (keySequence.endsWith('stalker')) window.location.href = 'the-observer.html?tainted=true';
                     if (keySequence.endsWith('tree')) window.location.href = 'binary-forest.html';
-                    if (keySequence.endsWith('forest')) window.location.href = 'binary-forest.html?tainted=true';
+
+                    // New Triggers
+                    if (keySequence.endsWith('vhstape')) window.location.href = 'analog.html';
+                    if (keySequence.endsWith('rainbow')) window.location.href = 'spectrum.html';
+                    if (keySequence.endsWith('decode')) window.location.href = 'cipher.html';
+                    if (keySequence.endsWith('reverb')) window.location.href = 'echo.html';
+                    if (keySequence.endsWith('fairytale')) window.location.href = 'fable.html';
+                    if (keySequence.endsWith('sparkle')) window.location.href = 'glimmer.html';
+                    if (keySequence.endsWith('singularity')) window.location.href = 'horizon.html';
+                    if (keySequence.endsWith('history')) window.location.href = 'imprint.html';
+                    if (keySequence.endsWith('solution')) window.location.href = 'jigsaw.html';
+                    if (keySequence.endsWith('momentum')) window.location.href = 'kinetic.html';
+                    if (keySequence.endsWith('structure')) window.location.href = 'lattice.html';
+                    if (keySequence.endsWith('obelisk')) window.location.href = 'monolith.html';
+                    if (keySequence.endsWith('gascloud')) window.location.href = 'nebula.html';
+                    if (keySequence.endsWith('prophecy')) window.location.href = 'oracle.html';
+                    if (keySequence.endsWith('depth')) window.location.href = 'parallax.html';
+                    if (keySequence.endsWith('gem')) window.location.href = 'quartz.html';
+                    if (keySequence.endsWith('ping')) window.location.href = 'resonance.html';
+                    if (keySequence.endsWith('longestday')) window.location.href = 'solstice.html';
+                    if (keySequence.endsWith('anchor')) window.location.href = 'tether.html';
+                    if (keySequence.endsWith('power')) window.location.href = 'ultra.html';
                 }
 
                 if (e.key === 'Enter' && isInput) {
                     const term = search.value.trim().toLowerCase();
                     if (e.shiftKey && term === 'void') window.location.href = 'glitch-void.html';
-                    if (e.ctrlKey && term === 'glitchvoid') window.location.href = 'glitch-void.html?tainted=true';
                 }
             });
 
-            // Inactivity (Void Tainted)
+            // Inactivity (Void / Echo)
             let voidTimer;
             const startVoidTimer = () => {
                 clearTimeout(voidTimer);
                 voidTimer = setTimeout(() => {
-                    window.location.href = 'void.html?tainted=true';
-                }, 60000); // 60s for Tainted
-
-                // Track normal void (30s)
-                setTimeout(() => {
-                    if (Date.now() - (window.lastMove || 0) > 30000) {
-                        if (!window.location.search.includes('tainted'))
-                            window.location.href = 'void.html';
+                    const elapsed = Date.now() - (window.lastMove || 0);
+                    if (elapsed > 30000) {
+                        window.location.href = 'void.html';
+                    } else if (elapsed > 10000) {
+                        // Secret: Echo (10s on a non-index page)
+                        const path = window.location.pathname;
+                        if (path.includes('.html') && !path.endsWith('index.html')) {
+                            window.location.href = 'echo.html';
+                        }
                     }
-                }, 30000);
+                }, 10000); // Check every 10s
             };
             window.addEventListener('mousemove', () => { window.lastMove = Date.now(); startVoidTimer(); });
             window.addEventListener('keydown', () => { window.lastMove = Date.now(); startVoidTimer(); });
@@ -2538,87 +2563,189 @@
             document.getElementById('footer-version').addEventListener('click', () => {
                 versionClicks++;
                 if (versionClicks === 3) window.location.href = 'blueprint.html';
-                if (versionClicks === 7) window.location.href = 'blueprint.html?tainted=true';
                 setTimeout(() => { versionClicks = 0; }, 3000);
             });
 
-            // Underground Action: Triple-click Suggest Button
+            // Blackhole: Triple click nr-emoji
+            document.querySelector('.nr-emoji').addEventListener('click', () => {
+                window.location.href = 'blackhole.html';
+            });
+
+            // Zenith: 3 clicks hero subtext
+            const heroSub = document.querySelector('.hero p[style*="letter-spacing: 3px"]');
+            heroSub.addEventListener('click', () => {
+                window.zenithClicks = (window.zenithClicks || 0) + 1;
+                if (window.zenithClicks === 3) window.location.href = 'zen-garden.html';
+                setTimeout(() => { window.zenithClicks = 0; }, 2000);
+            });
+
+            // Underground: Triple click any Suggest Button
             let suggestClicks = 0;
             document.querySelectorAll('.suggest-btn').forEach(btn => {
-                btn.addEventListener('click', (e) => {
+                btn.addEventListener('click', () => {
                     suggestClicks++;
                     if (suggestClicks === 3) window.location.href = 'underground.html';
                     setTimeout(() => { suggestClicks = 0; }, 2000);
                 });
             });
-            document.querySelector('.modal h2').addEventListener('click', () => {
-                window.modalTitleClicks = (window.modalTitleClicks || 0) + 1;
-                if (window.modalTitleClicks === 3) window.location.href = 'underground.html?tainted=true';
-                setTimeout(() => { window.modalTitleClicks = 0; }, 2000);
+
+            // Resonance Trigger (Find my secrets + Ctrl)
+            document.querySelector('.find-secrets')?.addEventListener('click', (e) => {
+                if (e.ctrlKey) window.location.href = 'resonance.html';
             });
 
-            // Blackhole Tainted: Triple click nr-emoji (Normal) and suggest button (Tainted)
-            document.querySelector('.nr-emoji').addEventListener('click', () => {
-                window.location.href = 'blackhole.html';
-            });
-            document.querySelector('#no-results .suggest-btn').addEventListener('click', () => {
-                window.nrSuggestClicks = (window.nrSuggestClicks || 0) + 1;
-                if (window.nrSuggestClicks === 3) window.location.href = 'blackhole.html?tainted=true';
-                setTimeout(() => { window.nrSuggestClicks = 0; }, 2000);
+            // Jigsaw Trigger (Search bar corners)
+            const sb = document.querySelector('.search-container');
+            if (sb) {
+                let jSeq = [];
+                sb.addEventListener('click', (e) => {
+                    const r = sb.getBoundingClientRect();
+                    const x = e.clientX - r.left;
+                    const y = e.clientY - r.top;
+                    let pos = '';
+                    if (x < 50 && y < 30) pos = 'TL';
+                    if (x > r.width - 50 && y < 30) pos = 'TR';
+                    if (x > r.width - 50 && y > r.height - 30) pos = 'BR';
+                    if (x < 50 && y > r.height - 30) pos = 'BL';
+                    if (pos) {
+                        jSeq.push(pos);
+                        if (jSeq.join(',') === 'TL,TR,BR,BL') window.location.href = 'jigsaw.html';
+                        if (jSeq.length > 4) jSeq.shift();
+                    }
+                });
+            }
+
+            // Kinetic Trigger (Rapid Scroll)
+            let lastScroll = 0;
+            let scrollSpikes = 0;
+            window.addEventListener('scroll', () => {
+                const now = Date.now();
+                const delta = Math.abs(window.scrollY - lastScroll);
+                if (delta > 200 && now - window.lastSpike < 500) {
+                    scrollSpikes++;
+                    if (scrollSpikes > 5) window.location.href = 'kinetic.html';
+                } else if (now - window.lastSpike > 1000) {
+                    scrollSpikes = 0;
+                }
+                lastScroll = window.scrollY;
+                window.lastSpike = now;
             });
 
-            // Zenith Tainted: 7 clicks hero subtext
-            const heroSub = document.querySelector('.hero p[style*="letter-spacing: 3px"]');
-            heroSub.addEventListener('click', () => {
-                window.zenithClicks = (window.zenithClicks || 0) + 1;
-                if (window.zenithClicks === 3) window.location.href = 'zen-garden.html';
-                if (window.zenithClicks === 7) window.location.href = 'zen-garden.html?tainted=true';
-                setTimeout(() => { window.zenithClicks = 0; }, 2000);
+            // Tether Trigger (Category Icons)
+            document.addEventListener('click', (e) => {
+                if (e.target.classList.contains('category-icon')) {
+                    window.tetherClicks = (window.tetherClicks || 0) + 1;
+                    if (window.tetherClicks === 3) window.location.href = 'tether.html';
+                    setTimeout(() => window.tetherClicks = 0, 2000);
+                }
             });
 
-            // Glitch/Braille Tainted
+            // Glitch/Braille Actions
             document.addEventListener('click', e => {
                 if (e.target.classList.contains('card-tag')) {
                     window.tagClicks = (window.tagClicks || 0) + 1;
                     if (window.tagClicks === 7) window.location.href = 'glitch-text.html';
-                    if (window.tagClicks === 15) window.location.href = 'glitch-text.html?tainted=true';
                     setTimeout(() => { window.tagClicks = 0; }, 2000);
                 }
                 if (e.target.classList.contains('card-preview-icon')) {
                     window.iconClicks = (window.iconClicks || 0) + 1;
                     if (window.iconClicks === 5) window.location.href = 'braille-translator.html';
-                    if (window.iconClicks === 10) window.location.href = 'braille-translator.html?tainted=true';
                     setTimeout(() => { window.iconClicks = 0; }, 2000);
                 }
             });
 
-            // Limbo Tainted
+            // Ultra Trigger (Power up Useful Button)
+            // Handled via keyword "power" but adding a hidden click area too
+            document.querySelector('.status-dot')?.addEventListener('click', () => {
+                window.powerClicks = (window.powerClicks || 0) + 1;
+                if (window.powerClicks === 10) window.location.href = 'ultra.html';
+            });
+
+            // Limbo: Inactivity on No Results
             setInterval(() => {
                 if (noResults.classList.contains('visible')) {
                     window.limboTime = (window.limboTime || 0) + 1;
                     if (window.limboTime === 20) window.location.href = 'limbo.html';
-                    if (window.limboTime === 60) window.location.href = 'limbo.html?tainted=true';
                 } else {
                     window.limboTime = 0;
                 }
             }, 1000);
 
-            // Backrooms Tainted
+            // Backrooms: Footer clicks
             document.querySelector('footer').addEventListener('click', (e) => {
                 if (e.target === document.querySelector('footer') || e.target.tagName === 'P') {
                     window.bgClicks = (window.bgClicks || 0) + 1;
-                    if (e.altKey && window.bgClicks === 5) window.location.href = 'backrooms.html?tainted=true';
-                    else if (window.bgClicks === 5) window.location.href = 'backrooms.html';
+                    if (window.bgClicks === 5) window.location.href = 'backrooms.html';
                     setTimeout(() => { window.bgClicks = 0; }, 3000);
                 }
             });
 
-            // Static Tainted
+            // Static: Focus clicks
             search.addEventListener('focus', () => {
                 window.focusClicks = (window.focusClicks || 0) + 1;
                 if (window.focusClicks === 5) window.location.href = 'static.html';
-                if (window.focusClicks === 10) window.location.href = 'static.html?tainted=true';
                 setTimeout(() => { window.focusClicks = 0; }, 3000);
+            });
+
+            // Action Triggers for New Secrets
+            window.addEventListener('resize', () => {
+                if (window.event && window.event.shiftKey) {
+                    window.location.href = 'parallax.html';
+                }
+            });
+
+            document.getElementById('discovery-stats')?.addEventListener('click', () => {
+                window.statsClicks = (window.statsClicks || 0) + 1;
+                if (window.statsClicks === 2) window.location.href = 'analog.html';
+                setTimeout(() => { window.statsClicks = 0; }, 2000);
+            });
+
+            // Mouse Circle Trigger (Imprint)
+            let mouseBuffer = [];
+            window.addEventListener('mousemove', (e) => {
+                mouseBuffer.push({ x: e.clientX, y: e.clientY, t: Date.now() });
+                if (mouseBuffer.length > 50) mouseBuffer.shift();
+                // Simple circular motion heuristic
+                if (mouseBuffer.length === 50 && Date.now() - mouseBuffer[0].t < 1000) {
+                    let minX = Math.min(...mouseBuffer.map(m => m.x));
+                    let maxX = Math.max(...mouseBuffer.map(m => m.x));
+                    let minY = Math.min(...mouseBuffer.map(m => m.y));
+                    let maxY = Math.max(...mouseBuffer.map(m => m.y));
+                    if ((maxX - minX) > 100 && (maxY - minY) > 100) {
+                        // Check if it's "circular" by comparing range width vs height
+                        if (Math.abs((maxX - minX) - (maxY - minY)) < 50) {
+                            window.circleCount = (window.circleCount || 0) + 1;
+                            if (window.circleCount > 4) window.location.href = 'imprint.html';
+                            mouseBuffer = [];
+                        }
+                    }
+                }
+            });
+
+            // Spectrum/Monolith/Quartz/Oracle Triggers
+            // These are handled by being ON their respective specific pages:
+            // Spectrum: Hover Color Piano keys (handled in piano logic if I add it)
+            // Oracle: Type "future" on soup oracle page
+            window.addEventListener('keydown', (e) => {
+                const path = window.location.pathname;
+                const term = e.key.toLowerCase();
+                window.kBuf = (window.kBuf || '') + term;
+                if (window.kBuf.length > 10) window.kBuf = window.kBuf.substring(1);
+
+                if (path.includes('soup-oracle.html') && window.kBuf.endsWith('future')) window.location.href = 'oracle.html';
+                if (path.includes('terminal.html') && window.kBuf.endsWith('1234')) window.location.href = 'cipher.html';
+                if (path.includes('sand-sim.html') && window.kBuf.endsWith('gem')) window.location.href = 'quartz.html';
+                if (path.includes('eclipse.html') && window.kBuf.endsWith('sun')) window.location.href = 'solstice.html';
+            });
+
+            // Fable Trigger (Triple click Return on any page)
+            document.querySelector('.back-link, .wwg-back-btn')?.addEventListener('click', (e) => {
+                window.backLinkClicks = (window.backLinkClicks || 0) + 1;
+                if (window.backLinkClicks === 3) {
+                    e.preventDefault();
+                    window.location.href = 'fable.html';
+                }
+                setTimeout(() => window.backLinkClicks = 0, 3000);
             });
 
             // Show guide link if unlocked

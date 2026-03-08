@@ -172,6 +172,14 @@
             }
         };
 
+        // Secret: Ultra (Type "power" on useful button page)
+        let pwBuffer = '';
+        window.addEventListener('keydown', e => {
+            pwBuffer += e.key.toLowerCase();
+            if (pwBuffer.endsWith('power')) window.location.href = 'ultra.html';
+            if (pwBuffer.length > 10) pwBuffer = pwBuffer.substring(1);
+        });
+
         function spawnParticles(x, y) {
             for (let i = 0; i < 10; i++) {
                 particles.push({

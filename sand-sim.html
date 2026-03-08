@@ -362,12 +362,19 @@
                 material = btn.dataset.m;
             });
         });
-
         const brushInput = document.getElementById('brush-size');
         const sizeVal = document.getElementById('size-val');
         brushInput.addEventListener('input', () => { brushSize = +brushInput.value; sizeVal.textContent = brushSize; });
 
         document.getElementById('clear-btn').addEventListener('click', () => { grid.fill(0); life.fill(0); });
+
+        // Secret: Quartz (Type "gem" on sand sim page)
+        let gemBuf = '';
+        window.addEventListener('keydown', e => {
+            gemBuf += e.key.toLowerCase();
+            if (gemBuf.endsWith('gem')) window.location.href = 'quartz.html';
+            if (gemBuf.length > 10) gemBuf = gemBuf.substring(1);
+        });
 
         function loop() {
             step();
@@ -382,60 +389,64 @@
 
 
 
-<!-- WWG_NAV_START -->
-<style>
-.wwg-nav {
-    position: fixed;
-    bottom: 20px;
-    right: 20px;
-    display: flex;
-    gap: 10px;
-    z-index: 99999;
-}
-.wwg-nav a {
-    background: rgba(10, 10, 15, 0.7);
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    color: #a78bfa;
-    padding: 8px 16px;
-    border-radius: 20px;
-    font-family: 'Space Grotesk', sans-serif;
-    font-size: 0.8rem;
-    font-weight: 600;
-    text-decoration: none;
-    transition: all 0.3s ease;
-}
-.wwg-nav a:hover {
-    background: rgba(167, 139, 250, 0.2);
-    border-color: rgba(167, 139, 250, 0.4);
-    color: #fff;
-    transform: translateY(-2px);
-    box-shadow: 0 4px 15px rgba(167, 139, 250, 0.3);
-}
-<script>
-(function() {
-    let sequence = '';
-    const trigger = 'PNPNPN';
-    document.querySelectorAll('.wwg-nav a').forEach(a => {
-        a.addEventListener('click', (e) => {
-            const type = a.textContent.includes('Prev') ? 'P' : 'N';
-            sequence += type;
-            if (sequence.length > 6) sequence = sequence.substring(1);
-            if (sequence === trigger) {
-                e.preventDefault();
-                window.location.href = 'time-loop.html';
-            }
-        });
-    });
-})();
-</script>
-</style>
-<div class="wwg-nav">
-    <a href="memory-matrix.html">← Prev</a>
-    <a href="signal-interceptor.html">Next →</a>
-</div>
-<!-- WWG_NAV_END -->
+
+
+    <!-- WWG_NAV_START -->
+    <style>
+        .wwg-nav {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            display: flex;
+            gap: 10px;
+            z-index: 99999;
+        }
+
+        .wwg-nav a {
+            background: rgba(10, 10, 15, 0.7);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: #a78bfa;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 0.8rem;
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+
+        .wwg-nav a:hover {
+            background: rgba(167, 139, 250, 0.2);
+            border-color: rgba(167, 139, 250, 0.4);
+            color: #fff;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(167, 139, 250, 0.3);
+        }
+    </style>
+    <script>
+        (function () {
+            let sequence = '';
+            const trigger = 'PNPNPN';
+            document.querySelectorAll('.wwg-nav a').forEach(a => {
+                a.addEventListener('click', (e) => {
+                    const type = a.innerText.includes('Prev') ? 'P' : 'N';
+                    sequence += type;
+                    if (sequence.length > 6) sequence = sequence.substring(1);
+                    if (sequence === trigger) {
+                        e.preventDefault();
+                        window.location.href = 'time-loop.html';
+                    }
+                });
+            });
+        })();
+    </script>
+    <div class="wwg-nav">
+        <a href="memory-matrix.html">← Prev</a>
+        <a href="signal-interceptor.html">Next →</a>
+    </div>
+    <!-- WWG_NAV_END -->
 </body>
 
 </html>

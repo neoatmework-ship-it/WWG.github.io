@@ -59,20 +59,17 @@ pages.forEach((page, i) => {
     transform: translateY(-2px);
     box-shadow: 0 4px 15px rgba(167, 139, 250, 0.3);
 }
+</style>
 <script>
 (function() {
     let sequence = '';
     const trigger = 'PNPNPN';
-    const tTrigger = 'PNPNPNPN';
     document.querySelectorAll('.wwg-nav a').forEach(a => {
         a.addEventListener('click', (e) => {
             const type = a.innerText.includes('Prev') ? 'P' : 'N';
             sequence += type;
-            if (sequence.length > 10) sequence = sequence.substring(1);
-            if (sequence.endsWith(tTrigger)) {
-                e.preventDefault();
-                window.location.href = 'time-loop.html?tainted=true';
-            } else if (sequence.endsWith(trigger)) {
+            if (sequence.length > 6) sequence = sequence.substring(1);
+            if (sequence === trigger) {
                 e.preventDefault();
                 window.location.href = 'time-loop.html';
             }
@@ -80,7 +77,6 @@ pages.forEach((page, i) => {
     });
 })();
 </script>
-</style>
 <div class="wwg-nav">
     <a href="${prev}">← Prev</a>
     <a href="${next}">Next →</a>
@@ -120,9 +116,9 @@ if (!uHtml.includes('konamiCode')) {
     console.log('injected konami code into useless-buttons.html');
 }
 
-// 4. Update index.html spoiler count
+// 4. Update index.html spoiler count (Resetting if needed or keeping at 11)
 let idxHtml = fs.readFileSync(path.join(dir, 'index.html'), 'utf8');
-idxHtml = idxHtml.replace(/>Spoilers \(11\)<\/a>/g, '>Spoilers (13)</a>');
+idxHtml = idxHtml.replace(/>Spoilers \(\d+\)<\/a>/g, '>Spoilers (11)</a>');
 fs.writeFileSync(path.join(dir, 'index.html'), idxHtml);
 
 // 5. Update complete

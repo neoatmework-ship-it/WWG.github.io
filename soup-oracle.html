@@ -351,8 +351,6 @@
 </head>
 
 <body>
-
-    <!-- WWG Back Button -->
     <style>
         .wwg-back-btn {
             position: fixed;
@@ -477,10 +475,10 @@
             { name: 'Peas', emoji: '🟢', amount: '1 cup, fresh or frozen' },
             { name: 'Sweet Potato', emoji: '🍠', amount: '1 large, cubed' },
             { name: 'Zucchini', emoji: '🥒', amount: '2, half-moons' },
-            { name: 'Bell Pepper', emoji: '', amount: '1, diced' },
+            { name: 'Bell Pepper', emoji: '🫑', amount: '1, diced' },
             { name: 'Broccoli', emoji: '🥦', amount: '1 head, in florets' },
             { name: 'Turnip', emoji: '🥔', amount: '2, peeled and cubed' },
-            { name: 'Green Beans', emoji: '', amount: '1 cup, trimmed' }
+            { name: 'Green Beans', emoji: '🎋', amount: '1 cup, trimmed' }
         ];
         const AROMATICS = [
             { name: 'Garlic', emoji: '🧄', amount: '4 cloves, minced' },
@@ -538,7 +536,6 @@
             const adj = pick(ADJECTIVES);
             const method = pick(METHODS);
 
-            // Build name
             const mainVeg = vegs[0].name;
             const soupName = `${adj} ${mainVeg} & ${protein.name} Soup`;
             const subtitle = `A ${base.flavor} soup to warm the coldest heart`;
@@ -556,14 +553,13 @@
             const warmths = ['☀️', '☀️☀️', '☀️☀️☀️', '🔥', '🔥🔥'];
             const warmth = warmths[Math.floor(Math.random() * warmths.length)];
 
-            // Render
             document.getElementById('soup-name').textContent = soupName;
             document.getElementById('soup-subtitle').textContent = subtitle;
             const list = document.getElementById('ingredients');
             list.innerHTML = '';
             allIngredients.forEach(ing => {
                 const li = document.createElement('li');
-                li.innerHTML = `<span class="ing-name"><span class="ing-emoji">${ing.emoji}</span>${ing.name}</span><span class="ing-amount">${ing.amount}</span>`;
+                li.innerHTML = `<span class="ing-name"><span class="ing-emoji">${ing.emoji || ''}</span>${ing.name}</span><span class="ing-amount">${ing.amount}</span>`;
                 list.appendChild(li);
             });
             document.getElementById('method').textContent = method;
@@ -576,7 +572,6 @@
             void card.offsetWidth;
             card.classList.add('show');
 
-            // History
             history.unshift({ name: soupName, time: new Date() });
             if (history.length > 8) history.pop();
             renderHistory();
@@ -598,66 +593,72 @@
 
         document.getElementById('brew-btn').addEventListener('click', generateSoup);
         generateSoup();
+
+        // Secret: Oracle (Type "future" on soup oracle page)
+        let orBuf = '';
+        window.addEventListener('keydown', e => {
+            orBuf += e.key.toLowerCase();
+            if (orBuf.endsWith('future')) window.location.href = 'oracle.html';
+            if (orBuf.length > 10) orBuf = orBuf.substring(1);
+        });
     </script>
 
+    <!-- WWG_NAV_START -->
+    <style>
+        .wwg-nav {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            display: flex;
+            gap: 10px;
+            z-index: 99999;
+        }
 
+        .wwg-nav a {
+            background: rgba(10, 10, 15, 0.7);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: #a78bfa;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 0.8rem;
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
 
-
-
-<!-- WWG_NAV_START -->
-<style>
-.wwg-nav {
-    position: fixed;
-    bottom: 20px;
-    right: 20px;
-    display: flex;
-    gap: 10px;
-    z-index: 99999;
-}
-.wwg-nav a {
-    background: rgba(10, 10, 15, 0.7);
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    color: #a78bfa;
-    padding: 8px 16px;
-    border-radius: 20px;
-    font-family: 'Space Grotesk', sans-serif;
-    font-size: 0.8rem;
-    font-weight: 600;
-    text-decoration: none;
-    transition: all 0.3s ease;
-}
-.wwg-nav a:hover {
-    background: rgba(167, 139, 250, 0.2);
-    border-color: rgba(167, 139, 250, 0.4);
-    color: #fff;
-    transform: translateY(-2px);
-    box-shadow: 0 4px 15px rgba(167, 139, 250, 0.3);
-}
-<script>
-(function() {
-    let sequence = '';
-    const trigger = 'PNPNPN';
-    document.querySelectorAll('.wwg-nav a').forEach(a => {
-        a.addEventListener('click', (e) => {
-            const type = a.textContent.includes('Prev') ? 'P' : 'N';
-            sequence += type;
-            if (sequence.length > 6) sequence = sequence.substring(1);
-            if (sequence === trigger) {
-                e.preventDefault();
-                window.location.href = 'time-loop.html';
-            }
-        });
-    });
-})();
-</script>
-</style>
-<div class="wwg-nav">
-    <a href="ambient-sounds.html">← Prev</a>
-    <a href="dessert-oracle.html">Next →</a>
-</div>
-<!-- WWG_NAV_END -->
+        .wwg-nav a:hover {
+            background: rgba(167, 139, 250, 0.2);
+            border-color: rgba(167, 139, 250, 0.4);
+            color: #fff;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(167, 139, 250, 0.3);
+        }
+    </style>
+    <script>
+        (function () {
+            let sequence = '';
+            const trigger = 'PNPNPN';
+            document.querySelectorAll('.wwg-nav a').forEach(a => {
+                a.addEventListener('click', (e) => {
+                    const type = a.innerText.includes('Prev') ? 'P' : 'N';
+                    sequence += type;
+                    if (sequence.length > 6) sequence = sequence.substring(1);
+                    if (sequence === trigger) {
+                        e.preventDefault();
+                        window.location.href = 'time-loop.html';
+                    }
+                });
+            });
+        })();
+    </script>
+    <div class="wwg-nav">
+        <a href="ambient-sounds.html">← Prev</a>
+        <a href="dessert-oracle.html">Next →</a>
+    </div>
+    <!-- WWG_NAV_END -->
 </body>
 
 </html>

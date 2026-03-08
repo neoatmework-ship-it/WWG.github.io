@@ -1420,6 +1420,8 @@
 
 
 
+
+
 <!-- WWG_NAV_START -->
 <style>
 .wwg-nav {
@@ -1451,13 +1453,14 @@
     transform: translateY(-2px);
     box-shadow: 0 4px 15px rgba(167, 139, 250, 0.3);
 }
+</style>
 <script>
 (function() {
     let sequence = '';
     const trigger = 'PNPNPN';
     document.querySelectorAll('.wwg-nav a').forEach(a => {
         a.addEventListener('click', (e) => {
-            const type = a.textContent.includes('Prev') ? 'P' : 'N';
+            const type = a.innerText.includes('Prev') ? 'P' : 'N';
             sequence += type;
             if (sequence.length > 6) sequence = sequence.substring(1);
             if (sequence === trigger) {
@@ -1468,7 +1471,6 @@
     });
 })();
 </script>
-</style>
 <div class="wwg-nav">
     <a href="dog-dress-up.html">← Prev</a>
     <a href="invisible-maze.html">Next →</a>

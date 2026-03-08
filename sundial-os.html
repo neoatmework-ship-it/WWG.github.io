@@ -890,6 +890,8 @@ Shadow (1m obj): <span>${alt > 0 ? shLen.toFixed(2) + 'm' : '∞ (below horizon)
 
 
 
+
+
 <!-- WWG_NAV_START -->
 <style>
 .wwg-nav {
@@ -921,13 +923,14 @@ Shadow (1m obj): <span>${alt > 0 ? shLen.toFixed(2) + 'm' : '∞ (below horizon)
     transform: translateY(-2px);
     box-shadow: 0 4px 15px rgba(167, 139, 250, 0.3);
 }
+</style>
 <script>
 (function() {
     let sequence = '';
     const trigger = 'PNPNPN';
     document.querySelectorAll('.wwg-nav a').forEach(a => {
         a.addEventListener('click', (e) => {
-            const type = a.textContent.includes('Prev') ? 'P' : 'N';
+            const type = a.innerText.includes('Prev') ? 'P' : 'N';
             sequence += type;
             if (sequence.length > 6) sequence = sequence.substring(1);
             if (sequence === trigger) {
@@ -938,7 +941,6 @@ Shadow (1m obj): <span>${alt > 0 ? shLen.toFixed(2) + 'm' : '∞ (below horizon)
     });
 })();
 </script>
-</style>
 <div class="wwg-nav">
     <a href="ghost-workshop.html">← Prev</a>
     <a href="story-dice.html">Next →</a>

@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>WWG Discovery Guide | The 25 Fragments</title>
+    <title>WWG Discovery Guide | The 45 Fragments</title>
     <link
         href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;700&family=Inter:wght@400;600&display=swap"
         rel="stylesheet">
@@ -172,7 +172,7 @@
 
     <div class="header">
         <h1>DISCOVERY GUIDE</h1>
-        <p class="desc">There are 25 core fragments hidden within this gallery. Use the hints below to salvage them for
+        <p class="desc">There are 45 core fragments hidden within this gallery. Use the hints below to salvage them for
             your Vault.</p>
     </div>
 
@@ -187,65 +187,71 @@
         }
 
         const secrets = [
-            { id: 'void', name: 'The Void', keyword: 'void', action: 'Stay perfectly still for 30 seconds.', tainted: 'Stay perfectly still for 60 seconds.' },
-            { id: 'ghost', name: 'The Ghost', keyword: 'ghost', action: 'Type "HELLO" anywhere on the main page.', tainted: 'Type "VALLEY" anywhere on the main page.' },
-            { id: 'classified', name: 'Classified Records', keyword: 'classified', action: 'Triple-click the ✦ symbol in the footer.', tainted: 'Double-click the creator name in the footer information.' },
-            { id: 'backrooms', name: 'The Backrooms', keyword: 'backrooms', action: 'Click the footer background 5 times.', tainted: 'Hold Alt and click the footer background 5 times.' },
-            { id: 'limbo', name: 'Dep. of Waiting', keyword: 'limbo', action: 'Stay on a "No Results" page for 20 seconds.', tainted: 'Stay on a "No Results" page for 60 seconds.' },
-            { id: 'static', name: '103.7 Broadcast', keyword: 'static', action: 'Focus the search bar 5 times rapidly.', tainted: 'Focus the search bar 10 times rapidly.' },
-            { id: 'deep', name: 'The Deep', keyword: 'deep', action: 'Double-click the ↑ button while scrolling.', tainted: 'Double-click the WWG logo in the hero section.' },
-            { id: 'underground', name: 'The Underground', keyword: 'underground', action: 'Triple-click the "Suggest Idea" button.', tainted: 'Triple-click the title inside the "Suggest Idea" popup.' },
-            { id: 'starlight', name: 'Starlight Observatory', keyword: 'starlight', action: 'Shift + Click the "WWG" title.', tainted: 'Play Twinkle Twinkle (C,C,G,G,A,A,G) on the Color Piano.' },
-            { id: 'eclipse', name: 'Solar Eclipse', keyword: 'eclipse', action: 'Ctrl + Click the "WWG" title.', tainted: 'Ctrl + Alt + Click the "WWG" title.' },
-            { id: 'mirror', name: 'Broken Mirror', keyword: 'mirror', action: 'Click the "WWG" title 5 times.', tainted: 'Click the "WWG" title 10 times.' },
-            { id: 'blackhole', name: 'Black Hole', keyword: 'blackhole', action: 'Triple-click the 🔍 emoji on the "No Results" screen.', tainted: 'Triple-click the "Suggest" button while on the "No Results" screen.' },
-            { id: 'chosen', name: 'The Chosen', keyword: 'chosen', action: 'Alt + Click the "WWG" title.', tainted: 'Roll 777 on the Emoji Slots.' },
-            { id: 'useful', name: 'The Useful Button', keyword: 'useful', action: 'Input the Konami code in "Useless Button Museum".', tainted: 'Input the Konami code in "DVD Simulator".' },
-            { id: 'corner', name: 'The Corner Room', keyword: 'corner', action: 'Wait for a corner hit in "DVD Simulator".', tainted: 'Wait for two consecutive corner hits in "DVD Simulator".' },
-            { id: 'braille', name: 'Braille Labs', keyword: 'braille', action: 'Click any card emoji 5 times.', tainted: 'Click any card emoji 10 times.' },
-            { id: 'glitch', name: 'Nexus Corrupt', keyword: 'glitch', action: 'Rapidly click any category tag 7 times.', tainted: 'Rapidly click any category tag 15 times.' },
-            { id: 'voidvoid', name: 'The Void Matrix', keyword: 'glitchvoid', action: 'Press Shift + Enter on "void" search.', tainted: 'Press Ctrl + Enter on "glitchvoid" search.' },
-            { id: 'terminal', name: 'System Terminal', keyword: 'terminal', action: 'Type "cmd" or "root" on home page.', tainted: 'Type "root" twice rapidly on home page.' },
-            { id: 'blueprint', name: 'Technical Blueprint', keyword: 'blueprint', action: 'Click the footer version number 3 times.', tainted: 'Click the footer version number 7 times.' },
-            { id: 'zenith', name: 'Zenith Sanctuary', keyword: 'zenith', action: 'Click "Find my secrets" 3 times.', tainted: 'Click "Find my secrets" 7 times.' },
-            { id: 'gravity', name: 'Gravity Shift', keyword: 'gravityshift', action: 'Type "flip" on home page.', tainted: 'Type "invert" on home page.' },
-            { id: 'timeloop', name: 'The Time Loop', keyword: 'timeloop', action: 'Sequence: P, N, P, N, P, N in navigation.', tainted: 'Sequence: P, N, P, N, P, N, P, N in navigation.' },
-            { id: 'forest', name: 'The Binary Forest', keyword: 'binaryforest', action: 'Type "tree" on home page.', tainted: 'Type "forest" on home page.' },
-            { id: 'observer', name: 'The Observer', keyword: 'observer', action: 'Type "eye" on home page.', tainted: 'Type "stalker" on home page.' }
+            { id: 'void', name: 'The Void', keyword: 'void', action: 'Stay perfectly still for 30 seconds.' },
+            { id: 'ghost', name: 'The Ghost', keyword: 'ghost', action: 'Type "HELLO" anywhere on the main page.' },
+            { id: 'classified', name: 'Classified Records', keyword: 'classified', action: 'Triple-click the ✦ symbol in the footer.' },
+            { id: 'backrooms', name: 'The Backrooms', keyword: 'backrooms', action: 'Click the footer background 5 times.' },
+            { id: 'limbo', name: 'Dep. of Waiting', keyword: 'limbo', action: 'Stay on a "No Results" page for 20 seconds.' },
+            { id: 'static', name: '103.7 Broadcast', keyword: 'static', action: 'Focus the search bar 5 times rapidly.' },
+            { id: 'deep', name: 'The Deep', keyword: 'deep', action: 'Double-click the ↑ button while scrolling.' },
+            { id: 'underground', name: 'The Underground', keyword: 'underground', action: 'Triple-click the "Suggest Idea" button.' },
+            { id: 'starlight', name: 'Starlight Observatory', keyword: 'starlight', action: 'Shift + Click the "WWG" title.' },
+            { id: 'eclipse', name: 'Solar Eclipse', keyword: 'eclipse', action: 'Ctrl + Click the "WWG" title.' },
+            { id: 'mirror', name: 'Broken Mirror', keyword: 'mirror', action: 'Click the "WWG" title 5 times.' },
+            { id: 'blackhole', name: 'Black Hole', keyword: 'blackhole', action: 'Triple-click the 🔍 emoji on the "No Results" screen.' },
+            { id: 'chosen', name: 'The Chosen', keyword: 'chosen', action: 'Alt + Click the "WWG" title.' },
+            { id: 'useful', name: 'The Useful Button', keyword: 'useful', action: 'Input the Konami code in "Useless Button Museum".' },
+            { id: 'corner', name: 'The Corner Room', keyword: 'corner', action: 'Wait for a corner hit in "DVD Simulator".' },
+            { id: 'braille', name: 'Braille Labs', keyword: 'braille', action: 'Click any card emoji 5 times.' },
+            { id: 'glitch', name: 'Nexus Corrupt', keyword: 'glitch', action: 'Rapidly click any category tag 7 times.' },
+            { id: 'voidvoid', name: 'The Void Matrix', keyword: 'glitchvoid', action: 'Press Shift + Enter on "void" search.' },
+            { id: 'terminal', name: 'System Terminal', keyword: 'terminal', action: 'Type "cmd" or "root" on home page.' },
+            { id: 'blueprint', name: 'Technical Blueprint', keyword: 'blueprint', action: 'Click the footer version number 3 times.' },
+            { id: 'zenith', name: 'Zenith Sanctuary', keyword: 'zenith', action: 'Click "Find my secrets" 3 times.' },
+            { id: 'gravity', name: 'Gravity Shift', keyword: 'gravityshift', action: 'Type "flip" on home page.' },
+            { id: 'timeloop', name: 'The Time Loop', keyword: 'timeloop', action: 'Sequence: P, N, P, N, P, N in navigation.' },
+            { id: 'forest', name: 'The Binary Forest', keyword: 'binaryforest', action: 'Type "tree" on home page.' },
+            { id: 'observer', name: 'The Observer', keyword: 'observer', action: 'Type "eye" on home page.' },
+            { id: 'analog', name: 'Analog Archive', keyword: 'vhstape', action: 'Click the footer "Secure" badge twice.' },
+            { id: 'spectrum', name: 'Spectrum Prism', keyword: 'rainbow', action: 'Hover over every color in the Color Piano within 3 seconds.' },
+            { id: 'cipher', name: 'The Cipher', keyword: 'decode', action: 'Type "1234" while on the Terminal page.' },
+            { id: 'echo', name: 'Echo Chamber', keyword: 'reverb', action: 'Wait for 10 seconds on any secret site without moving.' },
+            { id: 'fable', name: 'Forgotten Fable', keyword: 'fairytale', action: 'Click the "Return" link 3 times without leaving the page.' },
+            { id: 'glimmer', name: 'Glimmer Plane', keyword: 'sparkle', action: 'Triple-click any "Locked" slot in the Archive.' },
+            { id: 'horizon', name: 'Event Horizon', keyword: 'singularity', action: 'Triple-click the "The Archive Vault" title in the archive.' },
+            { id: 'imprint', name: 'Residual Imprint', keyword: 'history', action: 'Quickly move your mouse in a circle 5 times on the home page.' },
+            { id: 'jigsaw', name: 'Jigsaw Piece', keyword: 'solution', action: 'Click the 4 corners of the main search bar in order (TL, TR, BR, BL).' },
+            { id: 'kinetic', name: 'Kinetic Energy', keyword: 'momentum', action: 'Rapidly scroll up and down on the home page 3 times.' },
+            { id: 'lattice', name: 'Digital Lattice', keyword: 'structure', action: 'Right-click the "WWG" title (if context menu allowed).' },
+            { id: 'monolith', name: 'The Monolith', keyword: 'obelisk', action: 'Type "stone" on any page with a canvas.' },
+            { id: 'nebula', name: 'Stellar Nebula', keyword: 'gascloud', action: 'Click any star in Starlight 20 times.' },
+            { id: 'oracle', name: 'The Oracle', keyword: 'prophecy', action: 'Type "future" on the Soup Oracle page.' },
+            { id: 'parallax', name: 'Parallax View', keyword: 'depth', action: 'Hold Shift while resizing your browser window.' },
+            { id: 'quartz', name: 'Quartz Crystal', keyword: 'crystal', action: 'Type "gem" on the Sand Sim page.' },
+            { id: 'resonance', name: 'Sonar Resonance', keyword: 'ping', action: 'Click the "Find my secrets" text while holding Ctrl.' },
+            { id: 'solstice', name: 'Eternal Solstice', keyword: 'longestday', action: 'Type "sun" on the Eclipse page.' },
+            { id: 'tether', name: 'Reality Tether', keyword: 'anchor', action: 'Triple-click any category icon in the cards.' },
+            { id: 'ultra', name: 'Ultra Battery', keyword: 'overcharge', action: 'Type "power" on the Useful Button page.' }
         ];
 
         function render() {
-            const discovered = Discovery.getDiscovered(false);
-            const taintedDiscovered = Discovery.getDiscovered(true);
+            const discovered = Discovery.getDiscovered();
             const grid = document.getElementById('guide-grid');
             grid.innerHTML = '';
 
             secrets.forEach(s => {
                 const isFound = discovered.includes(s.id);
-                const isTaintedFound = taintedDiscovered.includes(s.id);
                 const card = document.createElement('div');
                 card.className = `card ${isFound ? 'found' : ''}`;
-                if (isTaintedFound) card.style.boxShadow = 'inset 0 0 20px rgba(239, 68, 68, 0.2)';
 
                 card.innerHTML = `
-                    <div class="tag" style="display:flex; justify-content:space-between;">
-                        <span>Fragment ID: ${s.id.toUpperCase()}</span>
-                        <span style="color:${isTaintedFound ? '#ef4444' : '#444'}">${isTaintedFound ? 'TAINTED_LOCKED' : ''}</span>
-                    </div>
+                    <div class="tag">Fragment ID: ${s.id.toUpperCase()}</div>
                     <div class="name">${isFound ? s.name : 'HIDDEN_FRAGMENT'}</div>
                     <div class="hint">
-                        <div class="hint-block"><b>Normal Approach</b> Keyword: "${s.keyword}" or Action: ${s.action}</div>
-                        <div class="hint-block" style="border-color:${isTaintedFound ? '#ef444433' : ''}">
-                            <b style="color:#ef4444">Tainted Side</b> ${s.tainted}
-                        </div>
+                        <div class="hint-block"><b>Approach</b> Keyword: "${s.keyword}" or Action: ${s.action}</div>
                     </div>
-                    <div class="status-wrap" style="display:flex; gap:10px; margin-top:20px;">
-                        <div class="status ${isFound ? 'found-text' : 'unfound'}">
-                            NORMAL: ${isFound ? '✓' : '👀'}
-                        </div>
-                        <div class="status ${isTaintedFound ? 'found-text' : 'unfound'}" style="${isTaintedFound ? 'color:#ef4444' : ''}">
-                            TAINTED: ${isTaintedFound ? '✓' : '👀'}
-                        </div>
+                    <div class="status ${isFound ? 'found-text' : 'unfound'}">
+                        STATUS: ${isFound ? 'SALVAGED' : 'HIDDEN'}
                     </div>
                 `;
                 grid.appendChild(card);

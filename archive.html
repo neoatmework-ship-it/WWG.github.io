@@ -116,6 +116,11 @@
             color: #fff;
         }
 
+        /* Enable interaction for locked slots for secrets */
+        div.slot {
+            pointer-events: auto;
+        }
+
         .back-link {
             position: fixed;
             top: 40px;
@@ -145,8 +150,10 @@
 
     <div class="header">
         <div class="header-content">
-            <span class="badge" id="discovery-stats">LOADED fragments // 0 of 20 secure</span>
-            <h1>THE ARCHIVE VAULT</h1>
+            <span class="badge" id="discovery-stats">LOADED fragments // 0 of 45 secure</span>
+            <h1 id="archive-title"
+                onclick="window.archClicks = (window.archClicks || 0) + 1; if(window.archClicks === 3) window.location.href='horizon.html'; setTimeout(()=>window.archClicks=0, 2000);">
+                THE ARCHIVE VAULT</h1>
             <p class="desc">A localized mirror of all salvaged fragments. Use the shortcuts to warp back
                 to established dimensions.</p>
         </div>
@@ -219,13 +226,32 @@
             'gravity': { name: 'G-Shift', icon: '↕️', file: 'gravity-shift.html' },
             'timeloop': { name: 'Time Loop', icon: '➰', file: 'time-loop.html' },
             'forest': { name: 'Fractal Forest', icon: '🌲', file: 'binary-forest.html' },
-            'observer': { name: 'The Observer', icon: '👁️', file: 'the-observer.html' }
+            'observer': { name: 'The Observer', icon: '👁️', file: 'the-observer.html' },
+            'analog': { name: 'Analog', icon: '📼' },
+            'spectrum': { name: 'Spectrum', icon: '🌈' },
+            'cipher': { name: 'Cipher', icon: '🔐' },
+            'echo': { name: 'Echo', icon: '🗣️' },
+            'fable': { name: 'Fable', icon: '📚' },
+            'glimmer': { name: 'Glimmer', icon: '✨' },
+            'horizon': { name: 'Horizon', icon: '🌅' },
+            'imprint': { name: 'Imprint', icon: '👣' },
+            'jigsaw': { name: 'Jigsaw', icon: '🧩' },
+            'kinetic': { name: 'Kinetic', icon: '⚡' },
+            'lattice': { name: 'Lattice', icon: '🕸️' },
+            'monolith': { name: 'Monolith', icon: '🗿' },
+            'nebula': { name: 'Nebula', icon: '🌌' },
+            'oracle': { name: 'Oracle', icon: '🔮' },
+            'parallax': { name: 'Parallax', icon: '👁️‍🗨️' },
+            'quartz': { name: 'Quartz', icon: '💎' },
+            'resonance': { name: 'Resonance', icon: '🔔' },
+            'solstice': { name: 'Solstice', icon: '☀️' },
+            'tether': { name: 'Tether', icon: '⚓' },
+            'ultra': { name: 'Ultra', icon: '🔋' }
         };
 
         function render() {
-            const discovered = Discovery.getDiscovered(false);
-            const tainted = Discovery.getDiscovered(true);
-            discoveryStats.innerText = `SALVAGED: ${discovered.length} Normal · ${tainted.length} Tainted`;
+            const discovered = Discovery.getDiscovered();
+            discoveryStats.innerText = `SALVAGED: ${discovered.length} of 45 secure`;
 
             if (Discovery.isCheatsheetUnlocked()) {
                 document.getElementById('guide-cont').style.display = 'block';
@@ -235,38 +261,31 @@
 
             Object.keys(siteData).forEach(id => {
                 const data = siteData[id];
+                const isFound = discovered.includes(id);
 
-                // Normal Slot
-                const isNormal = discovered.includes(id);
-                const nSlot = document.createElement(isNormal ? 'a' : 'div');
-                nSlot.className = `slot ${isNormal ? 'unlocked' : ''}`;
-                if (isNormal) nSlot.href = data.file || `${id}.html`;
-                nSlot.innerHTML = `
-                    <div class="icon">${isNormal ? data.icon : '🔒'}</div>
-                    <div class="name">${isNormal ? data.name : '???'}</div>
-                `;
-                grid.appendChild(nSlot);
+                const slot = document.createElement(isFound ? 'a' : 'div');
+                slot.className = `slot ${isFound ? 'unlocked' : ''}`;
+                if (isFound) slot.href = data.file || `${id}.html`;
 
-                // Tainted Slot
-                const isTainted = tainted.includes(id);
-                const tSlot = document.createElement(isTainted ? 'a' : 'div');
-                tSlot.className = `slot ${isTainted ? 'unlocked' : ''}`;
-                tSlot.style.borderStyle = 'dashed';
-                if (isTainted) {
-                    tSlot.href = (data.file || `${id}.html`) + '?tainted=true';
-                    tSlot.style.borderColor = '#ef4444';
-                    tSlot.style.background = 'rgba(239, 68, 68, 0.05)';
+                // Secret: Glimmer (Triple click locked slot)
+                if (!isFound) {
+                    slot.onclick = () => {
+                        slot.gClicks = (slot.gClicks || 0) + 1;
+                        if (slot.gClicks === 3) window.location.href = 'glimmer.html';
+                        setTimeout(() => slot.gClicks = 0, 2000);
+                    };
                 }
-                tSlot.innerHTML = `
-                    <div class="icon" style="${isTainted ? 'filter: hue-rotate(-50deg) saturate(2);' : ''}">${isTainted ? data.icon : '💀'}</div>
-                    <div class="name">${isTainted ? 'TAINTED ' + data.name : 'TAINTED ???'}</div>
+
+                slot.innerHTML = `
+                    <div class="icon">${isFound ? data.icon : '🔒'}</div>
+                    <div class="name">${isFound ? data.name : '???'}</div>
                 `;
-                grid.appendChild(tSlot);
+                grid.appendChild(slot);
             });
         }
 
         resetButton.addEventListener('click', () => {
-            if (confirm('CRITICAL: This will purge all salvaged fragments (Normal & Tainted) from your local cache. Continue?')) {
+            if (confirm('CRITICAL: This will purge all salvaged fragments from your local cache. Continue?')) {
                 localStorage.removeItem('wwg_discovered_secrets');
                 localStorage.removeItem('wwg_tainted_secrets');
                 localStorage.removeItem('wwg_cheatsheet_unlocked');

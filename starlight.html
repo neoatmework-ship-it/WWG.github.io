@@ -176,6 +176,9 @@
             });
 
             if (closest) {
+                window.nebulaClicks = (window.nebulaClicks || 0) + 1;
+                if (window.nebulaClicks === 20) window.location.href = 'nebula.html';
+
                 if (activeStars.length > 0) {
                     connections.push([activeStars[activeStars.length - 1], closest]);
                     playTone();
