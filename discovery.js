@@ -84,18 +84,35 @@ const Discovery = {
 
         const style = document.createElement('style');
         style.textContent = `
-            html { filter: invert(0.1) sepia(1) saturate(5) hue-rotate(-50deg) contrast(1.2) !important; }
+            html { 
+                filter: invert(0.2) sepia(1) saturate(10) hue-rotate(-60deg) contrast(1.5) !important; 
+                background: #000 !important;
+            }
             body::before {
                 content: "";
                 position: fixed;
                 inset: 0;
-                background: repeating-linear-gradient(0deg, rgba(255,0,0,0.03) 0px, transparent 1px, transparent 2px);
+                background: 
+                    repeating-linear-gradient(0deg, rgba(255,0,0,0.05) 0px, transparent 1px, transparent 2px),
+                    radial-gradient(circle, transparent 20%, rgba(0,0,0,0.8) 150%);
                 pointer-events: none;
                 z-index: 999999;
-                animation: scanline 10s linear infinite;
+                animation: scanline 15s linear infinite, pulseVignette 4s ease-in-out infinite;
+                mix-blend-mode: multiply;
             }
-            @keyframes scanline { from { transform: translateY(0); } to { transform: translateY(100vh); } }
-            .wwg-back-btn, .wwg-nav a { border-color: #ef4444 !important; color: #ef4444 !important; }
+            @keyframes scanline { from { transform: translateY(-100vh); } to { transform: translateY(100vh); } }
+            @keyframes pulseVignette { 
+                0%, 100% { opacity: 0.7; }
+                50% { opacity: 1; }
+            }
+            .wwg-back-btn, .wwg-nav a, .back-link { 
+                border-color: #ff0000 !important; 
+                color: #ff0000 !important; 
+                text-shadow: 0 0 10px #ff0000 !important;
+                background: rgba(0,0,0,0.8) !important;
+            }
+            /* Override common element colors to red */
+            h1, h2, h3, .name, .title, .btn { color: #ff0000 !important; text-shadow: 0 0 15px rgba(255,0,0,0.5) !important; }
         `;
         document.head.appendChild(style);
     },
@@ -113,6 +130,44 @@ const Discovery = {
 
     isCheatsheetUnlocked: function () {
         return localStorage.getItem(this.CHEATSHEET_KEY) === 'true';
+    },
+
+    // Custom behaviors for Tainted sites
+    customTaintedLogic: {
+        'void': () => {
+            setInterval(() => {
+                document.body.style.transform = `translate(${(Math.random() - 0.5) * 15}px, ${(Math.random() - 0.5) * 15}px)`;
+                if (Math.random() > 0.9) document.body.style.filter = 'invert(1) contrast(2)';
+                else document.body.style.filter = '';
+            }, 50);
+            document.title = "ERROR: THE VOID";
+        },
+        'starlight': () => {
+            document.body.style.background = '#200';
+            const h1 = document.querySelector('h1');
+            if (h1) {
+                h1.textContent = "THE BLOOD SKY";
+                h1.style.color = "#ff0000";
+                h1.style.textShadow = "0 0 20px #f00";
+            }
+            const s = document.createElement('style');
+            s.textContent = `canvas { filter: hue-rotate(-120deg) saturate(5) contrast(2); animation: starsShake 0.1s infinite; }
+                             @keyframes starsShake { 0% { transform: translate(1px,1px); } 50% { transform: translate(-1px,-1px); } }`;
+            document.head.appendChild(s);
+        },
+        'mirror': () => {
+            const s = document.createElement('style');
+            s.textContent = `body { background: #000 !important; } 
+                             canvas { opacity: 0.3; filter: grayscale(1) contrast(5); }`;
+            document.head.appendChild(s);
+            document.title = "BROKEN_REALITY";
+        },
+        'chosen': () => {
+            const s = document.createElement('style');
+            s.textContent = `body { background: radial-gradient(circle, #300 0%, #000 70%) !important; }
+                             .chosen-aura { box-shadow: 0 0 100px #f00 !important; }`;
+            document.head.appendChild(s);
+        }
     }
 };
 
@@ -142,5 +197,10 @@ const Discovery = {
     const id = map[filename] || filename;
     if (Discovery.SITES.includes(id)) {
         Discovery.unlock(id, isTainted);
+
+        // Run custom logic if it exists
+        if (isTainted && Discovery.customTaintedLogic[id]) {
+            Discovery.customTaintedLogic[id]();
+        }
     }
 })();
