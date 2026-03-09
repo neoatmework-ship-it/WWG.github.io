@@ -1,0 +1,865 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pickup Architect — Line Generator</title>
+    <meta name="description"
+        content="Generate smooth, cheesy, or nerdy pickup lines by category. Copy, save favourites, and charm anyone.">
+    <link rel="icon"
+        href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E💘%3C/text%3E%3C/svg%3E">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600;700&family=Inter:wght@400;500;600&display=swap"
+        rel="stylesheet">
+    <style>
+        *,
+        *::before,
+        *::after {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --bg: #09050f;
+            --card-bg: #130a1e;
+            --accent: #e879f9;
+            --accent2: #f472b6;
+            --accent3: #c084fc;
+            --glow: rgba(232, 121, 249, 0.3);
+            --text: #f3e8ff;
+            --sub: #9d7ab5;
+            --border: rgba(232, 121, 249, 0.12);
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            overflow-x: hidden;
+        }
+
+        /* ── Animated background ── */
+        .bg-orbs {
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            z-index: 0;
+            overflow: hidden;
+        }
+
+        .bg-orbs span {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(80px);
+            animation: drift 12s ease-in-out infinite alternate;
+        }
+
+        .bg-orbs span:nth-child(1) {
+            width: 500px;
+            height: 500px;
+            background: rgba(192, 132, 252, 0.08);
+            top: -100px;
+            left: -100px;
+            animation-delay: 0s;
+        }
+
+        .bg-orbs span:nth-child(2) {
+            width: 400px;
+            height: 400px;
+            background: rgba(232, 121, 249, 0.06);
+            bottom: -80px;
+            right: -80px;
+            animation-delay: -4s;
+        }
+
+        .bg-orbs span:nth-child(3) {
+            width: 300px;
+            height: 300px;
+            background: rgba(244, 114, 182, 0.05);
+            top: 40%;
+            left: 50%;
+            transform: translateX(-50%);
+            animation-delay: -8s;
+        }
+
+        @keyframes drift {
+            from {
+                transform: translate(0, 0) scale(1);
+            }
+
+            to {
+                transform: translate(30px, -20px) scale(1.1);
+            }
+        }
+
+        /* ── Layout ── */
+        .container {
+            max-width: 680px;
+            width: 100%;
+            padding: 60px 24px 100px;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* ── Header ── */
+        .header {
+            text-align: center;
+            margin-bottom: 48px;
+        }
+
+        .header-icon {
+            font-size: 64px;
+            display: block;
+            margin-bottom: 20px;
+            animation: pulse 2.4s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+
+            0%,
+            100% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.08);
+            }
+        }
+
+        .header h1 {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: clamp(2.2rem, 7vw, 3.2rem);
+            font-weight: 700;
+            letter-spacing: -2px;
+            background: linear-gradient(135deg, #f472b6, #e879f9, #c084fc);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            line-height: 1.1;
+        }
+
+        .header p {
+            color: var(--sub);
+            font-size: 1rem;
+            margin-top: 12px;
+            line-height: 1.6;
+        }
+
+        /* ── Category pills ── */
+        .categories {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            justify-content: center;
+            margin-bottom: 32px;
+        }
+
+        .cat-btn {
+            padding: 8px 18px;
+            border-radius: 100px;
+            border: 1px solid var(--border);
+            background: rgba(232, 121, 249, 0.05);
+            color: var(--sub);
+            font-size: 0.82rem;
+            font-weight: 600;
+            font-family: 'Space Grotesk', sans-serif;
+            cursor: pointer;
+            transition: all 0.25s;
+            letter-spacing: 0.3px;
+        }
+
+        .cat-btn:hover {
+            border-color: var(--accent);
+            color: var(--accent);
+            background: rgba(232, 121, 249, 0.1);
+        }
+
+        .cat-btn.active {
+            background: linear-gradient(135deg, #e879f9, #c084fc);
+            border-color: transparent;
+            color: #fff;
+            box-shadow: 0 4px 20px rgba(232, 121, 249, 0.35);
+        }
+
+        /* ── Line display card ── */
+        .line-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 24px;
+            padding: 48px 40px;
+            text-align: center;
+            margin-bottom: 24px;
+            position: relative;
+            overflow: hidden;
+            min-height: 200px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            transition: box-shadow 0.4s;
+        }
+
+        .line-card::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: radial-gradient(ellipse at top, rgba(232, 121, 249, 0.07) 0%, transparent 65%);
+            pointer-events: none;
+        }
+
+        .line-card:hover {
+            box-shadow: 0 0 40px rgba(232, 121, 249, 0.1);
+        }
+
+        .line-category-badge {
+            font-size: 0.65rem;
+            font-weight: 700;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            color: var(--accent);
+            margin-bottom: 16px;
+            opacity: 0.7;
+        }
+
+        .line-text {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: clamp(1.15rem, 3.5vw, 1.5rem);
+            font-weight: 600;
+            line-height: 1.55;
+            color: var(--text);
+            transition: opacity 0.25s, transform 0.25s;
+        }
+
+        .line-text.fade-out {
+            opacity: 0;
+            transform: translateY(-8px);
+        }
+
+        .line-text.fade-in {
+            animation: fadeIn 0.35s ease forwards;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(8px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .line-card-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 28px;
+        }
+
+        .icon-btn {
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            border: 1px solid var(--border);
+            background: rgba(232, 121, 249, 0.06);
+            color: var(--sub);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.1rem;
+            transition: all 0.25s;
+        }
+
+        .icon-btn:hover {
+            border-color: var(--accent);
+            color: var(--accent);
+            background: rgba(232, 121, 249, 0.12);
+            transform: scale(1.1);
+        }
+
+        .icon-btn.hearted {
+            background: rgba(244, 114, 182, 0.2);
+            border-color: #f472b6;
+            color: #f472b6;
+        }
+
+        .icon-btn.copied {
+            background: rgba(74, 222, 128, 0.15);
+            border-color: #4ade80;
+            color: #4ade80;
+        }
+
+        /* ── Generate button ── */
+        .generate-btn {
+            display: block;
+            width: 100%;
+            padding: 18px;
+            border: none;
+            border-radius: 16px;
+            background: linear-gradient(135deg, #e879f9, #f472b6);
+            color: #fff;
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 1.05rem;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 8px 30px rgba(232, 121, 249, 0.3);
+            margin-bottom: 40px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .generate-btn::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.1), transparent);
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .generate-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 40px rgba(232, 121, 249, 0.45);
+        }
+
+        .generate-btn:hover::after {
+            opacity: 1;
+        }
+
+        .generate-btn:active {
+            transform: scale(0.98);
+        }
+
+        /* ── Favorites ── */
+        .favorites-section {
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            overflow: hidden;
+        }
+
+        .favorites-header {
+            padding: 16px 24px;
+            background: rgba(232, 121, 249, 0.05);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            cursor: pointer;
+            user-select: none;
+            transition: background 0.25s;
+        }
+
+        .favorites-header:hover {
+            background: rgba(232, 121, 249, 0.08);
+        }
+
+        .favorites-title {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 0.82rem;
+            font-weight: 700;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            color: var(--accent);
+        }
+
+        .favorites-count {
+            background: rgba(232, 121, 249, 0.15);
+            color: var(--accent);
+            border-radius: 100px;
+            padding: 2px 10px;
+            font-size: 0.75rem;
+            font-weight: 700;
+        }
+
+        .chevron {
+            color: var(--sub);
+            transition: transform 0.3s;
+            font-size: 0.9rem;
+        }
+
+        .chevron.open {
+            transform: rotate(180deg);
+        }
+
+        .favorites-body {
+            display: none;
+        }
+
+        .favorites-body.open {
+            display: block;
+        }
+
+        .fav-empty {
+            padding: 24px;
+            color: var(--sub);
+            font-size: 0.85rem;
+            text-align: center;
+            font-style: italic;
+        }
+
+        .fav-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 14px 20px;
+            border-top: 1px solid var(--border);
+            font-size: 0.9rem;
+            color: var(--text);
+            line-height: 1.5;
+        }
+
+        .fav-item:hover {
+            background: rgba(232, 121, 249, 0.04);
+        }
+
+        .fav-item span {
+            flex: 1;
+        }
+
+        .fav-remove {
+            color: var(--sub);
+            cursor: pointer;
+            font-size: 1rem;
+            transition: color 0.2s;
+            flex-shrink: 0;
+        }
+
+        .fav-remove:hover {
+            color: #f472b6;
+        }
+
+        /* ── Back link ── */
+        .back-link {
+            position: fixed;
+            top: 24px;
+            left: 24px;
+            color: var(--sub);
+            text-decoration: none;
+            font-size: 0.8rem;
+            letter-spacing: 2px;
+            font-weight: 600;
+            text-transform: uppercase;
+            transition: color 0.2s;
+            z-index: 10;
+        }
+
+        .back-link:hover {
+            color: var(--text);
+        }
+
+        /* ── Footer ── */
+        .footer {
+            text-align: center;
+            color: var(--sub);
+            font-size: 0.75rem;
+            margin-top: 60px;
+            opacity: 0.6;
+        }
+
+        /* ── Confetti burst on generate ── */
+        .confetti-piece {
+            position: fixed;
+            width: 8px;
+            height: 8px;
+            border-radius: 2px;
+            pointer-events: none;
+            animation: fall 1.2s ease-out forwards;
+            z-index: 999;
+        }
+
+        @keyframes fall {
+            0% {
+                transform: translateY(0) rotate(0deg) scale(1);
+                opacity: 1;
+            }
+
+            100% {
+                transform: translateY(200px) rotate(360deg) scale(0.3);
+                opacity: 0;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="bg-orbs"><span></span><span></span><span></span></div>
+    <a href="index.html" class="back-link">← Return</a>
+
+    <div class="container">
+        <div class="header">
+            <span class="header-icon">💘</span>
+            <h1>Pickup Architect</h1>
+            <p>Generate smooth, cheesy, nerdy, or chaotic pickup lines.<br>No promises on results.</p>
+        </div>
+
+        <div class="categories" id="categories"></div>
+
+        <div class="line-card" id="line-card">
+            <div class="line-category-badge" id="line-badge">ALL</div>
+            <div class="line-text" id="line-text">Hit "Generate" and let fate decide your romantic destiny.</div>
+            <div class="line-card-actions">
+                <button class="icon-btn" id="copy-btn" title="Copy line">📋</button>
+                <button class="icon-btn" id="heart-btn" title="Save to favourites">🤍</button>
+            </div>
+        </div>
+
+        <button class="generate-btn" id="generate-btn">✨ Generate a Line</button>
+
+        <div class="favorites-section" id="fav-section">
+            <div class="favorites-header" id="fav-header">
+                <span class="favorites-title">❤️ Saved Lines</span>
+                <div style="display:flex; align-items:center; gap:10px;">
+                    <span class="favorites-count" id="fav-count">0</span>
+                    <span class="chevron" id="chevron">▼</span>
+                </div>
+            </div>
+            <div class="favorites-body" id="fav-body">
+                <div class="fav-empty" id="fav-empty">No saved lines yet. Heart one above!</div>
+            </div>
+        </div>
+
+        <div class="footer">Made for charm, not responsibility. 💌</div>
+    </div>
+
+    <script>
+        // ── LINE DATABASE ──
+        const LINES = {
+            cheesy: [
+                "Are you a magician? Because whenever I look at you, everyone else disappears.",
+                "Do you have a map? I keep getting lost in your eyes.",
+                "Is your name Google? Because you have everything I've been searching for.",
+                "Are you a parking ticket? Because you've got 'fine' written all over you.",
+                "If you were a vegetable, you'd be a cute-cumber.",
+                "Do you believe in love at first sight, or should I walk by again?",
+                "Are you a campfire? Because you're hot and I want to be near you.",
+                "I must be a snowflake because I've fallen for you.",
+                "Are we at the airport? Because my heart is taking off.",
+                "Is your name Wi-Fi? Because I'm really feeling a connection.",
+                "Do you have a bandage? I just scraped my knee falling for you.",
+                "Are you a shooting star? I've been wishing for you my whole life.",
+                "If you were a fruit, you'd be a fineapple.",
+                "I'm not a photographer, but I can picture us together.",
+                "You must be a broom, because you swept me off my feet.",
+                "If beauty were a crime, you'd be serving a life sentence.",
+                "Is there an airport nearby, or is that just my heart flying?",
+                "You're so sweet, you'd put Hershey's out of business.",
+                "Was your father a thief? Because he stole all the stars in the sky and put them in your eyes.",
+                "Are you a firework? Because you light up every room you enter.",
+            ],
+            nerdy: [
+                "Are you made of copper and tellurium? Because you're CuTe.",
+                "Are you a Wi-Fi signal? Because I'm feeling a strong connection.",
+                "Do you have 11 protons? Because you're sodium fine.",
+                "Are you a keyboard? Because you're just my type.",
+                "I must be a Python developer, because I can't stop looping back to you.",
+                "Are you a black hole? Because you're pulling me in with irresistible gravity.",
+                "You must be a high-quality exception handler, because you've caught my attention.",
+                "Is your name Arya? Because you take my breath away.",
+                "My love for you is like dividing by zero — it cannot be defined.",
+                "Are you a Star Wars fan? Because Yoda one for me.",
+                "Your hand looks heavy. Let me hold it for you… like a pointer.",
+                "Are you a compiler? Because you make all my errors disappear.",
+                "I'd never play hide-and-seek with you because someone like you is impossible to find.",
+                "Are you a time traveller? Because I can see you in my future.",
+                "You're like a semicolon — I notice you in all the right places.",
+                "If you were a function, you'd be sin because you're always positive.",
+                "You must be DNA helicase because you unzip my genes.",
+                "Are you an astronaut? Because you make my heart launch.",
+                "Do you like science? Because I've got great chemistry with you.",
+                "I must be a Jedi because I felt a disturbance in the Force the moment I saw you.",
+            ],
+            food: [
+                "Are you a pizza? Because I want a piece of you.",
+                "Do you like raisins? How do you feel about a date?",
+                "Are you a donut? Because you have me absolutely glazed over.",
+                "I'm not a chef but I can definitely make my heart melt for you.",
+                "You must be a blender because you're making my heart mix up.",
+                "Are you sushi? Because you're a rare catch.",
+                "You're like my morning coffee — I didn't know what was missing until you arrived.",
+                "If you were a spice, you'd be paprika — fiery, vibrant, and impossible to ignore.",
+                "Are you a croissant? Because you're flaky in the best way.",
+                "You're sweeter than crème brûlée, and just as impossible to resist.",
+                "I must be a waffle iron because I'm completely stuck on you.",
+                "You're like garlic butter — you make everything better.",
+                "Are you a soufflé? Because you make my heart rise.",
+                "I'd never ghost you — I'm not that kind of pepper.",
+                "You're the guacamole to my chips — essential, expensive, and worth it.",
+                "If we were tomatoes, I'd ketchup to you every chance I got.",
+                "Are you a pretzel? Because I'm completely twisted over you.",
+                "You're like an avocado — perfectly ripe and all I think about.",
+                "I must be a bee, because I found the sweetest thing alive.",
+                "You're like a warm bowl of ramen on a cold night — comfort personified.",
+            ],
+            nature: [
+                "Are you a sunflower? Because you always turn my world toward the light.",
+                "If you were a tree, you'd be an evergreen — always beautiful, never boring.",
+                "Are you a shooting star? Because every time I see you, I make a wish.",
+                "You must be autumn, because every time I see you, I fall.",
+                "Are you a rainstorm? Because you send shivers down my spine.",
+                "If the stars spelled out names, I'd only look for yours.",
+                "Do you have roots? Because I can't imagine going anywhere without you.",
+                "Are you a tidal wave? Because you hit me harder than I expected.",
+                "You're like morning dew — refreshing, fleeting, and worth waking up for.",
+                "I'm like a bee and you're like a flower — I keep coming back.",
+                "Are you a mountain? Because I'd climb a thousand miles to reach you.",
+                "You light up my world like the sun lights up the ocean floor.",
+                "If love were a landscape, you'd be the most breathtaking view.",
+                "Are you a river? Because you flow straight to my heart.",
+                "You're like a perfect sunset — I never want it to end.",
+                "Are you the moon? Because every night you take over my thoughts.",
+                "Like a compass, I always find my way back to you.",
+                "You're like fresh air — somehow I never noticed how much I needed you.",
+                "If you were a season, you'd be my favourite, whatever that means.",
+                "Are you a wildfire? Because you burned through every wall I had.",
+            ],
+            space: [
+                "Are you an astronaut? Because you're out of this world.",
+                "If I were to rank planets, yours would be first.",
+                "You must be a black hole — once I saw you, I knew there was no escape.",
+                "Are you a supernova? Because you brighten up the entire galaxy.",
+                "If love were a constellation, yours would be the brightest.",
+                "I must be in orbit because I can't stop circling back to you.",
+                "You're like the Hubble Deep Field — the more I look, the more I find.",
+                "Are you made of dark matter? Because you're mysterious and I'm completely drawn to you.",
+                "You've crossed my event horizon and I'm powerless to pull away.",
+                "Every star in the Milky Way is named after a quality of yours.",
+                "If you were an asteroid, I'd be glad you hit Earth.",
+                "You're my favourite constellation — I could search for you all night.",
+                "Are you a comet? Because you light up my sky once in a lifetime.",
+                "You must be a neutron star — dense with brilliance and incredibly powerful.",
+                "I'd travel a parsec in the wrong direction just to run into you.",
+                "You're like cosmic inflation — the more I know you, the more you expand my universe.",
+                "Are you gravity? Because everything in my life curves toward you.",
+                "The universe is 13.8 billion years old, but it only got interesting when I met you.",
+                "If I could rearrange the solar system, I'd put Uranus and mine closer together. Wait, that came out wrong.",
+                "You must be a quasar — impossibly bright and visible from across the universe.",
+            ],
+            music: [
+                "Are you a melody? Because I can't get you out of my head.",
+                "You must be a playlist because every time I see you, I feel the perfect vibe.",
+                "If life had a soundtrack, you'd be my favourite track.",
+                "Are you a guitar chord? Because you make my heart resonate.",
+                "I'd turn down the volume on the entire world just to hear you laugh.",
+                "Are you a vinyl record? Because I want to play you on repeat.",
+                "You're like jazz — unpredictable, soulful, and impossible to ignore.",
+                "If you were a note, you'd be a flat — but I'd still love every minor key of you.",
+                "Are you a tempo? Because my heart speeds up whenever you're near.",
+                "You're like the bass line in my favourite song — subtle, essential, and felt in the chest.",
+                "If my heart had a DJ, they'd play your name all night.",
+                "Are you sheet music? Because I want to spend hours reading every line of you.",
+                "You hit all the right notes without even trying.",
+                "I must be a rhythm because I always find my way back to your beat.",
+                "Are you a chorus? Because I've been waiting for you to come back around.",
+                "You're like a key change — you shifted everything and didn't even warn me.",
+                "I'd put you on shuffle just so you'd surprise me every time.",
+                "Are you a concert? Because being near you gives me that electric feeling.",
+                "If love songs were about you, nobody would skip them.",
+                "You're the harmony I never knew my melody was missing.",
+            ],
+            art: [
+                "Are you a painting? Because I could stare at you for hours.",
+                "If beauty were an art form, you'd be a Renaissance masterpiece.",
+                "Are you a sketchbook? Because I could fill every page with thoughts of you.",
+                "You must be a gallery — I could explore you endlessly and always find something new.",
+                "Every time I see you, I understand why artists never stop painting.",
+                "Are you a colour palette? Because you add life and hue to everything around you.",
+                "If the Louvre had a wing for perfection, you'd be the centrepiece.",
+                "You're like a brushstroke of gold on a grey canvas.",
+                "Are you a sculpture? Because you're chiselled to absolute perfection.",
+                "I must be an artist because I want to capture every expression you make.",
+                "You're the kind of beautiful they put on museum walls.",
+                "Are you an art installation? Because I'm completely immersed and I don't want to leave.",
+                "Like a watercolour on wet paper, you bleed beautifully into everything.",
+                "If you were a typeface, you'd be the one they use to say the most important things.",
+                "You make me understand why Picasso had so many muses.",
+                "You're like a well-crafted sentence — I want to read you again and again.",
+                "Are you a photograph? Because every time I see you, everything else blurs.",
+                "You're my favourite kind of art — the kind that stays with you long after you've looked away.",
+                "Like abstract art, I don't fully understand you, but I know I feel something strong.",
+                "If love were a canvas, I'd paint it with every colour you bring out in me.",
+            ],
+        };
+
+        const CATEGORIES = ['all', 'cheesy', 'nerdy', 'food', 'nature', 'space', 'music', 'art'];
+        const CAT_ICONS = { all: '✨', cheesy: '🧀', nerdy: '🤓', food: '🍕', nature: '🌿', space: '🚀', music: '🎵', art: '🎨' };
+
+        let currentCat = 'all';
+        let currentLine = '';
+        let favorites = JSON.parse(localStorage.getItem('wwg_pickup_favs') || '[]');
+
+        // ── Build category buttons ──
+        const catContainer = document.getElementById('categories');
+        CATEGORIES.forEach(cat => {
+            const btn = document.createElement('button');
+            btn.className = 'cat-btn' + (cat === 'all' ? ' active' : '');
+            btn.textContent = `${CAT_ICONS[cat]} ${cat.charAt(0).toUpperCase() + cat.slice(1)}`;
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                currentCat = cat;
+            });
+            catContainer.appendChild(btn);
+        });
+
+        // ── Get random line ──
+        function getLine() {
+            let pool;
+            if (currentCat === 'all') {
+                pool = Object.values(LINES).flat();
+            } else {
+                pool = LINES[currentCat] || [];
+            }
+            const filtered = pool.filter(l => l !== currentLine);
+            return filtered[Math.floor(Math.random() * filtered.length)] || pool[0];
+        }
+
+        // ── Display line ──
+        function showLine(line, cat) {
+            const textEl = document.getElementById('line-text');
+            const badgeEl = document.getElementById('line-badge');
+            const heartBtn = document.getElementById('heart-btn');
+
+            textEl.classList.add('fade-out');
+            setTimeout(() => {
+                currentLine = line;
+                textEl.textContent = line;
+                badgeEl.textContent = cat === 'all' ? 'RANDOM' : cat.toUpperCase();
+                textEl.classList.remove('fade-out');
+                textEl.classList.add('fade-in');
+                setTimeout(() => textEl.classList.remove('fade-in'), 400);
+
+                // Update heart state
+                heartBtn.textContent = favorites.includes(line) ? '❤️' : '🤍';
+                heartBtn.classList.toggle('hearted', favorites.includes(line));
+            }, 200);
+        }
+
+        // ── Generate ──
+        document.getElementById('generate-btn').addEventListener('click', () => {
+            const line = getLine();
+            showLine(line, currentCat);
+            spawnConfetti();
+
+            // Reset copy button
+            const copyBtn = document.getElementById('copy-btn');
+            copyBtn.textContent = '📋';
+            copyBtn.classList.remove('copied');
+        });
+
+        // ── Copy ──
+        document.getElementById('copy-btn').addEventListener('click', () => {
+            if (!currentLine) return;
+            navigator.clipboard.writeText(currentLine).then(() => {
+                const btn = document.getElementById('copy-btn');
+                btn.textContent = '✅';
+                btn.classList.add('copied');
+                setTimeout(() => { btn.textContent = '📋'; btn.classList.remove('copied'); }, 1800);
+            }).catch(() => {
+                // Fallback
+                const ta = document.createElement('textarea');
+                ta.value = currentLine;
+                document.body.appendChild(ta);
+                ta.select();
+                document.execCommand('copy');
+                ta.remove();
+            });
+        });
+
+        // ── Heart / Favorites ──
+        document.getElementById('heart-btn').addEventListener('click', () => {
+            if (!currentLine) return;
+            const btn = document.getElementById('heart-btn');
+            const idx = favorites.indexOf(currentLine);
+            if (idx === -1) {
+                favorites.unshift(currentLine);
+                btn.textContent = '❤️';
+                btn.classList.add('hearted');
+            } else {
+                favorites.splice(idx, 1);
+                btn.textContent = '🤍';
+                btn.classList.remove('hearted');
+            }
+            saveFavs();
+            renderFavs();
+        });
+
+        function saveFavs() {
+            localStorage.setItem('wwg_pickup_favs', JSON.stringify(favorites));
+        }
+
+        function renderFavs() {
+            const body = document.getElementById('fav-body');
+            const empty = document.getElementById('fav-empty');
+            const countEl = document.getElementById('fav-count');
+            countEl.textContent = favorites.length;
+
+            const existing = body.querySelectorAll('.fav-item');
+            existing.forEach(e => e.remove());
+            empty.style.display = favorites.length === 0 ? 'block' : 'none';
+
+            favorites.forEach((line, i) => {
+                const div = document.createElement('div');
+                div.className = 'fav-item';
+                const span = document.createElement('span');
+                span.textContent = `💘 ${line}`;
+                const rm = document.createElement('span');
+                rm.className = 'fav-remove';
+                rm.textContent = '✕';
+                rm.title = 'Remove';
+                rm.addEventListener('click', () => {
+                    favorites.splice(i, 1);
+                    saveFavs();
+                    renderFavs();
+                    // Update heart btn if current line was removed
+                    if (currentLine === line) {
+                        document.getElementById('heart-btn').textContent = '🤍';
+                        document.getElementById('heart-btn').classList.remove('hearted');
+                    }
+                });
+                div.appendChild(span);
+                div.appendChild(rm);
+                body.appendChild(div);
+            });
+        }
+
+        // ── Favorites drawer ──
+        document.getElementById('fav-header').addEventListener('click', () => {
+            const body = document.getElementById('fav-body');
+            const chevron = document.getElementById('chevron');
+            body.classList.toggle('open');
+            chevron.classList.toggle('open');
+        });
+
+        // ── Confetti ──
+        const CONFETTI_COLORS = ['#e879f9', '#f472b6', '#c084fc', '#f9a8d4', '#a78bfa', '#fbbf24'];
+        function spawnConfetti() {
+            const btn = document.getElementById('generate-btn');
+            const rect = btn.getBoundingClientRect();
+            for (let i = 0; i < 18; i++) {
+                const piece = document.createElement('div');
+                piece.className = 'confetti-piece';
+                piece.style.left = (rect.left + Math.random() * rect.width) + 'px';
+                piece.style.top = rect.top + 'px';
+                piece.style.background = CONFETTI_COLORS[Math.floor(Math.random() * CONFETTI_COLORS.length)];
+                piece.style.transform = `rotate(${Math.random() * 360}deg)`;
+                piece.style.animationDelay = Math.random() * 0.3 + 's';
+                document.body.appendChild(piece);
+                setTimeout(() => piece.remove(), 1500);
+            }
+        }
+
+        // ── Init ──
+        renderFavs();
+    </script>
+</body>
+
+</html>
