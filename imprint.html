@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Imprint</title>
+    <link rel="icon"
+        href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E👣%3C/text%3E%3C/svg%3E">
+    <style>
+        body {
+            margin: 0;
+            background: #eaebd8;
+            overflow: hidden;
+            cursor: crosshair;
+        }
+
+        canvas {
+            display: block;
+            filter: contrast(3) blur(2px) sepia(0.5);
+        }
+
+        .hint {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-family: monospace;
+            color: #555;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            pointer-events: none;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="hint">Leave a mark</div>
+    <canvas id="c"></canvas>
+    <script src="discovery.js"></script>
+    <script>
+        Discovery.unlock('imprint');
+
+        const canvas = document.getElementById('c');
+        const ctx = canvas.getContext('2d');
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+
+        let painting = false;
+
+        function startPosition(e) { painting = true; draw(e); }
+        function endPosition() { painting = false; ctx.beginPath(); }
+
+        function draw(e) {
+            if (!painting) return;
+            ctx.lineWidth = 15;
+            ctx.lineCap = 'round';
+            ctx.strokeStyle = `rgba(${50 + Math.random() * 50}, ${30 + Math.random() * 20}, 20, 0.4)`;
+
+            const x = e.clientX || (e.touches ? e.touches[0].clientX : 0);
+            const y = e.clientY || (e.touches ? e.touches[0].clientY : 0);
+
+            ctx.lineTo(x, y);
+            ctx.stroke();
+            ctx.beginPath();
+            ctx.moveTo(x, y);
+        }
+
+        canvas.addEventListener('mousedown', startPosition);
+        canvas.addEventListener('mouseup', endPosition);
+        canvas.addEventListener('mousemove', draw);
+
+        canvas.addEventListener('touchstart', startPosition);
+        canvas.addEventListener('touchend', endPosition);
+        canvas.addEventListener('touchmove', draw);
+    </script>
+</body>
+
+</html>

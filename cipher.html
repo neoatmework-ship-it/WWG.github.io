@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cipher</title>
+    <link rel="icon"
+        href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E🔐%3C/text%3E%3C/svg%3E">
+    <style>
+        body {
+            margin: 0;
+            background: #000;
+            overflow: hidden;
+            font-family: monospace;
+        }
+
+        canvas {
+            display: block;
+        }
+
+        .message {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: #0f0;
+            font-size: 2rem;
+            text-align: center;
+            background: rgba(0, 0, 0, 0.8);
+            padding: 20px;
+            border: 1px solid #0f0;
+            border-radius: 8px;
+            box-shadow: 0 0 20px rgba(0, 255, 0, 0.4);
+            cursor: pointer;
+            user-select: none;
+        }
+    </style>
+</head>
+
+<body>
+    <canvas id="c"></canvas>
+    <div class="message" id="msg">ENCRYPTED</div>
+
+    <script src="discovery.js"></script>
+    <script>
+        Discovery.unlock('cipher');
+
+        const canvas = document.getElementById('c');
+        const ctx = canvas.getContext('2d');
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+
+        const letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789@#$%^&*()';
+        const fontSize = 16;
+        const columns = canvas.width / fontSize;
+        const drops = [];
+        for (let x = 0; x < columns; x++) drops[x] = 1;
+
+        function draw() {
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.05)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            ctx.fillStyle = '#0F0';
+            ctx.font = fontSize + 'px monospace';
+
+            for (let i = 0; i < drops.length; i++) {
+                const text = letters[Math.floor(Math.random() * letters.length)];
+                ctx.fillText(text, i * fontSize, drops[i] * fontSize);
+                if (drops[i] * fontSize > canvas.height && Math.random() > 0.975) drops[i] = 0;
+                drops[i]++;
+            }
+        }
+        setInterval(draw, 33);
+
+        const msg = document.getElementById('msg');
+        const decodes = [
+            "THE TRUTH IS OUT THERE",
+            "FIND THE GLIMMER",
+            "LOOK BEYOND THE TERMINAL",
+            "NOTHING IS RANDOM",
+            "V U R X V A T"
+        ];
+
+        msg.addEventListener('click', () => {
+            let ticks = 0;
+            const target = decodes[Math.floor(Math.random() * decodes.length)];
+            const interval = setInterval(() => {
+                let current = '';
+                for (let i = 0; i < target.length; i++) {
+                    if (target[i] === ' ') current += ' ';
+                    else current += letters[Math.floor(Math.random() * letters.length)];
+                }
+                msg.innerText = current;
+                ticks++;
+                if (ticks > 20) {
+                    clearInterval(interval);
+                    msg.innerText = target;
+                }
+            }, 50);
+        });
+    </script>
+</body>
+
+</html>
