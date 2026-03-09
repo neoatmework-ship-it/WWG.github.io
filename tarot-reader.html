@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cyberspace Tarot</title>
+    <meta name="description" content="Draw a card for a cryptic reading from the digital ether.">
+    <link rel="icon"
+        href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E🔮%3C/text%3E%3C/svg%3E">
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600&family=Inter:wght@400;500&display=swap"
+        rel="stylesheet">
+    <style>
+        body {
+            margin: 0;
+            background: #080312;
+            color: #fff;
+            font-family: 'Inter', sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        .top {
+            width: 100%;
+            padding: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            box-sizing: border-box;
+            position: relative;
+            z-index: 10;
+        }
+
+        .back-link {
+            text-decoration: none;
+            color: #8b5cf6;
+            font-weight: 500;
+            font-size: 0.9rem;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            transition: 0.2s;
+        }
+
+        .back-link:hover {
+            color: #c4b5fd;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 20px;
+            text-shadow: 0 0 20px rgba(139, 92, 246, 0.5);
+        }
+
+        .header h1 {
+            font-family: 'Cinzel', serif;
+            font-size: 2.5rem;
+            margin: 0 0 5px;
+            color: #e9d5ff;
+            font-weight: 600;
+            letter-spacing: 2px;
+        }
+
+        .header p {
+            color: #a78bfa;
+            font-size: 0.9rem;
+            margin: 0;
+            font-style: italic;
+        }
+
+        /* 3D Scene */
+        .scene {
+            width: 260px;
+            height: 400px;
+            perspective: 1200px;
+            margin-top: 40px;
+        }
+
+        /* Card container */
+        .card {
+            width: 100%;
+            height: 100%;
+            position: relative;
+            transition: transform 1.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            transform-style: preserve-3d;
+            cursor: pointer;
+        }
+
+        .card.is-flipped {
+            transform: rotateY(180deg) scale(1.1);
+            cursor: default;
+        }
+
+        .card.is-hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        /* Card faces */
+        .card-face {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            -webkit-backface-visibility: hidden;
+            backface-visibility: hidden;
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.8), 0 0 0 1px rgba(255, 255, 255, 0.1);
+        }
+
+        /* Back of the card */
+        .card-face-back {
+            background: linear-gradient(135deg, #1e093f, #090312);
+            border: 8px solid #2e1065;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Pattern inside the back */
+        .card-face-back::after {
+            content: "✦";
+            color: #8b5cf6;
+            font-size: 6rem;
+            text-shadow: 0 0 20px #a78bfa, 0 0 40px #c4b5fd;
+            animation: pulse-star 3s ease-in-out infinite alternate;
+        }
+
+        @keyframes pulse-star {
+            0% {
+                transform: scale(1) rotate(0deg);
+            }
+
+            100% {
+                transform: scale(1.2) rotate(15deg);
+            }
+        }
+
+        /* Front of the card */
+        .card-face-front {
+            background: linear-gradient(135deg, #2e1065, #1e093f);
+            transform: rotateY(180deg);
+            display: flex;
+            flex-direction: column;
+            border: 2px solid #8b5cf6;
+            padding: 20px;
+            box-sizing: border-box;
+            box-shadow: inset 0 0 40px rgba(0, 0, 0, 0.8), 0 0 30px rgba(139, 92, 246, 0.3);
+        }
+
+        .c-number {
+            text-align: center;
+            font-family: 'Cinzel', serif;
+            font-size: 1.5rem;
+            color: #e9d5ff;
+            margin-bottom: 20px;
+        }
+
+        .c-icon {
+            font-size: 5rem;
+            text-align: center;
+            flex-grow: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-shadow: 0 0 30px rgba(255, 255, 255, 0.4);
+        }
+
+        .c-title {
+            text-align: center;
+            font-family: 'Cinzel', serif;
+            font-size: 1.2rem;
+            color: #a78bfa;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            border-top: 1px solid rgba(139, 92, 246, 0.3);
+            padding-top: 15px;
+            margin-top: auto;
+        }
+
+        /* The Reading result container */
+        .reading-container {
+            margin-top: 60px;
+            max-width: 600px;
+            text-align: center;
+            padding: 0 20px;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: all 1s ease 0.5s;
+        }
+
+        .reading-container.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .reading-text {
+            font-size: 1.15rem;
+            line-height: 1.7;
+            color: #e2e8f0;
+            margin-bottom: 30px;
+        }
+
+        .btn-draw {
+            background: transparent;
+            border: 1px solid #8b5cf6;
+            color: #a78bfa;
+            padding: 12px 24px;
+            border-radius: 50px;
+            font-family: 'Inter', sans-serif;
+            font-size: 0.9rem;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: 0.3s;
+            opacity: 0;
+            pointer-events: none;
+            font-weight: 500;
+        }
+
+        .btn-draw.visible {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .btn-draw:hover {
+            background: rgba(139, 92, 246, 0.1);
+            color: #fff;
+            box-shadow: 0 0 15px rgba(139, 92, 246, 0.4);
+        }
+
+        /* Floating particles behind card */
+        .bg-particles {
+            position: absolute;
+            inset: 0;
+            z-index: -1;
+            pointer-events: none;
+            overflow: hidden;
+            opacity: 0.4;
+        }
+
+        .particle {
+            position: absolute;
+            background: #a78bfa;
+            border-radius: 50%;
+            opacity: 0;
+            animation: rise 10s linear infinite;
+        }
+
+        @keyframes rise {
+            0% {
+                transform: translateY(100vh) scale(0);
+                opacity: 0;
+            }
+
+            10% {
+                opacity: 0.5;
+            }
+
+            90% {
+                opacity: 0.5;
+            }
+
+            100% {
+                transform: translateY(-100px) scale(1);
+                opacity: 0;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="bg-particles" id="particles"></div>
+
+    <div class="top">
+        <a href="index.html" class="back-link">← Return Object</a>
+    </div>
+
+    <div class="header">
+        <h1>Cyberspace Tarot</h1>
+        <p>Click the deck to consult the digital ether.</p>
+    </div>
+
+    <div class="scene">
+        <div class="card" id="tarot-card">
+            <div class="card-face card-face-back"></div>
+            <div class="card-face card-face-front">
+                <div class="c-number" id="c-num">0</div>
+                <div class="c-icon" id="c-ico">❓</div>
+                <div class="c-title" id="c-name">The Unknown</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="reading-container" id="reading-box">
+        <div class="reading-text" id="reading-text"></div>
+        <button class="btn-draw" id="reset-btn">Draw Another</button>
+    </div>
+
+    <script>
+        // Particles
+        const partContainer = document.getElementById('particles');
+        for (let i = 0; i < 30; i++) {
+            const p = document.createElement('div');
+            p.className = 'particle';
+            p.style.left = Math.random() * 100 + 'vw';
+            const size = Math.random() * 4 + 1;
+            p.style.width = size + 'px';
+            p.style.height = size + 'px';
+            p.style.animationDelay = Math.random() * 10 + 's';
+            p.style.animationDuration = Math.random() * 10 + 10 + 's';
+            partContainer.appendChild(p);
+        }
+
+        const TAROT_DECK = [
+            { num: '0', icon: '🃏', name: 'The Glitch', rev: false, desc: "A sudden disruption in your routine. An unexpected error that frees you from a predetermined loop. Embrace the chaos, for it reveals truths hidden in the static." },
+            { num: 'I', icon: '⌨️', name: 'The Coder', rev: false, desc: "You have the tools and the syntax to manifest your reality. Execute your plans with confidence. The universe is waiting for your command." },
+            { num: 'II', icon: '👁️', name: 'The Observer', rev: false, desc: "Silent intuition. Passive data collection. Watch without taking action. The answers will naturally bubble up from the depths of the console." },
+            { num: 'III', icon: '🌸', name: 'The Algorithm', rev: false, desc: "Harmonious growth and creation. Nurture your subroutines. A fertile period where your inputs generate lush, unexpected outputs." },
+            { num: 'IV', icon: '🖥️', name: 'The Server', rev: false, desc: "Authority, structure, and foundational stability. Protect your core data. You are the pillar holding up a fragile network." },
+            { num: 'V', icon: '📜', name: 'The Cache', rev: false, desc: "Relying on old data or inherited knowledge. It may be time to clear your cache and seek fresh perspectives outside established protocols." },
+            { num: 'VI', icon: '💞', name: 'The Peer', rev: false, desc: "A powerful parallel connection. P2P symmetry. Two nodes syncing perfectly. A choice made through shared understanding rather than lone logic." },
+            { num: 'VII', icon: '🚀', name: 'The Bandwidth', rev: false, desc: "Unstoppable momentum. Overcoming bottlenecks through sheer willpower and force. Full throttle forward." },
+            { num: 'VIII', icon: '🛡️', name: 'The Firewall', rev: false, desc: "Inner strength and resilience. Blocking malicious intents with grace rather than brute force. Soft power neutralizing a threat." },
+            { num: 'IX', icon: '🕯️', name: 'The Localhost', rev: false, desc: "Turning inward. Disconnecting from the global net to debug your soul. Solitude brings clarity." },
+            { num: 'X', icon: '🎡', name: 'The Loop', rev: false, desc: "Cycles, karma, and the `while(true)` condition of life. Things end only to begin again. A stroke of unpredictable luck." },
+            { num: 'XI', icon: '⚖️', name: 'The Syntax', rev: false, desc: "Fairness, truth, and cause-and-effect. A missing semicolon ruins the whole build. Your actions carry exact, proportionate consequences." },
+            { num: 'XII', icon: '⏳', name: 'The Ping', rev: false, desc: "A period of high latency. Waiting for a response. Suspension. Use this pause to view your situation from a completely different angle." },
+            { num: 'XIII', icon: '💀', name: 'The Reboot', rev: false, desc: "A sudden shutdown. Inevitable transition. Do not fear it—clearing the RAM is necessary to start a fresh, cleaner session." },
+            { num: 'XIV', icon: '💧', name: 'The Buffer', rev: false, desc: "Patience and moderation. Streaming data smoothly without overflow or underflow. Finding the exact right balance between two extremes." },
+            { num: 'XV', icon: '⛓️', name: 'The Malware', rev: false, desc: "Addiction, toxic attachments, or feeling bound by material code. You hold the decryption key, but you must choose to use it." },
+            { num: 'XVI', icon: '⚡', name: 'The Kernel Panic', rev: false, desc: "A catastrophic and sudden collapse of built structures. False foundations crumble. It hurts, but it clears the ground for a stronger architecture." },
+            { num: 'XVII', icon: '⭐', name: 'The Pixel', rev: false, desc: "Hope, inspiration, and renewed faith. A single light in a vast grid of darkness. You are moving in the right direction." },
+            { num: 'XVIII', icon: '🌙', name: 'The Dark Web', rev: false, desc: "Illusion, fear, and anxiety. Not everything you see in the shadows is real. Trust your intuition over your paranoia." },
+            { num: 'XIX', icon: '☀️', name: 'The Source', rev: false, desc: "Joy, success, and pure untainted code. Radiant energy that compiles perfectly on the first try. A period of absolute brilliance." },
+            { num: 'XX', icon: '📯', name: 'The Backup', rev: false, desc: "Reckoning and restoration. Pulling from your oldest save file. An awakening to a higher calling or previously abandoned task." },
+            { num: 'XXI', icon: '🌐', name: 'The Network', rev: false, desc: "Completion, integration, and fulfillment. The final successful deployment. You are connected to everything, and everything is functioning." }
+        ];
+
+        let canDraw = true;
+        const cardEl = document.getElementById('tarot-card');
+        const cNum = document.getElementById('c-num');
+        const cIco = document.getElementById('c-ico');
+        const cName = document.getElementById('c-name');
+
+        const readBox = document.getElementById('reading-box');
+        const readTxt = document.getElementById('reading-text');
+        const resetBtn = document.getElementById('reset-btn');
+
+        cardEl.addEventListener('click', () => {
+            if (!canDraw) return;
+            canDraw = false;
+
+            // Pick a random card
+            const pick = TAROT_DECK[Math.floor(Math.random() * TAROT_DECK.length)];
+            const isReversed = Math.random() > 0.8; // 20% chance of reversal
+
+            // Set face data
+            cNum.textContent = pick.num;
+            cIco.textContent = pick.icon;
+            cIco.style.transform = isReversed ? 'rotate(180deg)' : 'none';
+            cName.textContent = pick.name + (isReversed ? ' (Reversed)' : '');
+
+            // Set text
+            const revTxt = isReversed ? "However, its energy is currently blocked or inverted. Look inward. " : "";
+            readTxt.innerHTML = `<strong>${pick.name}</strong><br><br>${revTxt}${pick.desc}`;
+
+            // Animate card flip
+            cardEl.classList.add('is-flipped');
+
+            // Show reading
+            readBox.classList.add('visible');
+            setTimeout(() => { resetBtn.classList.add('visible'); }, 500);
+        });
+
+        resetBtn.addEventListener('click', () => {
+            // Reset state
+            readBox.classList.remove('visible');
+            resetBtn.classList.remove('visible');
+            cardEl.classList.remove('is-flipped');
+
+            setTimeout(() => { canDraw = true; }, 1200);
+        });
+    </script>
+
+<!-- WWG_NAV_START -->
+<style>
+.wwg-nav {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    display: flex;
+    gap: 10px;
+    z-index: 99999;
+}
+.wwg-nav a {
+    background: rgba(10, 10, 15, 0.7);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: #a78bfa;
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 0.8rem;
+    font-weight: 600;
+    text-decoration: none;
+    transition: all 0.3s ease;
+}
+.wwg-nav a:hover {
+    background: rgba(167, 139, 250, 0.2);
+    border-color: rgba(167, 139, 250, 0.4);
+    color: #fff;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(167, 139, 250, 0.3);
+}
+</style>
+<script>
+(function() {
+    let sequence = '';
+    const trigger = 'PNPNPN';
+    document.querySelectorAll('.wwg-nav a').forEach(a => {
+        a.addEventListener('click', (e) => {
+            const type = a.innerText.includes('Prev') ? 'P' : 'N';
+            sequence += type;
+            if (sequence.length > 6) sequence = sequence.substring(1);
+            if (sequence === trigger) {
+                e.preventDefault();
+                window.location.href = 'time-loop.html';
+            }
+        });
+    });
+})();
+</script>
+<div class="wwg-nav">
+    <a href="kaleidoscope.html">← Prev</a>
+    <a href="slime-mold.html">Next →</a>
+</div>
+<!-- WWG_NAV_END -->
+</body>
+
+</html>
