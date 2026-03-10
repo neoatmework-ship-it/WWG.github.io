@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lucid</title>
+    <link rel="icon"
+        href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E☁️%3C/text%3E%3C/svg%3E">
+    <style>
+        body {
+            margin: 0;
+            background: #e0d8f0;
+            overflow: hidden;
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .text {
+            font-family: serif;
+            font-size: 6rem;
+            letter-spacing: 30px;
+            color: #8a7bba;
+            opacity: 0.5;
+            pointer-events: none;
+            mix-blend-mode: overlay;
+            z-index: 10;
+            font-style: italic;
+        }
+
+        canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            filter: blur(20px);
+        }
+    </style>
+</head>
+
+<body>
+    <canvas id="c"></canvas>
+    <div class="text">DREAM</div>
+
+    <script src="discovery.js"></script>
+    <script>
+        Discovery.unlock('lucid');
+        const canvas = document.getElementById('c');
+        const ctx = canvas.getContext('2d');
+        // Render smaller for better performance w/ blur
+        let w = canvas.width = window.innerWidth / 4;
+        let h = canvas.height = window.innerHeight / 4;
+
+        let time = 0;
+        let mouseX = w / 2;
+        let mouseY = h / 2;
+
+        window.addEventListener('mousemove', e => {
+            mouseX = e.clientX / 4;
+            mouseY = e.clientY / 4;
+        });
+
+        // generate some random color blobs
+        const blobs = [];
+        for (let i = 0; i < 8; i++) {
+            blobs.push({
+                x: Math.random() * w,
+                y: Math.random() * h,
+                vx: (Math.random() - 0.5),
+                vy: (Math.random() - 0.5),
+                r: Math.random() * 50 + 50,
+                color: `hsl(${Math.random() * 60 + 240}, 70%, 70%)` // purples/blues
+            });
+        }
+
+        function draw() {
+            ctx.fillStyle = 'rgba(224, 216, 240, 0.1)'; // soft white fade
+            ctx.fillRect(0, 0, w, h);
+
+            time += 0.05;
+
+            blobs.forEach((b, i) => {
+                b.x += Math.cos(time * 0.5 + i) * 2 + b.vx;
+                b.y += Math.sin(time * 0.4 + i) * 2 + b.vy;
+
+                // slow attract to mouse
+                b.x += (mouseX - b.x) * 0.01;
+                b.y += (mouseY - b.y) * 0.01;
+
+                if (b.x < 0 || b.x > w) b.vx *= -1;
+                if (b.y < 0 || b.y > h) b.vy *= -1;
+
+                ctx.beginPath();
+                ctx.arc(b.x, b.y, b.r + Math.sin(time + i) * 10, 0, Math.PI * 2);
+                ctx.fillStyle = b.color;
+                ctx.fill();
+            });
+
+            requestAnimationFrame(draw);
+        }
+        draw();
+
+        window.addEventListener('resize', () => {
+            w = canvas.width = window.innerWidth / 4;
+            h = canvas.height = window.innerHeight / 4;
+        });
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Frost</title>
+    <link rel="icon"
+        href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E❄️%3C/text%3E%3C/svg%3E">
+    <style>
+        body {
+            margin: 0;
+            background: #0b1a2a;
+            overflow: hidden;
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        canvas {
+            display: block;
+            filter: drop-shadow(0 0 10px rgba(200, 255, 255, 0.5));
+            pointer-events: none;
+        }
+
+        .text {
+            position: absolute;
+            font-family: sans-serif;
+            font-size: 5rem;
+            letter-spacing: 20px;
+            color: rgba(255, 255, 255, 0.1);
+            pointer-events: none;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="text">FROST</div>
+    <canvas id="c"></canvas>
+
+    <script src="discovery.js"></script>
+    <script>
+        Discovery.unlock('frost');
+
+        const canvas = document.getElementById('c');
+        const ctx = canvas.getContext('2d');
+        let w = canvas.width = window.innerWidth;
+        let h = canvas.height = window.innerHeight;
+
+        const frostPoints = [];
+
+        // Start frost along edges
+        for (let x = 0; x < w; x += 20) { frostPoints.push({ x: x, y: 0, dx: 0, dy: 1, life: 1 }); frostPoints.push({ x: x, y: h, dx: 0, dy: -1, life: 1 }); }
+        for (let y = 0; y < h; y += 20) { frostPoints.push({ x: 0, y: y, dx: 1, dy: 0, life: 1 }); frostPoints.push({ x: w, y: y, dx: -1, dy: 0, life: 1 }); }
+
+        function draw() {
+            ctx.fillStyle = 'rgba(11, 26, 42, 0.01)';
+            ctx.fillRect(0, 0, w, h);
+
+            ctx.strokeStyle = '#cceeff'; // Ice blue
+            ctx.lineWidth = 1;
+
+            const newPoints = [];
+
+            for (let i = frostPoints.length - 1; i >= 0; i--) {
+                const p = frostPoints[i];
+                if (p.life <= 0) continue;
+
+                // Old point
+                const startX = p.x;
+                const startY = p.y;
+
+                // Slight wander
+                if (Math.random() > 0.5) p.dx += (Math.random() - 0.5) * 0.5;
+                if (Math.random() > 0.5) p.dy += (Math.random() - 0.5) * 0.5;
+
+                // Normalize speed
+                const speed = 2;
+                const dist = Math.sqrt(p.dx * p.dx + p.dy * p.dy);
+                if (dist > 0) { p.dx = (p.dx / dist) * speed; p.dy = (p.dy / dist) * speed; }
+
+                p.x += p.dx;
+                p.y += p.dy;
+                p.life -= 0.01;
+
+                ctx.beginPath();
+                ctx.moveTo(startX, startY);
+                ctx.lineTo(p.x, p.y);
+                ctx.stroke();
+
+                // Branching logic
+                if (Math.random() > 0.95 && p.life > 0.2) {
+                    const angle = Math.atan2(p.dy, p.dx) + (Math.random() > 0.5 ? 1 : -1) * (0.8);
+                    newPoints.push({
+                        x: p.x, y: p.y,
+                        dx: Math.cos(angle) * speed,
+                        dy: Math.sin(angle) * speed,
+                        life: p.life * 0.8
+                    });
+                }
+            }
+
+            frostPoints.push(...newPoints);
+
+            // Clean dead
+            for (let i = frostPoints.length - 1; i >= 0; i--) {
+                if (frostPoints[i].life <= 0) frostPoints.splice(i, 1);
+            }
+
+            requestAnimationFrame(draw);
+        }
+        draw();
+
+        // Restart on resize
+        window.addEventListener('resize', () => {
+            w = canvas.width = window.innerWidth;
+            h = canvas.height = window.innerHeight;
+            ctx.clearRect(0, 0, w, h);
+            frostPoints.length = 0;
+            for (let x = 0; x < w; x += 20) { frostPoints.push({ x: x, y: 0, dx: 0, dy: 1, life: 1 }); frostPoints.push({ x: x, y: h, dx: 0, dy: -1, life: 1 }); }
+            for (let y = 0; y < h; y += 20) { frostPoints.push({ x: 0, y: y, dx: 1, dy: 0, life: 1 }); frostPoints.push({ x: w, y: y, dx: -1, dy: 0, life: 1 }); }
+        });
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Phantom</title>
+    <link rel="icon"
+        href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E👻%3C/text%3E%3C/svg%3E">
+    <style>
+        body {
+            margin: 0;
+            background: #000;
+            overflow: hidden;
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: none;
+        }
+
+        .hint {
+            color: #333;
+            font-family: sans-serif;
+            letter-spacing: 5px;
+            opacity: 0;
+            transition: opacity 2s;
+            z-index: 10;
+            pointer-events: none;
+        }
+
+        .phantom {
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            background: rgba(255, 255, 255, 0.8);
+            border-radius: 50%;
+            box-shadow: 0 0 20px #fff;
+            pointer-events: none;
+            transform: translate(-50%, -50%);
+            opacity: 1;
+            transition: opacity 1s, border-radius 1s;
+            mix-blend-mode: screen;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="hint" id="hint">WHERE ARE YOU?</div>
+
+    <script src="discovery.js"></script>
+    <script>
+        Discovery.unlock('phantom');
+
+        let moveCount = 0;
+        const hint = document.getElementById('hint');
+
+        window.addEventListener('mousemove', e => {
+            moveCount++;
+            if (moveCount > 50) hint.style.opacity = 1;
+
+            const p = document.createElement('div');
+            p.className = 'phantom';
+            p.style.left = e.clientX + 'px';
+            p.style.top = e.clientY + 'px';
+
+            // Random distortion for ghost-like trail
+            p.style.width = (Math.random() * 30 + 10) + 'px';
+            p.style.height = (Math.random() * 30 + 10) + 'px';
+
+            document.body.appendChild(p);
+
+            // Fading animation
+            setTimeout(() => {
+                p.style.opacity = 0;
+                // Distort shape as it fades
+                p.style.borderRadius = `${Math.random() * 100}% ${Math.random() * 100}% ${Math.random() * 100}% ${Math.random() * 100}%`;
+                p.style.transform = `translate(-50%, -50%) scale(${Math.random() * 2 + 1})`;
+                setTimeout(() => p.remove(), 1000);
+            }, 50);
+        });
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dune</title>
+    <link rel="icon"
+        href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E🏜️%3C/text%3E%3C/svg%3E">
+    <style>
+        body {
+            margin: 0;
+            background: #e0cca1;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            font-family: serif;
+            color: #a48259;
+        }
+
+        canvas {
+            display: block;
+            filter: sepia(0.5);
+        }
+
+        .text {
+            position: absolute;
+            font-size: 5rem;
+            letter-spacing: 20px;
+            pointer-events: none;
+            opacity: 0.3;
+        }
+
+        .sun {
+            position: absolute;
+            top: 10%;
+            right: 10%;
+            width: 200px;
+            height: 200px;
+            background: #fff0d4;
+            border-radius: 50%;
+            box-shadow: 0 0 100px #fff;
+            pointer-events: none;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="sun"></div>
+    <div class="text">D U N E</div>
+    <canvas id="c"></canvas>
+
+    <script src="discovery.js"></script>
+    <script>
+        Discovery.unlock('dune');
+        const canvas = document.getElementById('c');
+        const ctx = canvas.getContext('2d');
+        let w = canvas.width = window.innerWidth;
+        let h = canvas.height = window.innerHeight;
+
+        const sand = [];
+        for (let i = 0; i < 3000; i++) {
+            sand.push({
+                x: Math.random() * w,
+                y: Math.random() * h,
+                size: Math.random() * 2 + 1,
+                speedY: Math.random() * 2 + 1,
+                speedX: Math.random() * 5 + 2
+            });
+        }
+
+        let windX = 5;
+        let windY = 1;
+
+        window.addEventListener('mousemove', e => {
+            windX = ((e.clientX / w) - 0.5) * 50; // max wind 25
+            windY = ((e.clientY / h) - 0.5) * 10 + 2; // gravity + slight uplift possible
+        });
+
+        // Floor height map for dunes
+        const floor = new Array(w).fill(h - 100);
+        let noiseOffset = 0;
+
+        function draw() {
+            ctx.fillStyle = 'rgba(224, 204, 161, 0.2)';
+            ctx.fillRect(0, 0, w, h);
+
+            ctx.fillStyle = '#b79261';
+
+            noiseOffset += windX * 0.05;
+
+            // Draw floor
+            ctx.beginPath();
+            ctx.moveTo(0, h);
+            for (let x = 0; x < w; x += 10) {
+                const duneH = Math.sin((x + noiseOffset) * 0.01) * 50 + Math.sin((x - noiseOffset * 0.5) * 0.005) * 100;
+                ctx.lineTo(x, h - 100 - duneH);
+            }
+            ctx.lineTo(w, h);
+            ctx.fill();
+
+            // Sand particles
+            ctx.fillStyle = '#8a6b41';
+            for (let i = 0; i < sand.length; i++) {
+                const p = sand[i];
+                p.x += windX + p.speedX * (Math.random() - 0.5);
+                p.y += windY + p.speedY;
+
+                if (p.x > w) p.x = 0;
+                if (p.x < 0) p.x = w;
+                if (p.y > h) { p.y = 0; p.x = Math.random() * w; }
+                if (p.y < 0) { p.y = h; p.x = Math.random() * w; }
+
+                ctx.fillRect(p.x, p.y, p.size, p.size);
+            }
+
+            requestAnimationFrame(draw);
+        }
+        draw();
+
+        window.addEventListener('resize', () => {
+            w = canvas.width = window.innerWidth;
+            h = canvas.height = window.innerHeight;
+            floor.length = w;
+        });
+    </script>
+</body>
+
+</html>

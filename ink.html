@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ink</title>
+    <link rel="icon"
+        href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E✒️%3C/text%3E%3C/svg%3E">
+    <style>
+        body {
+            margin: 0;
+            background: #f4ebd8;
+            overflow: hidden;
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        canvas {
+            display: block;
+            filter: blur(2px) contrast(10) url('#goo');
+            mix-blend-mode: multiply;
+        }
+
+        .hint {
+            position: absolute;
+            font-family: 'Courier New', Courier, monospace;
+            color: #333;
+            letter-spacing: 5px;
+            opacity: 0.3;
+            top: 30px;
+            pointer-events: none;
+        }
+
+        svg {
+            position: absolute;
+            width: 0;
+            height: 0;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="hint">DROP INK IN WATER</div>
+    <canvas id="c"></canvas>
+
+    <svg>
+        <defs>
+            <filter id="goo">
+                <feGaussianBlur in="SourceGraphic" stdDeviation="5" result="blur" />
+                <feColorMatrix in="blur" mode="matrix" values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 19 -9"
+                    result="goo" />
+                <feComposite in="SourceGraphic" in2="goo" operator="atop" />
+            </filter>
+        </defs>
+    </svg>
+
+    <script src="discovery.js"></script>
+    <script>
+        Discovery.unlock('ink');
+        const canvas = document.getElementById('c');
+        const ctx = canvas.getContext('2d');
+        let w = canvas.width = window.innerWidth;
+        let h = canvas.height = window.innerHeight;
+
+        const inkDrops = [];
+
+        window.addEventListener('mousemove', e => {
+            if (Math.random() > 0.8) {
+                inkDrops.push({
+                    x: e.clientX,
+                    y: e.clientY,
+                    vx: (Math.random() - 0.5) * 2,
+                    vy: (Math.random() - 0.5) * 2 + 1, // sink
+                    r: Math.random() * 5 + 5,
+                    life: 1
+                });
+            }
+        });
+
+        window.addEventListener('mousedown', e => {
+            for (let i = 0; i < 20; i++) {
+                inkDrops.push({
+                    x: e.clientX,
+                    y: e.clientY,
+                    vx: (Math.random() - 0.5) * 10,
+                    vy: (Math.random() - 0.5) * 10,
+                    r: Math.random() * 10 + 5,
+                    life: 1
+                });
+            }
+        });
+
+        function draw() {
+            ctx.fillStyle = 'rgba(244, 235, 216, 0.1)'; // fade
+            ctx.fillRect(0, 0, w, h);
+
+            for (let i = 0; i < inkDrops.length; i++) {
+                const drop = inkDrops[i];
+
+                // Brownian motion / fluid dynamics
+                drop.vx += (Math.random() - 0.5) * 0.5;
+                drop.vy += (Math.random() - 0.5) * 0.5 + 0.05; // gravity
+
+                // Friction
+                drop.vx *= 0.95;
+                drop.vy *= 0.95;
+
+                drop.x += drop.vx;
+                drop.y += drop.vy;
+
+                drop.r += 0.2; // spread
+                drop.life -= 0.01; // fade
+
+                if (drop.life <= 0) {
+                    inkDrops.splice(i, 1);
+                    i--;
+                    continue;
+                }
+
+                ctx.beginPath();
+                ctx.arc(drop.x, drop.y, drop.r, 0, Math.PI * 2);
+                ctx.fillStyle = `rgba(10, 20, 40, ${drop.life * 0.5})`; // ink blue/black
+                ctx.fill();
+            }
+            requestAnimationFrame(draw);
+        }
+        draw();
+
+        window.addEventListener('resize', () => {
+            w = canvas.width = window.innerWidth;
+            h = canvas.height = window.innerHeight;
+            ctx.clearRect(0, 0, w, h);
+        });
+    </script>
+</body>
+
+</html>

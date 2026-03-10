@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Entropy</title>
+    <link rel="icon"
+        href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E📺%3C/text%3E%3C/svg%3E">
+    <style>
+        body {
+            margin: 0;
+            background: #fff;
+            color: #000;
+            font-family: sans-serif;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            flex-direction: column;
+        }
+
+        .text {
+            font-size: 5rem;
+            letter-spacing: 20px;
+            text-transform: uppercase;
+            font-weight: bold;
+        }
+
+        .sub {
+            font-size: 1.5rem;
+            letter-spacing: 5px;
+            margin-top: 20px;
+        }
+
+        canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 2s;
+            mix-blend-mode: difference;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="text">ORDER</div>
+    <div class="sub">Slowly degrading into chaos...</div>
+    <canvas id="c"></canvas>
+
+    <script src="discovery.js"></script>
+    <script>
+        Discovery.unlock('entropy');
+        const canvas = document.getElementById('c');
+        const ctx = canvas.getContext('2d');
+        let w = canvas.width = window.innerWidth;
+        let h = canvas.height = window.innerHeight;
+
+        // noise pixel size grows over time
+        let pSize = 1;
+        let pOpacity = 0.05;
+
+        setTimeout(() => canvas.style.opacity = 1, 1000);
+
+        function draw() {
+            // Draw random noise boxes
+            const numBox = w * h / 10000; // density
+
+            for (let i = 0; i < numBox; i++) {
+                const x = Math.floor(Math.random() * (w / pSize)) * pSize;
+                const y = Math.floor(Math.random() * (h / pSize)) * pSize;
+
+                const c = Math.random() > 0.5 ? 255 : 0;
+                ctx.fillStyle = `rgba(${c},${c},${c},${pOpacity})`;
+                ctx.fillRect(x, y, pSize, pSize);
+            }
+
+            requestAnimationFrame(draw);
+        }
+        draw();
+
+        // Increase entropy over time
+        setInterval(() => {
+            if (pSize < 50) pSize *= 1.1; // size increases
+            if (pOpacity < 1) pOpacity += 0.05; // opacity increases
+        }, 2000);
+
+        window.addEventListener('resize', () => {
+            w = canvas.width = window.innerWidth;
+            h = canvas.height = window.innerHeight;
+        });
+    </script>
+</body>
+
+</html>

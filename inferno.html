@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inferno</title>
+    <link rel="icon"
+        href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E🔥%3C/text%3E%3C/svg%3E">
+    <style>
+        body {
+            margin: 0;
+            background: #050000;
+            overflow: hidden;
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        canvas {
+            display: block;
+            filter: blur(3px) contrast(5);
+            mix-blend-mode: screen;
+        }
+
+        .text {
+            position: absolute;
+            font-size: 5rem;
+            letter-spacing: 20px;
+            font-family: Impact, sans-serif;
+            color: #ff3300;
+            pointer-events: none;
+            z-index: -1;
+            opacity: 0.2;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="text">INFERNO</div>
+    <canvas id="c"></canvas>
+
+    <script src="discovery.js"></script>
+    <script>
+        Discovery.unlock('inferno');
+        const canvas = document.getElementById('c');
+        const ctx = canvas.getContext('2d');
+        let w = canvas.width = window.innerWidth;
+        let h = canvas.height = window.innerHeight;
+
+        const particles = [];
+        const numParticles = 500;
+
+        for (let i = 0; i < numParticles; i++) {
+            particles.push({
+                x: Math.random() * w,
+                y: h + Math.random() * 100,
+                vx: (Math.random() - 0.5) * 5,
+                vy: -Math.random() * 10 - 2,
+                life: Math.random() * 0.5 + 0.5,
+                decay: 0.01 + Math.random() * 0.02,
+                size: Math.random() * 30 + 10,
+                cType: Math.random() > 0.5 ? 0 : (Math.random() > 0.5 ? 1 : 2) // 0=red, 1=orange, 2=yellow
+            });
+        }
+
+        let mouseX = w / 2;
+        let mouseY = h;
+        let isBlowing = false;
+
+        window.addEventListener('mousemove', e => {
+            mouseX = e.clientX;
+            mouseY = e.clientY;
+        });
+        window.addEventListener('mousedown', () => isBlowing = true);
+        window.addEventListener('mouseup', () => isBlowing = false);
+
+        function draw() {
+            ctx.fillStyle = 'rgba(5, 0, 0, 0.4)'; // trail effect
+            ctx.fillRect(0, 0, w, h);
+
+            ctx.globalCompositeOperation = 'lighter';
+
+            for (let i = 0; i < numParticles; i++) {
+                const p = particles[i];
+
+                // Wind effect from mouse
+                const dx = mouseX - p.x;
+                const dy = mouseY - p.y;
+                const dist = Math.sqrt(dx * dx + dy * dy);
+
+                if (isBlowing && dist < 300) {
+                    p.vx -= (dx / dist) * 2; // blow away
+                    p.vy -= (dy / dist) * 2;
+                }
+
+                // Normal rise
+                p.x += p.vx;
+                p.y += p.vy;
+                p.life -= p.decay;
+                p.size *= 0.95; // shrink
+
+                // Swirl
+                p.vx += Math.sin(p.y * 0.05) * 0.5;
+                p.vy -= 0.1; // accelerate upwards
+
+                if (p.life <= 0 || p.size < 1) {
+                    p.x = mouseX + (Math.random() - 0.5) * 100;
+                    p.y = h + 10;
+                    p.life = 1;
+                    p.size = Math.random() * 30 + 10;
+                    p.vx = (Math.random() - 0.5) * 2;
+                    p.vy = -Math.random() * 10 - 2;
+                }
+
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+
+                let r, g, b;
+                if (p.cType === 0) { r = 255; g = Math.random() * 50; b = 0; }
+                else if (p.cType === 1) { r = 255; g = Math.random() * 100 + 50; b = 0; }
+                else { r = 255; g = 200; b = 50; }
+
+                ctx.fillStyle = `rgba(${r},${g},${b},${p.life * 0.5})`;
+                ctx.fill();
+            }
+
+            ctx.globalCompositeOperation = 'source-over';
+            requestAnimationFrame(draw);
+        }
+        draw();
+
+        window.addEventListener('resize', () => {
+            w = canvas.width = window.innerWidth;
+            h = canvas.height = window.innerHeight;
+        });
+    </script>
+</body>
+
+</html>

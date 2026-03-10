@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Oasis</title>
+    <link rel="icon"
+        href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E💧%3C/text%3E%3C/svg%3E">
+    <style>
+        body {
+            margin: 0;
+            background: #e6c280;
+            overflow: hidden;
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        #pool {
+            position: relative;
+            width: 400px;
+            height: 300px;
+            background: #4ca1af;
+            border-radius: 50% 40% 60% 30% / 30% 60% 40% 50%;
+            box-shadow: inset 0 20px 50px rgba(0, 0, 0, 0.3), 0 0 0 10px #c49a45;
+            overflow: hidden;
+            cursor: crosshair;
+        }
+
+        .ripple {
+            position: absolute;
+            border: 2px solid rgba(255, 255, 255, 0.8);
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            pointer-events: none;
+            animation: rip 2s ease-out forwards;
+        }
+
+        @keyframes rip {
+            0% {
+                width: 0;
+                height: 0;
+                opacity: 1;
+                border-width: 5px;
+            }
+
+            100% {
+                width: 200px;
+                height: 100px;
+                opacity: 0;
+                border-width: 1px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div id="pool"></div>
+
+    <script src="discovery.js"></script>
+    <script>
+        Discovery.unlock('oasis');
+        const pool = document.getElementById('pool');
+
+        pool.addEventListener('mousemove', e => {
+            if (Math.random() > 0.8) createRipple(e);
+        });
+
+        pool.addEventListener('click', createRipple);
+
+        function createRipple(e) {
+            const rect = pool.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+
+            const r = document.createElement('div');
+            r.className = 'ripple';
+            r.style.left = x + 'px';
+            r.style.top = y + 'px';
+            pool.appendChild(r);
+
+            setTimeout(() => r.remove(), 2000);
+        }
+
+        // Auto ripples
+        setInterval(() => {
+            if (Math.random() > 0.5) {
+                const r = document.createElement('div');
+                r.className = 'ripple';
+                r.style.left = (Math.random() * 400) + 'px';
+                r.style.top = (Math.random() * 300) + 'px';
+                pool.appendChild(r);
+                setTimeout(() => r.remove(), 2000);
+            }
+        }, 500);
+    </script>
+</body>
+
+</html>

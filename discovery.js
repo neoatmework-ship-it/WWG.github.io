@@ -5,7 +5,7 @@
 const Discovery = {
     STORAGE_KEY: 'wwg_discovered_secrets',
 
-    // List of all 25 secret site IDs
+    // List of all secret site IDs (45 original + 55 new = 100 total)
     SITES: [
         'void', 'ghost', 'classified', 'backrooms',
         'limbo', 'static', 'deep', 'underground',
@@ -17,7 +17,19 @@ const Discovery = {
         'fable', 'glimmer', 'horizon', 'imprint',
         'jigsaw', 'kinetic', 'lattice', 'monolith',
         'nebula', 'oracle', 'parallax', 'quartz',
-        'resonance', 'solstice', 'tether', 'ultra'
+        'resonance', 'solstice', 'tether', 'ultra',
+        // --- 55 New Secrets ---
+        'abyss', 'alchemy', 'anomaly', 'aurora', 'beacon',
+        'bones', 'cascade', 'cataclysm', 'chronos', 'cobweb',
+        'core', 'crypt', 'crystal', 'cube', 'dawn',
+        'decay', 'dew', 'dimension', 'drift', 'dune',
+        'ember', 'enigma', 'entropy', 'fault', 'flora',
+        'flux', 'fossil', 'fracture', 'frost', 'geode',
+        'glyph', 'halo', 'helix', 'hive', 'hollow',
+        'illusion', 'inferno', 'ink', 'labyrinth', 'lucid',
+        'magma', 'meteor', 'mirage', 'nexus', 'nomad',
+        'oasis', 'omen', 'paradox', 'phantom', 'prism',
+        'pulse', 'quantum', 'relic', 'siren', 'totem'
     ],
 
     unlock: function (siteId) {

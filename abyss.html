@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Abyss</title>
+    <link rel="icon"
+        href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E🕳️%3C/text%3E%3C/svg%3E">
+    <style>
+        body {
+            margin: 0;
+            background: #000;
+            overflow: hidden;
+            font-family: monospace;
+        }
+
+        canvas {
+            display: block;
+        }
+
+        .text {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: rgba(255, 255, 255, 0.05);
+            font-size: 5rem;
+            letter-spacing: 20px;
+            pointer-events: none;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="text">ABYSS</div>
+    <canvas id="c"></canvas>
+    <script src="discovery.js"></script>
+    <script>
+        Discovery.unlock('abyss');
+        const canvas = document.getElementById('c');
+        const ctx = canvas.getContext('2d');
+        let w = canvas.width = window.innerWidth;
+        let h = canvas.height = window.innerHeight;
+
+        const particles = [];
+        for (let i = 0; i < 1000; i++) {
+            particles.push({
+                x: Math.random() * w,
+                y: Math.random() * h,
+                z: Math.random() * w,
+                color: `rgba(255,255,255,${Math.random() * 0.5})`
+            });
+        }
+
+        let mouseX = w / 2;
+        let mouseY = h / 2;
+        window.addEventListener('mousemove', e => { mouseX = e.clientX; mouseY = e.clientY; });
+
+        function draw() {
+            ctx.fillStyle = 'rgba(0,0,0,0.1)';
+            ctx.fillRect(0, 0, w, h);
+
+            for (let i = 0; i < particles.length; i++) {
+                const p = particles[i];
+                p.z -= 5;
+                if (p.z <= 0) {
+                    p.x = Math.random() * w;
+                    p.y = Math.random() * h;
+                    p.z = w;
+                }
+
+                // 3D projection
+                const fov = 300;
+                const scale = fov / p.z;
+                const x2d = (p.x - mouseX) * scale + w / 2;
+                const y2d = (p.y - mouseY) * scale + h / 2;
+
+                ctx.beginPath();
+                ctx.arc(x2d, y2d, scale * 2, 0, Math.PI * 2);
+                ctx.fillStyle = p.color;
+                ctx.fill();
+            }
+            requestAnimationFrame(draw);
+        }
+        draw();
+
+        window.addEventListener('resize', () => {
+            w = canvas.width = window.innerWidth;
+            h = canvas.height = window.innerHeight;
+        });
+    </script>
+</body>
+
+</html>

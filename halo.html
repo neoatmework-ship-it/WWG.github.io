@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Halo</title>
+    <link rel="icon"
+        href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E⭕%3C/text%3E%3C/svg%3E">
+    <style>
+        body {
+            margin: 0;
+            background: #000;
+            overflow: hidden;
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .ring {
+            position: absolute;
+            border: 2px solid #fff;
+            border-radius: 50%;
+            opacity: 0;
+            pointer-events: none;
+            transform: translate(-50%, -50%);
+            transition: opacity 0.5s, width 1s ease-out, height 1s ease-out;
+            box-shadow: 0 0 20px #fff;
+        }
+
+        .text {
+            position: absolute;
+            top: 30px;
+            left: 30px;
+            font-family: monospace;
+            color: rgba(255, 255, 255, 0.2);
+            letter-spacing: 5px;
+            pointer-events: none;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="text">HALO RESONATOR</div>
+
+    <script src="discovery.js"></script>
+    <script>
+        Discovery.unlock('halo');
+
+        let mouseX = window.innerWidth / 2;
+        let mouseY = window.innerHeight / 2;
+
+        window.addEventListener('mousemove', e => {
+            mouseX = e.clientX;
+            mouseY = e.clientY;
+        });
+
+        // Click to spawn a new pulsing center
+        let centers = [{ x: window.innerWidth / 2, y: window.innerHeight / 2 }];
+
+        window.addEventListener('click', e => {
+            centers.push({ x: e.clientX, y: e.clientY });
+            if (centers.length > 5) centers.shift();
+        });
+
+        let tick = 0;
+
+        function pulse() {
+            tick++;
+
+            centers.forEach((c, idx) => {
+                // Pulse frequency based on mouse proximity
+                const dist = Math.sqrt(Math.pow(mouseX - c.x, 2) + Math.pow(mouseY - c.y, 2));
+                const freq = Math.max(10, Math.min(100, dist / 5)); // 10 to 100 frames
+
+                if (tick % Math.floor(freq) === 0) {
+                    const r = document.createElement('div');
+                    r.className = 'ring';
+                    r.style.left = c.x + 'px';
+                    r.style.top = c.y + 'px';
+                    r.style.width = '10px';
+                    r.style.height = '10px';
+
+                    // Rainbow hue based on center index
+                    const hue = (idx * 60 + tick) % 360;
+                    r.style.borderColor = `hsl(${hue}, 100%, 70%)`;
+                    r.style.boxShadow = `0 0 20px hsl(${hue}, 100%, 70%), inset 0 0 20px hsl(${hue}, 100%, 70%)`;
+
+                    document.body.appendChild(r);
+
+                    // Animate out
+                    setTimeout(() => {
+                        r.style.width = '800px';
+                        r.style.height = '800px';
+                        r.style.opacity = 1;
+
+                        setTimeout(() => {
+                            r.style.opacity = 0;
+                            setTimeout(() => r.remove(), 500);
+                        }, 500);
+                    }, 10);
+                }
+            });
+
+            requestAnimationFrame(pulse);
+        }
+        pulse();
+    </script>
+</body>
+
+</html>

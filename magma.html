@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Magma</title>
+    <link rel="icon"
+        href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E🌋%3C/text%3E%3C/svg%3E">
+    <style>
+        body {
+            margin: 0;
+            background: #1a0500;
+            overflow: hidden;
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .lamp {
+            width: 100vw;
+            height: 100vh;
+            position: absolute;
+            filter: url('#goo');
+            background: linear-gradient(0deg, #310 0%, #100 100%);
+        }
+
+        .blob {
+            position: absolute;
+            border-radius: 50%;
+            background: linear-gradient(180deg, #ff4500, #ff8c00);
+            box-shadow: 0 0 50px #f40, inset 0 -10px 20px #a10;
+            animation: float 10s ease-in-out infinite alternate;
+        }
+
+        /* Multiple blobs with delays */
+        .b1 {
+            width: 150px;
+            height: 150px;
+            left: 20%;
+            animation-duration: 8s;
+        }
+
+        .b2 {
+            width: 200px;
+            height: 200px;
+            left: 40%;
+            animation-duration: 12s;
+            animation-delay: -2s;
+            background: linear-gradient(180deg, #ff8c00, #ffd700);
+        }
+
+        .b3 {
+            width: 100px;
+            height: 100px;
+            left: 60%;
+            animation-duration: 9s;
+            animation-delay: -5s;
+        }
+
+        .b4 {
+            width: 250px;
+            height: 180px;
+            left: 75%;
+            animation-duration: 15s;
+            animation-delay: -7s;
+        }
+
+        .heat {
+            width: 100vw;
+            height: 200px;
+            background: #f40;
+            position: absolute;
+            bottom: -100px;
+            border-radius: 50%;
+            filter: blur(20px);
+        }
+
+        .text {
+            position: absolute;
+            font-family: sans-serif;
+            font-size: 5rem;
+            font-weight: bold;
+            color: #fff;
+            mix-blend-mode: overlay;
+            pointer-events: none;
+            letter-spacing: 20px;
+        }
+
+        @keyframes float {
+            0% {
+                transform: translateY(110vh) scaleX(1.2);
+            }
+
+            50% {
+                transform: translateY(40vh) scaleX(0.9);
+            }
+
+            100% {
+                transform: translateY(-30vh) scaleX(1.1);
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="text">MAGMA TUBE</div>
+
+    <!-- SVG Goo Filter -->
+    <svg style="visibility: hidden; position: absolute;" width="0" height="0" xmlns="http://www.w3.org/2000/svg"
+        version="1.1">
+        <defs>
+            <filter id="goo">
+                <feGaussianBlur in="SourceGraphic" stdDeviation="20" result="blur" />
+                <feColorMatrix in="blur" mode="matrix" values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 30 -15"
+                    result="goo" />
+                <feBlend in="SourceGraphic" in2="goo" />
+            </filter>
+        </defs>
+    </svg>
+
+    <div class="lamp" id="lamp">
+        <div class="heat"></div>
+        <div class="blob b1"></div>
+        <div class="blob b2"></div>
+        <div class="blob b3"></div>
+        <div class="blob b4"></div>
+    </div>
+
+    <script src="discovery.js"></script>
+    <script>
+        Discovery.unlock('magma');
+
+        const lamp = document.getElementById('lamp');
+
+        window.addEventListener('click', e => {
+            const b = document.createElement('div');
+            b.className = 'blob';
+            b.style.width = (Math.random() * 100 + 50) + 'px';
+            b.style.height = b.style.width;
+            b.style.left = e.clientX + 'px';
+            b.style.top = e.clientY + 'px';
+            b.style.animation = 'none'; // manual placement
+
+            lamp.appendChild(b);
+
+            // animate up slowly
+            b.animate([
+                { transform: 'translate(-50%, -50%)', opacity: 1 },
+                { transform: 'translate(-50%, -200%) scale(0.5)', opacity: 0 }
+            ], { duration: 10000, easing: 'ease-in' }).onfinish = () => b.remove();
+        });
+    </script>
+</body>
+
+</html>

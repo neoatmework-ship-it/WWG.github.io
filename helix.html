@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Helix</title>
+    <link rel="icon"
+        href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E🧬%3C/text%3E%3C/svg%3E">
+    <style>
+        body {
+            margin: 0;
+            background: #000b1a;
+            overflow: hidden;
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        canvas {
+            display: block;
+            filter: drop-shadow(0 0 5px rgba(0, 255, 255, 0.8));
+        }
+
+        .text {
+            position: absolute;
+            font-family: monospace;
+            color: rgba(0, 255, 255, 0.3);
+            letter-spacing: 10px;
+            font-size: 3rem;
+            transform: rotate(-90deg);
+            left: -50px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="text">HELIX</div>
+    <canvas id="c"></canvas>
+
+    <script src="discovery.js"></script>
+    <script>
+        Discovery.unlock('helix');
+        const canvas = document.getElementById('c');
+        const ctx = canvas.getContext('2d');
+        let w = canvas.width = window.innerWidth;
+        let h = canvas.height = window.innerHeight;
+
+        let time = 0;
+        let mouseX = w / 2;
+        let tilt = 0;
+
+        window.addEventListener('mousemove', e => {
+            mouseX = e.clientX;
+            // Tilt based on mouse X relative to center
+            tilt = (e.clientX - w / 2) * 0.005;
+        });
+
+        function draw() {
+            ctx.fillStyle = 'rgba(0,11,26,0.2)';
+            ctx.fillRect(0, 0, w, h);
+
+            time += 0.05;
+
+            const numPairs = 40;
+            const spacing = h / numPairs;
+            const radius = 100;
+
+            for (let i = 0; i < numPairs; i++) {
+                const y = i * spacing;
+
+                // Add some wave distortion based on time and height
+                const yDist = Math.sin(time * 0.5 + i * 0.1) * 20;
+
+                // Rotation angle for this pair
+                const angle = time + i * 0.2;
+
+                // Projection calculations with tilt
+                let x1 = Math.cos(angle) * radius;
+                let z1 = Math.sin(angle) * radius;
+                let x2 = Math.cos(angle + Math.PI) * radius;
+                let z2 = Math.sin(angle + Math.PI) * radius;
+
+                // Apply tilt
+                const tiltedX1 = x1 * Math.cos(tilt) - z1 * Math.sin(tilt);
+                const tiltedZ1 = x1 * Math.sin(tilt) + z1 * Math.cos(tilt);
+
+                const tiltedX2 = x2 * Math.cos(tilt) - z2 * Math.sin(tilt);
+                const tiltedZ2 = x2 * Math.sin(tilt) + z2 * Math.cos(tilt);
+
+                // Scale based on Z for fake 3D
+                const s1 = 300 / (300 + tiltedZ1);
+                const s2 = 300 / (300 + tiltedZ2);
+
+                const drawX1 = w / 2 + tiltedX1 * s1;
+                const drawY1 = y + yDist;
+
+                const drawX2 = w / 2 + tiltedX2 * s2;
+                const drawY2 = y + yDist;
+
+                // Draw connecting line (hydrogen bond)
+                ctx.beginPath();
+                ctx.moveTo(drawX1, drawY1);
+                ctx.lineTo(drawX2, drawY2);
+                ctx.strokeStyle = `rgba(0,255,255,${Math.min(s1, s2) * 0.5})`;
+                ctx.lineWidth = 2;
+                ctx.stroke();
+
+                // Draw molecules (nucleotides)
+                ctx.beginPath();
+                ctx.arc(drawX1, drawY1, 6 * s1, 0, Math.PI * 2);
+                ctx.fillStyle = i % 2 === 0 ? '#0ff' : '#f0f';
+                ctx.fill();
+
+                ctx.beginPath();
+                ctx.arc(drawX2, drawY2, 6 * s2, 0, Math.PI * 2);
+                ctx.fillStyle = i % 2 === 0 ? '#f0f' : '#0ff';
+                ctx.fill();
+            }
+
+            requestAnimationFrame(draw);
+        }
+        draw();
+
+        window.addEventListener('resize', () => {
+            w = canvas.width = window.innerWidth;
+            h = canvas.height = window.innerHeight;
+        });
+    </script>
+</body>
+
+</html>

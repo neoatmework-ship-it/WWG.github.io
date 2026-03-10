@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Labyrinth</title>
+    <link rel="icon"
+        href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E🧭%3C/text%3E%3C/svg%3E">
+    <style>
+        body {
+            margin: 0;
+            background: #111;
+            color: #fff;
+            font-family: monospace;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .maze-container {
+            width: 400px;
+            height: 400px;
+            background: #222;
+            position: relative;
+            border: 2px solid #555;
+            box-shadow: 0 0 50px rgba(0, 255, 100, 0.1);
+        }
+
+        .wall {
+            position: absolute;
+            background: #666;
+            box-shadow: inset 0 0 5px #000;
+        }
+
+        .player {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            background: #0f0;
+            border-radius: 50%;
+            top: 5px;
+            left: 5px;
+            box-shadow: 0 0 10px #0f0;
+            transition: 0.1s linear;
+            z-index: 10;
+        }
+
+        .goal {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            background: #f0f;
+            top: 385px;
+            left: 385px;
+            box-shadow: 0 0 10px #f0f;
+            border-radius: 2px;
+        }
+
+        .hint {
+            position: absolute;
+            top: 20px;
+            color: #555;
+            letter-spacing: 5px;
+            font-size: 2rem;
+        }
+
+        .controls {
+            position: absolute;
+            bottom: 20px;
+            color: #888;
+            letter-spacing: 2px;
+        }
+
+        .win-screen {
+            position: absolute;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.8);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            z-index: 100;
+            opacity: 0;
+            transition: 1s;
+        }
+
+        .win-text {
+            font-size: 3rem;
+            color: #0f0;
+            text-shadow: 0 0 20px #0f0;
+            margin-bottom: 20px;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            background: transparent;
+            border: 1px solid #0f0;
+            color: #0f0;
+            cursor: pointer;
+            font-family: monospace;
+            font-size: 1.2rem;
+            transition: 0.2s;
+        }
+
+        .btn:hover {
+            background: #0f0;
+            color: #000;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="hint">THE LABYRINTH</div>
+    <div class="maze-container" id="maze">
+        <div class="player" id="p"></div>
+        <div class="goal"></div>
+        <!-- Walls gen by JS -->
+    </div>
+    <div class="controls">ARROW KEYS TO NAVIGATE</div>
+
+    <div class="win-screen" id="win">
+        <div class="win-text">DEEPER</div>
+        <button class="btn" onclick="nextLevel()">DESCEND</button>
+    </div>
+
+    <script src="discovery.js"></script>
+    <script>
+        Discovery.unlock('labyrinth');
+
+        const maze = document.getElementById('maze');
+        const pE = document.getElementById('p');
+        const winS = document.getElementById('win');
+
+        const SIZE = 20; // grid size
+        const COLS = 400 / SIZE;
+        const ROWS = 400 / SIZE;
+
+        let grid = [];
+        let px = 0, py = 0;
+
+        function initMaze() {
+            // Clear old walls
+            document.querySelectorAll('.wall').forEach(w => w.remove());
+            winS.style.opacity = 0;
+            setTimeout(() => winS.style.display = 'none', 1000);
+
+            grid = Array(ROWS).fill().map(() => Array(COLS).fill(1)); // 1=wall, 0=path
+
+            // Random Walk maze gen (simplified)
+            let currX = 0; let currY = 0;
+            grid[currY][currX] = 0;
+
+            const stack = [[0, 0]];
+
+            while (stack.length > 0) {
+                let [x, y] = stack[stack.length - 1];
+                let dirs = [];
+                // Check valid unvisited neighbors
+                if (y > 1 && grid[y - 2][x] === 1) dirs.push([x, y - 2, x, y - 1]); // Up
+                if (y < ROWS - 2 && grid[y + 2][x] === 1) dirs.push([x, y + 2, x, y + 1]); // Down
+                if (x > 1 && grid[y][x - 2] === 1) dirs.push([x - 2, y, x - 1, y]); // Left
+                if (x < COLS - 2 && grid[y][x + 2] === 1) dirs.push([x + 2, y, x + 1, y]); // Right
+
+                if (dirs.length > 0) {
+                    let d = dirs[Math.floor(Math.random() * dirs.length)];
+                    grid[d[3]][d[2]] = 0; // break wall between
+                    grid[d[1]][d[0]] = 0; // carve cell
+                    stack.push([d[0], d[1]]);
+                } else {
+                    stack.pop();
+                }
+            }
+
+            // Ensure goal is open
+            grid[ROWS - 1][COLS - 1] = 0;
+            grid[ROWS - 2][COLS - 1] = 0; // path to it
+            grid[ROWS - 1][COLS - 2] = 0;
+
+            // Render basic blocks
+            for (let r = 0; r < ROWS; r++) {
+                for (let c = 0; c < COLS; c++) {
+                    if (grid[r][c] === 1) {
+                        const w = document.createElement('div');
+                        w.className = 'wall';
+                        w.style.width = SIZE + 'px';
+                        w.style.height = SIZE + 'px';
+                        w.style.left = (c * SIZE) + 'px';
+                        w.style.top = (r * SIZE) + 'px';
+                        maze.appendChild(w);
+                    }
+                }
+            }
+
+            px = 0; py = 0;
+            updateP();
+        }
+
+        function updateP() {
+            pE.style.left = (px * SIZE + 5) + 'px';
+            pE.style.top = (py * SIZE + 5) + 'px';
+
+            if (px === COLS - 1 && py === ROWS - 1) {
+                winS.style.display = 'flex';
+                setTimeout(() => winS.style.opacity = 1, 10);
+            }
+        }
+
+        window.addEventListener('keydown', e => {
+            if (winS.style.display === 'flex') return;
+
+            let nx = px, ny = py;
+            if (e.key === 'ArrowUp') ny--;
+            if (e.key === 'ArrowDown') ny++;
+            if (e.key === 'ArrowLeft') nx--;
+            if (e.key === 'ArrowRight') nx++;
+
+            if (nx >= 0 && nx < COLS && ny >= 0 && ny < ROWS && grid[ny][nx] === 0) {
+                px = nx; py = ny;
+                updateP();
+            }
+        });
+
+        function nextLevel() { initMaze(); }
+        initMaze();
+    </script>
+</body>
+
+</html>

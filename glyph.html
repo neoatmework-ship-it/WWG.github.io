@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Glyph</title>
+    <link rel="icon"
+        href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E🔣%3C/text%3E%3C/svg%3E">
+    <style>
+        body {
+            margin: 0;
+            background: #080808;
+            overflow: hidden;
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        canvas {
+            display: block;
+            border: 1px solid #222;
+            background: #050505;
+            cursor: crosshair;
+        }
+
+        #result {
+            position: absolute;
+            bottom: 50px;
+            color: #0f0;
+            font-family: monospace;
+            font-size: 2rem;
+            letter-spacing: 5px;
+            text-shadow: 0 0 10px #0f0;
+            min-height: 40px;
+        }
+
+        .hint {
+            position: absolute;
+            top: 30px;
+            font-family: sans-serif;
+            color: #444;
+            letter-spacing: 5px;
+            pointer-events: none;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="hint">DRAW A SYMBOL</div>
+    <canvas id="c" width="400" height="400"></canvas>
+    <div id="result"></div>
+
+    <script src="discovery.js"></script>
+    <script>
+        Discovery.unlock('glyph');
+
+        const canvas = document.getElementById('c');
+        const ctx = canvas.getContext('2d');
+        const res = document.getElementById('result');
+
+        let strokes = [];
+        let currentStroke = [];
+        let isDrawing = false;
+
+        // Visual grid
+        function drawGrid() {
+            ctx.fillStyle = '#050505';
+            ctx.fillRect(0, 0, 400, 400);
+
+            ctx.strokeStyle = '#111';
+            ctx.lineWidth = 1;
+
+            for (let i = 0; i <= 400; i += 100) {
+                ctx.beginPath(); ctx.moveTo(i, 0); ctx.lineTo(i, 400); ctx.stroke();
+                ctx.beginPath(); ctx.moveTo(0, i); ctx.lineTo(400, i); ctx.stroke();
+            }
+        }
+        drawGrid();
+
+        canvas.addEventListener('mousedown', e => {
+            isDrawing = true;
+            currentStroke = [{ x: e.offsetX, y: e.offsetY }];
+        });
+
+        canvas.addEventListener('mousemove', e => {
+            if (!isDrawing) return;
+            currentStroke.push({ x: e.offsetX, y: e.offsetY });
+
+            ctx.strokeStyle = '#0f0';
+            ctx.lineWidth = 5;
+            ctx.lineCap = 'round';
+            ctx.lineJoin = 'round';
+            ctx.shadowBlur = 10;
+            ctx.shadowColor = '#0f0';
+
+            ctx.beginPath();
+            ctx.moveTo(currentStroke[currentStroke.length - 2].x, currentStroke[currentStroke.length - 2].y);
+            ctx.lineTo(currentStroke[currentStroke.length - 1].x, currentStroke[currentStroke.length - 1].y);
+            ctx.stroke();
+        });
+
+        canvas.addEventListener('mouseup', () => {
+            isDrawing = false;
+            strokes.push(currentStroke);
+            currentStroke = [];
+
+            analyzeSymbol();
+        });
+
+        const alienWords = [
+            "KRYPT", "ZOL", "VULK", "XEN", "DRAX", "ZAR", "VEX", "NULL", "VOID", "OMNI"
+        ];
+
+        function analyzeSymbol() {
+            // Fake translation based on strokes count and general bounds
+            if (strokes.length === 0) return;
+
+            // Randomly select word based on stroke count
+            const wordBox = alienWords[Math.min(strokes.length - 1, alienWords.length - 1)];
+
+            // Scramble animation
+            let iter = 0;
+            const scramble = setInterval(() => {
+                let temp = "";
+                for (let i = 0; i < wordBox.length; i++) temp += String.fromCharCode(Math.random() * 26 + 65);
+                res.innerText = temp;
+                iter++;
+                if (iter > 10) {
+                    clearInterval(scramble);
+                    res.innerText = wordBox;
+                }
+            }, 50);
+
+            // Auto clear after a while
+            setTimeout(() => {
+                strokes = [];
+                drawGrid();
+                res.innerText = "";
+            }, 3000);
+        }
+    </script>
+</body>
+
+</html>
