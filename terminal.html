@@ -157,6 +157,8 @@
 
         let currentDir = fs.root;
         let currentPath = '~';
+        let awaitingPassword = false;
+        let passwordContext = '';
 
         const bootLines = [
             "WWG BIOS v3.2.1",
@@ -185,12 +187,33 @@
         input.onkeydown = (e) => {
             if (e.key === 'Enter') {
                 const raw = input.value;
-                const [cmd, ...args] = raw.trim().split(' ');
-                writeToTerminal(`<span style="opacity: 0.5;">${promptText.textContent} ${raw}</span>`);
-                handleCommand(cmd.toLowerCase(), args);
                 input.value = '';
+
+                if (awaitingPassword) {
+                    writeToTerminal(`<span style="opacity: 0.5;">${promptText.textContent} ********</span>`);
+                    handlePassword(raw);
+                } else {
+                    const [cmd, ...args] = raw.trim().split(' ');
+                    writeToTerminal(`<span style="opacity: 0.5;">${promptText.textContent} ${raw}</span>`);
+                    handleCommand(cmd.toLowerCase(), args);
+                }
             }
         };
+
+        function handlePassword(pwd) {
+            awaitingPassword = false;
+            input.type = 'text'; // Reset to normal text
+
+            if (passwordContext === 'beacon' && pwd === 'IlikeFeet') {
+                writeToTerminal('[!] ACCESS GRANTED. REDIRECTING TO TELEMETRY MODULE...');
+                setTimeout(() => {
+                    window.location.href = '../tools/beacon.html';
+                }, 1500);
+            } else {
+                writeToTerminal('[!] ERROR: INVALID CREDENTIALS. ACCESS DENIED.');
+            }
+            passwordContext = '';
+        }
 
         function handleCommand(cmd, args) {
             switch (cmd) {
@@ -241,6 +264,13 @@
                     break;
                 case 'whoami':
                     writeToTerminal('AUTHENTICATED_FRAGMENT // SECTOR_07');
+                    break;
+                case 'beacon':
+                    writeToTerminal('TELEMETRY MODULE LOCKED.');
+                    writeToTerminal('ENTER AUTHORIZATION PASSWORD:');
+                    awaitingPassword = true;
+                    passwordContext = 'beacon';
+                    input.type = 'password'; // Obscure input
                     break;
                 case 'exit':
                     window.location.href = 'index.html';
