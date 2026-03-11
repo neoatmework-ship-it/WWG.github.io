@@ -4,33 +4,6 @@ const sendBtn = document.getElementById('send-btn');
 
 let isTyping = false;
 
-// --- API KEY MANAGEMENT ---
-const apiKeyInput = document.getElementById('api-key-input');
-const saveKeyBtn = document.getElementById('save-key-btn');
-const apiStatus = document.getElementById('api-status');
-
-// Load saved key on startup
-const savedKey = localStorage.getItem('wwg_claude_key');
-if (savedKey) {
-    apiKeyInput.value = savedKey;
-    apiStatus.textContent = "API Key loaded. Claude is active.";
-    apiStatus.style.color = "var(--primary-accent)";
-}
-
-saveKeyBtn.addEventListener('click', () => {
-    const key = apiKeyInput.value.trim();
-    if (key.startsWith('sk-ant-')) {
-        localStorage.setItem('wwg_claude_key', key);
-        apiStatus.textContent = "API Key saved. Claude is active!";
-        apiStatus.style.color = "var(--primary-accent)";
-    } else {
-        apiStatus.textContent = "Invalid Key Format (must start with sk-ant-)";
-        apiStatus.style.color = "var(--red)"; // fallback to default text color if red unsupported
-    }
-});
-
-// --- CHAT UI LOGIC ---
-
 // Handle enter key and button click
 chatInput.addEventListener('keydown', (e) => {
     if (e.key === 'Enter' && chatInput.value.trim() !== '' && !isTyping) {
@@ -143,62 +116,65 @@ function escapeHTML(str) {
 }
 
 // -------------------------------------------------------------
-// Claude API Integration
+// The "Normal" Brain
 // -------------------------------------------------------------
-async function processAIResponse(input, typingRow) {
-    const apiKey = localStorage.getItem('wwg_claude_key');
+function processAIResponse(input, typingRow) {
+    const raw = input.toLowerCase();
 
-    // Basic internal secrets before hitting the API
-    if (input.toLowerCase().includes('ilikefeet')) {
+    // Specific triggers
+    if (raw.includes('ilikefeet')) {
         setTimeout(() => window.location.href = 'tools/beacon.html', 3000);
         appendAIMessage(typingRow, "I see you have the administrative password. Redirecting you to the telemetry dashboard...");
         return;
     }
 
-    if (!apiKey) {
-        // Fallback if no key is supplied
-        setTimeout(() => {
-            appendAIMessage(typingRow, "Please enter your Claude API Key at the top of the screen to connect me to the mainframe. Until then, I cannot process your request.");
-        }, 800);
-        return;
+    setTimeout(() => {
+        let response = generateHelpfulResponse(raw);
+        appendAIMessage(typingRow, response);
+    }, 800 + Math.random() * 1000); // Simulate network thinking time
+}
+
+function generateHelpfulResponse(input) {
+    // Basic Triggers
+    if (input.includes('hello') || input.includes('hi ') || input === 'hi' || input.includes('hey')) {
+        return "Hello! How can I help you explore the Weird Website Gallery today?";
     }
 
-    try {
-        // Warning: Direct browser calls to Anthropic usually hit CORS issues.
-        // We use a public cors proxy strictly for demonstration/client-side use.
-        // If this proxy fails, the user will need to run a local backend.
-        const proxyUrl = 'https://corsproxy.io/?';
-        const apiUrl = 'https://api.anthropic.com/v1/messages';
-
-        const response = await fetch(proxyUrl + encodeURIComponent(apiUrl), {
-            method: 'POST',
-            headers: {
-                'x-api-key': apiKey,
-                'anthropic-version': '2023-06-01',
-                'content-type': 'application/json',
-                'anthropic-dangerous-direct-browser-access': 'true'
-            },
-            body: JSON.stringify({
-                model: 'claude-3-haiku-20240307', // Fast, cheap model
-                max_tokens: 1024,
-                system: "You are the WWG Assistant, an artificial intelligence designed to help users navigate and understand the 'Weird Website Gallery'. This gallery contains retro internet oddities, interactive physics sims, and hidden terminal games. Keep your responses helpful, slightly mysterious, and extremely concise.",
-                messages: [
-                    { role: 'user', content: input }
-                ]
-            })
-        });
-
-        if (!response.ok) {
-            const errData = await response.json().catch(() => ({}));
-            throw new Error(errData.error?.message || `HTTP error! status: ${response.status}`);
-        }
-
-        const data = await response.json();
-        const reply = data.content[0].text;
-
-        appendAIMessage(typingRow, reply);
-    } catch (error) {
-        console.error('Claude API Error:', error);
-        appendAIMessage(typingRow, `API Connection Error: ${error.message}. Wait, or check your API Key / browser console.`);
+    if (input.includes('help') || input.includes('what can you do')) {
+        return "I can answer questions about the sites in the gallery, help you navigate the terminal, or just chat! The gallery contains interactive physics simulations, atmospheric art pieces, and hidden games.";
     }
+
+    if (input.includes('secret') || input.includes('hidden')) {
+        return "The gallery is full of secrets. Have you tried exploring the terminal? Sometimes typing unexpected commands can lead to interesting discoveries. (Hint: Try reading the manifest in the root directory).";
+    }
+
+    if (input.includes('who are you') || input.includes('what are you')) {
+        return "I am the WWG Assistant, an artificial intelligence designed to help you navigate and understand the Weird Website Gallery.";
+    }
+
+    if (input.includes('pikav') || input.includes('creator') || input.includes('made this')) {
+        return "Pikav is the creator of the Weird Website Gallery. They designed these interactive experiences for you to explore.";
+    }
+
+    if (input.includes('terminal')) {
+        return "The terminal is a powerful tool in the gallery. You can use standard commands like 'ls' or 'cat', but there are also over 250 hidden commands and minigames to discover!";
+    }
+
+    if (input.includes('thank')) {
+        return "You're welcome! Let me know if you need anything else.";
+    }
+
+    if (input.includes('bye') || input.includes('quit') || input.includes('exit')) {
+        return "Goodbye! Have fun exploring the rest of the gallery.";
+    }
+
+    // Default Fallbacks
+    const defaults = [
+        "That's an interesting point. The gallery has many different interactive elements to match that kind of thinking.",
+        "I'm not completely sure about that, but if you explore the gallery you might find what you're looking for.",
+        "I can help with questions about the Weird Website Gallery, the terminal commands, or the interactive exhibits.",
+        "Could you tell me a little more about what you're trying to find?",
+        "As an AI assistant, my primary function is to guide you through this collection of digital art and experiments."
+    ];
+    return defaults[Math.floor(Math.random() * defaults.length)];
 }
