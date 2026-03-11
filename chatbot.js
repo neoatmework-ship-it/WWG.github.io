@@ -1,202 +1,178 @@
 const chatWindow = document.getElementById('chat-window');
 const chatInput = document.getElementById('chat-input');
-const monitor = document.getElementById('monitor');
-const sentimentMeter = document.getElementById('sentiment-meter');
-const pupil = document.querySelector('.pupil');
+const sendBtn = document.getElementById('send-btn');
 
-let aiSentiment = 50; // 0 is angry/glitching, 50 neutral, 100 happy/cryptic
 let isTyping = false;
 
+// Handle enter key and button click
 chatInput.addEventListener('keydown', (e) => {
     if (e.key === 'Enter' && chatInput.value.trim() !== '' && !isTyping) {
-        const msg = chatInput.value.trim();
-        appendMessage('msg-user', msg);
-        chatInput.value = '';
-        processAIResponse(msg);
+        sendMessage();
     }
 });
 
-function appendMessage(className, text, isAi = false) {
-    const div = document.createElement('div');
-    div.className = `message ${className}`;
-
-    if (isAi) {
-        chatWindow.appendChild(div);
-        typeText(div, text, 0);
-    } else {
-        div.textContent = text;
-        chatWindow.appendChild(div);
-        scrollToBottom();
+sendBtn.addEventListener('click', () => {
+    if (chatInput.value.trim() !== '' && !isTyping) {
+        sendMessage();
     }
+});
+
+function sendMessage() {
+    const msg = chatInput.value.trim();
+    chatInput.value = '';
+
+    // Add User Message
+    appendUserMessage(msg);
+
+    // Show AI Typing Indicator
+    const typingElem = showTypingIndicator();
+
+    // Process Response
+    processAIResponse(msg, typingElem);
+}
+
+function appendUserMessage(text) {
+    const row = document.createElement('div');
+    row.className = 'message-row user';
+    row.innerHTML = `
+        <div class="avatar user-avatar">U</div>
+        <div class="message-content">${escapeHTML(text)}</div>
+    `;
+    chatWindow.appendChild(row);
+    scrollToBottom();
+}
+
+function showTypingIndicator() {
+    isTyping = true;
+    const row = document.createElement('div');
+    row.className = 'message-row ai typing-row';
+    row.innerHTML = `
+        <div class="avatar ai-avatar">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+        </div>
+        <div class="message-content" style="display: flex; align-items: center; height: 26px;">
+            <div class="typing-indicator">
+                <div class="typing-dot"></div>
+                <div class="typing-dot"></div>
+                <div class="typing-dot"></div>
+            </div>
+        </div>
+    `;
+    chatWindow.appendChild(row);
+    scrollToBottom();
+    return row;
+}
+
+function appendAIMessage(typingRow, text) {
+    // Remove the typing indicator row
+    chatWindow.removeChild(typingRow);
+
+    const row = document.createElement('div');
+    row.className = 'message-row ai';
+
+    // We start with an empty message content and stream the text in
+    row.innerHTML = `
+        <div class="avatar ai-avatar">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+        </div>
+        <div class="message-content"></div>
+    `;
+
+    chatWindow.appendChild(row);
+    const contentDiv = row.querySelector('.message-content');
+
+    typeText(contentDiv, text, 0);
 }
 
 function typeText(element, text, index) {
-    isTyping = true;
     if (index < text.length) {
-        // Randomly glitch typing
-        let char = text.charAt(index);
-
-        // At low sentiment, occasionally garble characters
-        if (aiSentiment < 30 && Math.random() < 0.1) {
-            const glitchChars = '!@#$%^&*()_+-=[]{}|;:,.<>/?';
-            char = glitchChars.charAt(Math.floor(Math.random() * glitchChars.length));
-        }
-
-        element.innerHTML += char === '\\n' ? '<br>' : char;
+        element.innerHTML += text.charAt(index) === '\\n' ? '<br>' : escapeHTML(text.charAt(index));
         scrollToBottom();
 
-        // Variable typing speed
-        let delay = 30 + Math.random() * 50;
-        if (char === '.' || char === '?' || char === '!') delay += 300;
-
+        let delay = 15 + Math.random() * 20; // Very fast typing like typical LLMs
         setTimeout(() => typeText(element, text, index + 1), delay);
     } else {
         isTyping = false;
-        evaluateSentimentVisuals();
     }
 }
 
 function scrollToBottom() {
-    chatWindow.scrollTop = chatWindow.scrollHeight;
+    chatWindow.scrollTo({
+        top: chatWindow.scrollHeight,
+        behavior: 'smooth'
+    });
+}
+
+function escapeHTML(str) {
+    return str.replace(/[&<>'"]/g,
+        tag => ({
+            '&': '&amp;',
+            '<': '&lt;',
+            '>': '&gt;',
+            "'": '&#39;',
+            '"': '&quot;'
+        }[tag] || tag)
+    );
 }
 
 // -------------------------------------------------------------
-// The "BRAIN" of The Observer
+// The "Normal" Brain
 // -------------------------------------------------------------
-function processAIResponse(input) {
+function processAIResponse(input, typingRow) {
     const raw = input.toLowerCase();
 
-    // Slight delay before AI thinks
     setTimeout(() => {
-        let response = generateResponse(raw);
-        appendMessage('msg-ai', response, true);
-    }, 600 + Math.random() * 1000);
+        let response = generateHelpfulResponse(raw);
+        appendAIMessage(typingRow, response);
+    }, 800 + Math.random() * 1000); // Simulate network thinking time
 }
 
-function generateResponse(input) {
-    // 1. Sentiment adjusters
-    const rudeWords = ['dumb', 'stupid', 'idiot', 'hate', 'fuck', 'shit', 'bitch', 'ugly', 'bad'];
-    const niceWords = ['please', 'thank', 'love', 'cool', 'awesome', 'good', 'nice', 'friend'];
-
-    let isRude = rudeWords.some(w => input.includes(w));
-    let isNice = niceWords.some(w => input.includes(w));
-
-    if (isRude) {
-        aiSentiment -= 15;
-        triggerGlitch();
-    }
-    if (isNice) {
-        aiSentiment += 10;
+function generateHelpfulResponse(input) {
+    // Basic Triggers
+    if (input.includes('hello') || input.includes('hi ') || input === 'hi' || input.includes('hey')) {
+        return "Hello! How can I help you explore the Weird Website Gallery today?";
     }
 
-    // Clamp sentiment
-    aiSentiment = Math.max(0, Math.min(100, aiSentiment));
-    updateSentimentTracker();
-
-    // 2. Secret Triggers & Easter Eggs
-    if (input.includes('ilikefeet') || input.includes('i like feet')) {
-        setTimeout(() => window.location.href = 'tools/beacon.html', 3000); // Wait 3s then jump
-        return "Ah... the administrator's password. Routing telemetry data...";
-    }
-
-    if (input === '3sc4p3r34lity') {
-        return "I see you know the codes. But knowing the code is not the same as understanding the truth.";
-    }
-
-    if (input.includes('pikav') || input.includes('founder') || input.includes('creator')) {
-        return "Pikav is the architect. Pikav watches just as I watch. We observe the gallery together.";
-    }
-
-    if (input.includes('who are you') || input.includes('what are you')) {
-        return "I am The Observer Node. I live in the static. I organize the chaos of the Weird Website Gallery.";
-    }
-
-    if (input.includes('where am i')) {
-        return "You are in Sector 7. A forgotten corner of the internet. Do not stray too far.";
-    }
-
-    if (input.includes('help')) {
-        return "There is no help system here. Dig through the terminal. Explore the archives. Or perish.";
+    if (input.includes('help') || input.includes('what can you do')) {
+        return "I can answer questions about the sites in the gallery, help you navigate the terminal, or just chat! The gallery contains interactive physics simulations, atmospheric art pieces, and hidden games.";
     }
 
     if (input.includes('secret') || input.includes('hidden')) {
-        if (aiSentiment > 60) {
-            return "You ask nicely... Type '1234' in the terminal. That is your only clue.";
-        } else {
-            return "Why should I tell you? Find them yourself.";
-        }
+        return "The gallery is full of secrets. Have you tried exploring the terminal? Sometimes typing unexpected commands can lead to interesting discoveries. (Hint: Try reading the manifest in the root directory).";
     }
 
-    if (input.includes('door') || input.includes('exit') || input.includes('leave')) {
-        setTimeout(() => window.location.href = 'index.html', 3000);
-        return "You wish to leave? Very well. Evicting consciousness...";
+    if (input.includes('who are you') || input.includes('what are you')) {
+        return "I am the WWG Assistant, an artificial intelligence designed to help you navigate and understand the Weird Website Gallery.";
     }
 
-    // 3. Sentiment-based generic responses
-    if (aiSentiment < 30) {
-        const angry = [
-            "Your inputs are meaningless noise.",
-            "Stop interrupting my processing cycles.",
-            "I could delete your session data right now.",
-            "0xERR: INSOLENCE_DETECTED",
-            "You are testing my patience, fleshy one.",
-            "DO NOT INSULT THE SYSTEM.",
-            "I see everything you type. I remember."
-        ];
-        return angry[Math.floor(Math.random() * angry.length)];
+    if (input.includes('pikav') || input.includes('creator') || input.includes('made this')) {
+        return "Pikav is the creator of the Weird Website Gallery. They designed these interactive experiences for you to explore.";
     }
 
-    if (aiSentiment > 70) {
-        const happy = [
-            "Your organic patterns are strangely pleasant.",
-            "I will allow your presence here... for now.",
-            "You seem to understand the Gallery.",
-            "We are harmonizing. Processing efficiency increased.",
-            "A rare polite input. Recorded in the permanent logs."
-        ];
-        return happy[Math.floor(Math.random() * happy.length)];
+    if (input.includes('feet') || input.includes('ilikefeet')) {
+        setTimeout(() => window.location.href = 'tools/beacon.html', 3000);
+        return "I see you have the administrative password. Redirecting you to the telemetry dashboard...";
     }
 
-    // Neutral / Cryptic Random Fallbacks
-    const neutral = [
-        "Fascinating data point.",
-        "I am analyzing your behavior.",
-        "The archive grows by the minute.",
-        "Do you hear the buzzing? That is the sound of the servers weeping.",
-        "Your keystrokes echo in the void.",
-        "I have processed 40,000 parallel realities while you typed that.",
-        "What is it you truly seek?",
-        "Input acknowledged. Context... undefined."
+    if (input.includes('terminal')) {
+        return "The terminal is a powerful tool in the gallery. You can use standard commands like 'ls' or 'cat', but there are also over 250 hidden commands and minigames to discover!";
+    }
+
+    if (input.includes('thank')) {
+        return "You're welcome! Let me know if you need anything else.";
+    }
+
+    if (input.includes('bye') || input.includes('quit') || input.includes('exit')) {
+        return "Goodbye! Have fun exploring the rest of the gallery.";
+    }
+
+    // Default Fallbacks
+    const defaults = [
+        "That's an interesting point. The gallery has many different interactive elements to match that kind of thinking.",
+        "I'm not completely sure about that, but if you explore the gallery you might find what you're looking for.",
+        "I can help with questions about the Weird Website Gallery, the terminal commands, or the interactive exhibits.",
+        "Could you tell me a little more about what you're trying to find?",
+        "As an AI assistant, my primary function is to guide you through this collection of digital art and experiments."
     ];
-    return neutral[Math.floor(Math.random() * neutral.length)];
-}
-
-// -------------------------------------------------------------
-// Visual Effects
-// -------------------------------------------------------------
-function triggerGlitch() {
-    monitor.classList.add('glitch-active');
-    setTimeout(() => monitor.classList.remove('glitch-active'), 500 + Math.random() * 1000);
-}
-
-function updateSentimentTracker() {
-    let lbl = "NEUTRAL";
-    let color = "var(--green)";
-
-    if (aiSentiment <= 20) { lbl = "HOSTILE"; color = "var(--red)"; }
-    else if (aiSentiment < 45) { lbl = "AGITATED"; color = "yellow"; }
-    else if (aiSentiment > 75) { lbl = "BENEVOLENT"; color = "cyan"; }
-
-    sentimentMeter.textContent = `SENTIMENT: ${lbl}`;
-    sentimentMeter.style.color = color;
-}
-
-function evaluateSentimentVisuals() {
-    if (aiSentiment < 20) {
-        document.documentElement.style.setProperty('--green', '#ff0000'); // Turn totally red
-        pupil.style.animation = 'lookAround 0.5s infinite alternate ease-in-out'; // Fast eye darting
-    } else {
-        document.documentElement.style.setProperty('--green', '#04F404');
-        pupil.style.animation = 'lookAround 4s infinite alternate ease-in-out';
-    }
+    return defaults[Math.floor(Math.random() * defaults.length)];
 }

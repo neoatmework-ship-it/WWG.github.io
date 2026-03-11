@@ -4,302 +4,350 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>THE OBSERVER // AI INTERFACE</title>
-    <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=VT323&display=swap" rel="stylesheet">
+    <title>WWG Assistant</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
     <style>
         :root {
-            --green: #04F404;
-            --bg: #030303;
-            --dim: #003b00;
-            --white: #f0f0f0;
-            --red: #ff3333;
+            --bg-color: #212121;
+            --sidebar-color: #171717;
+            --text-color: #ececec;
+            --muted-text: #b4b4b4;
+            --border-color: #424242;
+            --user-bubble: #2f2f2f;
+            --ai-bubble: transparent;
+            --primary-accent: #10a37f;
+            --header-bg: rgba(33, 33, 33, 0.9);
         }
 
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
         }
 
         body {
-            background: #000;
-            color: var(--green);
-            font-family: 'Share Tech Mono', monospace;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            display: flex;
             height: 100vh;
             overflow: hidden;
-            display: flex;
-            align-items: center;
-            justify-content: center;
         }
 
-        /* Scanline Overlay */
-        body::before {
-            content: " ";
-            display: block;
-            position: absolute;
-            top: 0;
-            left: 0;
-            bottom: 0;
-            right: 0;
-            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
-            z-index: 100;
-            background-size: 100% 2px, 3px 100%;
-            pointer-events: none;
-        }
-
-        .crt-monitor {
-            width: 95vw;
-            height: 90vh;
-            max-width: 900px;
-            background: var(--bg);
-            border: 20px solid #111;
-            border-radius: 40px;
-            position: relative;
-            padding: 20px;
-            box-shadow: inset 0 0 100px #000, 0 0 50px rgba(0, 0, 0, 0.8);
+        /* Sidebar - Hidden on mobile */
+        .sidebar {
+            width: 260px;
+            background-color: var(--sidebar-color);
+            border-right: 1px solid var(--border-color);
             display: flex;
             flex-direction: column;
-            overflow: hidden;
-            animation: flicker 0.15s infinite;
+            padding: 20px 10px;
         }
 
-        @keyframes flicker {
-            0% {
-                opacity: 0.98;
-            }
+        .new-chat-btn {
+            background-color: transparent;
+            border: 1px solid var(--border-color);
+            color: var(--text-color);
+            padding: 12px;
+            border-radius: 8px;
+            cursor: pointer;
+            text-align: left;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            transition: background 0.2s;
+        }
 
-            50% {
-                opacity: 1;
-            }
+        .new-chat-btn:hover {
+            background-color: rgba(255, 255, 255, 0.05);
+        }
 
-            100% {
-                opacity: 0.99;
-            }
+        .history-list {
+            margin-top: 20px;
+            flex: 1;
+            overflow-y: auto;
+        }
+
+        .history-item {
+            padding: 10px;
+            color: var(--muted-text);
+            font-size: 0.85rem;
+            border-radius: 6px;
+            cursor: pointer;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .history-item:hover {
+            background-color: rgba(255, 255, 255, 0.05);
+        }
+
+        /* Main Chat Area */
+        .main-chat {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            position: relative;
         }
 
         .header {
-            text-align: center;
-            border-bottom: 2px dashed var(--dim);
-            padding-bottom: 10px;
-            margin-bottom: 20px;
-            flex-shrink: 0;
-        }
-
-        .header h1 {
-            font-family: 'VT323', monospace;
-            font-size: 2.5rem;
-            letter-spacing: 5px;
-            margin-bottom: 5px;
-            text-shadow: 0 0 10px var(--green);
-        }
-
-        .status-bar {
-            font-size: 0.9rem;
-            opacity: 0.8;
+            padding: 15px 20px;
+            font-weight: 500;
+            border-bottom: 1px solid var(--border-color);
+            background: var(--header-bg);
+            backdrop-filter: blur(5px);
             display: flex;
             justify-content: space-between;
+            align-items: center;
+            z-index: 10;
         }
 
-        .chat-window {
+        .back-link {
+            color: var(--muted-text);
+            text-decoration: none;
+            font-size: 0.9rem;
+            transition: color 0.2s;
+        }
+
+        .back-link:hover {
+            color: var(--text-color);
+        }
+
+        .chat-container {
             flex: 1;
             overflow-y: auto;
-            padding-right: 15px;
-            margin-bottom: 20px;
+            padding: 20px;
             display: flex;
             flex-direction: column;
-            gap: 15px;
-            scrollbar-width: thin;
-            scrollbar-color: var(--dim) transparent;
+            align-items: center;
+            scroll-behavior: smooth;
         }
 
-        .chat-window::-webkit-scrollbar {
-            width: 8px;
-        }
-
-        .chat-window::-webkit-scrollbar-thumb {
-            background-color: var(--dim);
-            border-radius: 4px;
-        }
-
-        .message {
-            max-width: 80%;
-            line-height: 1.4;
-            font-size: 1.2rem;
-            text-shadow: 0 0 8px var(--green);
-            opacity: 0;
-            animation: fadeIn 0.3s forwards;
-            position: relative;
+        .message-row {
+            width: 100%;
+            max-width: 800px;
+            padding: 20px;
+            display: flex;
+            gap: 20px;
+            animation: fadeIn 0.3s ease-out forwards;
         }
 
         @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
             to {
                 opacity: 1;
+                transform: translateY(0);
             }
         }
 
-        .msg-ai {
-            align-self: flex-start;
-            padding-left: 15px;
-            border-left: 2px solid var(--green);
+        .message-row.ai {
+            background-color: var(--ai-bubble);
         }
 
-        .msg-user {
-            align-self: flex-end;
-            color: var(--white);
-            text-shadow: 0 0 8px var(--white);
-            text-align: right;
-            padding-right: 15px;
-            border-right: 2px solid var(--white);
+        .message-row.user {
+            /* Distinct visual layout if desired, here we just keep it unified */
         }
 
-        .msg-system {
-            align-self: center;
-            color: var(--red);
-            text-shadow: 0 0 8px var(--red);
-            font-size: 1rem;
-            text-align: center;
-            font-style: italic;
-        }
-
-        .input-area {
-            display: flex;
-            border-top: 2px dashed var(--dim);
-            padding-top: 15px;
-            font-size: 1.2rem;
+        .avatar {
+            width: 30px;
+            height: 30px;
+            border-radius: 4px;
             flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.9rem;
         }
 
-        .prompt {
-            margin-right: 10px;
-            user-select: none;
+        .user-avatar {
+            background-color: #5436da;
+            color: white;
+        }
+
+        .ai-avatar {
+            background-color: #10a37f;
+            color: white;
+        }
+
+        .message-content {
+            flex: 1;
+            line-height: 1.6;
+            font-size: 1rem;
+            color: var(--text-color);
+        }
+
+        .input-container {
+            padding: 30px;
+            width: 100%;
+            max-width: 800px;
+            margin: 0 auto;
+            position: relative;
+        }
+
+        .input-box {
+            background-color: var(--user-bubble);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 15px 50px 15px 20px;
+            display: flex;
+            align-items: center;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
         }
 
         #chat-input {
             background: transparent;
             border: none;
-            color: var(--green);
-            font-family: inherit;
-            font-size: inherit;
+            color: var(--text-color);
             outline: none;
-            flex: 1;
-            text-shadow: 0 0 5px var(--green);
+            width: 100%;
+            font-size: 1rem;
+            resize: none;
         }
 
-        /* Glitch Effect on the whole body */
-        .glitch-active {
-            animation: hyperglitch 0.2s infinite forwards !important;
-        }
-
-        @keyframes hyperglitch {
-            0% {
-                transform: translate(0)
-            }
-
-            20% {
-                transform: translate(-5px, 5px) skewX(20deg)
-            }
-
-            40% {
-                transform: translate(-5px, -5px)
-            }
-
-            60% {
-                transform: translate(5px, 5px) skewX(-20deg) filter: hue-rotate(90deg)
-            }
-
-            80% {
-                transform: translate(5px, -5px)
-            }
-
-            100% {
-                transform: translate(0)
-            }
-        }
-
-        .ai-typing {
-            font-style: italic;
-            opacity: 0.5;
-            animation: blinker 1s linear infinite;
-        }
-
-        @keyframes blinker {
-            50% {
-                opacity: 0;
-            }
-        }
-
-        /* Eye Animation */
-        .eye-container {
-            width: 50px;
-            height: 30px;
-            margin: 0 auto 10px auto;
-            border: 2px solid var(--green);
-            border-radius: 50%;
+        .send-btn {
+            position: absolute;
+            right: 45px;
+            bottom: 42px;
+            background: var(--primary-accent);
+            border: none;
+            color: white;
+            width: 32px;
+            height: 32px;
+            border-radius: 6px;
+            cursor: pointer;
             display: flex;
             align-items: center;
             justify-content: center;
-            position: relative;
-            box-shadow: 0 0 15px var(--green);
+            transition: opacity 0.2s;
         }
 
-        .pupil {
-            width: 10px;
-            height: 10px;
-            background: var(--green);
+        .send-btn:hover {
+            opacity: 0.8;
+        }
+
+        .send-btn:disabled {
+            background: var(--border-color);
+            cursor: not-allowed;
+            opacity: 0.5;
+        }
+
+        .footer-note {
+            text-align: center;
+            font-size: 0.75rem;
+            color: var(--muted-text);
+            margin-top: 10px;
+        }
+
+        /* Typing indicator dots */
+        .typing-indicator {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            height: 24px;
+        }
+
+        .typing-dot {
+            width: 6px;
+            height: 6px;
+            background-color: var(--muted-text);
             border-radius: 50%;
-            animation: lookAround 4s infinite alternate ease-in-out;
+            animation: bounce 1.4s infinite ease-in-out both;
         }
 
-        @keyframes lookAround {
-            0% {
-                transform: translate(0px, 0);
-            }
+        .typing-dot:nth-child(1) {
+            animation-delay: -0.32s;
+        }
 
-            20% {
-                transform: translate(-10px, 0);
+        .typing-dot:nth-child(2) {
+            animation-delay: -0.16s;
+        }
+
+        @keyframes bounce {
+
+            0%,
+            80%,
+            100% {
+                transform: scale(0);
             }
 
             40% {
-                transform: translate(10px, 0);
+                transform: scale(1);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                display: none;
             }
 
-            60% {
-                transform: translate(0, -5px);
+            .message-row {
+                padding: 15px 10px;
             }
 
-            80% {
-                transform: translate(0, 5px);
+            .input-container {
+                padding: 15px;
             }
 
-            100% {
-                transform: translate(0, 0);
+            .send-btn {
+                right: 30px;
+                bottom: 27px;
             }
         }
     </style>
 </head>
 
 <body>
-    <div class="crt-monitor" id="monitor">
+    <div class="sidebar">
+        <button class="new-chat-btn" onclick="location.reload()">
+            <svg stroke="currentColor" fill="none" stroke-width="2" viewBox="0 0 24 24" stroke-linecap="round"
+                stroke-linejoin="round" height="1em" width="1em" xmlns="http://www.w3.org/2000/svg">
+                <line x1="12" y1="5" x2="12" y2="19"></line>
+                <line x1="5" y1="12" x2="19" y2="12"></line>
+            </svg>
+            New chat
+        </button>
+        <div class="history-list">
+            <div class="history-item">Explaining the Gallery...</div>
+        </div>
+    </div>
+
+    <div class="main-chat">
         <div class="header">
-            <div class="eye-container" id="ai-eye">
-                <div class="pupil"></div>
-            </div>
-            <h1>THE_OBSERVER_NODE</h1>
-            <div class="status-bar">
-                <span>CONSCIOUSNESS: ONLINE</span>
-                <span id="sentiment-meter">SENTIMENT: NEUTRAL</span>
-                <span>SECTOR: 7</span>
+            <span>WWG Assistant</span>
+            <a href="index.html" class="back-link">Return to Gallery</a>
+        </div>
+
+        <div class="chat-container" id="chat-window">
+            <div class="message-row ai" id="init-msg">
+                <div class="avatar ai-avatar">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                        stroke-linecap="round">
+                        <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
+                    </svg>
+                </div>
+                <div class="message-content">
+                    Hello! I'm the WWG Assistant. How can I help you navigate the Weird Website Gallery today?
+                </div>
             </div>
         </div>
 
-        <div class="chat-window" id="chat-window">
-            <div class="message msg-system">CONNECTION ESTABLISHED. IT IS WATCHING YOU.</div>
-        </div>
-
-        <div class="input-area">
-            <span class="prompt">USER_INPUT ></span>
-            <input type="text" id="chat-input" autofocus spellcheck="false" autocomplete="off"
-                placeholder="Speak your mind...">
+        <div class="input-container">
+            <div class="input-box">
+                <input type="text" id="chat-input" placeholder="Message WWG Assistant..." autofocus autocomplete="off">
+            </div>
+            <button class="send-btn" id="send-btn">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="22" y1="2" x2="11" y2="13"></line>
+                    <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+                </svg>
+            </button>
+            <div class="footer-note">WWG Assistant can make mistakes. Consider verifying important information.</div>
         </div>
     </div>
 
