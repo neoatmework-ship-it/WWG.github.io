@@ -18,6 +18,7 @@ const Discovery = {
         'jigsaw', 'kinetic', 'lattice', 'monolith',
         'nebula', 'oracle', 'parallax', 'quartz',
         'resonance', 'solstice', 'tether', 'ultra',
+        'chatbot',
         // --- 55 New Secrets ---
         'abyss', 'alchemy', 'anomaly', 'aurora', 'beacon',
         'bones', 'cascade', 'cataclysm', 'chronos', 'cobweb',

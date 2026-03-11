@@ -96,6 +96,10 @@ const simpleResponses = {
     'smell': 'Smells like burning ozone and old dust.',
     'touch': 'It feels cold to the touch.',
     'taste': 'Tastes like purple.',
+
+    // App Launchers
+    'chat': 'Establishing connection to The Observer Node...\\n<script>setTimeout(()=>window.location.href="chatbot.html",1500)</script>',
+    'chatbot': 'Establishing connection to The Observer Node...\\n<script>setTimeout(()=>window.location.href="chatbot.html",1500)</script>',
 };
 
 // Insert Simple Commands
