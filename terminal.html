@@ -369,6 +369,7 @@
         </div>
     </div>
 
+    <script src="terminal-commands.js"></script>
     <script>
         const output = document.getElementById('terminal-output');
         const input = document.getElementById('command-input');
@@ -439,7 +440,7 @@
             awaitingPassword = false;
             input.type = 'text'; // Reset to normal text
 
-            if (passwordContext === 'beacon' && pwd === 'IlikeFeet') {
+            if (passwordContext === 'beacon' && pwd.trim() === 'IlikeFeet') {
                 writeToTerminal('[!] ACCESS GRANTED. INITIATING DASHBOARD OVERRIDE...');
                 setTimeout(() => {
                     document.querySelector('.crt-monitor').style.display = 'none';
@@ -544,9 +545,15 @@
         }
 
         function handleCommand(cmd, args) {
+            if (window.WWG_COMMANDS && window.WWG_COMMANDS[cmd]) {
+                window.WWG_COMMANDS[cmd](args);
+                return;
+            }
+
             switch (cmd) {
                 case 'help':
-                    writeToTerminal('Available commands: HELP, LS, CD, CAT, CLEAR, EXIT, WHOAMI');
+                    // This creates a fallback help if the massive help gets overwritten
+                    writeToTerminal('Available core commands: HELP, LS, CD, CAT, CLEAR, EXIT, WHOAMI');
                     break;
                 case 'ls':
                     let items = Object.keys(currentDir).map(k => {
