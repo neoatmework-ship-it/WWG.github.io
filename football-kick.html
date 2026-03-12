@@ -1,343 +1,178 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Football Kick - WWG</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&display=swap" rel="stylesheet">
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            touch-action: none;
-        }
-
-        body {
-            background: radial-gradient(ellipse at bottom, #064e3b, #022c22 60%, #001a11);
-            color: #fff;
-            font-family: 'Inter', sans-serif;
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            overflow: hidden;
-            padding: 10px;
-        }
-
-        .back-link {
-            position: fixed;
-            top: 12px;
-            left: 12px;
-            color: #34d399;
-            text-decoration: none;
-            font-size: 0.85rem;
-        }
-
-        h1 {
-            font-size: 2rem;
-            font-weight: 900;
-            color: #34d399;
-            text-shadow: 0 0 30px #34d39988;
-            margin-top: 10px;
-            margin-bottom: 5px;
-        }
-
-        .scoreboard {
-            display: flex;
-            gap: 30px;
-            margin-bottom: 15px;
-            font-size: 1rem;
-            color: #aaa;
-        }
-
-        .scoreboard span {
-            font-weight: 700;
-            color: #34d399;
-        }
-
-        /* Pitch */
-        #game-area {
-            width: 340px;
-            height: 480px;
-            background: linear-gradient(180deg, #166534 0%, #15803d 40%, #16a34a 60%, #15803d 80%);
-            border-radius: 12px;
-            position: relative;
-            overflow: hidden;
-            border: 2px solid #22c55e44;
-            user-select: none;
-        }
-
-        /* Field lines */
-        #game-area::before {
-            content: '';
-            position: absolute;
-            inset: 0;
-            background:
-                repeating-linear-gradient(0deg, transparent, transparent 59px, rgba(255, 255, 255, 0.05) 60px),
-                linear-gradient(90deg, transparent 45%, rgba(255, 255, 255, 0.06) 50%, transparent 55%);
-        }
-
-        /* Goal */
-        .goal {
-            position: absolute;
-            top: 15px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 220px;
-            height: 100px;
-            border: 5px solid white;
-            border-bottom: none;
-            border-radius: 4px 4px 0 0;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        /* Goal posts vertical lines */
-        .goal::before,
-        .goal::after {
-            content: '';
-            position: absolute;
-            top: 100%;
-            width: 5px;
-            height: 15px;
-            background: white;
-        }
-
-        .goal::before {
-            left: -5px;
-        }
-
-        .goal::after {
-            right: -5px;
-        }
-
-        /* Net grid */
-        .net-grid {
-            width: 100%;
-            height: 100%;
-            background:
-                linear-gradient(rgba(255, 255, 255, 0.15) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(255, 255, 255, 0.15) 1px, transparent 1px);
-            background-size: 22px 15px;
-        }
-
-        /* Goalkeeper */
-        .keeper {
-            position: absolute;
-            top: 110px;
-            font-size: 2.2rem;
-            transition: left 0.3s cubic-bezier(.2, 0, .5, 1);
-        }
-
-        /* Ball */
-        #ball {
-            position: absolute;
-            font-size: 2.4rem;
-            cursor: grab;
-            user-select: none;
-            z-index: 10;
-            transition: none;
-        }
-
-        /* Aim arrow */
-        #arrow {
-            position: absolute;
-            width: 2px;
-            background: rgba(255, 255, 255, 0.4);
-            transform-origin: bottom center;
-            pointer-events: none;
-            z-index: 5;
-            border-radius: 2px;
-        }
-
-        /* Hint text */
-        .hint {
-            position: absolute;
-            bottom: 60px;
-            left: 50%;
-            transform: translateX(-50%);
-            color: rgba(255, 255, 255, 0.5);
-            font-size: 0.8rem;
-            text-align: center;
-            pointer-events: none;
-        }
-
-        .feedback {
-            position: absolute;
-            top: 180px;
-            left: 50%;
-            transform: translateX(-50%);
-            font-size: 2.5rem;
-            font-weight: 900;
-            text-align: center;
-            pointer-events: none;
-            opacity: 0;
-            transition: opacity 0.3s;
-            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { background: #001a0a; color: #fff; font-family: 'Inter', sans-serif; height: 100vh; display: flex; flex-direction: column; align-items: center; overflow: hidden; }
+        .back-link { position: fixed; top: 12px; left: 14px; color: #22c55e; text-decoration: none; font-size: 0.8rem; z-index: 99; }
+        h1 { font-family: 'Orbitron', monospace; font-size: 1.5rem; color: #22c55e; text-shadow: 0 0 25px #22c55e66; margin-top: 32px; margin-bottom: 6px; }
+        .hud { display: flex; gap: 24px; font-size: 0.9rem; color: #aaa; margin-bottom: 10px; }
+        .hud b { color: #22c55e; font-size: 1.1rem; }
+        canvas { border-radius: 14px; border: 2px solid #22c55e22; box-shadow: 0 0 40px #22c55e18; touch-action: none; cursor: crosshair; }
+        #tip { margin-top: 12px; font-size: 0.82rem; color: #555; text-align: center; }
     </style>
 </head>
-
 <body>
     <a href="index.html" class="back-link">← Back</a>
-    <h1>⚽ Football Kick</h1>
-
-    <div class="scoreboard">
-        Goals: <span id="goals">0</span> &nbsp;|&nbsp; Saves: <span id="saves">0</span>
-    </div>
-
-    <div id="game-area">
-        <div class="goal">
-            <div class="net-grid"></div>
-        </div>
-        <div class="keeper" id="keeper">🧤</div>
-        <div id="ball">⚽</div>
-        <div id="arrow"></div>
-        <div class="hint" id="hint">Drag ⚽ to aim, release to kick!</div>
-        <div class="feedback" id="feedback"></div>
-    </div>
-
+    <h1>⚽ FOOTBALL KICK</h1>
+    <div class="hud">Goals: <b id="goals">0</b> &nbsp;&nbsp; Saves: <b id="saves">0</b></div>
+    <canvas id="c" width="340" height="420"></canvas>
+    <div id="tip">🖱️ Click and drag anywhere to aim — release to kick!</div>
     <script>
-        const ball = document.getElementById('ball');
-        const keeper = document.getElementById('keeper');
-        const arrow = document.getElementById('arrow');
-        const gameArea = document.getElementById('game-area');
-        const feedbackEl = document.getElementById('feedback');
-
+        const canvas = document.getElementById('c');
+        const ctx = canvas.getContext('2d');
+        const W = canvas.width, H = canvas.height;
         let goals = 0, saves = 0;
-        let dragging = false;
-        let startX, startY;
-        const BALL_HOME = { x: 160, y: 380 };
+        let state = 'idle';
+        const BALL_HOME = { x: W / 2, y: H - 70 };
+        let ball = { ...BALL_HOME };
+        let dragStart = null;
+        let aimVec = { x: 0, y: 0 };
+        let keeper = { x: W / 2, y: 108 };
+        let kickProgress = 0, kickFrom = { ...BALL_HOME }, kickTo = { x: W/2, y: 30 };
+        let keeperDiveSide = 0;
+        let resultMsg = '', resultTimer = 0;
+        const GOAL = { x: 60, y: 20, w: 220, h: 100 };
 
-        function setPos(el, x, y) {
-            el.style.left = (x - 20) + 'px';
-            el.style.top = (y - 20) + 'px';
+        function lerp(a,b,t){return a+(b-a)*t;}
+        function easeInOut(t){return t<0.5?2*t*t:-1+(4-2*t)*t;}
+
+        function getPos(e) {
+            const r = canvas.getBoundingClientRect();
+            const s = e.touches ? e.touches[0] : e;
+            return { x: s.clientX - r.left, y: s.clientY - r.top };
         }
 
-        setPos(ball, BALL_HOME.x, BALL_HOME.y);
-        keeperIdle();
+        canvas.addEventListener('pointerdown', e => {
+            if (state !== 'idle') return;
+            dragStart = getPos(e);
+            state = 'dragging';
+            canvas.setPointerCapture(e.pointerId);
+        });
+        canvas.addEventListener('pointermove', e => {
+            if (state !== 'dragging') return;
+            const p = getPos(e);
+            aimVec = { x: p.x - dragStart.x, y: p.y - dragStart.y };
+        });
+        canvas.addEventListener('pointerup', e => {
+            if (state !== 'dragging') return;
+            if (Math.hypot(aimVec.x, aimVec.y) < 20) { state = 'idle'; aimVec = {x:0,y:0}; return; }
+            kickTo.x = Math.max(10, Math.min(W-10, BALL_HOME.x - aimVec.x * 3));
+            kickTo.y = Math.max(10, Math.min(H-20, BALL_HOME.y - aimVec.y * 3));
+            keeperDiveSide = Math.random() > 0.5 ? 1 : -1;
+            keeper.x = W/2; kickFrom = {...BALL_HOME}; ball = {...BALL_HOME};
+            kickProgress = 0; state = 'flying'; aimVec = {x:0,y:0};
+        });
 
-        function keeperIdle() {
-            keeper.style.left = (170 - 20) + 'px';
-        }
-
-        // --- Drag events ---
-        function getCoords(e) {
-            const r = gameArea.getBoundingClientRect();
-            const src = e.touches ? e.touches[0] : e;
-            return { x: src.clientX - r.left, y: src.clientY - r.top };
-        }
-
-        ball.addEventListener('mousedown', startDrag);
-        ball.addEventListener('touchstart', startDrag, { passive: true });
-
-        function startDrag(e) {
-            dragging = true;
-            const c = getCoords(e);
-            startX = c.x; startY = c.y;
-            document.getElementById('hint').style.opacity = 0;
-        }
-
-        document.addEventListener('mousemove', onDrag);
-        document.addEventListener('touchmove', onDrag, { passive: true });
-
-        function onDrag(e) {
-            if (!dragging) return;
-            const c = getCoords(e);
-            setPos(ball, c.x, c.y);
-
-            // Draw arrow from ball to start (direction of kick is opposite)
-            const dx = startX - c.x;
-            const dy = startY - c.y;
-            const dist = Math.hypot(dx, dy);
-            const angle = Math.atan2(dx, dy) * 180 / Math.PI;
-            arrow.style.height = Math.min(dist, 80) + 'px';
-            arrow.style.left = c.x + 'px';
-            arrow.style.top = (c.y - Math.min(dist, 80)) + 'px';
-            arrow.style.transform = `rotate(${angle}deg)`;
-        }
-
-        document.addEventListener('mouseup', endDrag);
-        document.addEventListener('touchend', endDrag);
-
-        function endDrag(e) {
-            if (!dragging) return;
-            dragging = false;
-            arrow.style.height = 0;
-
-            const c = getCoords(e.changedTouches ? e : e);
-            const dx = startX - c.x;
-            const dy = startY - c.y;
-            if (Math.hypot(dx, dy) < 15) {
-                resetBall(); return;
+        function evalKick() {
+            const { x, y, w, h } = GOAL;
+            const onT = kickTo.x > x && kickTo.x < x+w && kickTo.y > y && kickTo.y < y+h;
+            if (!onT) { resultMsg = '😬 OFF TARGET!'; saves++; }
+            else {
+                const kfx = keeperDiveSide === 1 ? x+w-30 : x+30;
+                if (Math.abs(kickTo.x - kfx) < 40) { resultMsg = '🧤 SAVED!'; saves++; }
+                else { resultMsg = '⚽ GOAL!!!'; goals++; }
             }
-
-            kick(dx, dy);
-        }
-
-        function kick(dx, dy) {
-            const targetX = BALL_HOME.x + dx * 3;
-            const targetY = BALL_HOME.y + dy * 3;
-
-            ball.style.transition = 'left 0.5s cubic-bezier(.2,0,.5,1), top 0.5s cubic-bezier(.2,0,.5,1), transform 0.5s';
-            ball.style.transform = 'scale(0.6) rotate(720deg)';
-            setPos(ball, targetX, targetY);
-
-            // Keeper dives
-            const diveDir = Math.random() > 0.5 ? 1 : -1;
-            keeper.style.transition = 'left 0.3s ease';
-            keeper.style.left = (diveDir === 1 ? 260 : 60) + 'px';
-
-            setTimeout(() => {
-                checkGoal(targetX, targetY, diveDir);
-            }, 550);
-        }
-
-        function checkGoal(tx, ty, dive) {
-            // Goal area: x 60..280, y 15..115
-            const isOnTarget = tx > 60 && tx < 280 && ty < 130;
-
-            if (!isOnTarget) {
-                showResult('🚫 WIDE!', '#ef4444');
-                saves++;
-            } else {
-                // Keeper at diveDir side: left ~60, right ~260
-                const blocked = (dive === 1 && tx > 230) || (dive === -1 && tx < 90);
-                if (blocked) {
-                    showResult('🧤 SAVED!', '#f97316');
-                    saves++;
-                } else {
-                    showResult('⚽ GOAL!!! 🎉', '#22c55e');
-                    goals++;
-                }
-            }
-
             document.getElementById('goals').textContent = goals;
             document.getElementById('saves').textContent = saves;
-
-            setTimeout(() => {
-                resetBall();
-                keeperIdle();
-            }, 1400);
+            resultTimer = 90;
         }
 
-        function showResult(msg, color) {
-            feedbackEl.textContent = msg;
-            feedbackEl.style.color = color;
-            feedbackEl.style.opacity = 1;
-            setTimeout(() => feedbackEl.style.opacity = 0, 1200);
-        }
+        function resetBall() { ball = {...BALL_HOME}; keeper = {x:W/2,y:108}; resultMsg=''; state='idle'; }
 
-        function resetBall() {
-            ball.style.transition = 'none';
-            ball.style.transform = '';
-            setPos(ball, BALL_HOME.x, BALL_HOME.y);
-            document.getElementById('hint').style.opacity = 1;
+        function frame() {
+            ctx.clearRect(0,0,W,H);
+
+            // Pitch bg
+            const skyG = ctx.createLinearGradient(0,0,0,H*0.3);
+            skyG.addColorStop(0,'#0c2340'); skyG.addColorStop(1,'#1a3a5c');
+            ctx.fillStyle = skyG; ctx.fillRect(0,0,W,H*0.3);
+            ctx.fillStyle = '#0f1e30';
+            for(let i=0;i<50;i++){ctx.beginPath();ctx.arc(i*7+3,H*0.3-10+Math.sin(i*1.7)*8,5,0,Math.PI*2);ctx.fill();}
+            const pitchG = ctx.createLinearGradient(0,H*0.3,0,H);
+            pitchG.addColorStop(0,'#166534'); pitchG.addColorStop(0.5,'#15803d'); pitchG.addColorStop(1,'#14532d');
+            ctx.fillStyle = pitchG; ctx.fillRect(0,H*0.3,W,H);
+            for(let i=0;i<5;i++){ctx.fillStyle='rgba(255,255,255,0.02)';ctx.fillRect(0,H*0.3+i*(H*0.7/5),W,H*0.7/10);}
+            ctx.strokeStyle='rgba(255,255,255,0.2)'; ctx.lineWidth=1.5;
+            ctx.strokeRect(W/2-60,H*0.3-5,120,40);
+            ctx.beginPath();ctx.arc(W/2,H-60,80,-Math.PI*0.7,-Math.PI*0.3);ctx.stroke();
+            ctx.fillStyle='rgba(255,255,255,0.35)';ctx.beginPath();ctx.arc(W/2,H-72,4,0,Math.PI*2);ctx.fill();
+
+            // Goal
+            const {x,y,w,h} = GOAL;
+            ctx.fillStyle='rgba(255,255,255,0.04)';ctx.fillRect(x,y,w,h);
+            ctx.strokeStyle='rgba(255,255,255,0.15)';ctx.lineWidth=0.8;
+            for(let c=0;c<=11;c++){ctx.beginPath();ctx.moveTo(x+(c/11)*w,y);ctx.lineTo(x+(c/11)*w,y+h);ctx.stroke();}
+            for(let r=0;r<=5;r++){ctx.beginPath();ctx.moveTo(x,y+(r/5)*h);ctx.lineTo(x+w,y+(r/5)*h);ctx.stroke();}
+            ctx.strokeStyle='#fff';ctx.lineWidth=5;ctx.lineCap='square';
+            ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(x+w,y);ctx.stroke();
+            ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(x,y+h);ctx.stroke();
+            ctx.beginPath();ctx.moveTo(x+w,y);ctx.lineTo(x+w,y+h);ctx.stroke();
+
+            // Keeper
+            ctx.save();ctx.translate(keeper.x,keeper.y);
+            ctx.fillStyle='rgba(0,0,0,0.2)';ctx.beginPath();ctx.ellipse(0,24,18,6,0,0,Math.PI*2);ctx.fill();
+            ctx.fillStyle='#1d4ed8';ctx.fillRect(-10,10,8,20);ctx.fillRect(2,10,8,20);
+            ctx.fillStyle='#fbbf24';ctx.beginPath();ctx.arc(-22,5,7,0,Math.PI*2);ctx.fill();ctx.beginPath();ctx.arc(22,5,7,0,Math.PI*2);ctx.fill();
+            ctx.fillStyle='#16a34a';ctx.fillRect(-14,-10,28,22);ctx.fillRect(-22,-8,10,14);ctx.fillRect(12,-8,10,14);
+            ctx.fillStyle='#f5c2a0';ctx.beginPath();ctx.arc(0,-20,12,0,Math.PI*2);ctx.fill();
+            ctx.fillStyle='#1e3a5f';ctx.beginPath();ctx.ellipse(0,-28,13,8,0,0,Math.PI);ctx.fill();
+            ctx.restore();
+
+            // Aim line
+            if(state==='dragging'&&aimVec&&Math.hypot(aimVec.x,aimVec.y)>10){
+                ctx.save();ctx.setLineDash([6,6]);
+                ctx.strokeStyle='rgba(255,200,0,0.7)';ctx.lineWidth=2;
+                ctx.beginPath();ctx.moveTo(BALL_HOME.x,BALL_HOME.y);
+                ctx.lineTo(BALL_HOME.x-aimVec.x*1.5,BALL_HOME.y-aimVec.y*1.5);ctx.stroke();
+                ctx.setLineDash([]);
+                const ang=Math.atan2(-aimVec.y,-aimVec.x);
+                const ax=BALL_HOME.x-aimVec.x*1.5,ay=BALL_HOME.y-aimVec.y*1.5;
+                ctx.fillStyle='rgba(255,200,0,0.9)';ctx.beginPath();
+                ctx.moveTo(ax+Math.cos(ang)*12,ay+Math.sin(ang)*12);
+                ctx.lineTo(ax+Math.cos(ang+2.4)*8,ay+Math.sin(ang+2.4)*8);
+                ctx.lineTo(ax+Math.cos(ang-2.4)*8,ay+Math.sin(ang-2.4)*8);ctx.fill();
+                ctx.restore();
+            }
+
+            // Ball
+            ctx.save();ctx.translate(ball.x,ball.y);
+            const sc=1-0.35*Math.max(0,(H-70-ball.y)/(H-100));
+            ctx.scale(sc,sc);
+            ctx.shadowBlur=12;ctx.shadowColor='#ffffff33';
+            ctx.beginPath();ctx.arc(0,0,16,0,Math.PI*2);ctx.fillStyle='#fff';ctx.fill();ctx.shadowBlur=0;
+            ctx.fillStyle='#111';
+            [[0,0],[-8,-6],[8,-6],[-8,6],[8,6]].forEach(([dx,dy])=>{ctx.beginPath();ctx.arc(dx,dy,5,0,Math.PI*2);ctx.fill();});
+            ctx.restore();
+
+            // Result
+            if(resultMsg&&resultTimer>0){
+                ctx.globalAlpha=Math.min(1,resultTimer/20);
+                ctx.font='bold 2rem Orbitron,monospace';ctx.textAlign='center';
+                ctx.fillStyle=resultMsg.includes('GOAL')?'#22c55e':resultMsg.includes('SAVED')?'#f59e0b':'#ef4444';
+                ctx.shadowBlur=20;ctx.shadowColor=ctx.fillStyle;
+                ctx.fillText(resultMsg,W/2,H/2);ctx.shadowBlur=0;ctx.globalAlpha=1;
+                resultTimer--;
+                if(resultTimer===0)resetBall();
+            }
+
+            // Flying
+            if(state==='flying'){
+                kickProgress=Math.min(1,kickProgress+0.038);
+                const t=easeInOut(kickProgress);
+                ball.x=lerp(kickFrom.x,kickTo.x,t); ball.y=lerp(kickFrom.y,kickTo.y,t);
+                const tkx=keeperDiveSide===1?x+w-30:x+30;
+                keeper.x=lerp(W/2,tkx,Math.min(1,kickProgress*2));
+                if(kickProgress>=1){state='result';evalKick();}
+            }
+
+            requestAnimationFrame(frame);
         }
+        frame();
     </script>
 </body>
-
 </html>
