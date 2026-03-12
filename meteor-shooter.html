@@ -1,0 +1,509 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Meteor Shooter - WWG</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: #000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            overflow: hidden;
+            font-family: 'Orbitron', monospace;
+        }
+
+        #ui {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            padding: 12px 20px;
+            display: flex;
+            gap: 20px;
+            align-items: center;
+            font-size: 0.85rem;
+            color: #7dd3fc;
+            z-index: 10;
+            pointer-events: none;
+        }
+
+        #ui span {
+            color: #fff;
+            font-weight: 700;
+        }
+
+        .back-link {
+            position: fixed;
+            top: 12px;
+            right: 12px;
+            color: #7dd3fc;
+            text-decoration: none;
+            font-size: 0.75rem;
+            z-index: 20;
+        }
+
+        canvas {
+            display: block;
+        }
+
+        #overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.85);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 50;
+            color: white;
+            text-align: center;
+        }
+
+        #overlay h2 {
+            font-size: 2rem;
+            color: #7dd3fc;
+            margin-bottom: 15px;
+        }
+
+        #overlay p {
+            color: #aaa;
+            margin-bottom: 25px;
+            font-size: 0.85rem;
+            font-family: monospace;
+        }
+
+        .cta-btn {
+            background: #0ea5e9;
+            color: #fff;
+            border: none;
+            padding: 14px 36px;
+            border-radius: 8px;
+            font-family: 'Orbitron', monospace;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .cta-btn:hover {
+            background: #0284c7;
+        }
+
+        #shop {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 5, 0.92);
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 50;
+            color: white;
+            text-align: center;
+        }
+
+        #shop h2 {
+            font-size: 1.5rem;
+            color: #fbbf24;
+            margin-bottom: 8px;
+        }
+
+        #shop p {
+            color: #aaa;
+            margin-bottom: 20px;
+            font-size: 0.8rem;
+            font-family: monospace;
+        }
+
+        .shop-items {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+
+        .shop-item {
+            background: #111;
+            border: 1px solid #333;
+            border-radius: 10px;
+            padding: 15px;
+            width: 140px;
+            cursor: pointer;
+            transition: border-color 0.2s;
+        }
+
+        .shop-item:hover {
+            border-color: #fbbf24;
+        }
+
+        .shop-item .icon {
+            font-size: 1.8rem;
+            display: block;
+            margin-bottom: 6px;
+        }
+
+        .shop-item .name {
+            font-size: 0.8rem;
+            font-weight: 700;
+            color: #7dd3fc;
+        }
+
+        .shop-item .desc {
+            font-size: 0.7rem;
+            color: #888;
+            margin-top: 4px;
+        }
+
+        .shop-item .cost {
+            font-size: 0.9rem;
+            color: #fbbf24;
+            margin-top: 8px;
+            font-weight: 700;
+        }
+
+        .shop-item.maxed {
+            border-color: #22c55e;
+            opacity: 0.6;
+            cursor: default;
+        }
+    </style>
+</head>
+
+<body>
+    <a href="index.html" class="back-link">← Back</a>
+
+    <div id="ui">
+        SCORE: <span id="sc">0</span> &nbsp;
+        WAVE: <span id="wv">1</span> &nbsp;
+        LIVES: <span id="lv">❤️❤️❤️</span> &nbsp;
+        CREDITS: <span id="cr">0</span>
+    </div>
+
+    <canvas id="c"></canvas>
+
+    <div id="overlay">
+        <h2>☄️ METEOR SHOOTER</h2>
+        <p>← → or A/D to move &nbsp;|&nbsp; SPACE or click to fire</p>
+        <button class="cta-btn" onclick="startGame()">LAUNCH MISSION</button>
+    </div>
+
+    <div id="shop">
+        <h2>⚡ UPGRADE SHOP</h2>
+        <p id="shop-wave-label"></p>
+        <div class="shop-items" id="shop-items"></div>
+        <button class="cta-btn" onclick="startNextWave()">CONTINUE →</button>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('c');
+        const ctx = canvas.getContext('2d');
+        let W, H;
+
+        function resize() {
+            W = canvas.width = Math.min(window.innerWidth, 600);
+            H = canvas.height = window.innerHeight;
+        }
+        resize();
+        window.addEventListener('resize', resize);
+
+        // ---- Game State ----
+        let ship, bullets, meteors, particles, running;
+        let score, wave, lives, credits;
+        let keys = {};
+        let upgrades = { speed: 0, fireRate: 0, spread: 0, shield: 0 };
+        let fireTimer = 0;
+        let shieldActive = false;
+
+        const MAX_UPGRADE = 3;
+
+        const UPGRADE_DEFS = [
+            { key: 'speed', icon: '🚀', name: 'Engine Boost', desc: 'Move faster', cost: [10, 20, 35] },
+            { key: 'fireRate', icon: '💥', name: 'Rapid Fire', desc: 'Shoot faster', cost: [10, 20, 35] },
+            { key: 'spread', icon: '🌀', name: 'Spread Shot', desc: 'Fire 3 bullets', cost: [15, 30, 50] },
+            { key: 'shield', icon: '🛡️', name: 'Shield', desc: 'Block 1 hit', cost: [20, 40, 60] },
+        ];
+
+        function startGame() {
+            document.getElementById('overlay').style.display = 'none';
+            ship = { x: W / 2, y: H - 70, w: 30, h: 40 };
+            bullets = []; meteors = []; particles = [];
+            score = 0; wave = 1; lives = 3; credits = 0;
+            upgrades = { speed: 0, fireRate: 0, spread: 0, shield: 0 };
+            running = true;
+            spawnWave();
+            loop();
+        }
+
+        function spawnWave() {
+            const count = 5 + wave * 2;
+            for (let i = 0; i < count; i++) {
+                setTimeout(() => {
+                    meteors.push({
+                        x: Math.random() * (W - 40) + 20,
+                        y: -30,
+                        r: 14 + Math.random() * 12,
+                        speed: 1.2 + wave * 0.3 + Math.random(),
+                        rot: 0, rotSpeed: (Math.random() - 0.5) * 6,
+                        hp: Math.ceil(wave / 2)
+                    });
+                }, i * 600);
+            }
+        }
+
+        function shoot() {
+            const lvl = upgrades.spread;
+            const angles = lvl >= 3 ? [-15, -8, 0, 8, 15] : lvl >= 2 ? [-10, 0, 10] : lvl >= 1 ? [-7, 7] : [0];
+            angles.forEach(a => {
+                const rad = a * Math.PI / 180;
+                bullets.push({ x: ship.x, y: ship.y - 20, vx: Math.sin(rad) * 7, vy: -12, pow: 1 + Math.floor(upgrades.speed * 0.5) });
+            });
+        }
+
+        let last = 0;
+        function loop(ts = 0) {
+            if (!running) return;
+            const dt = Math.min((ts - last) / 16.7, 3);
+            last = ts;
+
+            ctx.fillStyle = '#000010';
+            ctx.fillRect(0, 0, W, H);
+            drawStars();
+
+            // Ship movement
+            const spd = 4 + upgrades.speed * 1.2;
+            if (keys['ArrowLeft'] || keys['a'] || keys['A']) ship.x -= spd * dt;
+            if (keys['ArrowRight'] || keys['d'] || keys['D']) ship.x += spd * dt;
+            ship.x = Math.max(20, Math.min(W - 20, ship.x));
+
+            // Auto fire
+            const fireInterval = Math.max(8, 22 - upgrades.fireRate * 5);
+            fireTimer += dt;
+            if ((keys[' '] || keys['z'] || pointerDown) && fireTimer > fireInterval) {
+                shoot();
+                fireTimer = 0;
+            }
+
+            // Draw ship
+            drawShip(ship.x, ship.y);
+
+            // Bullets
+            bullets = bullets.filter(b => {
+                b.x += b.vx * dt; b.y += b.vy * dt;
+                ctx.beginPath();
+                ctx.arc(b.x, b.y, 4, 0, Math.PI * 2);
+                ctx.fillStyle = '#7dd3fc';
+                ctx.shadowBlur = 8; ctx.shadowColor = '#7dd3fc';
+                ctx.fill(); ctx.shadowBlur = 0;
+                return b.y > -10 && b.y < H + 10;
+            });
+
+            // Meteors
+            meteors = meteors.filter(m => {
+                m.y += m.speed * dt; m.rot += m.rotSpeed * dt * 0.05;
+                drawMeteor(m);
+
+                // Bullet hits
+                for (let i = bullets.length - 1; i >= 0; i--) {
+                    const b = bullets[i];
+                    if (Math.hypot(b.x - m.x, b.y - m.y) < m.r + 4) {
+                        m.hp--;
+                        bullets.splice(i, 1);
+                        spawnParticles(m.x, m.y, '#f97316', 5);
+                        if (m.hp <= 0) {
+                            score += Math.ceil(m.r); credits += Math.ceil(m.r / 5);
+                            spawnParticles(m.x, m.y, '#fbbf24', 12);
+                            updateHUD();
+                            return false;
+                        }
+                    }
+                }
+
+                // Hit player
+                if (m.y > H - 80 && Math.abs(m.x - ship.x) < m.r + 20) {
+                    if (shieldActive) {
+                        shieldActive = false; upgrades.shield = Math.max(0, upgrades.shield - 1);
+                        spawnParticles(ship.x, ship.y, '#0ea5e9', 15);
+                    } else {
+                        lives--;
+                        spawnParticles(ship.x, ship.y, '#ef4444', 15);
+                        updateHUD();
+                    }
+                    if (lives <= 0) { gameOver(); return false; }
+                    return false;
+                }
+
+                return m.y < H + 40;
+            });
+
+            // Particles
+            particles = particles.filter(p => {
+                p.x += p.vx * dt; p.y += p.vy * dt; p.life -= dt;
+                ctx.globalAlpha = p.life / p.maxLife;
+                ctx.beginPath(); ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+                ctx.fillStyle = p.color; ctx.fill();
+                ctx.globalAlpha = 1;
+                return p.life > 0;
+            });
+
+            // Check wave done
+            if (meteors.length === 0 && running) {
+                running = false;
+                showShop();
+                return;
+            }
+
+            updateHUD();
+            requestAnimationFrame(loop);
+        }
+
+        function drawShip(x, y) {
+            ctx.save();
+            ctx.translate(x, y);
+            ctx.fillStyle = '#7dd3fc';
+            ctx.shadowBlur = 12; ctx.shadowColor = '#7dd3fc';
+            ctx.beginPath();
+            ctx.moveTo(0, -22); ctx.lineTo(16, 18); ctx.lineTo(0, 8); ctx.lineTo(-16, 18);
+            ctx.closePath();
+            ctx.fill();
+            ctx.shadowBlur = 0;
+
+            // Shield
+            if (shieldActive) {
+                ctx.beginPath();
+                ctx.arc(0, 0, 28, 0, Math.PI * 2);
+                ctx.strokeStyle = '#0ea5e9';
+                ctx.lineWidth = 3;
+                ctx.shadowBlur = 10; ctx.shadowColor = '#0ea5e9';
+                ctx.stroke();
+                ctx.shadowBlur = 0;
+            }
+
+            ctx.restore();
+        }
+
+        function drawMeteor(m) {
+            ctx.save();
+            ctx.translate(m.x, m.y);
+            ctx.rotate(m.rot);
+            ctx.beginPath();
+            for (let i = 0; i < 8; i++) {
+                const a = (i / 8) * Math.PI * 2;
+                const r = m.r * (0.75 + 0.25 * Math.sin(i * 1.7));
+                i === 0 ? ctx.moveTo(Math.cos(a) * r, Math.sin(a) * r) : ctx.lineTo(Math.cos(a) * r, Math.sin(a) * r);
+            }
+            ctx.closePath();
+            ctx.fillStyle = '#92400e';
+            ctx.strokeStyle = '#f97316';
+            ctx.lineWidth = 2;
+            ctx.fill(); ctx.stroke();
+            ctx.restore();
+        }
+
+        let starPositions = Array.from({ length: 100 }, () => ({
+            x: Math.random(), y: Math.random(), r: Math.random() * 1.5, b: Math.random()
+        }));
+
+        function drawStars() {
+            starPositions.forEach(s => {
+                ctx.globalAlpha = 0.4 + 0.6 * s.b;
+                ctx.fillStyle = '#fff';
+                ctx.fillRect(s.x * W, s.y * H, s.r, s.r);
+            });
+            ctx.globalAlpha = 1;
+        }
+
+        function spawnParticles(x, y, color, n) {
+            for (let i = 0; i < n; i++) {
+                particles.push({
+                    x, y, color,
+                    vx: (Math.random() - 0.5) * 5,
+                    vy: (Math.random() - 0.5) * 5,
+                    r: 2 + Math.random() * 3,
+                    life: 20 + Math.random() * 15, maxLife: 35
+                });
+            }
+        }
+
+        function updateHUD() {
+            document.getElementById('sc').textContent = score;
+            document.getElementById('wv').textContent = wave;
+            document.getElementById('cr').textContent = credits;
+            document.getElementById('lv').textContent = '❤️'.repeat(Math.max(0, lives));
+        }
+
+        function gameOver() {
+            running = false;
+            const ov = document.getElementById('overlay');
+            ov.innerHTML = `<h2>GAME OVER</h2><p>Wave ${wave} — Score: ${score}</p><button class="cta-btn" onclick="startGame()">RETRY</button>`;
+            ov.style.display = 'flex';
+        }
+
+        function showShop() {
+            wave++;
+            document.getElementById('shop-wave-label').textContent = `Wave ${wave} incoming. Spend your ${credits} credits!`;
+            const container = document.getElementById('shop-items');
+            container.innerHTML = UPGRADE_DEFS.map(u => {
+                const lvl = upgrades[u.key];
+                const maxed = lvl >= MAX_UPGRADE;
+                const cost = maxed ? '—' : u.cost[lvl];
+                return `<div class="shop-item ${maxed ? 'maxed' : ''}" onclick="buyUpgrade('${u.key}')">
+                    <span class="icon">${u.icon}</span>
+                    <div class="name">${u.name} ${'★'.repeat(lvl)}${'☆'.repeat(MAX_UPGRADE - lvl)}</div>
+                    <div class="desc">${u.desc}</div>
+                    <div class="cost">${maxed ? 'MAX' : cost + ' ⚡'}</div>
+                </div>`;
+            }).join('');
+            document.getElementById('shop').style.display = 'flex';
+        }
+
+        function buyUpgrade(key) {
+            const def = UPGRADE_DEFS.find(u => u.key === key);
+            const lvl = upgrades[key];
+            if (lvl >= MAX_UPGRADE) return;
+            const cost = def.cost[lvl];
+            if (credits < cost) return;
+            credits -= cost;
+            upgrades[key]++;
+            if (key === 'shield') shieldActive = true;
+            showShop(); // Re-render
+            updateHUD();
+        }
+
+        function startNextWave() {
+            document.getElementById('shop').style.display = 'none';
+            running = true;
+            spawnWave();
+            requestAnimationFrame(loop);
+        }
+
+        // Input
+        window.addEventListener('keydown', e => { keys[e.key] = true; });
+        window.addEventListener('keyup', e => { keys[e.key] = false; });
+
+        let pointerDown = false;
+        canvas.addEventListener('pointerdown', e => {
+            pointerDown = true;
+            const r = canvas.getBoundingClientRect();
+            ship.x = e.clientX - r.left;
+        });
+        canvas.addEventListener('pointermove', e => {
+            if (!pointerDown) return;
+            const r = canvas.getBoundingClientRect();
+            ship.x = e.clientX - r.left;
+        });
+        canvas.addEventListener('pointerup', () => { pointerDown = false; });
+    </script>
+</body>
+
+</html>

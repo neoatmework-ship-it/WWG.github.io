@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Meme Gallery - WWG</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: #0f0f0f;
+            color: #eee;
+            font-family: 'Inter', sans-serif;
+            min-height: 100vh;
+        }
+
+        header {
+            padding: 20px 30px;
+            background: #181818;
+            border-bottom: 1px solid #333;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        header h1 {
+            font-size: 1.5rem;
+            background: linear-gradient(135deg, #f59e0b, #ef4444);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .back-link {
+            text-decoration: none;
+            color: #888;
+            font-size: 0.9rem;
+            transition: color 0.2s;
+        }
+
+        .back-link:hover {
+            color: #eee;
+        }
+
+        .controls {
+            padding: 20px 30px;
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .filter-btn {
+            background: #222;
+            border: 1px solid #444;
+            color: #ccc;
+            padding: 8px 16px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            transition: all 0.2s;
+        }
+
+        .filter-btn:hover,
+        .filter-btn.active {
+            background: #f59e0b;
+            border-color: #f59e0b;
+            color: #000;
+        }
+
+        .random-btn {
+            margin-left: auto;
+            background: linear-gradient(135deg, #7c3aed, #db2777);
+            border: none;
+            color: white;
+            padding: 8px 18px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            font-weight: 600;
+            transition: opacity 0.2s;
+        }
+
+        .random-btn:hover {
+            opacity: 0.85;
+        }
+
+        .gallery {
+            columns: 4 250px;
+            column-gap: 15px;
+            padding: 15px 30px 30px;
+        }
+
+        .meme-card {
+            break-inside: avoid;
+            margin-bottom: 15px;
+            border-radius: 12px;
+            overflow: hidden;
+            cursor: pointer;
+            position: relative;
+            background: #1a1a1a;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .meme-card:hover {
+            transform: scale(1.02);
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.5);
+        }
+
+        .meme-card img {
+            width: 100%;
+            display: block;
+            object-fit: cover;
+        }
+
+        .meme-overlay {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: linear-gradient(transparent, rgba(0, 0, 0, 0.8));
+            padding: 20px 12px 10px;
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+
+        .meme-card:hover .meme-overlay {
+            opacity: 1;
+        }
+
+        .meme-label {
+            font-size: 0.75rem;
+            color: #f59e0b;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        /* Lightbox */
+        .lightbox {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.92);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .lightbox.open {
+            display: flex;
+        }
+
+        .lightbox img {
+            max-width: 90vw;
+            max-height: 90vh;
+            border-radius: 12px;
+            object-fit: contain;
+        }
+
+        .lightbox-close {
+            position: absolute;
+            top: 20px;
+            right: 25px;
+            font-size: 2rem;
+            cursor: pointer;
+            color: #fff;
+            background: none;
+            border: none;
+            line-height: 1;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+    </style>
+</head>
+
+<body>
+    <header>
+        <h1>🐸 Meme Gallery</h1>
+        <a href="index.html" class="back-link">← Back to Gallery</a>
+    </header>
+
+    <div class="controls">
+        <button class="filter-btn active" onclick="filterMemes('all', this)">All</button>
+        <button class="filter-btn" onclick="filterMemes('classic', this)">Classic</button>
+        <button class="filter-btn" onclick="filterMemes('dank', this)">Dank</button>
+        <button class="filter-btn" onclick="filterMemes('wholesome', this)">Wholesome</button>
+        <button class="filter-btn" onclick="filterMemes('reaction', this)">Reactions</button>
+        <button class="random-btn" onclick="randomMeme()">🎲 Random Meme</button>
+    </div>
+
+    <div class="gallery" id="gallery"></div>
+
+    <div class="lightbox" id="lightbox" onclick="closeLightbox(event)">
+        <button class="lightbox-close" onclick="closeLightbox()">×</button>
+        <img id="lightbox-img" src="" alt="meme">
+    </div>
+
+    <script>
+        const memes = [
+            // Classic
+            { url: 'https://i.imgur.com/mxq2QHz.jpeg', label: 'This is Fine', cat: 'classic' },
+            { url: 'https://i.imgur.com/5bEgsfy.jpeg', label: 'Distracted Boyfriend', cat: 'classic' },
+            { url: 'https://i.imgur.com/L1HMSLL.jpeg', label: 'Drake Approves', cat: 'classic' },
+            { url: 'https://i.imgur.com/hbiKFEO.jpeg', label: 'Two Buttons', cat: 'classic' },
+            { url: 'https://i.imgur.com/0DvCsEu.jpeg', label: 'Expanding Brain', cat: 'classic' },
+            { url: 'https://i.imgur.com/nBTOfkO.jpeg', label: 'One Does Not Simply', cat: 'classic' },
+            { url: 'https://i.imgur.com/t8BGv3s.jpeg', label: 'Bad Luck Brian', cat: 'classic' },
+            { url: 'https://i.imgur.com/H2nBVtN.jpeg', label: 'Success Kid', cat: 'classic' },
+            // Dank
+            { url: 'https://i.imgur.com/FbShawn.jpeg', label: 'Math Lady', cat: 'dank' },
+            { url: 'https://i.imgur.com/A67yBjO.jpeg', label: 'Surprised Pikachu', cat: 'dank' },
+            { url: 'https://i.imgur.com/GoBFPY9.jpeg', label: 'Trade Offer', cat: 'dank' },
+            { url: 'https://i.imgur.com/kNGiMYj.jpeg', label: 'It\'s Free Real Estate', cat: 'dank' },
+            { url: 'https://i.imgur.com/a7TsKiW.jpeg', label: 'Press X to Doubt', cat: 'dank' },
+            { url: 'https://i.imgur.com/6Qo3Fkz.jpeg', label: 'Always Has Been', cat: 'dank' },
+            // Wholesome
+            { url: 'https://i.imgur.com/k9UntYm.jpeg', label: 'Wholesome Handshake', cat: 'wholesome' },
+            { url: 'https://i.imgur.com/vRdSQQP.jpeg', label: 'Be Kind', cat: 'wholesome' },
+            { url: 'https://i.imgur.com/C5SMa2X.jpeg', label: 'Good Boy', cat: 'wholesome' },
+            { url: 'https://i.imgur.com/8k3sQPF.jpeg', label: 'You\'re Amazing', cat: 'wholesome' },
+            // Reactions
+            { url: 'https://i.imgur.com/VO12ywi.jpeg', label: 'Waiting Skeleton', cat: 'reaction' },
+            { url: 'https://i.imgur.com/W3duR07.jpeg', label: 'Side-eye Chloe', cat: 'reaction' },
+            { url: 'https://i.imgur.com/bI9LLFE.jpeg', label: 'Shut Up and Take My Money', cat: 'reaction' },
+            { url: 'https://i.imgur.com/4JcKH5R.jpeg', label: 'Hide the Pain Harold', cat: 'reaction' },
+            { url: 'https://i.imgur.com/MLuuNpj.jpeg', label: 'That\'s Not How It Works', cat: 'reaction' },
+        ];
+
+        function renderGallery(filter = 'all') {
+            const gallery = document.getElementById('gallery');
+            const filtered = filter === 'all' ? memes : memes.filter(m => m.cat === filter);
+            gallery.innerHTML = filtered.map((m, i) => `
+                <div class="meme-card" data-cat="${m.cat}" onclick="openLightbox('${m.url}')">
+                    <img src="${m.url}" alt="${m.label}" loading="lazy" onerror="this.src='https://placehold.co/400x300/222/555?text=Meme+Loading...'">
+                    <div class="meme-overlay">
+                        <div class="meme-label">${m.label}</div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function filterMemes(cat, btn) {
+            document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            renderGallery(cat);
+        }
+
+        function openLightbox(url) {
+            document.getElementById('lightbox-img').src = url;
+            document.getElementById('lightbox').classList.add('open');
+        }
+
+        function closeLightbox(e) {
+            if (!e || e.target !== document.getElementById('lightbox-img')) {
+                document.getElementById('lightbox').classList.remove('open');
+            }
+        }
+
+        function randomMeme() {
+            const m = memes[Math.floor(Math.random() * memes.length)];
+            openLightbox(m.url);
+        }
+
+        renderGallery();
+    </script>
+</body>
+
+</html>

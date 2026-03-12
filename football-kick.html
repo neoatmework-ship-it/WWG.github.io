@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Football Kick - WWG</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            touch-action: none;
+        }
+
+        body {
+            background: radial-gradient(ellipse at bottom, #064e3b, #022c22 60%, #001a11);
+            color: #fff;
+            font-family: 'Inter', sans-serif;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            overflow: hidden;
+            padding: 10px;
+        }
+
+        .back-link {
+            position: fixed;
+            top: 12px;
+            left: 12px;
+            color: #34d399;
+            text-decoration: none;
+            font-size: 0.85rem;
+        }
+
+        h1 {
+            font-size: 2rem;
+            font-weight: 900;
+            color: #34d399;
+            text-shadow: 0 0 30px #34d39988;
+            margin-top: 10px;
+            margin-bottom: 5px;
+        }
+
+        .scoreboard {
+            display: flex;
+            gap: 30px;
+            margin-bottom: 15px;
+            font-size: 1rem;
+            color: #aaa;
+        }
+
+        .scoreboard span {
+            font-weight: 700;
+            color: #34d399;
+        }
+
+        /* Pitch */
+        #game-area {
+            width: 340px;
+            height: 480px;
+            background: linear-gradient(180deg, #166534 0%, #15803d 40%, #16a34a 60%, #15803d 80%);
+            border-radius: 12px;
+            position: relative;
+            overflow: hidden;
+            border: 2px solid #22c55e44;
+            user-select: none;
+        }
+
+        /* Field lines */
+        #game-area::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background:
+                repeating-linear-gradient(0deg, transparent, transparent 59px, rgba(255, 255, 255, 0.05) 60px),
+                linear-gradient(90deg, transparent 45%, rgba(255, 255, 255, 0.06) 50%, transparent 55%);
+        }
+
+        /* Goal */
+        .goal {
+            position: absolute;
+            top: 15px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 220px;
+            height: 100px;
+            border: 5px solid white;
+            border-bottom: none;
+            border-radius: 4px 4px 0 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Goal posts vertical lines */
+        .goal::before,
+        .goal::after {
+            content: '';
+            position: absolute;
+            top: 100%;
+            width: 5px;
+            height: 15px;
+            background: white;
+        }
+
+        .goal::before {
+            left: -5px;
+        }
+
+        .goal::after {
+            right: -5px;
+        }
+
+        /* Net grid */
+        .net-grid {
+            width: 100%;
+            height: 100%;
+            background:
+                linear-gradient(rgba(255, 255, 255, 0.15) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255, 255, 255, 0.15) 1px, transparent 1px);
+            background-size: 22px 15px;
+        }
+
+        /* Goalkeeper */
+        .keeper {
+            position: absolute;
+            top: 110px;
+            font-size: 2.2rem;
+            transition: left 0.3s cubic-bezier(.2, 0, .5, 1);
+        }
+
+        /* Ball */
+        #ball {
+            position: absolute;
+            font-size: 2.4rem;
+            cursor: grab;
+            user-select: none;
+            z-index: 10;
+            transition: none;
+        }
+
+        /* Aim arrow */
+        #arrow {
+            position: absolute;
+            width: 2px;
+            background: rgba(255, 255, 255, 0.4);
+            transform-origin: bottom center;
+            pointer-events: none;
+            z-index: 5;
+            border-radius: 2px;
+        }
+
+        /* Hint text */
+        .hint {
+            position: absolute;
+            bottom: 60px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: rgba(255, 255, 255, 0.5);
+            font-size: 0.8rem;
+            text-align: center;
+            pointer-events: none;
+        }
+
+        .feedback {
+            position: absolute;
+            top: 180px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 2.5rem;
+            font-weight: 900;
+            text-align: center;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.3s;
+            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+        }
+    </style>
+</head>
+
+<body>
+    <a href="index.html" class="back-link">← Back</a>
+    <h1>⚽ Football Kick</h1>
+
+    <div class="scoreboard">
+        Goals: <span id="goals">0</span> &nbsp;|&nbsp; Saves: <span id="saves">0</span>
+    </div>
+
+    <div id="game-area">
+        <div class="goal">
+            <div class="net-grid"></div>
+        </div>
+        <div class="keeper" id="keeper">🧤</div>
+        <div id="ball">⚽</div>
+        <div id="arrow"></div>
+        <div class="hint" id="hint">Drag ⚽ to aim, release to kick!</div>
+        <div class="feedback" id="feedback"></div>
+    </div>
+
+    <script>
+        const ball = document.getElementById('ball');
+        const keeper = document.getElementById('keeper');
+        const arrow = document.getElementById('arrow');
+        const gameArea = document.getElementById('game-area');
+        const feedbackEl = document.getElementById('feedback');
+
+        let goals = 0, saves = 0;
+        let dragging = false;
+        let startX, startY;
+        const BALL_HOME = { x: 160, y: 380 };
+
+        function setPos(el, x, y) {
+            el.style.left = (x - 20) + 'px';
+            el.style.top = (y - 20) + 'px';
+        }
+
+        setPos(ball, BALL_HOME.x, BALL_HOME.y);
+        keeperIdle();
+
+        function keeperIdle() {
+            keeper.style.left = (170 - 20) + 'px';
+        }
+
+        // --- Drag events ---
+        function getCoords(e) {
+            const r = gameArea.getBoundingClientRect();
+            const src = e.touches ? e.touches[0] : e;
+            return { x: src.clientX - r.left, y: src.clientY - r.top };
+        }
+
+        ball.addEventListener('mousedown', startDrag);
+        ball.addEventListener('touchstart', startDrag, { passive: true });
+
+        function startDrag(e) {
+            dragging = true;
+            const c = getCoords(e);
+            startX = c.x; startY = c.y;
+            document.getElementById('hint').style.opacity = 0;
+        }
+
+        document.addEventListener('mousemove', onDrag);
+        document.addEventListener('touchmove', onDrag, { passive: true });
+
+        function onDrag(e) {
+            if (!dragging) return;
+            const c = getCoords(e);
+            setPos(ball, c.x, c.y);
+
+            // Draw arrow from ball to start (direction of kick is opposite)
+            const dx = startX - c.x;
+            const dy = startY - c.y;
+            const dist = Math.hypot(dx, dy);
+            const angle = Math.atan2(dx, dy) * 180 / Math.PI;
+            arrow.style.height = Math.min(dist, 80) + 'px';
+            arrow.style.left = c.x + 'px';
+            arrow.style.top = (c.y - Math.min(dist, 80)) + 'px';
+            arrow.style.transform = `rotate(${angle}deg)`;
+        }
+
+        document.addEventListener('mouseup', endDrag);
+        document.addEventListener('touchend', endDrag);
+
+        function endDrag(e) {
+            if (!dragging) return;
+            dragging = false;
+            arrow.style.height = 0;
+
+            const c = getCoords(e.changedTouches ? e : e);
+            const dx = startX - c.x;
+            const dy = startY - c.y;
+            if (Math.hypot(dx, dy) < 15) {
+                resetBall(); return;
+            }
+
+            kick(dx, dy);
+        }
+
+        function kick(dx, dy) {
+            const targetX = BALL_HOME.x + dx * 3;
+            const targetY = BALL_HOME.y + dy * 3;
+
+            ball.style.transition = 'left 0.5s cubic-bezier(.2,0,.5,1), top 0.5s cubic-bezier(.2,0,.5,1), transform 0.5s';
+            ball.style.transform = 'scale(0.6) rotate(720deg)';
+            setPos(ball, targetX, targetY);
+
+            // Keeper dives
+            const diveDir = Math.random() > 0.5 ? 1 : -1;
+            keeper.style.transition = 'left 0.3s ease';
+            keeper.style.left = (diveDir === 1 ? 260 : 60) + 'px';
+
+            setTimeout(() => {
+                checkGoal(targetX, targetY, diveDir);
+            }, 550);
+        }
+
+        function checkGoal(tx, ty, dive) {
+            // Goal area: x 60..280, y 15..115
+            const isOnTarget = tx > 60 && tx < 280 && ty < 130;
+
+            if (!isOnTarget) {
+                showResult('🚫 WIDE!', '#ef4444');
+                saves++;
+            } else {
+                // Keeper at diveDir side: left ~60, right ~260
+                const blocked = (dive === 1 && tx > 230) || (dive === -1 && tx < 90);
+                if (blocked) {
+                    showResult('🧤 SAVED!', '#f97316');
+                    saves++;
+                } else {
+                    showResult('⚽ GOAL!!! 🎉', '#22c55e');
+                    goals++;
+                }
+            }
+
+            document.getElementById('goals').textContent = goals;
+            document.getElementById('saves').textContent = saves;
+
+            setTimeout(() => {
+                resetBall();
+                keeperIdle();
+            }, 1400);
+        }
+
+        function showResult(msg, color) {
+            feedbackEl.textContent = msg;
+            feedbackEl.style.color = color;
+            feedbackEl.style.opacity = 1;
+            setTimeout(() => feedbackEl.style.opacity = 0, 1200);
+        }
+
+        function resetBall() {
+            ball.style.transition = 'none';
+            ball.style.transform = '';
+            setPos(ball, BALL_HOME.x, BALL_HOME.y);
+            document.getElementById('hint').style.opacity = 1;
+        }
+    </script>
+</body>
+
+</html>

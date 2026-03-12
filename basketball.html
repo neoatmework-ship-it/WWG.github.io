@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Basketball - WWG</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: radial-gradient(ellipse at top, #1a0a00, #0a0500);
+            color: #fff;
+            font-family: 'Inter', sans-serif;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+            overflow: hidden;
+        }
+
+        .back-link {
+            position: fixed;
+            top: 15px;
+            left: 15px;
+            color: #f59e0b;
+            text-decoration: none;
+            font-size: 0.85rem;
+        }
+
+        h1 {
+            font-size: 2rem;
+            font-weight: 900;
+            color: #f59e0b;
+            text-shadow: 0 0 30px #f59e0b88;
+            margin-bottom: 5px;
+        }
+
+        .scoreboard {
+            display: flex;
+            gap: 30px;
+            margin-bottom: 20px;
+            font-size: 1.1rem;
+            color: #ccc;
+        }
+
+        .scoreboard span {
+            font-weight: 700;
+            color: #f59e0b;
+        }
+
+        /* Court */
+        .court {
+            position: relative;
+            width: 340px;
+            height: 420px;
+            background: linear-gradient(180deg, #1a0a00, #4a2a00 60%, #c17930);
+            border-radius: 12px;
+            border: 2px solid #f59e0b44;
+            overflow: visible;
+            margin-bottom: 30px;
+        }
+
+        /* Hoop */
+        .hoop-backboard {
+            position: absolute;
+            top: 40px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 80px;
+            height: 60px;
+            background: #eee;
+            border: 3px solid #aaa;
+            border-radius: 4px;
+        }
+
+        .hoop-rim {
+            position: absolute;
+            top: 95px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 60px;
+            height: 10px;
+            border: 4px solid #e63946;
+            border-radius: 50%;
+            background: transparent;
+        }
+
+        .net {
+            position: absolute;
+            top: 104px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 50px;
+            height: 30px;
+            border-left: 2px solid #fff8;
+            border-right: 2px solid #fff8;
+            border-bottom: 2px solid #fff8;
+            border-radius: 0 0 40% 40%;
+        }
+
+        /* Ball */
+        .ball {
+            position: absolute;
+            bottom: 60px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 46px;
+            height: 46px;
+            background: radial-gradient(circle at 35% 35%, #ff8c42, #c84b00);
+            border-radius: 50%;
+            border: 2px solid #a03000;
+            z-index: 10;
+            transition: none;
+        }
+
+        .ball::before {
+            content: '';
+            position: absolute;
+            width: 100%;
+            height: 2px;
+            background: #a0300066;
+            top: 50%;
+            left: 0;
+            transform: rotate(-20deg);
+        }
+
+        .ball::after {
+            content: '';
+            position: absolute;
+            width: 2px;
+            height: 100%;
+            background: #a0300066;
+            top: 0;
+            left: 50%;
+        }
+
+        .ball.shooting {
+            transition: left 0.7s cubic-bezier(.42, 0, 1, 1), bottom 0.35s cubic-bezier(.22, .61, .36, 1);
+        }
+
+        /* Player */
+        .player {
+            position: absolute;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 2.5rem;
+            z-index: 5;
+            transition: transform 0.1s;
+        }
+
+        /* Power bar area */
+        .power-bar-wrap {
+            width: 340px;
+            text-align: center;
+        }
+
+        .bar-label {
+            font-size: 0.85rem;
+            color: #aaa;
+            margin-bottom: 8px;
+        }
+
+        .bar-track {
+            width: 100%;
+            height: 36px;
+            background: #1a0a00;
+            border: 2px solid #333;
+            border-radius: 8px;
+            overflow: hidden;
+            position: relative;
+            cursor: pointer;
+        }
+
+        .bar-indicator {
+            position: absolute;
+            width: 14px;
+            height: 100%;
+            background: white;
+            border-radius: 4px;
+            box-shadow: 0 0 10px #fff;
+            transition: none;
+        }
+
+        .bar-segment {
+            position: absolute;
+            height: 100%;
+        }
+
+        .seg-red-left {
+            left: 0;
+            width: 30%;
+            background: #e63946cc;
+        }
+
+        .seg-yellow-left {
+            left: 30%;
+            width: 10%;
+            background: #ffd60acc;
+        }
+
+        .seg-green {
+            left: 40%;
+            width: 20%;
+            background: #2dc653cc;
+        }
+
+        .seg-yellow-right {
+            left: 60%;
+            width: 10%;
+            background: #ffd60acc;
+        }
+
+        .seg-red-right {
+            left: 70%;
+            width: 30%;
+            background: #e63946cc;
+        }
+
+        .shoot-btn {
+            margin-top: 14px;
+            background: #f59e0b;
+            color: #000;
+            border: none;
+            padding: 12px 36px;
+            border-radius: 8px;
+            font-size: 1.1rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: background 0.15s, transform 0.1s;
+        }
+
+        .shoot-btn:hover {
+            background: #d97706;
+        }
+
+        .shoot-btn:active {
+            transform: scale(0.96);
+        }
+
+        .feedback {
+            margin-top: 16px;
+            font-size: 1.5rem;
+            font-weight: 900;
+            min-height: 2rem;
+            text-align: center;
+            letter-spacing: 1px;
+            transition: opacity 0.3s;
+        }
+
+        .feedback.made {
+            color: #2dc653;
+        }
+
+        .feedback.miss {
+            color: #e63946;
+        }
+    </style>
+</head>
+
+<body>
+    <a href="index.html" class="back-link">← Back</a>
+    <h1>🏀 Basketball</h1>
+
+    <div class="scoreboard">
+        Score: <span id="score">0</span> &nbsp; Streak: <span id="streak">0</span>x &nbsp; Level: <span
+            id="level">1</span>
+    </div>
+
+    <div class="court">
+        <div class="hoop-backboard"></div>
+        <div class="hoop-rim"></div>
+        <div class="net"></div>
+        <div class="ball" id="ball"></div>
+        <div class="player">🧍</div>
+    </div>
+
+    <div class="power-bar-wrap">
+        <div class="bar-label">SHOOT when the bar is in the 🟢 GREEN zone!</div>
+        <div class="bar-track" id="bar-track">
+            <div class="bar-segment seg-red-left"></div>
+            <div class="bar-segment seg-yellow-left"></div>
+            <div class="bar-segment seg-green"></div>
+            <div class="bar-segment seg-yellow-right"></div>
+            <div class="bar-segment seg-red-right"></div>
+            <div class="bar-indicator" id="bar-indicator"></div>
+        </div>
+        <button class="shoot-btn" id="shoot-btn" onclick="shoot()">🏀 SHOOT</button>
+    </div>
+
+    <div class="feedback" id="feedback"></div>
+
+    <script>
+        let score = 0;
+        let streak = 0;
+        let level = 1;
+        let pos = 0;
+        let dir = 1;
+        let speed = 1.2; // % per frame
+        let animId;
+        let shooting = false;
+
+        const bar = document.getElementById('bar-indicator');
+        const ball = document.getElementById('ball');
+
+        function animate() {
+            pos += dir * speed;
+            if (pos >= 100 - 3) { pos = 100 - 3; dir = -1; }
+            if (pos <= 0) { pos = 0; dir = 1; }
+            bar.style.left = pos + '%';
+            animId = requestAnimationFrame(animate);
+        }
+
+        animate();
+        document.addEventListener('keydown', e => { if (e.code === 'Space') shoot(); });
+
+        function shoot() {
+            if (shooting) return;
+            shooting = true;
+            cancelAnimationFrame(animId);
+
+            const pct = pos;
+            // Green zone: 40-60%, yellow 30-40% and 60-70%
+            const inGreen = pct >= 40 && pct <= 60;
+            const inYellow = (pct >= 30 && pct < 40) || (pct > 60 && pct <= 70);
+            const made = inGreen || (inYellow && Math.random() > 0.5);
+
+            // Animate ball
+            ball.style.transition = 'left 0.35s ease-out, bottom 0.7s cubic-bezier(.22,.61,.36,1)';
+            ball.style.bottom = '330px';
+            ball.style.left = '50%';
+
+            setTimeout(() => {
+                showFeedback(made, inGreen);
+                if (made) {
+                    score += inGreen ? (1 + streak) : 1;
+                    streak++;
+                } else {
+                    streak = 0;
+                }
+                update();
+
+                // Reset ball
+                setTimeout(() => {
+                    ball.style.transition = 'none';
+                    ball.style.bottom = '60px';
+                    shooting = false;
+                    level = Math.floor(score / 5) + 1;
+                    speed = 1.2 + (level - 1) * 0.4;
+                    update();
+                    animate();
+                }, 900);
+            }, 650);
+        }
+
+        function showFeedback(made, perfect) {
+            const el = document.getElementById('feedback');
+            el.className = 'feedback ' + (made ? 'made' : 'miss');
+            if (made && perfect) el.textContent = streak > 1 ? `SWISH! x${streak} STREAK! 🔥` : 'SWISH! 🎯';
+            else if (made) el.textContent = 'GOOD 🤏';
+            else el.textContent = 'MISS! 😬';
+            setTimeout(() => { el.textContent = ''; }, 1200);
+        }
+
+        function update() {
+            document.getElementById('score').textContent = score;
+            document.getElementById('streak').textContent = streak;
+            document.getElementById('level').textContent = level;
+        }
+    </script>
+</body>
+
+</html>
