@@ -335,33 +335,41 @@
             <div class="header-bg">
                 <h1>WWG TELEMETRY HUB</h1>
                 <div class="live-indicator">
-                    <div class="dot"></div> LIVE NOW
+                    <div class="dot"></div> LIVE DATA
                 </div>
             </div>
         </div>
 
         <div class="dashboard-grid">
             <div class="metric-card">
-                <div class="card-label">Unique Visitors</div>
-                <div class="card-value" id="val-visitors"><span class="loading-text">SYNCING...</span></div>
+                <div class="card-label">Total Pages / Sites</div>
+                <div class="card-value" id="val-pages"><span class="loading-text">SYNCING...</span></div>
             </div>
             <div class="metric-card">
-                <div class="card-label">Total Clicks</div>
-                <div class="card-value" id="val-clicks"><span class="loading-text">SYNCING...</span></div>
+                <div class="card-label">Total Commits</div>
+                <div class="card-value" id="val-commits"><span class="loading-text">SYNCING...</span></div>
+            </div>
+            <div class="metric-card">
+                <div class="card-label">Secrets Discovered (You)</div>
+                <div class="card-value" id="val-secrets"><span class="loading-text">READING...</span></div>
+            </div>
+            <div class="metric-card">
+                <div class="card-label">Repo Size</div>
+                <div class="card-value" id="val-size"><span class="loading-text">SYNCING...</span></div>
+            </div>
+            <div class="metric-card">
+                <div class="card-label">Last Push</div>
+                <div class="card-value" id="val-push" style="font-size:1.1rem"><span class="loading-text">SYNCING...</span></div>
             </div>
             <div class="metric-card">
                 <div class="card-label">System Active</div>
-                <div class="card-value" id="val-active"
-                    style="background: linear-gradient(135deg, #fff 0%, #4ade80 100%); -webkit-background-clip: text; background-clip: text;">
-                    ONLINE</div>
+                <div class="card-value" style="background: linear-gradient(135deg, #fff 0%, #4ade80 100%); -webkit-background-clip: text; background-clip: text;">ONLINE</div>
             </div>
 
             <div class="metric-card wide">
                 <div style="flex: 1;">
-                    <div class="card-label" style="margin-bottom: 20px;">Top Click Targets</div>
-
+                    <div class="card-label" style="margin-bottom: 20px;">Site Breakdown by Type</div>
                     <div class="chart-container" id="chart-targets">
-                        <!-- Bars injected by JS -->
                         <span class="loading-text" id="chart-loading">GATHERING METRICS...</span>
                     </div>
                 </div>
@@ -472,61 +480,103 @@
         }
 
         async function loadTelemetryData() {
-            const NAMESPACE = 'wwg_gallery_pikav_uuid';
-            const API = `https://api.counterapi.dev/v1/${NAMESPACE}`;
+            const REPO = 'neoatmework-ship-it/WWG.github.io';
+            const API  = `https://api.github.com/repos/${REPO}`;
 
+            // ── Discovery progress from localStorage (always works) ──────────
             try {
-                const visitors = await fetchCount(API, 'visitors');
-                const clicks = await fetchCount(API, 'clicks');
-                const cards = await fetchCount(API, 'click_card');
-                const title = await fetchCount(API, 'click_title');
-                const filter = await fetchCount(API, 'click_filter');
-                const nav = await fetchCount(API, 'click_nav');
+                const discovered = JSON.parse(localStorage.getItem('wwg_discovered_secrets') || '[]');
+                const total = 98; // total secrets in SITES array
+                document.getElementById('val-secrets').innerHTML =
+                    `${discovered.length} <span style="font-size:0.6em;color:#888">/ ${total}</span>`;
+            } catch(e) {
+                document.getElementById('val-secrets').textContent = 'N/A';
+            }
 
-                // Animate numbers
-                animateValue("val-visitors", 0, visitors, 1500);
-                animateValue("val-clicks", 0, clicks, 1500);
+            // ── GitHub Repo info ─────────────────────────────────────────────
+            try {
+                const repoRes  = await fetch(`${API}`, { headers: { Accept: 'application/vnd.github.v3+json' } });
+                const repoData = await repoRes.json();
 
-                // Calculate percentages
-                const totalTargetClicks = cards + title + filter + nav || 1; // avoid /0
+                // Last push
+                const pushed = new Date(repoData.pushed_at);
+                const ago = Math.round((Date.now() - pushed) / (1000*60*60));
+                document.getElementById('val-push').textContent =
+                    ago < 24
+                        ? `${ago}h ago`
+                        : `${pushed.toLocaleDateString('en-GB', {day:'numeric',month:'short',year:'numeric'})}`;
 
-                const targets = [
-                    { name: "div.card (Gallery)", percent: Math.round((cards / totalTargetClicks) * 100) },
-                    { name: "h1#wwg-title", percent: Math.round((title / totalTargetClicks) * 100) },
-                    { name: "button.filter-pill", percent: Math.round((filter / totalTargetClicks) * 100) },
-                    { name: "a.wwg-nav", percent: Math.round((nav / totalTargetClicks) * 100) }
-                ].sort((a, b) => b.percent - a.percent);
+                // Repo size
+                const kb = repoData.size;
+                document.getElementById('val-size').textContent =
+                    kb > 1024 ? `${(kb/1024).toFixed(1)} MB` : `${kb} KB`;
+            } catch(e) {
+                document.getElementById('val-push').textContent = 'API ERR';
+                document.getElementById('val-size').textContent = 'API ERR';
+            }
+
+            // ── Count HTML pages in repo (GitHub contents API) ───────────────
+            try {
+                const contRes  = await fetch(`${API}/contents/`, { headers: { Accept: 'application/vnd.github.v3+json' } });
+                const contents = await contRes.json();
+                const htmlPages = Array.isArray(contents)
+                    ? contents.filter(f => f.type === 'file' && f.name.endsWith('.html'))
+                    : [];
+                animateValue('val-pages', 0, htmlPages.length, 1200);
+
+                // Build breakdown chart
+                const games   = htmlPages.filter(f => ['basketball','football','meteor','flappy','dice'].some(k => f.name.includes(k))).length;
+                const secret  = htmlPages.filter(f => ['ghost','void','backrooms','classified','limbo','static','deep','underground','mirror','blackhole','echo','glitch','classified'].some(k => f.name.includes(k))).length;
+                const tools   = htmlPages.filter(f => ['terminal','cipher','braille','type-racer','timer','clock','compass'].some(k => f.name.includes(k))).length;
+                const visual  = htmlPages.length - games - secret - tools;
 
                 const chart = document.getElementById('chart-targets');
                 document.getElementById('chart-loading').style.display = 'none';
                 chart.innerHTML = '';
 
-                targets.forEach((t, i) => {
+                const cats = [
+                    { name: 'Visual / Art', val: Math.max(0, visual) },
+                    { name: 'Secrets',      val: secret },
+                    { name: 'Games',        val: games },
+                    { name: 'Tools',        val: tools },
+                ].sort((a,b) => b.val - a.val);
+
+                const maxVal = cats[0].val || 1;
+                cats.forEach((t, i) => {
+                    const pct = Math.round((t.val / htmlPages.length) * 100);
                     chart.innerHTML += `
                         <div class="bar-wrap">
-                            <div class="bar-label">${t.name}</div>
+                            <div class="bar-label">${t.name} (${t.val})</div>
                             <div class="bar-track">
                                 <div class="bar-fill" id="bar-${i}" style="width: 0%;"></div>
                             </div>
-                            <div class="bar-percent">${t.percent || 0}%</div>
-                        </div>
-                    `;
+                            <div class="bar-percent">${pct}%</div>
+                        </div>`;
                 });
-
-                // Trigger animations
                 setTimeout(() => {
-                    targets.forEach((t, i) => {
-                        document.getElementById(`bar-${i}`).style.width = `${t.percent || 0}%`;
+                    cats.forEach((t, i) => {
+                        document.getElementById(`bar-${i}`).style.width = `${Math.round((t.val/maxVal)*100)}%`;
                     });
                 }, 100);
+            } catch(e) {
+                document.getElementById('val-pages').textContent = 'API ERR';
+                document.getElementById('chart-loading').textContent = 'FAILED TO FETCH.';
+            }
 
-            } catch (e) {
-                console.error('Error fetching telemetry:', e);
-                document.getElementById('val-visitors').innerText = 'ERROR';
-                document.getElementById('val-clicks').innerText = 'ERROR';
-                document.getElementById('chart-loading').innerText = 'FAILED TO INGEST.';
+            // ── Commit count (GitHub API paginates, use last page trick) ─────
+            try {
+                // Fetch page 1 and use Link header to find last page
+                const commitsRes = await fetch(`${API}/commits?per_page=1`, { headers: { Accept: 'application/vnd.github.v3+json' } });
+                const link = commitsRes.headers.get('Link') || '';
+                const match = link.match(/page=(\d+)>; rel="last"/);
+                const total = match ? parseInt(match[1]) : '?';
+                animateValue('val-commits', 0, typeof total === 'number' ? total : 0, 1500);
+                if (typeof total !== 'number') document.getElementById('val-commits').textContent = total;
+            } catch(e) {
+                document.getElementById('val-commits').textContent = 'API ERR';
             }
         }
+
 
         // Number counter animation
         function animateValue(id, start, end, duration) {
