@@ -228,10 +228,16 @@ WWG_COMMANDS['help'] = function (args) {
     let pg = parseInt(args[0]) || 1;
     let keys = Object.keys(WWG_COMMANDS);
 
-    // Auto-inject legacy terminal commands so they show up in Help too
-    ['ls', 'cd', 'cat', 'clear', 'beacon', '3sc4p3r34lity', 'ch33t4tmygam3', '1234', 'whoami', 'exit'].forEach(c => {
+    // Filter out secret/owner commands from the public dictionary
+    const hidden = ['beacon', '3sc4p3r34lity', 'ch33t4tmygam3', 'owner', '1234', 'force-reload'];
+    keys = keys.filter(k => !hidden.includes(k));
+
+    // Auto-inject shared legacy terminal commands so they show up in Help too
+    ['ls', 'cd', 'cat', 'clear', 'whoami', 'exit'].forEach(c => {
         if (!keys.includes(c)) keys.push(c);
     });
+
+    keys.sort();
 
     let totalPages = Math.ceil(keys.length / 30);
     if (pg > totalPages) pg = totalPages;
@@ -240,4 +246,9 @@ WWG_COMMANDS['help'] = function (args) {
     writeToTerminal('--- TermOS Command Dictionary (Page ' + pg + '/' + totalPages + ') ---');
     writeToTerminal(sub.join(', '));
     writeToTerminal('Use `help <page_number>` to view more. Total commands discovered: ' + keys.length);
+};
+
+WWG_COMMANDS['force-reload'] = function() {
+    writeToTerminal('[!] PERFORMING CACHE-BUSTING RELOAD...');
+    setTimeout(() => location.reload(true), 1000);
 };

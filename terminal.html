@@ -487,8 +487,8 @@
 
             // ── Discovery progress from localStorage (always works) ──────────
             try {
-                const discovered = Discovery.getDiscovered();
-                const total = Discovery.SITES.length;
+                const discovered = (typeof Discovery !== 'undefined' && Discovery.getDiscovered) ? Discovery.getDiscovered() : [];
+                const total = (typeof Discovery !== 'undefined' && Discovery.SITES) ? Discovery.SITES.length : 98;
                 document.getElementById('val-secrets').innerHTML =
                     `${discovered.length} <span style="font-size:0.6em;color:#888">/ ${total}</span>`;
             } catch(e) {
