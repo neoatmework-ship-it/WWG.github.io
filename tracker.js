@@ -1,4 +1,4 @@
-const BEACON_NAMESPACE = 'wwg_gallery_pikav_uuid';
+const BEACON_NAMESPACE = 'wwg_telemetry_pikav';
 const BEACON_API = `https://api.counterapi.dev/v1/${BEACON_NAMESPACE}`;
 
 (function initBeaconTracker() {

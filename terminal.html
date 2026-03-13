@@ -483,14 +483,18 @@
         async function loadTelemetryData() {
             const REPO = 'neoatmework-ship-it/WWG.github.io';
             const API  = `https://api.github.com/repos/${REPO}`;
-            const BEACON_NAMESPACE = 'wwg_gallery_pikav_uuid';
+            const BEACON_NAMESPACE = 'wwg_telemetry_pikav';
             const BEACON_API = `https://api.counterapi.dev/v1/${BEACON_NAMESPACE}`;
 
-            const fetchWithTimeout = async (url, options = {}, timeout = 5000) => {
+            const fetchWithTimeout = async (url, options = {}, timeout = 10000) => {
                 const controller = new AbortController();
                 const id = setTimeout(() => controller.abort(), timeout);
                 try {
-                    const response = await fetch(url, { ...options, signal: controller.signal });
+                    const response = await fetch(url, { 
+                        ...options, 
+                        signal: controller.signal,
+                        mode: 'cors'
+                    });
                     clearTimeout(id);
                     return response;
                 } catch (e) {
@@ -499,19 +503,20 @@
                 }
             };
 
-            // 1. Discovery Local Data (Synchronous/Instant)
+            // 1. Discovery Local Data
             try {
                 const discovered = (typeof Discovery !== 'undefined' && Discovery.getDiscovered) ? Discovery.getDiscovered() : [];
                 const total = (typeof Discovery !== 'undefined' && Discovery.SITES) ? Discovery.SITES.length : 98;
                 document.getElementById('val-secrets').innerHTML =
                     `${discovered.length} <span style="font-size:0.6em;color:#888">/ ${total}</span>`;
-            } catch(e) { console.error(e); }
+            } catch(e) { }
 
             // 2. CounterAPI Metrics
             (async () => {
                 try {
                     const fetchCount = async (key) => {
                         const res = await fetchWithTimeout(`${BEACON_API}/${key}`);
+                        if (res.status === 404) return 0; // Handle non-existent counter as 0
                         if (!res.ok) throw new Error(res.status);
                         const data = await res.json();
                         return data.count || 0;
@@ -521,8 +526,8 @@
                     animateValue('val-visitors', 0, visitors, 1500);
                     animateValue('val-clicks', 0, clicks, 1500);
                 } catch(e) {
-                    document.getElementById('val-visitors').textContent = 'OFFLINE';
-                    document.getElementById('val-clicks').textContent = 'OFFLINE';
+                    document.getElementById('val-visitors').textContent = e.message === '403' ? 'RATE LMT' : 'OFFLINE';
+                    document.getElementById('val-clicks').textContent = e.message === '403' ? 'RATE LMT' : 'OFFLINE';
                 }
             })();
 
@@ -540,12 +545,12 @@
                     const kb = data.size;
                     document.getElementById('val-size').textContent = kb > 1024 ? `${(kb/1024).toFixed(1)} MB` : `${kb} KB`;
                 } catch(e) {
-                    document.getElementById('val-push').textContent = e.message === '403' ? 'RATE LMT' : 'OFFLINE';
-                    document.getElementById('val-size').textContent = e.message === '403' ? 'RATE LMT' : 'OFFLINE';
+                    document.getElementById('val-push').textContent = e.message === '403' ? 'RATE LMT' : 'API ERR';
+                    document.getElementById('val-size').textContent = e.message === '403' ? 'RATE LMT' : 'API ERR';
                 }
             })();
 
-            // 4. GitHub Contents (Page Count & Classification)
+            // 4. GitHub Contents
             (async () => {
                 try {
                     const res = await fetchWithTimeout(`${API}/contents/`, { headers: { Accept: 'application/vnd.github.v3+json' } });
@@ -587,7 +592,7 @@
                     }), 100);
 
                 } catch(e) {
-                    document.getElementById('val-pages').textContent = 'OFFLINE';
+                    document.getElementById('val-pages').textContent = e.message === '403' ? 'RATE LMT' : 'API ERR';
                     document.getElementById('chart-loading').textContent = 'CONNECTION ERROR.';
                 }
             })();
@@ -602,10 +607,11 @@
                     const total = match ? parseInt(match[1]) : 1;
                     animateValue('val-commits', 0, total, 1500);
                 } catch(e) {
-                    document.getElementById('val-commits').textContent = e.message === '403' ? 'RATE LMT' : 'OFFLINE';
+                    document.getElementById('val-commits').textContent = e.message === '403' ? 'RATE LMT' : 'API ERR';
                 }
             })();
         }
+
 
 
 
