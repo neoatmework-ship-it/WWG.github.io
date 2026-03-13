@@ -7,7 +7,7 @@ const Discovery = {
 
     // List of all secret site IDs (45 original + 55 new = 100 total)
     SITES: [
-        'void', 'ghost', 'classified', 'backrooms',
+        'ghost', 'classified', 'backrooms',
         'limbo', 'static', 'deep', 'underground',
         'starlight', 'eclipse', 'mirror', 'blackhole',
         'chosen', 'useful', 'corner', 'braille',
@@ -15,7 +15,7 @@ const Discovery = {
         'gravity', 'timeloop', 'forest', 'observer',
         'analog', 'spectrum', 'cipher', 'echo',
         'fable', 'glimmer', 'horizon', 'imprint',
-        'jigsaw', 'kinetic', 'lattice', 'monolith',
+        'jigsaw', 'lattice', 'monolith',
         'nebula', 'oracle', 'parallax', 'quartz',
         'resonance', 'solstice', 'tether', 'ultra',
         // --- 55 New Secrets ---

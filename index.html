@@ -2632,7 +2632,6 @@
 
             // Secret keyword detection
             const SECRET_PAGES = {
-                'void': 'void.html',
                 'ghost': 'ghost.html',
                 'classified': 'classified.html',
                 'backrooms': 'backrooms.html',
@@ -2669,7 +2668,6 @@
                 'singularity': 'horizon.html',
                 'history': 'imprint.html',
                 'solution': 'jigsaw.html',
-                'momentum': 'kinetic.html',
                 'structure': 'lattice.html',
                 'obelisk': 'monolith.html',
                 'gascloud': 'nebula.html',
@@ -2764,7 +2762,6 @@
                     if (keySequence.endsWith('singularity')) window.location.href = 'horizon.html';
                     if (keySequence.endsWith('history')) window.location.href = 'imprint.html';
                     if (keySequence.endsWith('solution')) window.location.href = 'jigsaw.html';
-                    if (keySequence.endsWith('momentum')) window.location.href = 'kinetic.html';
                     if (keySequence.endsWith('structure')) window.location.href = 'lattice.html';
                     if (keySequence.endsWith('obelisk')) window.location.href = 'monolith.html';
                     if (keySequence.endsWith('gascloud')) window.location.href = 'nebula.html';
@@ -2790,7 +2787,7 @@
                 voidTimer = setTimeout(() => {
                     const elapsed = Date.now() - (window.lastMove || 0);
                     if (elapsed > 30000) {
-                        window.location.href = 'void.html';
+                    // void.html removed
                     } else if (elapsed > 10000) {
                         // Secret: Echo (10s on a non-index page)
                         const path = window.location.pathname;
