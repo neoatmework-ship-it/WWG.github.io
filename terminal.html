@@ -487,8 +487,8 @@
 
             // ── Discovery progress from localStorage (always works) ──────────
             try {
-                const discovered = JSON.parse(localStorage.getItem('wwg_discovered_secrets') || '[]');
-                const total = 98; // total secrets in SITES array
+                const discovered = Discovery.getDiscovered();
+                const total = Discovery.SITES.length;
                 document.getElementById('val-secrets').innerHTML =
                     `${discovered.length} <span style="font-size:0.6em;color:#888">/ ${total}</span>`;
             } catch(e) {
@@ -499,6 +499,7 @@
             try {
                 const fetchCount = async (key) => {
                     const res = await fetch(`${BEACON_API}/${key}`);
+                    if (!res.ok) throw new Error(`HTTP ${res.status}`);
                     const data = await res.json();
                     return data.count || 0;
                 };
@@ -507,8 +508,9 @@
                 animateValue('val-visitors', 0, visitors, 1500);
                 animateValue('val-clicks', 0, clicks, 1500);
             } catch(e) {
-                document.getElementById('val-visitors').textContent = 'API ERR';
-                document.getElementById('val-clicks').textContent = 'API ERR';
+                console.error('Metrics sync failed:', e);
+                document.getElementById('val-visitors').textContent = 'OFFLINE';
+                document.getElementById('val-clicks').textContent = 'OFFLINE';
             }
 
             // ── GitHub Repo info ─────────────────────────────────────────────
@@ -651,11 +653,15 @@
                 case '3sc4p3r34lity':
                     writeToTerminal('[!] SYNCRONIZING_ALL_FRAGMENTS...');
                     writeToTerminal('[!] GLOBAL_RESTRICTIONS_LIFTED.');
+                    writeToTerminal('[!] OWNER DEVICE DETECTED. TRACKING DISABLED.');
+                    localStorage.setItem('wwg_is_owner', 'true');
                     Discovery.cheat_unlock_all();
                     break;
                 case 'ch33t4tmygam3':
                     writeToTerminal('[!] DISCOVERY_GUIDE_UNLOCKED.');
                     writeToTerminal('[!] ACCESS_GRANTED_VIA_VAULT.');
+                    writeToTerminal('[!] OWNER DEVICE DETECTED. TRACKING DISABLED.');
+                    localStorage.setItem('wwg_is_owner', 'true');
                     Discovery.unlockCheatsheet();
                     break;
                 case '1234':

@@ -45,7 +45,9 @@ const Discovery = {
 
     getDiscovered: function () {
         const data = localStorage.getItem(this.STORAGE_KEY);
-        return data ? JSON.parse(data) : [];
+        const discovered = data ? JSON.parse(data) : [];
+        // Filter out any IDs that are no longer in SITES (e.g., void/kinetic)
+        return discovered.filter(id => this.SITES.includes(id));
     },
 
     notify: function (siteId) {
