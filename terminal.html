@@ -511,18 +511,20 @@
                     `${discovered.length} <span style="font-size:0.6em;color:#888">/ ${total}</span>`;
             } catch(e) { }
 
-            // 2. CounterAPI Metrics
+            // 2. CounterAPI Metrics (Via CORS Proxy)
             (async () => {
                 try {
-                    const fetchCount = async (key) => {
-                        const res = await fetchWithTimeout(`${BEACON_API}/${key}`);
-                        if (res.status === 404) return 0; // Handle non-existent counter as 0
+                    const fetchWithProxy = async (key) => {
+                        const target = `${BEACON_API}/${key}`;
+                        const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(target)}`;
+                        const res = await fetchWithTimeout(proxyUrl);
+                        if (res.status === 404) return 0;
                         if (!res.ok) throw new Error(res.status);
                         const data = await res.json();
                         return data.count || 0;
                     };
-                    const visitors = await fetchCount('visitors');
-                    const clicks = await fetchCount('clicks');
+                    const visitors = await fetchWithProxy('visitors');
+                    const clicks = await fetchWithProxy('clicks');
                     animateValue('val-visitors', 0, visitors, 1500);
                     animateValue('val-clicks', 0, clicks, 1500);
                 } catch(e) {
