@@ -1,105 +1,546 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Beacon</title>
-    <link rel="icon"
-        href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E🗼%3C/text%3E%3C/svg%3E">
+    <title>BEACON — Live Signal Feed</title>
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E🏮%3C/text%3E%3C/svg%3E">
+    <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Orbitron:wght@700&display=swap" rel="stylesheet">
     <style>
+        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+        :root {
+            --bg: #000a05;
+            --green: #00ff88;
+            --dim: #004422;
+            --mid: #00cc66;
+            --warn: #ffbb00;
+            --red: #ff4444;
+            --blue: #00ccff;
+        }
+
         body {
-            margin: 0;
-            background: #000;
-            overflow: hidden;
-            height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            background: var(--bg);
+            color: var(--green);
+            font-family: 'Share Tech Mono', monospace;
+            min-height: 100vh;
+            overflow-x: hidden;
         }
 
-        .beacon-core {
-            width: 40px;
-            height: 40px;
-            background: #fff;
-            border-radius: 50%;
-            box-shadow: 0 0 50px 20px rgba(255, 255, 255, 0.8);
-            z-index: 10;
-            position: relative;
-        }
-
-        .beam {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            width: 200vw;
-            height: 100px;
-            background: linear-gradient(90deg, rgba(255, 255, 255, 0.8), transparent);
-            transform-origin: left center;
-            animation: sweep 4s linear infinite;
-            filter: blur(10px);
-            mix-blend-mode: screen;
-            margin-top: -50px;
-        }
-
-        @keyframes sweep {
-            0% {
-                transform: rotate(0deg);
-            }
-
-            100% {
-                transform: rotate(360deg);
-            }
-        }
-
-        .pulse {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            width: 40px;
-            height: 40px;
-            transform: translate(-50%, -50%);
-            border-radius: 50%;
-            border: 2px solid white;
-            animation: pulseOut 2s ease-out infinite;
-        }
-
-        @keyframes pulseOut {
-            0% {
-                width: 40px;
-                height: 40px;
-                opacity: 1;
-                border-width: 5px;
-            }
-
-            100% {
-                width: 500px;
-                height: 500px;
-                opacity: 0;
-                border-width: 0px;
-            }
-        }
-
-        .floor {
-            position: absolute;
-            bottom: -50vh;
-            width: 200vw;
-            height: 100vh;
-            background: radial-gradient(circle at top center, rgba(100, 200, 255, 0.1), transparent 50%);
-            transform: rotateX(80deg);
-            opacity: 0.5;
+        /* Scanlines */
+        body::after {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background: repeating-linear-gradient(0deg, rgba(0,0,0,0.08) 0px, rgba(0,0,0,0.08) 1px, transparent 1px, transparent 4px);
             pointer-events: none;
+            z-index: 9999;
         }
+
+        .back-link {
+            position: fixed;
+            top: 14px; left: 16px;
+            color: var(--dim);
+            text-decoration: none;
+            font-size: 0.8rem;
+            z-index: 100;
+            transition: color 0.2s;
+        }
+        .back-link:hover { color: var(--green); }
+
+        header {
+            padding: 20px 20px 0;
+            text-align: center;
+        }
+
+        h1 {
+            font-family: 'Orbitron', monospace;
+            font-size: clamp(1.2rem, 4vw, 2rem);
+            color: var(--green);
+            text-shadow: 0 0 20px var(--green);
+            letter-spacing: 6px;
+        }
+
+        .tagline {
+            font-size: 0.72rem;
+            color: var(--dim);
+            letter-spacing: 3px;
+            margin-top: 4px;
+        }
+
+        .time-bar {
+            text-align: center;
+            font-size: 0.82rem;
+            color: var(--mid);
+            padding: 8px;
+            letter-spacing: 2px;
+        }
+
+        /* Grid */
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(310px, 1fr));
+            gap: 16px;
+            padding: 16px;
+            max-width: 1300px;
+            margin: 0 auto;
+        }
+
+        .panel {
+            border: 1px solid var(--dim);
+            border-radius: 6px;
+            padding: 16px;
+            background: rgba(0, 255, 136, 0.02);
+            position: relative;
+            overflow: hidden;
+            transition: border-color 0.3s;
+        }
+
+        .panel:hover { border-color: var(--mid); }
+
+        .panel::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, var(--green), transparent);
+            opacity: 0.4;
+        }
+
+        .panel-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .panel-title {
+            font-size: 0.65rem;
+            letter-spacing: 3px;
+            color: var(--dim);
+            text-transform: uppercase;
+        }
+
+        .status-dot {
+            width: 8px; height: 8px;
+            border-radius: 50%;
+            background: var(--green);
+            box-shadow: 0 0 8px var(--green);
+            animation: blink 1.5s ease-in-out infinite;
+        }
+
+        .status-dot.warn { background: var(--warn); box-shadow: 0 0 8px var(--warn); }
+        .status-dot.err  { background: var(--red);  box-shadow: 0 0 8px var(--red); }
+        .status-dot.off  { background: #333; box-shadow: none; animation: none; }
+
+        @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.3} }
+
+        .val {
+            font-size: clamp(1.2rem, 3vw, 1.8rem);
+            font-family: 'Orbitron', monospace;
+            color: var(--green);
+            letter-spacing: 2px;
+            min-height: 2rem;
+        }
+
+        .val.blue { color: var(--blue); text-shadow: 0 0 10px var(--blue); }
+        .val.warn { color: var(--warn); text-shadow: 0 0 10px var(--warn); }
+        .val.red  { color: var(--red);  text-shadow: 0 0 10px var(--red); }
+
+        .sub {
+            font-size: 0.72rem;
+            color: var(--dim);
+            margin-top: 4px;
+            line-height: 1.5;
+        }
+
+        .sub b { color: var(--mid); }
+
+        /* ISS Map */
+        #iss-map-wrap {
+            position: relative;
+            width: 100%;
+            aspect-ratio: 2;
+            background: rgba(0, 255, 136, 0.03);
+            border: 1px solid var(--dim);
+            border-radius: 4px;
+            overflow: hidden;
+            margin-top: 8px;
+        }
+
+        #iss-map-wrap svg { width: 100%; height: 100%; }
+
+        .iss-dot {
+            fill: var(--blue);
+            filter: drop-shadow(0 0 4px var(--blue));
+        }
+
+        /* Earthquake list */
+        .eq-list { list-style: none; }
+        .eq-list li {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.75rem;
+            padding: 4px 0;
+            border-bottom: 1px solid rgba(0,255,136,0.06);
+            color: #aaa;
+        }
+        .eq-list .mag { font-weight: bold; }
+        .mag-3 { color: var(--green); }
+        .mag-4 { color: var(--warn); }
+        .mag-5 { color: var(--red); }
+
+        /* Crypto ticker */
+        .coin-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 5px 0;
+            border-bottom: 1px solid rgba(0,255,136,0.06);
+            font-size: 0.8rem;
+        }
+        .coin-name { color: var(--mid); }
+        .coin-price { color: var(--green); font-family: 'Orbitron', monospace; }
+        .coin-change { font-size: 0.7rem; }
+        .up { color: #00ff88; }
+        .down { color: var(--red); }
+
+        /* Loading shimmer */
+        .loading {
+            color: var(--dim);
+            font-size: 0.8rem;
+            animation: dots 1.2s infinite;
+        }
+        @keyframes dots {
+            0% { content: 'ACQUIRING'; }
+            33% { content: 'ACQUIRING.'; }
+            66% { content: 'ACQUIRING..'; }
+            100% { content: 'ACQUIRING...'; }
+        }
+
+        .loading::after {
+            content: '...';
+            animation: dotAnim 1s infinite;
+        }
+        @keyframes dotAnim {
+            0%,100% { content: '.'; }
+            33% { content: '..'; }
+            66% { content: '...'; }
+        }
+
+        /* Footer */
+        footer {
+            text-align: center;
+            padding: 20px;
+            font-size: 0.65rem;
+            color: var(--dim);
+            letter-spacing: 2px;
+        }
+
+        /* Wide panel */
+        .panel-wide { grid-column: 1 / -1; }
+
+        /* Ticker bar */
+        .ticker-wrap {
+            overflow: hidden;
+            border-top: 1px solid var(--dim);
+            border-bottom: 1px solid var(--dim);
+            padding: 6px 0;
+            background: rgba(0,255,136,0.02);
+        }
+        .ticker-inner {
+            display: inline-block;
+            white-space: nowrap;
+            animation: ticker 40s linear infinite;
+            font-size: 0.72rem;
+            color: var(--mid);
+            letter-spacing: 2px;
+        }
+        @keyframes ticker { 0% { transform: translateX(100vw); } 100% { transform: translateX(-100%); } }
     </style>
 </head>
-
 <body>
-    <div class="beacon-core"></div>
-    <div class="beam"></div>
-    <div class="pulse"></div>
-    <div class="floor"></div>
-    <script src="discovery.js"></script>
-    <script>Discovery.unlock('beacon');</script>
-</body>
+    <a href="index.html" class="back-link">← BACK</a>
 
+    <header>
+        <h1>🏮 BEACON</h1>
+        <div class="tagline">LIVE SIGNAL FEED — REAL-TIME EARTH DATA</div>
+    </header>
+
+    <div class="time-bar" id="time-bar">SYNCING UTC CLOCK...</div>
+
+    <div class="ticker-wrap">
+        <div class="ticker-inner" id="ticker">⬛ INITIALIZING LIVE FEEDS...</div>
+    </div>
+
+    <div class="grid">
+
+        <!-- ISS -->
+        <div class="panel" id="panel-iss" style="grid-column: span 2;">
+            <div class="panel-header">
+                <div class="panel-title">🛸 INTL SPACE STATION — LIVE POSITION</div>
+                <div class="status-dot off" id="iss-dot"></div>
+            </div>
+            <div style="display:flex; gap:24px; flex-wrap:wrap;">
+                <div>
+                    <div class="val blue" id="iss-lat">LAT: <span class="loading">ACQUIRING</span></div>
+                    <div class="val blue" id="iss-lon">LON: <span class="loading">ACQUIRING</span></div>
+                    <div class="sub" id="iss-speed">Orbital speed: ~27,600 km/h</div>
+                    <div class="sub" id="iss-updated">Last update: —</div>
+                </div>
+                <div id="iss-map-wrap" style="flex:1; min-width:200px;">
+                    <svg id="iss-map-svg" viewBox="0 0 360 180" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none">
+                        <!-- World outline simplified -->
+                        <rect width="360" height="180" fill="#000a05"/>
+                        <!-- Latitude lines -->
+                        <line x1="0" y1="60"  x2="360" y2="60"  stroke="#003322" stroke-width="0.5"/>
+                        <line x1="0" y1="90"  x2="360" y2="90"  stroke="#003322" stroke-width="1"/>
+                        <line x1="0" y1="120" x2="360" y2="120" stroke="#003322" stroke-width="0.5"/>
+                        <!-- Longitude lines -->
+                        <line x1="90"  y1="0" x2="90"  y2="180" stroke="#003322" stroke-width="0.5"/>
+                        <line x1="180" y1="0" x2="180" y2="180" stroke="#003322" stroke-width="1"/>
+                        <line x1="270" y1="0" x2="270" y2="180" stroke="#003322" stroke-width="0.5"/>
+                        <!-- ISS dot placeholder -->
+                        <circle id="iss-map-dot" cx="180" cy="90" r="4" class="iss-dot"/>
+                        <circle id="iss-map-ring" cx="180" cy="90" r="4" fill="none" stroke="#00ccff" stroke-width="1" opacity="0.5"/>
+                    </svg>
+                </div>
+            </div>
+        </div>
+
+        <!-- Local Time & Date -->
+        <div class="panel">
+            <div class="panel-header">
+                <div class="panel-title">🕐 TIME & DATE</div>
+                <div class="status-dot" id="time-dot"></div>
+            </div>
+            <div class="val" id="clock">--:--:--</div>
+            <div class="sub" id="date-line">Loading...</div>
+            <div class="sub" id="utc-line">UTC: loading...</div>
+            <div class="sub" id="unix-line">UNIX: loading...</div>
+        </div>
+
+        <!-- Weather (open-meteo, no key needed) -->
+        <div class="panel">
+            <div class="panel-header">
+                <div class="panel-title">🌡️ LOCAL WEATHER</div>
+                <div class="status-dot off" id="wx-dot"></div>
+            </div>
+            <div class="val" id="wx-temp"><span class="loading">ACQUIRING</span></div>
+            <div class="sub" id="wx-desc">Fetching weather...</div>
+            <div class="sub" id="wx-wind">Wind: —</div>
+            <div class="sub" id="wx-loc">Location: geolocating...</div>
+        </div>
+
+        <!-- Earthquakes -->
+        <div class="panel">
+            <div class="panel-header">
+                <div class="panel-title">🌍 RECENT EARTHQUAKES</div>
+                <div class="status-dot off" id="eq-dot"></div>
+            </div>
+            <ul class="eq-list" id="eq-list">
+                <li><span class="loading">ACQUIRING</span></li>
+            </ul>
+        </div>
+
+        <!-- Crypto prices -->
+        <div class="panel">
+            <div class="panel-header">
+                <div class="panel-title">₿ CRYPTO PRICES (LIVE)</div>
+                <div class="status-dot off" id="crypto-dot"></div>
+            </div>
+            <div id="crypto-list"><div class="loading">ACQUIRING</div></div>
+        </div>
+
+        <!-- Sun data -->
+        <div class="panel">
+            <div class="panel-header">
+                <div class="panel-title">☀️ SUN TIMES (YOUR LOCATION)</div>
+                <div class="status-dot off" id="sun-dot"></div>
+            </div>
+            <div class="sub" id="sun-rise">🌅 Sunrise: acquiring...</div>
+            <div class="sub" id="sun-set">🌇 Sunset: acquiring...</div>
+            <div class="sub" id="sun-daylen">☀️ Day length: —</div>
+            <div class="sub" id="sun-dawn">🌄 Dawn: —</div>
+            <div class="sub" id="sun-dusk">🌆 Dusk: —</div>
+        </div>
+
+    </div>
+
+    <footer>BEACON // LIVE DATA ENGINE // UPDATES EVERY 10s // ALL DATA FROM PUBLIC APIS</footer>
+
+    <script src="discovery.js"></script>
+    <script>
+        Discovery.unlock('beacon');
+
+        // ─── UTC Clock (always running) ─────────────────────────────────────
+        function updateClock() {
+            const now = new Date();
+            const utc = new Date(now.toUTCString());
+            const pad = n => String(n).padStart(2, '0');
+            const hms = `${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`;
+            document.getElementById('clock').textContent = hms;
+            document.getElementById('time-bar').textContent =
+                `UTC ${pad(utc.getHours())}:${pad(utc.getMinutes())}:${pad(utc.getSeconds())}  //  ${now.toLocaleDateString('en-GB', {weekday:'long',year:'numeric',month:'long',day:'numeric'})}`;
+            const days = ['SUNDAY','MONDAY','TUESDAY','WEDNESDAY','THURSDAY','FRIDAY','SATURDAY'];
+            const months = ['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC'];
+            document.getElementById('date-line').innerHTML = `<b>${days[now.getDay()]}</b> ${now.getDate()} ${months[now.getMonth()]} ${now.getFullYear()}`;
+            document.getElementById('utc-line').textContent = `UTC: ${pad(utc.getHours())}:${pad(utc.getMinutes())}:${pad(utc.getSeconds())}`;
+            document.getElementById('unix-line').textContent = `UNIX: ${Math.floor(now.getTime()/1000)}`;
+        }
+        setInterval(updateClock, 1000);
+        updateClock();
+
+        // ─── ISS Position ────────────────────────────────────────────────────
+        async function fetchISS() {
+            try {
+                const r = await fetch('https://api.wheretheiss.at/v1/satellites/25544');
+                const d = await r.json();
+                const lat = parseFloat(d.latitude).toFixed(4);
+                const lon = parseFloat(d.longitude).toFixed(4);
+                const alt = parseFloat(d.altitude).toFixed(1);
+                const spd = parseFloat(d.velocity).toFixed(0);
+
+                document.getElementById('iss-lat').textContent = `LAT: ${lat > 0 ? '+' : ''}${lat}°`;
+                document.getElementById('iss-lon').textContent = `LON: ${lon > 0 ? '+' : ''}${lon}°`;
+                document.getElementById('iss-speed').innerHTML = `<b>Alt:</b> ${alt} km &nbsp; <b>Speed:</b> ${Number(spd).toLocaleString()} km/h`;
+                document.getElementById('iss-updated').textContent = `Last update: ${new Date().toLocaleTimeString()}`;
+                document.getElementById('iss-dot').className = 'status-dot';
+
+                // Map dot
+                const mx = (parseFloat(lon) + 180) / 360 * 360;
+                const my = (90 - parseFloat(lat)) / 180 * 180;
+                document.getElementById('iss-map-dot').setAttribute('cx', mx);
+                document.getElementById('iss-map-dot').setAttribute('cy', my);
+                document.getElementById('iss-map-ring').setAttribute('cx', mx);
+                document.getElementById('iss-map-ring').setAttribute('cy', my);
+            } catch(e) {
+                document.getElementById('iss-dot').className = 'status-dot err';
+            }
+        }
+        fetchISS();
+        setInterval(fetchISS, 10000);
+
+        // ─── Weather (open-meteo — no API key) ──────────────────────────────
+        const WX_CODES = {
+            0:'Clear Sky', 1:'Mainly Clear', 2:'Partly Cloudy', 3:'Overcast',
+            45:'Foggy', 48:'Icy Fog', 51:'Light Drizzle', 53:'Drizzle', 55:'Heavy Drizzle',
+            61:'Light Rain', 63:'Rain', 65:'Heavy Rain',
+            71:'Light Snow', 73:'Snow', 75:'Heavy Snow',
+            80:'Showers', 81:'Rain Showers', 82:'Violent Showers',
+            95:'Thunderstorm', 96:'Hail Storm', 99:'Heavy Hail'
+        };
+
+        let userLat = null, userLon = null;
+
+        async function fetchWeather(lat, lon) {
+            try {
+                const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,wind_speed_10m,weathercode,relative_humidity_2m&hourly=temperature_2m&wind_speed_unit=kmh`;
+                const r = await fetch(url);
+                const d = await r.json();
+                const temp = d.current.temperature_2m;
+                const wind = d.current.wind_speed_10m;
+                const code = d.current.weathercode;
+                const hum  = d.current.relative_humidity_2m;
+                const desc = WX_CODES[code] || `Code ${code}`;
+
+                document.getElementById('wx-temp').textContent = `${temp}°C`;
+                document.getElementById('wx-desc').innerHTML = `<b>${desc}</b> &nbsp; Humidity: ${hum}%`;
+                document.getElementById('wx-wind').textContent = `Wind: ${wind} km/h`;
+                document.getElementById('wx-dot').className = 'status-dot';
+            } catch(e) {
+                document.getElementById('wx-dot').className = 'status-dot err';
+                document.getElementById('wx-temp').textContent = 'ERR';
+            }
+        }
+
+        async function fetchSun(lat, lon) {
+            try {
+                const r = await fetch(`https://api.sunrisesunset.io/json?lat=${lat}&lng=${lon}&timezone=auto`);
+                const d = await r.json();
+                const s = d.results;
+                document.getElementById('sun-rise').innerHTML = `🌅 <b>Sunrise:</b> ${s.sunrise}`;
+                document.getElementById('sun-set').innerHTML = `🌇 <b>Sunset:</b> ${s.sunset}`;
+                document.getElementById('sun-daylen').innerHTML = `☀️ <b>Day length:</b> ${s.day_length}`;
+                document.getElementById('sun-dawn').innerHTML = `🌄 <b>Dawn:</b> ${s.dawn}`;
+                document.getElementById('sun-dusk').innerHTML = `🌆 <b>Dusk:</b> ${s.dusk}`;
+                document.getElementById('sun-dot').className = 'status-dot';
+            } catch(e) {
+                document.getElementById('sun-dot').className = 'status-dot err';
+            }
+        }
+
+        navigator.geolocation.getCurrentPosition(pos => {
+            userLat = pos.coords.latitude.toFixed(4);
+            userLon = pos.coords.longitude.toFixed(4);
+            document.getElementById('wx-loc').innerHTML = `<b>Location:</b> ${userLat}°, ${userLon}°`;
+            fetchWeather(userLat, userLon);
+            fetchSun(userLat, userLon);
+        }, () => {
+            // Default to London if no permission
+            userLat = 51.5074; userLon = -0.1278;
+            document.getElementById('wx-loc').innerHTML = `<b>Location:</b> London (default — allow location for yours)`;
+            fetchWeather(userLat, userLon);
+            fetchSun(userLat, userLon);
+        });
+
+        setInterval(() => { if (userLat) { fetchWeather(userLat, userLon); fetchSun(userLat, userLon); } }, 60000);
+
+        // ─── Earthquakes (USGS) ──────────────────────────────────────────────
+        async function fetchEarthquakes() {
+            try {
+                const r = await fetch('https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/2.5_day.geojson');
+                const d = await r.json();
+                const list = d.features.slice(0, 7);
+                const el = document.getElementById('eq-list');
+                el.innerHTML = list.map(f => {
+                    const mag = f.properties.mag.toFixed(1);
+                    const place = f.properties.place.substring(0, 30);
+                    const magCls = mag >= 5 ? 'mag-5' : mag >= 4 ? 'mag-4' : 'mag-3';
+                    return `<li><span class="mag ${magCls}">M${mag}</span><span>${place}</span></li>`;
+                }).join('');
+                document.getElementById('eq-dot').className = 'status-dot' + (list.some(f=>f.properties.mag>=5) ? ' warn' : '');
+            } catch(e) {
+                document.getElementById('eq-dot').className = 'status-dot err';
+            }
+        }
+        fetchEarthquakes();
+        setInterval(fetchEarthquakes, 60000);
+
+        // ─── Crypto (CoinGecko free — no key) ───────────────────────────────
+        const COINS = ['bitcoin','ethereum','solana','dogecoin','ripple'];
+        async function fetchCrypto() {
+            try {
+                const ids = COINS.join(',');
+                const r = await fetch(`https://api.coingecko.com/api/v3/simple/price?ids=${ids}&vs_currencies=usd&include_24hr_change=true`);
+                const d = await r.json();
+                const symbols = { bitcoin:'BTC', ethereum:'ETH', solana:'SOL', dogecoin:'DOGE', ripple:'XRP' };
+                const el = document.getElementById('crypto-list');
+                el.innerHTML = COINS.map(id => {
+                    const info = d[id];
+                    if (!info) return '';
+                    const price = info.usd >= 1 ? `$${info.usd.toLocaleString('en-US', {maximumFractionDigits:2})}` : `$${info.usd.toFixed(5)}`;
+                    const chg = info.usd_24h_change?.toFixed(2);
+                    const chgCls = chg >= 0 ? 'up' : 'down';
+                    const chgStr = chg >= 0 ? `▲${chg}%` : `▼${Math.abs(chg)}%`;
+                    return `<div class="coin-row"><span class="coin-name">${symbols[id]}</span><span class="coin-price">${price}</span><span class="coin-change ${chgCls}">${chgStr}</span></div>`;
+                }).join('');
+                document.getElementById('crypto-dot').className = 'status-dot';
+            } catch(e) {
+                document.getElementById('crypto-dot').className = 'status-dot err';
+                document.getElementById('crypto-list').textContent = 'API rate limit — retry soon';
+            }
+        }
+        fetchCrypto();
+        setInterval(fetchCrypto, 30000);
+
+        // ─── Ticker updater ──────────────────────────────────────────────────
+        function updateTicker() {
+            const now = new Date();
+            document.getElementById('ticker').textContent =
+                `🛸 ISS updating every 10s  ⬛  🌡️ Weather live via Open-Meteo  ⬛  🌍 Earthquakes: USGS M2.5+ last 24h  ⬛  ₿ Crypto: CoinGecko live  ⬛  ☀️ Sun times: sunrise-sunset.io  ⬛  🕐 Local time: ${now.toLocaleTimeString()}  ⬛  All data is real-time from public APIs  ⬛`;
+        }
+        setInterval(updateTicker, 5000);
+        updateTicker();
+    </script>
+</body>
 </html>
