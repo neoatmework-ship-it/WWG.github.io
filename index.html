@@ -2866,21 +2866,8 @@
                 });
             }
 
-            // Kinetic Trigger (Rapid Scroll)
-            let lastScroll = 0;
-            let scrollSpikes = 0;
-            window.addEventListener('scroll', () => {
-                const now = Date.now();
-                const delta = Math.abs(window.scrollY - lastScroll);
-                if (delta > 200 && now - window.lastSpike < 500) {
-                    scrollSpikes++;
-                    if (scrollSpikes > 5) window.location.href = 'kinetic.html';
-                } else if (now - window.lastSpike > 1000) {
-                    scrollSpikes = 0;
-                }
-                lastScroll = window.scrollY;
-                window.lastSpike = now;
-            });
+
+
 
             // Tether Trigger (Category Icons)
             document.addEventListener('click', (e) => {
