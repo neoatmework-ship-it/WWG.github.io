@@ -342,6 +342,14 @@
 
         <div class="dashboard-grid">
             <div class="metric-card">
+                <div class="card-label">Unique Visitors</div>
+                <div class="card-value" id="val-visitors"><span class="loading-text">SYNCING...</span></div>
+            </div>
+            <div class="metric-card">
+                <div class="card-label">Total Clicks</div>
+                <div class="card-value" id="val-clicks"><span class="loading-text">SYNCING...</span></div>
+            </div>
+            <div class="metric-card">
                 <div class="card-label">Total Pages / Sites</div>
                 <div class="card-value" id="val-pages"><span class="loading-text">SYNCING...</span></div>
             </div>
@@ -352,14 +360,6 @@
             <div class="metric-card">
                 <div class="card-label">Secrets Discovered (You)</div>
                 <div class="card-value" id="val-secrets"><span class="loading-text">READING...</span></div>
-            </div>
-            <div class="metric-card">
-                <div class="card-label">Repo Size</div>
-                <div class="card-value" id="val-size"><span class="loading-text">SYNCING...</span></div>
-            </div>
-            <div class="metric-card">
-                <div class="card-label">Last Push</div>
-                <div class="card-value" id="val-push" style="font-size:1.1rem"><span class="loading-text">SYNCING...</span></div>
             </div>
             <div class="metric-card">
                 <div class="card-label">System Active</div>
@@ -482,6 +482,8 @@
         async function loadTelemetryData() {
             const REPO = 'neoatmework-ship-it/WWG.github.io';
             const API  = `https://api.github.com/repos/${REPO}`;
+            const BEACON_NAMESPACE = 'wwg_gallery_pikav_uuid';
+            const BEACON_API = `https://api.counterapi.dev/v1/${BEACON_NAMESPACE}`;
 
             // ── Discovery progress from localStorage (always works) ──────────
             try {
@@ -491,6 +493,22 @@
                     `${discovered.length} <span style="font-size:0.6em;color:#888">/ ${total}</span>`;
             } catch(e) {
                 document.getElementById('val-secrets').textContent = 'N/A';
+            }
+
+            // ── Real Visitor/Click data from CounterAPI ─────────────────────
+            try {
+                const fetchCount = async (key) => {
+                    const res = await fetch(`${BEACON_API}/${key}`);
+                    const data = await res.json();
+                    return data.count || 0;
+                };
+                const visitors = await fetchCount('visitors');
+                const clicks = await fetchCount('clicks');
+                animateValue('val-visitors', 0, visitors, 1500);
+                animateValue('val-clicks', 0, clicks, 1500);
+            } catch(e) {
+                document.getElementById('val-visitors').textContent = 'API ERR';
+                document.getElementById('val-clicks').textContent = 'API ERR';
             }
 
             // ── GitHub Repo info ─────────────────────────────────────────────
@@ -659,6 +677,16 @@
                     break;
                 case 'exit':
                     window.location.href = 'index.html';
+                    break;
+                case 'owner':
+                    const isOwner = localStorage.getItem('wwg_is_owner') === 'true';
+                    if (isOwner) {
+                        localStorage.removeItem('wwg_is_owner');
+                        writeToTerminal('[!] OWNER STATUS REVOKED. YOUR ACTIONS WILL NOW BE TRACKED.');
+                    } else {
+                        localStorage.setItem('wwg_is_owner', 'true');
+                        writeToTerminal('[!] OWNER STATUS GRANTED. YOUR ACTIONS WILL NO LONGER BE TRACKED.');
+                    }
                     break;
                 default:
                     if (cmd) writeToTerminal(`Command not found: ${cmd}`);
