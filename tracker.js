@@ -6,15 +6,18 @@ const BEACON_API = `https://api.counterapi.dev/v1/${BEACON_NAMESPACE}`;
     if (localStorage.getItem('wwg_is_owner') === 'true') return;
 
     const beaconFetch = async (key) => {
-        const target = `${BEACON_API}/${key}/up`;
+        const targetBase = `${BEACON_API}/${key}/up`;
         const proxies = [
             (url) => url, // Direct
-            (url) => `https://corsproxy.io/?${encodeURIComponent(url)}`,
             (url) => `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(url)}`,
+            (url) => `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`,
+            (url) => `https://corsproxy.io/?${encodeURIComponent(url)}`,
         ];
 
         for (let getProxyUrl of proxies) {
             try {
+                const cb = Date.now() + Math.random();
+                const target = `${targetBase}?cb=${cb}`;
                 const res = await fetch(getProxyUrl(target), { method: 'GET' });
                 if (res.ok) return;
             } catch (e) {}

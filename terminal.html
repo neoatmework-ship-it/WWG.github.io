@@ -500,16 +500,20 @@
             };
 
             const fetchMetric = async (key) => {
-                const target = `${BEACON_API}/${key}`;
+                const targetBase = `${BEACON_API}/${key}`;
                 const proxies = [
                     (url) => url, // Direct
-                    (url) => `https://corsproxy.io/?${encodeURIComponent(url)}`,
                     (url) => `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(url)}`,
+                    (url) => `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`,
+                    (url) => `https://corsproxy.io/?${encodeURIComponent(url)}`,
                 ];
 
                 for (let getProxyUrl of proxies) {
                     try {
+                        const cb = Date.now() + Math.random();
+                        const target = `${targetBase}?cb=${cb}`;
                         const res = await fetchWithTimeout(getProxyUrl(target));
+                        
                         if (res.status === 404) return 0;
                         if (res.ok) {
                             const data = await res.json();
