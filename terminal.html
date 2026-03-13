@@ -490,11 +490,7 @@
                 const controller = new AbortController();
                 const id = setTimeout(() => controller.abort(), timeout);
                 try {
-                    const response = await fetch(url, { 
-                        ...options, 
-                        signal: controller.signal,
-                        mode: 'cors'
-                    });
+                    const response = await fetch(url, { ...options, signal: controller.signal });
                     clearTimeout(id);
                     return response;
                 } catch (e) {
@@ -503,33 +499,47 @@
                 }
             };
 
+            const fetchMetric = async (key) => {
+                const target = `${BEACON_API}/${key}`;
+                const proxies = [
+                    (url) => url, // Direct
+                    (url) => `https://corsproxy.io/?${encodeURIComponent(url)}`,
+                    (url) => `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(url)}`,
+                ];
+
+                for (let getProxyUrl of proxies) {
+                    try {
+                        const res = await fetchWithTimeout(getProxyUrl(target));
+                        if (res.status === 404) return 0;
+                        if (res.ok) {
+                            const data = await res.json();
+                            return data.count || 0;
+                        }
+                    } catch (e) {
+                        console.warn(`Proxy failed for ${key}:`, e.name);
+                    }
+                }
+                throw new Error('All fetch methods failed');
+            };
+
             // 1. Discovery Local Data
             try {
                 const discovered = (typeof Discovery !== 'undefined' && Discovery.getDiscovered) ? Discovery.getDiscovered() : [];
                 const total = (typeof Discovery !== 'undefined' && Discovery.SITES) ? Discovery.SITES.length : 98;
                 document.getElementById('val-secrets').innerHTML =
                     `${discovered.length} <span style="font-size:0.6em;color:#888">/ ${total}</span>`;
-            } catch(e) { }
+            } catch(e) { console.error(e); }
 
-            // 2. CounterAPI Metrics (Via CORS Proxy)
+            // 2. CounterAPI Metrics
             (async () => {
                 try {
-                    const fetchWithProxy = async (key) => {
-                        const target = `${BEACON_API}/${key}`;
-                        const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(target)}`;
-                        const res = await fetchWithTimeout(proxyUrl);
-                        if (res.status === 404) return 0;
-                        if (!res.ok) throw new Error(res.status);
-                        const data = await res.json();
-                        return data.count || 0;
-                    };
-                    const visitors = await fetchWithProxy('visitors');
-                    const clicks = await fetchWithProxy('clicks');
+                    const visitors = await fetchMetric('visitors');
+                    const clicks = await fetchMetric('clicks');
                     animateValue('val-visitors', 0, visitors, 1500);
                     animateValue('val-clicks', 0, clicks, 1500);
                 } catch(e) {
-                    document.getElementById('val-visitors').textContent = e.message === '403' ? 'RATE LMT' : 'OFFLINE';
-                    document.getElementById('val-clicks').textContent = e.message === '403' ? 'RATE LMT' : 'OFFLINE';
+                    document.getElementById('val-visitors').textContent = 'OFFLINE';
+                    document.getElementById('val-clicks').textContent = 'OFFLINE';
                 }
             })();
 
@@ -594,7 +604,7 @@
                     }), 100);
 
                 } catch(e) {
-                    document.getElementById('val-pages').textContent = e.message === '403' ? 'RATE LMT' : 'API ERR';
+                    document.getElementById('val-pages').textContent = 'API ERR';
                     document.getElementById('chart-loading').textContent = 'CONNECTION ERROR.';
                 }
             })();
@@ -613,6 +623,7 @@
                 }
             })();
         }
+
 
 
 

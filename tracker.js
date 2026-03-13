@@ -5,10 +5,20 @@ const BEACON_API = `https://api.counterapi.dev/v1/${BEACON_NAMESPACE}`;
     // ── Owner exclusion: if this device is marked as the owner, skip all tracking ──
     if (localStorage.getItem('wwg_is_owner') === 'true') return;
 
-    const beaconFetch = (key) => {
+    const beaconFetch = async (key) => {
         const target = `${BEACON_API}/${key}/up`;
-        const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(target)}`;
-        fetch(proxyUrl, { method: 'GET' }).catch(() => {});
+        const proxies = [
+            (url) => url, // Direct
+            (url) => `https://corsproxy.io/?${encodeURIComponent(url)}`,
+            (url) => `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(url)}`,
+        ];
+
+        for (let getProxyUrl of proxies) {
+            try {
+                const res = await fetch(getProxyUrl(target), { method: 'GET' });
+                if (res.ok) return;
+            } catch (e) {}
+        }
     };
 
     // ── Unique visitor (once per browser) ────────────────────────────────────────
