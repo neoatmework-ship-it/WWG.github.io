@@ -34,14 +34,25 @@ const BEACON_API = `https://api.counterapi.dev/v1/${BEACON_NAMESPACE}`;
     document.addEventListener('click', (e) => {
         beaconFetch('clicks');
 
-        if (e.target.closest('.card')) {
+        const card = e.target.closest('.card');
+        if (card) {
             beaconFetch('click_card');
+            const href = card.getAttribute('href');
+            if (href) {
+                const siteId = href.replace('.html', '').split('/').pop();
+                beaconFetch(`card_${siteId}`);
+            }
         } else if (e.target.closest('#wwg-title')) {
             beaconFetch('click_title');
-        } else if (e.target.closest('.filter-pill')) {
-            beaconFetch('click_filter');
-        } else if (e.target.closest('.wwg-nav')) {
-            beaconFetch('click_nav');
+        } else {
+            const pill = e.target.closest('.filter-pill');
+            if (pill) {
+                beaconFetch('click_filter');
+                const filter = pill.getAttribute('data-filter') || pill.textContent.trim().toLowerCase();
+                beaconFetch(`filter_${filter}`);
+            } else if (e.target.closest('.wwg-nav')) {
+                beaconFetch('click_nav');
+            }
         }
     });
 })();
