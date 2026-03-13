@@ -267,6 +267,55 @@
             -webkit-text-fill-color: transparent;
         }
 
+        /* ── Responsive ── */
+        @media (max-width: 768px) {
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+                gap: 15px;
+            }
+
+            .dashboard-container {
+                padding: 20px;
+            }
+
+            .header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 15px;
+            }
+        }
+
+        @media (max-width: 600px) {
+            .crt-monitor {
+                padding: 15px;
+                border: 8px solid #111;
+                border-radius: 20px;
+                width: 98vw;
+                height: 95vh;
+            }
+
+            .boot-screen {
+                padding: 20px;
+                font-size: 0.8rem;
+            }
+
+            #terminal-output {
+                font-size: 0.9rem;
+            }
+
+            .input-area {
+                font-size: 0.9rem;
+            }
+
+            .card-value {
+                font-size: 2.5rem;
+            }
+
+            .dashboard-container h1 {
+                font-size: 1.8rem;
+            }
+        }
+
         .metric-card.wide {
             grid-column: 1 / -1;
             flex-direction: row;
