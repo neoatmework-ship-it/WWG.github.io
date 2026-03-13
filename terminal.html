@@ -369,6 +369,24 @@
 
             <div class="metric-card wide">
                 <div style="flex: 1;">
+                    <div class="card-label" style="margin-bottom: 20px;">Audience Interest (Categories)</div>
+                    <div class="chart-container" id="chart-interest">
+                        <span class="loading-text" id="interest-loading">SYNCING INTEREST METRICS...</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="metric-card wide">
+                <div style="flex: 1;">
+                    <div class="card-label" style="margin-bottom: 20px;">Top Fragment Explorations</div>
+                    <div class="chart-container" id="chart-explorations">
+                        <span class="loading-text" id="explorations-loading">CALCULATING REACH...</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="metric-card wide">
+                <div style="flex: 1;">
                     <div class="card-label" style="margin-bottom: 20px;">Site Breakdown by Type</div>
                     <div class="chart-container" id="chart-targets">
                         <span class="loading-text" id="chart-loading">GATHERING METRICS...</span>
@@ -624,6 +642,71 @@
                     animateValue('val-commits', 0, total, 1500);
                 } catch(e) {
                     document.getElementById('val-commits').textContent = e.message === '403' ? 'RATE LMT' : 'API ERR';
+                }
+            })();
+
+            // 6. Popularity & Interest (Granular Analytics)
+            (async () => {
+                const CATEGORIES = ['game', 'interactive', 'weird', 'creative', 'chill', 'new'];
+                const TOP_SITES = ['ghost', 'digital-theremin', 'dvd-logo', 'planet-generator', 'gravity-sandbox', 'classified', 'backrooms', 'limbo', 'terminal'];
+                
+                try {
+                    // Fetch categories in parallel
+                    const catData = await Promise.all(CATEGORIES.map(async (cat) => {
+                        const count = await fetchMetric(`filter_${cat}`);
+                        return { name: cat.toUpperCase(), val: count };
+                    }));
+
+                    const interestChart = document.getElementById('chart-interest');
+                    document.getElementById('interest-loading').style.display = 'none';
+                    interestChart.innerHTML = '';
+                    
+                    const sortedCats = catData.sort((a,b) => b.val - a.val);
+                    const maxCat = Math.max(...sortedCats.map(c => c.val)) || 1;
+                    
+                    sortedCats.forEach((c, i) => {
+                        interestChart.innerHTML += `
+                            <div class="bar-wrap">
+                                <div class="bar-label">${c.name}</div>
+                                <div class="bar-track"><div class="bar-fill" id="cat-bar-${i}" style="width:0%; background: linear-gradient(90deg, #f472b6, #a78bfa);"></div></div>
+                                <div class="bar-percent">${c.val}</div>
+                            </div>`;
+                    });
+                    setTimeout(() => sortedCats.forEach((c, i) => {
+                        const fill = document.getElementById(`cat-bar-${i}`);
+                        if(fill) fill.style.width = `${Math.round((c.val/maxCat)*100)}%`;
+                    }), 100);
+
+                    // Fetch sites in parallel
+                    const siteData = await Promise.all(TOP_SITES.map(async (site) => {
+                        const count = await fetchMetric(`card_${site}`);
+                        return { name: site.replace(/-/g, ' ').toUpperCase(), val: count };
+                    }));
+
+                    const explorationsChart = document.getElementById('chart-explorations');
+                    document.getElementById('explorations-loading').style.display = 'none';
+                    explorationsChart.innerHTML = '';
+
+                    const sortedSites = siteData.sort((a,b) => b.val - a.val).slice(0, 5); // Show top 5
+                    const maxSite = Math.max(...sortedSites.map(s => s.val)) || 1;
+
+                    sortedSites.forEach((s, i) => {
+                        explorationsChart.innerHTML += `
+                            <div class="bar-wrap">
+                                <div class="bar-label" style="font-size: 0.8rem;">${s.name}</div>
+                                <div class="bar-track"><div class="bar-fill" id="site-bar-${i}" style="width:0%; background: linear-gradient(90deg, #22d3ee, #60a5fa);"></div></div>
+                                <div class="bar-percent">${s.val}</div>
+                            </div>`;
+                    });
+                    setTimeout(() => sortedSites.forEach((s, i) => {
+                        const fill = document.getElementById(`site-bar-${i}`);
+                        if(fill) fill.style.width = `${Math.round((s.val/maxSite)*100)}%`;
+                    }), 100);
+
+                } catch(e) {
+                    console.error("Granular fetch failed:", e);
+                    document.getElementById('interest-loading').textContent = 'DATA UNAVAILABLE.';
+                    document.getElementById('explorations-loading').textContent = 'DATA UNAVAILABLE.';
                 }
             })();
         }
