@@ -150,6 +150,18 @@
             color: #8888aa;
         }
     </style>
+
+    <!-- wwg-mobile-patch-start -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <style>
+        canvas {
+            max-width: 100vw;
+            max-height: 100vh;
+            touch-action: none;
+        }
+    </style>
+    <!-- wwg-mobile-patch-end -->
+
 </head>
 
 <body>
@@ -453,6 +465,46 @@
     <a href="signal-interceptor.html">Next →</a>
 </div>
 <!-- WWG_NAV_END -->
+
+    <!-- wwg-mobile-patch-js-start -->
+    <script>
+        // Touch-to-Mouse Polyfill for legacy canvas interactives
+        document.addEventListener('touchstart', function(e) {
+            if(e.touches.length > 0) {
+                const touch = e.touches[0];
+                const mouseEvent = new MouseEvent('mousedown', {
+                    clientX: touch.clientX,
+                    clientY: touch.clientY,
+                    bubbles: true,
+                    cancelable: true
+                });
+                e.target.dispatchEvent(mouseEvent);
+            }
+        }, {passive: false});
+
+        document.addEventListener('touchmove', function(e) {
+            if(e.touches.length > 0) {
+                const touch = e.touches[0];
+                const mouseEvent = new MouseEvent('mousemove', {
+                    clientX: touch.clientX,
+                    clientY: touch.clientY,
+                    bubbles: true,
+                    cancelable: true
+                });
+                e.target.dispatchEvent(mouseEvent);
+            }
+        }, {passive: false});
+
+        document.addEventListener('touchend', function(e) {
+            const mouseEvent = new MouseEvent('mouseup', {
+                bubbles: true,
+                cancelable: true
+            });
+            e.target.dispatchEvent(mouseEvent);
+        }, {passive: false});
+    </script>
+    <!-- wwg-mobile-patch-js-end -->
+
 </body>
 
 </html>
