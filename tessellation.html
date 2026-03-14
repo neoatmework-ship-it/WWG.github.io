@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Escher Tiles — WWG</title>
+    <style>
+        body, html { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; background: #000; font-family: 'Inter', sans-serif; color: #fff; }
+        canvas { display: block; }
+        .header { position: fixed; top: 20px; left: 20px; z-index: 100; pointer-events: none; }
+        .title { font-weight: 800; font-size: 1.5rem; letter-spacing: -1px; margin-bottom: 5px; opacity: 0.8; }
+        .desc { font-size: 0.8rem; opacity: 0.5; max-width: 300px; }
+        .back-btn { position: fixed; bottom: 20px; right: 20px; padding: 10px 20px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); border-radius: 30px; color: #fff; text-decoration: none; font-size: 0.8rem; backdrop-filter: blur(10px); transition: 0.3s; z-index: 1000; pointer-events: auto; }
+        .back-btn:hover { background: rgba(255,255,255,0.2); transform: translateY(-2px); }
+    </style>
+
+    <!-- wwg-mobile-patch-start -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <style>
+        canvas {
+            max-width: 100vw;
+            max-height: 100vh;
+            touch-action: none;
+        }
+    </style>
+    <!-- wwg-mobile-patch-end -->
+
+</head>
+<body>
+    <div class="header">
+        <div class="title">🦎 Escher Tiles</div>
+        <div class="desc">Interactive tessellation inspired by the art of M.C. Escher.</div>
+    </div>
+    <a href="index.html" class="back-btn">← Back to Gallery</a>
+    <canvas id="canvas"></canvas>
+    <script>
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        let width, height;
+
+        function resize() {
+            width = canvas.width = window.innerWidth;
+            height = canvas.height = window.innerHeight;
+            if (window.init) init();
+        }
+
+        window.addEventListener('resize', resize);
+        resize();
+
+        // Specific implementation for tessellation
+        
+        let t = 0;
+        function draw() {
+            ctx.fillStyle = 'rgba(0,0,0,0.05)';
+            ctx.fillRect(0, 0, width, height);
+            
+            ctx.strokeStyle = 'hsl(' + (t % 360) + ', 70%, 60%)';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            
+            const points = 50;
+            for (let i = 0; i < points; i++) {
+                const angle = (i / points) * Math.PI * 2 + (t * 0.01);
+                const r = (Math.sin(t * 0.02 + i * 0.1) * 50) + 150;
+                const x = width / 2 + Math.cos(angle) * r;
+                const y = height / 2 + Math.sin(angle) * r;
+                if (i === 0) ctx.moveTo(x, y);
+                else ctx.lineTo(x, y);
+            }
+            ctx.closePath();
+            ctx.stroke();
+            
+            t++;
+            requestAnimationFrame(draw);
+        }
+        draw();
+    
+    </script>
+
+    <!-- wwg-mobile-patch-js-start -->
+    <script>
+        // Touch-to-Mouse Polyfill for legacy canvas interactives
+        document.addEventListener('touchstart', function(e) {
+            if(e.touches.length > 0) {
+                const touch = e.touches[0];
+                const mouseEvent = new MouseEvent('mousedown', {
+                    clientX: touch.clientX,
+                    clientY: touch.clientY,
+                    bubbles: true,
+                    cancelable: true
+                });
+                e.target.dispatchEvent(mouseEvent);
+            }
+        }, {passive: false});
+
+        document.addEventListener('touchmove', function(e) {
+            if(e.touches.length > 0) {
+                const touch = e.touches[0];
+                const mouseEvent = new MouseEvent('mousemove', {
+                    clientX: touch.clientX,
+                    clientY: touch.clientY,
+                    bubbles: true,
+                    cancelable: true
+                });
+                e.target.dispatchEvent(mouseEvent);
+            }
+        }, {passive: false});
+
+        document.addEventListener('touchend', function(e) {
+            const mouseEvent = new MouseEvent('mouseup', {
+                bubbles: true,
+                cancelable: true
+            });
+            e.target.dispatchEvent(mouseEvent);
+        }, {passive: false});
+    </script>
+    <!-- wwg-mobile-patch-js-end -->
+
+</body>
+</html>
