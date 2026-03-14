@@ -2,6 +2,7 @@
 <html lang="en">
 
 <head>
+    <link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20100%20100%22%3E%3Ctext%20y%3D%22.9em%22%20font-size%3D%2290%22%3E%F0%9F%AA%B4%3C%2Ftext%3E%3C%2Fsvg%3E">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sound Garden — Plant Musical Seeds</title>
@@ -191,9 +192,55 @@
             }
         }
     </style>
+
+    <!-- wwg-mobile-patch-start -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <style>
+        canvas {
+            max-width: 100vw;
+            max-height: 100vh;
+            touch-action: none;
+        }
+    </style>
+    <!-- wwg-mobile-patch-end -->
+
 </head>
 
 <body>
+
+<!-- WWG Back Button -->
+<style>
+.wwg-back-btn {
+    position: fixed;
+    top: 20px;
+    left: 20px;
+    width: 44px;
+    height: 44px;
+    background: rgba(10, 10, 15, 0.7);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #a78bfa;
+    z-index: 99999;
+    transition: all 0.3s ease;
+    text-decoration: none;
+}
+.wwg-back-btn:hover {
+    background: rgba(167, 139, 250, 0.2);
+    border-color: rgba(167, 139, 250, 0.4);
+    transform: scale(1.05) translateX(-2px);
+    color: #fff;
+    box-shadow: 0 0 15px rgba(167, 139, 250, 0.3);
+}
+</style>
+<a href="index.html" class="wwg-back-btn" title="Back to Gallery">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+</a>
+
     <div class="topbar">
         <span class="topbar-title">🌱 Sound Garden</span>
         <button class="btn accent" id="btn-play">▶ Play</button>
@@ -215,7 +262,7 @@
         const ROWS = 8, COLS = 16;
         const INSTRUMENTS = [
             { name: 'Kick', emoji: '🥁', note: 60, type: 'kick' },
-            { name: 'Snare', emoji: '🥁', note: 62, type: 'snare' },
+            { name: 'Snare', emoji: '🪘', note: 62, type: 'snare' },
             { name: 'Hi-Hat', emoji: '🔔', note: 64, type: 'hihat' },
             { name: 'Clap', emoji: '👏', note: 66, type: 'clap' },
             { name: 'Bass', emoji: '🎸', note: 40, type: 'bass' },
@@ -313,6 +360,115 @@
             if (playing) { clearInterval(intervalId); intervalId = setInterval(tick, 60000 / bpm / 4) }
         });
     </script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- WWG_NAV_START -->
+<style>
+.wwg-nav {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    display: flex;
+    gap: 10px;
+    z-index: 99999;
+}
+.wwg-nav a {
+    background: rgba(10, 10, 15, 0.7);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: #a78bfa;
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 0.8rem;
+    font-weight: 600;
+    text-decoration: none;
+    transition: all 0.3s ease;
+}
+.wwg-nav a:hover {
+    background: rgba(167, 139, 250, 0.2);
+    border-color: rgba(167, 139, 250, 0.4);
+    color: #fff;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(167, 139, 250, 0.3);
+}
+</style>
+<script>
+(function() {
+    let sequence = '';
+    const trigger = 'PNPNPN';
+    document.querySelectorAll('.wwg-nav a').forEach(a => {
+        a.addEventListener('click', (e) => {
+            const type = a.innerText.includes('Prev') ? 'P' : 'N';
+            sequence += type;
+            if (sequence.length > 6) sequence = sequence.substring(1);
+            if (sequence === trigger) {
+                e.preventDefault();
+                window.location.href = 'time-loop.html';
+            }
+        });
+    });
+})();
+</script>
+<div class="wwg-nav">
+    <a href="gravity-text.html">← Prev</a>
+    <a href="constellation-maker.html">Next →</a>
+</div>
+<!-- WWG_NAV_END -->
+
+    <!-- wwg-mobile-patch-js-start -->
+    <script>
+        // Touch-to-Mouse Polyfill for legacy canvas interactives
+        document.addEventListener('touchstart', function(e) {
+            if(e.touches.length > 0) {
+                const touch = e.touches[0];
+                const mouseEvent = new MouseEvent('mousedown', {
+                    clientX: touch.clientX,
+                    clientY: touch.clientY,
+                    bubbles: true,
+                    cancelable: true
+                });
+                e.target.dispatchEvent(mouseEvent);
+            }
+        }, {passive: false});
+
+        document.addEventListener('touchmove', function(e) {
+            if(e.touches.length > 0) {
+                const touch = e.touches[0];
+                const mouseEvent = new MouseEvent('mousemove', {
+                    clientX: touch.clientX,
+                    clientY: touch.clientY,
+                    bubbles: true,
+                    cancelable: true
+                });
+                e.target.dispatchEvent(mouseEvent);
+            }
+        }, {passive: false});
+
+        document.addEventListener('touchend', function(e) {
+            const mouseEvent = new MouseEvent('mouseup', {
+                bubbles: true,
+                cancelable: true
+            });
+            e.target.dispatchEvent(mouseEvent);
+        }, {passive: false});
+    </script>
+    <!-- wwg-mobile-patch-js-end -->
+
 </body>
 
 </html>
