@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wormhole — Fly Through the Void</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        *{margin:0;padding:0;box-sizing:border-box}
+        body{background:#000;overflow:hidden;font-family:'Inter',sans-serif}
+        canvas{display:block}
+        .info{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);color:rgba(255,255,255,0.4);font-size:0.75rem;pointer-events:none;text-align:center}
+    </style>
+
+    <!-- wwg-mobile-patch-start -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <style>
+        canvas {
+            max-width: 100vw;
+            max-height: 100vh;
+            touch-action: none;
+        }
+    </style>
+    <!-- wwg-mobile-patch-end -->
+
+</head>
+<body>
+<style>
+.wwg-back-btn{position:fixed;top:20px;left:20px;width:44px;height:44px;background:rgba(10,10,15,0.7);backdrop-filter:blur(10px);border:1px solid rgba(255,255,255,0.1);border-radius:50%;display:flex;align-items:center;justify-content:center;color:#a78bfa;z-index:99999;transition:all 0.3s;text-decoration:none}
+.wwg-back-btn:hover{background:rgba(167,139,250,0.2);border-color:rgba(167,139,250,0.4);color:#fff;box-shadow:0 0 15px rgba(167,139,250,0.3)}
+</style>
+<a href="index.html" class="wwg-back-btn" title="Back to Gallery"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg></a>
+<canvas id="c"></canvas>
+<div class="info">Move mouse to steer · Scroll to change speed</div>
+<script>
+const canvas=document.getElementById('c'),ctx=canvas.getContext('2d');
+let W,H,mx=0.5,my=0.5,speed=0.02,hue=0;
+const stars=[];
+function resize(){W=canvas.width=innerWidth;H=canvas.height=innerHeight}
+resize();window.onresize=resize;
+
+for(let i=0;i<600;i++){
+    stars.push({x:(Math.random()-0.5)*2,y:(Math.random()-0.5)*2,z:Math.random()*2});
+}
+
+document.addEventListener('mousemove',e=>{mx=e.clientX/W;my=e.clientY/H});
+document.addEventListener('touchmove',e=>{mx=e.touches[0].clientX/W;my=e.touches[0].clientY/H},{passive:true});
+document.addEventListener('wheel',e=>{speed=Math.max(0.005,Math.min(0.08,speed+e.deltaY*0.0001))});
+
+function draw(){
+    ctx.fillStyle='rgba(0,0,0,0.15)';
+    ctx.fillRect(0,0,W,H);
+    const cx=W/2,cy=H/2;
+    const offsetX=(mx-0.5)*0.02,offsetY=(my-0.5)*0.02;
+    hue=(hue+0.3)%360;
+
+    for(let s of stars){
+        s.z-=speed;
+        if(s.z<=0.01){s.x=(Math.random()-0.5)*2;s.y=(Math.random()-0.5)*2;s.z=2}
+
+        s.x+=offsetX;
+        s.y+=offsetY;
+
+        const sx=cx+(s.x/s.z)*W*0.5;
+        const sy=cy+(s.y/s.z)*H*0.5;
+        const r=Math.max(0,(1-s.z/2)*4);
+        const bright=Math.max(0,1-s.z/2);
+
+        if(sx>-50&&sx<W+50&&sy>-50&&sy<H+50){
+            ctx.beginPath();
+            ctx.arc(sx,sy,r,0,Math.PI*2);
+            const h=(hue+s.z*60)%360;
+            ctx.fillStyle=`hsla(${h},80%,${50+bright*40}%,${bright})`;
+            ctx.fill();
+
+            // Streak
+            const px=cx+((s.x)/(s.z+speed))*W*0.5;
+            const py=cy+((s.y)/(s.z+speed))*H*0.5;
+            ctx.beginPath();
+            ctx.moveTo(sx,sy);ctx.lineTo(px,py);
+            ctx.strokeStyle=`hsla(${h},80%,60%,${bright*0.5})`;
+            ctx.lineWidth=r*0.5;
+            ctx.stroke();
+        }
+    }
+    requestAnimationFrame(draw);
+}
+draw();
+</script>
+
+    <!-- wwg-mobile-patch-js-start -->
+    <script>
+        // Touch-to-Mouse Polyfill for legacy canvas interactives
+        document.addEventListener('touchstart', function(e) {
+            if(e.touches.length > 0) {
+                const touch = e.touches[0];
+                const mouseEvent = new MouseEvent('mousedown', {
+                    clientX: touch.clientX,
+                    clientY: touch.clientY,
+                    bubbles: true,
+                    cancelable: true
+                });
+                e.target.dispatchEvent(mouseEvent);
+            }
+        }, {passive: false});
+
+        document.addEventListener('touchmove', function(e) {
+            if(e.touches.length > 0) {
+                const touch = e.touches[0];
+                const mouseEvent = new MouseEvent('mousemove', {
+                    clientX: touch.clientX,
+                    clientY: touch.clientY,
+                    bubbles: true,
+                    cancelable: true
+                });
+                e.target.dispatchEvent(mouseEvent);
+            }
+        }, {passive: false});
+
+        document.addEventListener('touchend', function(e) {
+            const mouseEvent = new MouseEvent('mouseup', {
+                bubbles: true,
+                cancelable: true
+            });
+            e.target.dispatchEvent(mouseEvent);
+        }, {passive: false});
+    </script>
+    <!-- wwg-mobile-patch-js-end -->
+
+</body>
+</html>

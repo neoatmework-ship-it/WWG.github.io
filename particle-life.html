@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Particle Life — Emergent Behavior</title>
+    <style>
+        *{margin:0;padding:0;box-sizing:border-box}
+        body{background:#000;overflow:hidden}
+        canvas{display:block}
+        .info{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);color:rgba(255,255,255,0.35);font-size:0.75rem;font-family:sans-serif;text-align:center}
+        .reset-btn{position:fixed;top:20px;right:20px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);color:rgba(255,255,255,0.6);padding:8px 16px;border-radius:10px;font-size:0.8rem;font-family:sans-serif;cursor:pointer;z-index:10;transition:all 0.3s}
+        .reset-btn:hover{background:rgba(255,255,255,0.12);color:#fff}
+    </style>
+
+    <!-- wwg-mobile-patch-start -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <style>
+        canvas {
+            max-width: 100vw;
+            max-height: 100vh;
+            touch-action: none;
+        }
+    </style>
+    <!-- wwg-mobile-patch-end -->
+
+</head>
+<body>
+<style>
+.wwg-back-btn{position:fixed;top:20px;left:20px;width:44px;height:44px;background:rgba(10,10,15,0.7);backdrop-filter:blur(10px);border:1px solid rgba(255,255,255,0.1);border-radius:50%;display:flex;align-items:center;justify-content:center;color:#a78bfa;z-index:99999;transition:all 0.3s;text-decoration:none}
+.wwg-back-btn:hover{background:rgba(167,139,250,0.2);border-color:rgba(167,139,250,0.4);color:#fff}
+</style>
+<a href="index.html" class="wwg-back-btn" title="Back to Gallery"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg></a>
+<button class="reset-btn" onclick="init()">🔄 Randomize Rules</button>
+<canvas id="c"></canvas>
+<div class="info">Particles attract or repel based on random rules · Click to randomize</div>
+<script>
+const canvas=document.getElementById('c'),ctx=canvas.getContext('2d');
+let W,H;
+function resize(){W=canvas.width=innerWidth;H=canvas.height=innerHeight}
+resize();window.onresize=resize;
+
+const COLORS=['#ff006e','#00f5ff','#39ff14','#ffbe0b','#a78bfa'];
+const NUM_TYPES=COLORS.length;
+const NUM_PER_TYPE=80;
+let particles=[],rules=[];
+
+function randomRules(){
+    rules=[];
+    for(let i=0;i<NUM_TYPES;i++){
+        rules[i]=[];
+        for(let j=0;j<NUM_TYPES;j++){
+            rules[i][j]=(Math.random()*2-1)*0.5;
+        }
+    }
+}
+
+function init(){
+    particles=[];
+    randomRules();
+    for(let t=0;t<NUM_TYPES;t++){
+        for(let i=0;i<NUM_PER_TYPE;i++){
+            particles.push({x:Math.random()*W,y:Math.random()*H,vx:0,vy:0,type:t});
+        }
+    }
+}
+init();
+
+function update(){
+    const maxDist=120,friction=0.5;
+    for(let i=0;i<particles.length;i++){
+        let fx=0,fy=0;
+        const a=particles[i];
+        for(let j=0;j<particles.length;j++){
+            if(i===j)continue;
+            const b=particles[j];
+            const dx=b.x-a.x,dy=b.y-a.y;
+            const d=Math.sqrt(dx*dx+dy*dy);
+            if(d>0&&d<maxDist){
+                const force=rules[a.type][b.type]/d;
+                fx+=dx*force;
+                fy+=dy*force;
+            }
+        }
+        a.vx=(a.vx+fx)*friction;
+        a.vy=(a.vy+fy)*friction;
+        a.x+=a.vx;
+        a.y+=a.vy;
+        if(a.x<0)a.x=W;if(a.x>W)a.x=0;
+        if(a.y<0)a.y=H;if(a.y>H)a.y=0;
+    }
+}
+
+function draw(){
+    ctx.fillStyle='rgba(0,0,0,0.15)';
+    ctx.fillRect(0,0,W,H);
+    for(const p of particles){
+        ctx.beginPath();
+        ctx.arc(p.x,p.y,2.5,0,Math.PI*2);
+        ctx.fillStyle=COLORS[p.type];
+        ctx.fill();
+    }
+    update();
+    requestAnimationFrame(draw);
+}
+draw();
+</script>
+
+    <!-- wwg-mobile-patch-js-start -->
+    <script>
+        // Touch-to-Mouse Polyfill for legacy canvas interactives
+        document.addEventListener('touchstart', function(e) {
+            if(e.touches.length > 0) {
+                const touch = e.touches[0];
+                const mouseEvent = new MouseEvent('mousedown', {
+                    clientX: touch.clientX,
+                    clientY: touch.clientY,
+                    bubbles: true,
+                    cancelable: true
+                });
+                e.target.dispatchEvent(mouseEvent);
+            }
+        }, {passive: false});
+
+        document.addEventListener('touchmove', function(e) {
+            if(e.touches.length > 0) {
+                const touch = e.touches[0];
+                const mouseEvent = new MouseEvent('mousemove', {
+                    clientX: touch.clientX,
+                    clientY: touch.clientY,
+                    bubbles: true,
+                    cancelable: true
+                });
+                e.target.dispatchEvent(mouseEvent);
+            }
+        }, {passive: false});
+
+        document.addEventListener('touchend', function(e) {
+            const mouseEvent = new MouseEvent('mouseup', {
+                bubbles: true,
+                cancelable: true
+            });
+            e.target.dispatchEvent(mouseEvent);
+        }, {passive: false});
+    </script>
+    <!-- wwg-mobile-patch-js-end -->
+
+</body>
+</html>

@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Neon Sign — Create Glowing Text</title>
+    <link href="https://fonts.googleapis.com/css2?family=Pacifico&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        *{margin:0;padding:0;box-sizing:border-box}
+        body{background:#0d0d14;color:#fff;font-family:'Inter',sans-serif;min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:30px;padding:40px 20px}
+        .sign-container{position:relative;padding:40px 60px;min-width:300px;min-height:120px;display:flex;align-items:center;justify-content:center;border:3px solid rgba(255,255,255,0.05);border-radius:12px;background:rgba(20,20,30,0.5)}
+        .sign-text{font-family:'Pacifico',cursive;font-size:clamp(2rem,8vw,5rem);text-align:center;transition:all 0.3s;word-break:break-word}
+        .controls{display:flex;flex-wrap:wrap;gap:12px;justify-content:center;max-width:600px}
+        .ctrl-input{background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);color:#fff;padding:10px 14px;border-radius:10px;font-family:inherit;font-size:0.85rem;outline:none;transition:border 0.3s}
+        .ctrl-input:focus{border-color:rgba(167,139,250,0.4)}
+        .ctrl-input::placeholder{color:rgba(255,255,255,0.25)}
+        input[type=text].ctrl-input{flex:1;min-width:200px}
+        .color-btn{width:44px;height:44px;border-radius:10px;border:2px solid transparent;cursor:pointer;transition:all 0.2s;flex-shrink:0}
+        .color-btn:hover{transform:scale(1.1)}
+        .color-btn.active{border-color:#fff;box-shadow:0 0 12px rgba(255,255,255,0.3)}
+        .flicker{animation:neonFlicker 3s ease-in-out infinite alternate}
+        @keyframes neonFlicker{0%,18%,22%,25%,53%,57%,100%{opacity:1}20%,24%,55%{opacity:0.4}}
+        .label{font-size:0.7rem;color:rgba(255,255,255,0.3);text-transform:uppercase;letter-spacing:1px}
+        .toggle-row{display:flex;align-items:center;gap:10px}
+        .toggle{width:44px;height:24px;background:rgba(255,255,255,0.1);border-radius:12px;cursor:pointer;position:relative;transition:all 0.3s;border:none}
+        .toggle::after{content:'';position:absolute;top:3px;left:3px;width:18px;height:18px;background:#fff;border-radius:50%;transition:all 0.3s}
+        .toggle.on{background:rgba(167,139,250,0.5)}
+        .toggle.on::after{left:23px}
+    </style>
+
+    <!-- wwg-mobile-patch-start -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <style>
+        canvas {
+            max-width: 100vw;
+            max-height: 100vh;
+            touch-action: none;
+        }
+    </style>
+    <!-- wwg-mobile-patch-end -->
+
+</head>
+<body>
+<style>
+.wwg-back-btn{position:fixed;top:20px;left:20px;width:44px;height:44px;background:rgba(10,10,15,0.7);backdrop-filter:blur(10px);border:1px solid rgba(255,255,255,0.1);border-radius:50%;display:flex;align-items:center;justify-content:center;color:#a78bfa;z-index:99999;transition:all 0.3s;text-decoration:none}
+.wwg-back-btn:hover{background:rgba(167,139,250,0.2);border-color:rgba(167,139,250,0.4);color:#fff}
+</style>
+<a href="index.html" class="wwg-back-btn" title="Back to Gallery"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg></a>
+
+<div class="sign-container" id="sign-bg">
+    <div class="sign-text flicker" id="sign">Hello</div>
+</div>
+
+<div class="controls">
+    <input type="text" class="ctrl-input" id="text-input" placeholder="Type your neon text..." maxlength="30" value="Hello">
+    <div style="display:flex;gap:6px;flex-wrap:wrap">
+        <button class="color-btn active" data-color="#ff006e" style="background:#ff006e"></button>
+        <button class="color-btn" data-color="#00f5ff" style="background:#00f5ff"></button>
+        <button class="color-btn" data-color="#39ff14" style="background:#39ff14"></button>
+        <button class="color-btn" data-color="#ffbe0b" style="background:#ffbe0b"></button>
+        <button class="color-btn" data-color="#a78bfa" style="background:#a78bfa"></button>
+        <button class="color-btn" data-color="#ff4444" style="background:#ff4444"></button>
+        <button class="color-btn" data-color="#ffffff" style="background:#ffffff"></button>
+    </div>
+    <div class="toggle-row">
+        <span class="label">Flicker</span>
+        <button class="toggle on" id="flicker-toggle"></button>
+    </div>
+</div>
+
+<script>
+const sign=document.getElementById('sign');
+const input=document.getElementById('text-input');
+let currentColor='#ff006e';
+
+function applyGlow(color){
+    sign.style.color=color;
+    sign.style.textShadow=`0 0 7px ${color}, 0 0 10px ${color}, 0 0 21px ${color}, 0 0 42px ${color}, 0 0 82px ${color}`;
+}
+applyGlow(currentColor);
+
+input.addEventListener('input',e=>{sign.textContent=e.target.value||'...'});
+
+document.querySelectorAll('.color-btn').forEach(btn=>{
+    btn.addEventListener('click',()=>{
+        document.querySelectorAll('.color-btn').forEach(b=>b.classList.remove('active'));
+        btn.classList.add('active');
+        currentColor=btn.dataset.color;
+        applyGlow(currentColor);
+    });
+});
+
+document.getElementById('flicker-toggle').addEventListener('click',function(){
+    this.classList.toggle('on');
+    sign.classList.toggle('flicker');
+});
+</script>
+
+    <!-- wwg-mobile-patch-js-start -->
+    <script>
+        // Touch-to-Mouse Polyfill for legacy canvas interactives
+        document.addEventListener('touchstart', function(e) {
+            if(e.touches.length > 0) {
+                const touch = e.touches[0];
+                const mouseEvent = new MouseEvent('mousedown', {
+                    clientX: touch.clientX,
+                    clientY: touch.clientY,
+                    bubbles: true,
+                    cancelable: true
+                });
+                e.target.dispatchEvent(mouseEvent);
+            }
+        }, {passive: false});
+
+        document.addEventListener('touchmove', function(e) {
+            if(e.touches.length > 0) {
+                const touch = e.touches[0];
+                const mouseEvent = new MouseEvent('mousemove', {
+                    clientX: touch.clientX,
+                    clientY: touch.clientY,
+                    bubbles: true,
+                    cancelable: true
+                });
+                e.target.dispatchEvent(mouseEvent);
+            }
+        }, {passive: false});
+
+        document.addEventListener('touchend', function(e) {
+            const mouseEvent = new MouseEvent('mouseup', {
+                bubbles: true,
+                cancelable: true
+            });
+            e.target.dispatchEvent(mouseEvent);
+        }, {passive: false});
+    </script>
+    <!-- wwg-mobile-patch-js-end -->
+
+</body>
+</html>
