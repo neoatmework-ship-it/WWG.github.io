@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Infinite Zoom — Community Art Wall</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        :root {
+            --zoom-bg: #050505;
+            --canvas-size: 5000px;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            background: var(--zoom-bg);
+            color: #fff;
+            font-family: 'Outfit', sans-serif;
+            overflow: hidden;
+            height: 100vh;
+        }
+
+        #viewport {
+            width: 100vw;
+            height: 100vh;
+            overflow: hidden;
+            position: relative;
+            cursor: grab;
+        }
+
+        #viewport:active { cursor: grabbing; }
+
+        #canvas {
+            position: absolute;
+            width: var(--canvas-size);
+            height: var(--canvas-size);
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(1);
+            background: url('https://www.transparenttextures.com/patterns/carbon-fibre.png');
+            transition: transform 0.1s ease-out;
+        }
+
+        .art-tile {
+            position: absolute;
+            border: 1px solid rgba(255,255,255,0.05);
+            background: rgba(255,255,255,0.02);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 10px;
+            color: rgba(255,255,255,0.1);
+            pointer-events: none;
+        }
+
+        .pixel {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            pointer-events: auto;
+        }
+
+        #ui-tools {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(20,20,20,0.8);
+            backdrop-filter: blur(10px);
+            padding: 15px 25px;
+            border-radius: 50px;
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            border: 1px solid rgba(255,255,255,0.1);
+            z-index: 100;
+        }
+
+        .color-opt {
+            width: 25px;
+            height: 25px;
+            border-radius: 50%;
+            cursor: pointer;
+            border: 2px solid transparent;
+            transition: transform 0.2s;
+        }
+
+        .color-opt.active { border-color: #fff; transform: scale(1.2); }
+
+        #zoom-info {
+            position: fixed;
+            top: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 0.8rem;
+            opacity: 0.5;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+
+        .back-btn {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            color: rgba(255,255,255,0.5);
+            text-decoration: none;
+            z-index: 200;
+        }
+    </style>
+</head>
+<body>
+    <a href="index.html" class="back-btn">← Back to Gallery</a>
+    
+    <div id="zoom-info">Use Scroll Wheel to Zoom • Drag to Pan • Click to Paint</div>
+
+    <div id="viewport">
+        <div id="canvas">
+            <!-- Tiles and Pixels injected -->
+        </div>
+    </div>
+
+    <div id="ui-tools">
+        <div class="color-opt active" style="background: #ef4444;" onclick="setColor('#ef4444', this)"></div>
+        <div class="color-opt" style="background: #3b82f6;" onclick="setColor('#3b82f6', this)"></div>
+        <div class="color-opt" style="background: #10b981;" onclick="setColor('#10b981', this)"></div>
+        <div class="color-opt" style="background: #f59e0b;" onclick="setColor('#f59e0b', this)"></div>
+        <div class="color-opt" style="background: #fff;" onclick="setColor('#fff', this)"></div>
+        <div style="width: 1px; height: 20px; background: rgba(255,255,255,0.2); margin: 0 5px;"></div>
+        <span id="scale-val" style="font-weight: bold; min-width: 50px;">100%</span>
+    </div>
+
+    <script src="discovery.js"></script>
+    <script>
+        let scale = 1;
+        let translateX = 0;
+        let translateY = 0;
+        let isDragging = false;
+        let startX, startY;
+        let currentColor = '#ef4444';
+
+        const canvas = document.getElementById('canvas');
+        const viewport = document.getElementById('viewport');
+        const scaleVal = document.getElementById('scale-val');
+
+        // Initialize grid tiles to give it "texture"
+        function initGrid() {
+            const tileSize = 250;
+            const count = 20; // 20x20 grid
+            for (let i = 0; i < count; i++) {
+                for (let j = 0; j < count; j++) {
+                    const tile = document.createElement('div');
+                    tile.className = 'art-tile';
+                    tile.style.width = tileSize + 'px';
+                    tile.style.height = tileSize + 'px';
+                    tile.style.left = (i * tileSize) + 'px';
+                    tile.style.top = (j * tileSize) + 'px';
+                    // tile.textContent = `${i},${j}`;
+                    canvas.appendChild(tile);
+                }
+            }
+        }
+
+        function setColor(c, el) {
+            currentColor = c;
+            document.querySelectorAll('.color-opt').forEach(opt => opt.classList.remove('active'));
+            el.classList.add('active');
+        }
+
+        // Panning
+        viewport.onmousedown = (e) => {
+            if (e.target.id !== 'viewport' && e.target.id !== 'canvas') return;
+            isDragging = true;
+            startX = e.clientX - translateX;
+            startY = e.clientY - translateY;
+        };
+
+        window.onmousemove = (e) => {
+            if (!isDragging) return;
+            translateX = e.clientX - startX;
+            translateY = e.clientY - startY;
+            updateTransform();
+        };
+
+        window.onmouseup = () => isDragging = false;
+
+        // Zooming
+        viewport.onwheel = (e) => {
+            e.preventDefault();
+            const delta = e.deltaY > 0 ? 0.9 : 1.1;
+            const newScale = scale * delta;
+            
+            // Limit scale
+            if (newScale > 0.1 && newScale < 50) {
+                scale = newScale;
+                updateTransform();
+                scaleVal.textContent = Math.round(scale * 100) + '%';
+            }
+        };
+
+        function updateTransform() {
+            canvas.style.transform = `translate(calc(-50% + ${translateX}px), calc(-50% + ${translateY}px)) scale(${scale})`;
+        }
+
+        // Painting
+        canvas.onclick = (e) => {
+            if (isDragging) return;
+            const rect = canvas.getBoundingClientRect();
+            
+            // Calculate pixel position relative to canvas
+            const x = Math.floor((e.clientX - rect.left) / (scale * 10)) * 10;
+            const y = Math.floor((e.clientY - rect.top) / (scale * 10)) * 10;
+
+            const pixel = document.createElement('div');
+            pixel.className = 'pixel';
+            pixel.style.left = x + 'px';
+            pixel.style.top = y + 'px';
+            pixel.style.background = currentColor;
+            pixel.style.boxShadow = `0 0 10px ${currentColor}aa`;
+            canvas.appendChild(pixel);
+        };
+
+        initGrid();
+        updateTransform();
+    </script>
+</body>
+</html>

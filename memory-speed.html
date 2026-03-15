@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Memory Speed — Ultimate Card Match</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        :root {
+            --mem-accent: #f59e0b;
+            --mem-bg: #070707;
+            --card-front: #1a1a1a;
+            --card-back: #2a2a2a;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            background: var(--mem-bg);
+            color: #fff;
+            font-family: 'Outfit', sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+        }
+
+        .game-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        #timer {
+            font-size: 3rem;
+            font-weight: 900;
+            color: var(--mem-accent);
+            font-variant-numeric: tabular-nums;
+        }
+
+        .card-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 15px;
+            perspective: 1000px;
+            padding: 20px;
+        }
+
+        .card {
+            width: 80px;
+            height: 110px;
+            position: relative;
+            transform-style: preserve-3d;
+            transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            cursor: pointer;
+        }
+
+        .card.flipped {
+            transform: rotateY(180deg);
+        }
+
+        .card-face {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.5rem;
+            border-radius: 12px;
+            border: 2px solid rgba(255,255,255,0.1);
+        }
+
+        .card-front {
+            background: var(--card-front);
+            transform: rotateY(180deg);
+            color: #fff;
+        }
+
+        .card-back {
+            background: var(--card-back);
+            color: var(--mem-accent);
+            background-image: radial-gradient(circle, var(--mem-accent) 2px, transparent 2px);
+            background-size: 15px 15px;
+        }
+
+        .matched {
+            visibility: hidden;
+            opacity: 0;
+            pointer-events: none;
+            transition: 0.3s;
+        }
+
+        #overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.9);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 100;
+            text-align: center;
+        }
+
+        .btn {
+            background: var(--mem-accent);
+            color: #000;
+            border: none;
+            padding: 15px 40px;
+            border-radius: 50px;
+            font-weight: 900;
+            font-size: 1.2rem;
+            cursor: pointer;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-top: 20px;
+            transition: 0.3s;
+        }
+
+        .btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 30px rgba(245, 158, 11, 0.4);
+        }
+
+        .back-btn {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            color: rgba(255,255,255,0.4);
+            text-decoration: none;
+            font-size: 0.82rem;
+        }
+
+        @media (max-width: 450px) {
+            .card { width: 65px; height: 90px; }
+            .card-grid { gap: 10px; }
+        }
+    </style>
+</head>
+<body>
+    <a href="index.html" class="back-btn">← Back to Gallery</a>
+
+    <div class="game-header">
+        <h1 style="letter-spacing: 4px; margin: 0;">MEMORY SPEED</h1>
+        <div id="timer">00:00.0</div>
+    </div>
+
+    <div class="card-grid" id="grid">
+        <!-- Cards injected -->
+    </div>
+
+    <div id="overlay">
+        <h2 id="msg" style="font-size: 2.5rem; margin-bottom: 10px;">READY?</h2>
+        <p id="submsg" style="opacity: 0.6;">Match all cards as fast as possible.</p>
+        <button class="btn" onclick="startGame()">Start Game</button>
+    </div>
+
+    <script src="discovery.js"></script>
+    <script>
+        const EMOJIS = ['🔥', '💎', '🚀', '⭐', '💀', '👻', '🌀', '🎭'];
+        let cards = [];
+        let flipped = [];
+        let matches = 0;
+        let startTime;
+        let timerInterval;
+        let gameActive = false;
+
+        const grid = document.getElementById('grid');
+        const timerEl = document.getElementById('timer');
+        const overlay = document.getElementById('overlay');
+
+        function startGame() {
+            gameActive = true;
+            matches = 0;
+            flipped = [];
+            overlay.style.display = 'none';
+            
+            // Create paired deck
+            const deck = [...EMOJIS, ...EMOJIS].sort(() => Math.random() - 0.5);
+            
+            grid.innerHTML = '';
+            deck.forEach((emoji, i) => {
+                const card = document.createElement('div');
+                card.className = 'card';
+                card.innerHTML = `
+                    <div class="card-face card-front">${emoji}</div>
+                    <div class="card-face card-back">?</div>
+                `;
+                card.onclick = () => flipCard(card, emoji);
+                grid.appendChild(card);
+            });
+
+            startTime = Date.now();
+            timerInterval = setInterval(updateTimer, 50);
+        }
+
+        function updateTimer() {
+            const elapsed = Date.now() - startTime;
+            const min = Math.floor(elapsed / 60000);
+            const sec = Math.floor((elapsed % 60000) / 1000);
+            const ms = Math.floor((elapsed % 1000) / 100);
+            timerEl.textContent = `${String(min).padStart(2, '0')}:${String(sec).padStart(2, '0')}.${ms}`;
+        }
+
+        function flipCard(card, emoji) {
+            if (!gameActive || card.classList.contains('flipped') || flipped.length >= 2) return;
+
+            card.classList.add('flipped');
+            flipped.push({ card, emoji });
+
+            if (flipped.length === 2) {
+                setTimeout(checkMatch, 600);
+            }
+        }
+
+        function checkMatch() {
+            const [a, b] = flipped;
+            if (a.emoji === b.emoji) {
+                a.card.classList.add('matched');
+                b.card.classList.add('matched');
+                matches++;
+                if (matches === EMOJIS.length) {
+                    win();
+                }
+            } else {
+                a.card.classList.remove('flipped');
+                b.card.classList.remove('flipped');
+            }
+            flipped = [];
+        }
+
+        function win() {
+            gameActive = false;
+            clearInterval(timerInterval);
+            const finalTime = timerEl.textContent;
+            
+            document.getElementById('msg').textContent = "WELL DONE!";
+            document.getElementById('submsg').textContent = `Your time: ${finalTime}`;
+            
+            // Celebration effect
+            for(let i=0; i<20; i++) {
+                createSparkle();
+            }
+
+            setTimeout(() => {
+                overlay.style.display = 'flex';
+                document.querySelector('.btn').textContent = "Play Again";
+            }, 1000);
+        }
+
+        function createSparkle() {
+            const s = document.createElement('div');
+            s.style.position = 'fixed';
+            s.style.left = Math.random() * 100 + 'vw';
+            s.style.top = Math.random() * 100 + 'vh';
+            s.style.width = '10px';
+            s.style.height = '10px';
+            s.style.background = 'var(--mem-accent)';
+            s.style.borderRadius = '50%';
+            s.style.boxShadow = '0 0 20px #fff';
+            s.style.pointerEvents = 'none';
+            s.style.animation = 'fadeOut 1s forwards';
+            document.body.appendChild(s);
+            setTimeout(() => s.remove(), 1000);
+        }
+    </script>
+    <style>
+        @keyframes fadeOut { from { opacity: 1; transform: scale(1); } to { opacity: 0; transform: scale(3); } }
+    </style>
+</body>
+</html>

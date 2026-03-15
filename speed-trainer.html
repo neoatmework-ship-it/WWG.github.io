@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Speed Trainer — Reaction & Precision</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --trainer-blue: #3b82f6;
+            --trainer-bg: #0f172a;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            background: var(--trainer-bg);
+            color: #fff;
+            font-family: 'Outfit', sans-serif;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+        }
+
+        #aim-space {
+            position: relative;
+            flex-grow: 1;
+            width: 100%;
+            cursor: crosshair;
+            background: 
+                radial-gradient(circle at 50% 50%, rgba(59, 130, 246, 0.05) 0%, transparent 70%),
+                linear-gradient(rgba(255,255,255,0.05) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255,255,255,0.05) 1px, transparent 1px);
+            background-size: 100% 100%, 40px 40px, 40px 40px;
+        }
+
+        .target {
+            position: absolute;
+            width: 50px;
+            height: 50px;
+            background: var(--trainer-blue);
+            border-radius: 50%;
+            box-shadow: 0 0 20px var(--trainer-blue);
+            transform: translate(-50%, -50%) scale(0);
+            transition: transform 0.1s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .target::after {
+            content: '';
+            width: 10px;
+            height: 10px;
+            background: white;
+            border-radius: 50%;
+        }
+
+        #stats-bar {
+            height: 80px;
+            background: rgba(0,0,0,0.5);
+            backdrop-filter: blur(10px);
+            display: flex;
+            align-items: center;
+            justify-content: space-around;
+            border-top: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .stat {
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: var(--trainer-blue);
+        }
+
+        .stat-label {
+            font-size: 0.7rem;
+            opacity: 0.5;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        #overlay {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: rgba(15, 23, 42, 0.9);
+            z-index: 100;
+        }
+
+        .results-card {
+            background: #1e293b;
+            padding: 40px;
+            border-radius: 20px;
+            width: 90%;
+            max-width: 600px;
+            text-align: center;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .btn {
+            background: var(--trainer-blue);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 12px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 20px;
+            font-size: 1rem;
+            transition: 0.3s;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(59, 130, 246, 0.4);
+        }
+
+        #chart-container {
+            width: 100%;
+            height: 200px;
+            margin-top: 20px;
+        }
+
+        .back-btn {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            color: #fff;
+            text-decoration: none;
+            background: rgba(255,255,255,0.1);
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            z-index: 200;
+        }
+
+        .hit-effect {
+            position: absolute;
+            border-radius: 50%;
+            border: 2px solid var(--trainer-blue);
+            pointer-events: none;
+            animation: ring 0.4s ease-out forwards;
+        }
+
+        @keyframes ring {
+            0% { width: 50px; height: 50px; opacity: 1; transform: translate(-50%, -50%) scale(1); }
+            100% { width: 50px; height: 50px; opacity: 0; transform: translate(-50%, -50%) scale(2); }
+        }
+    </style>
+</head>
+<body>
+    <a href="index.html" class="back-btn">← Back to Gallery</a>
+
+    <div id="aim-space">
+        <div id="overlay">
+            <div class="results-card" id="start-menu">
+                <h1 style="font-size: 2.5rem; margin-bottom: 10px;">SPEED TRAINER</h1>
+                <p style="opacity: 0.6; margin-bottom: 20px;">Test your reaction time. Click 20 targets as fast as possible.</p>
+                <button class="btn" onclick="startTraining()">Start Exercise</button>
+            </div>
+            
+            <div class="results-card" id="results-menu" style="display:none">
+                <h2 style="font-size: 2rem;">EXERCISE COMPLETE</h2>
+                <div style="display: flex; justify-content: space-around; margin: 30px 0;">
+                    <div>
+                        <div class="stat-value" id="res-avg">0ms</div>
+                        <div class="stat-label">Avg Reaction</div>
+                    </div>
+                    <div>
+                        <div class="stat-value" id="res-acc">0%</div>
+                        <div class="stat-label">Accuracy</div>
+                    </div>
+                </div>
+                <div id="chart-container">
+                    <canvas id="reactionChart"></canvas>
+                </div>
+                <button class="btn" onclick="startTraining()">Try Again</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="stats-bar">
+        <div class="stat">
+            <div class="stat-value" id="curr-rt">---</div>
+            <div class="stat-label">Last RT</div>
+        </div>
+        <div class="stat">
+            <div class="stat-value" id="curr-hits">0/20</div>
+            <div class="stat-label">Progress</div>
+        </div>
+        <div class="stat">
+            <div class="stat-value" id="curr-acc">100%</div>
+            <div class="stat-label">Accuracy</div>
+        </div>
+    </div>
+
+    <script src="discovery.js"></script>
+    <script>
+        const aimSpace = document.getElementById('aim-space');
+        const startMenu = document.getElementById('start-menu');
+        const resultsMenu = document.getElementById('results-menu');
+        const overlay = document.getElementById('overlay');
+        
+        let targetCount = 0;
+        let hits = 0;
+        let misses = 0;
+        let reactionTimes = [];
+        let lastSpawnTime = 0;
+        let currentTarget = null;
+        let chart = null;
+
+        function startTraining() {
+            targetCount = 0;
+            hits = 0;
+            misses = 0;
+            reactionTimes = [];
+            startMenu.style.display = 'none';
+            resultsMenu.style.display = 'none';
+            overlay.style.display = 'none';
+            
+            updateStats();
+            spawnTarget();
+        }
+
+        function spawnTarget() {
+            if (hits >= 20) {
+                showResults();
+                return;
+            }
+
+            if (currentTarget) currentTarget.remove();
+
+            const target = document.createElement('div');
+            target.className = 'target';
+            
+            const padding = 100;
+            const x = Math.random() * (aimSpace.offsetWidth - padding * 2) + padding;
+            const y = Math.random() * (aimSpace.offsetHeight - padding * 2) + padding;
+            
+            target.style.left = x + 'px';
+            target.style.top = y + 'px';
+            
+            target.onclick = (e) => {
+                e.stopPropagation();
+                const rt = Date.now() - lastSpawnTime;
+                reactionTimes.push(rt);
+                hits++;
+                createHitEffect(x, y);
+                updateStats();
+                spawnTarget();
+            };
+
+            aimSpace.appendChild(target);
+            setTimeout(() => target.style.transform = 'translate(-50%, -50%) scale(1)', 10);
+            
+            currentTarget = target;
+            lastSpawnTime = Date.now();
+        }
+
+        aimSpace.onclick = () => {
+            if (hits < 20 && targetCount > 0) {
+                misses++;
+                updateStats();
+            }
+        };
+
+        function updateStats() {
+            document.getElementById('curr-hits').textContent = `${hits}/20`;
+            const rt = reactionTimes[reactionTimes.length - 1];
+            document.getElementById('curr-rt').textContent = rt ? `${rt}ms` : '---';
+            const acc = hits + misses > 0 ? Math.round((hits / (hits + misses)) * 100) : 100;
+            document.getElementById('curr-acc').textContent = `${acc}%`;
+        }
+
+        function createHitEffect(x, y) {
+            const ring = document.createElement('div');
+            ring.className = 'hit-effect';
+            ring.style.left = x + 'px';
+            ring.style.top = y + 'px';
+            aimSpace.appendChild(ring);
+            setTimeout(() => ring.remove(), 400);
+        }
+
+        function showResults() {
+            if (currentTarget) currentTarget.remove();
+            overlay.style.display = 'flex';
+            resultsMenu.style.display = 'block';
+            
+            const avg = Math.round(reactionTimes.reduce((a, b) => a + b, 0) / reactionTimes.length);
+            const acc = Math.round((hits / (hits + misses)) * 100);
+            
+            document.getElementById('res-avg').textContent = `${avg}ms`;
+            document.getElementById('res-acc').textContent = `${acc}%`;
+            
+            renderChart();
+        }
+
+        function renderChart() {
+            const ctx = document.getElementById('reactionChart').getContext('2d');
+            if (chart) chart.destroy();
+            
+            chart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: reactionTimes.map((_, i) => i + 1),
+                    datasets: [{
+                        label: 'Reaction (ms)',
+                        data: reactionTimes,
+                        borderColor: '#3b82f6',
+                        backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                        fill: true,
+                        tension: 0.4,
+                        borderWidth: 3,
+                        pointBackgroundColor: '#fff'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        y: { 
+                            beginAtZero: false,
+                            grid: { color: 'rgba(255,255,255,0.1)' },
+                            ticks: { color: 'rgba(255,255,255,0.5)' }
+                        },
+                        x: { 
+                            grid: { display: false },
+                            ticks: { color: 'rgba(255,255,255,0.5)' }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Initialize display
+        targetCount = 1; // dummy for click detection
+    </script>
+</body>
+</html>

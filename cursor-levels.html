@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cursor Maze — Precision Challenge</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        :root {
+            --maze-accent: #f43f5e;
+            --maze-bg: #0f172a;
+            --wall-color: #1e293b;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            background: var(--maze-bg);
+            color: #fff;
+            font-family: 'Outfit', sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        #maze-container {
+            position: relative;
+            width: 800px;
+            height: 500px;
+            background: #020617;
+            border: 4px solid var(--maze-accent);
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .wall {
+            position: absolute;
+            background: var(--wall-color);
+            transition: background 0.2s;
+        }
+
+        .wall:hover {
+            background: var(--maze-accent);
+        }
+
+        .goal {
+            position: absolute;
+            background: #10b981;
+            box-shadow: 0 0 20px #10b981;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 0.8rem;
+            color: #000;
+        }
+
+        .start-zone {
+            position: absolute;
+            background: #3b82f6;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.7rem;
+            font-weight: bold;
+            opacity: 0.5;
+        }
+
+        #ui-layer {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            pointer-events: none;
+        }
+
+        .level-text {
+            font-size: 2rem;
+            font-weight: 900;
+            margin: 0;
+        }
+
+        #overlay {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.8);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 100;
+            text-align: center;
+        }
+
+        .btn {
+            background: var(--maze-accent);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 20px;
+        }
+
+        .back-btn {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            color: rgba(255,255,255,0.4);
+            text-decoration: none;
+            font-size: 0.8rem;
+        }
+
+        #status-msg {
+            position: absolute;
+            bottom: 20px;
+            width: 100%;
+            text-align: center;
+            font-weight: bold;
+            color: var(--maze-accent);
+            opacity: 0;
+            transition: 0.2s;
+        }
+    </style>
+</head>
+<body>
+    <a href="index.html" class="back-btn">← Back to Gallery</a>
+
+    <div id="maze-container">
+        <div id="ui-layer">
+            <h1 class="level-text">LEVEL <span id="lvl-num">1</span></h1>
+        </div>
+        
+        <div id="walls-bin"></div>
+        <div id="zones-bin"></div>
+
+        <div id="overlay">
+            <h2 id="msg-title">CURSOR MAZE</h2>
+            <p id="msg-body">Navigate to the green zone.<br>Don't touch the walls!</p>
+            <button class="btn" onclick="startLevel()">Start Level</button>
+        </div>
+
+        <div id="status-msg">WALL HIT! RESETTING...</div>
+    </div>
+
+    <script src="discovery.js"></script>
+    <script>
+        let currentLevel = 1;
+        let gameActive = false;
+
+        const container = document.getElementById('maze-container');
+        const wallsBin = document.getElementById('walls-bin');
+        const zonesBin = document.getElementById('zones-bin');
+        const overlay = document.getElementById('overlay');
+        const levelNumEl = document.getElementById('lvl-num');
+        const statusMsg = document.getElementById('status-msg');
+
+        const LEVELS = [
+            {
+                walls: [
+                    { x: 0, y: 150, w: 600, h: 40 },
+                    { x: 200, y: 300, w: 600, h: 40 }
+                ],
+                start: { x: 20, y: 20, w: 60, h: 60 },
+                goal: { x: 720, y: 420, w: 60, h: 60 }
+            },
+            {
+                walls: [
+                    { x: 0, y: 0, w: 300, h: 180 },
+                    { x: 500, y: 0, w: 300, h: 180 },
+                    { x: 0, y: 320, w: 300, h: 180 },
+                    { x: 500, y: 320, w: 300, h: 180 },
+                    { x: 380, y: 100, w: 40, h: 300 }
+                ],
+                start: { x: 320, y: 20, w: 40, h: 40 },
+                goal: { x: 440, y: 440, w: 40, h: 40 }
+            },
+            {
+                walls: [
+                    { x: 100, y: 0, w: 20, h: 400 },
+                    { x: 200, y: 100, w: 20, h: 400 },
+                    { x: 300, y: 0, w: 20, h: 400 },
+                    { x: 400, y: 100, w: 20, h: 400 },
+                    { x: 500, y: 0, w: 20, h: 400 },
+                    { x: 600, y: 100, w: 20, h: 400 },
+                    { x: 700, y: 0, w: 20, h: 400 }
+                ],
+                start: { x: 20, y: 20, w: 40, h: 40 },
+                goal: { x: 740, y: 440, w: 40, h: 40 }
+            }
+        ];
+
+        function loadLevel() {
+            wallsBin.innerHTML = '';
+            zonesBin.innerHTML = '';
+            
+            const data = LEVELS[currentLevel - 1];
+            levelNumEl.textContent = currentLevel;
+
+            // Start Zone
+            const start = document.createElement('div');
+            start.className = 'start-zone';
+            start.style.left = data.start.x + 'px';
+            start.style.top = data.start.y + 'px';
+            start.style.width = data.start.w + 'px';
+            start.style.height = data.start.h + 'px';
+            start.textContent = 'START';
+            zonesBin.appendChild(start);
+
+            // Goal Zone
+            const goal = document.createElement('div');
+            goal.className = 'goal';
+            goal.style.left = data.goal.x + 'px';
+            goal.style.top = data.goal.y + 'px';
+            goal.style.width = data.goal.w + 'px';
+            goal.style.height = data.goal.h + 'px';
+            goal.textContent = 'GOAL';
+            goal.onmouseenter = winLevel;
+            zonesBin.appendChild(goal);
+
+            // Walls
+            data.walls.forEach(w => {
+                const wall = document.createElement('div');
+                wall.className = 'wall';
+                wall.style.left = w.x + 'px';
+                wall.style.top = w.y + 'px';
+                wall.style.width = w.w + 'px';
+                wall.style.height = w.h + 'px';
+                wall.onmouseenter = fail;
+                wallsBin.appendChild(wall);
+            });
+        }
+
+        function startLevel() {
+            overlay.style.display = 'none';
+            gameActive = true;
+            loadLevel();
+        }
+
+        function fail() {
+            if (!gameActive) return;
+            gameActive = false;
+            statusMsg.style.opacity = 1;
+            container.style.borderColor = 'red';
+            
+            setTimeout(() => {
+                statusMsg.style.opacity = 0;
+                container.style.borderColor = 'var(--maze-accent)';
+                overlay.style.display = 'flex';
+                document.getElementById('msg-title').textContent = "FAILED!";
+                document.getElementById('msg-body').textContent = "You touched a wall. Try again?";
+            }, 1000);
+        }
+
+        function winLevel() {
+            if (!gameActive) return;
+            gameActive = false;
+            
+            if (currentLevel < LEVELS.length) {
+                overlay.style.display = 'flex';
+                document.getElementById('msg-title').textContent = "LEVEL COMPLETE!";
+                document.getElementById('msg-body').textContent = "You made it! Ready for more?";
+                currentLevel++;
+            } else {
+                overlay.style.display = 'flex';
+                document.getElementById('msg-title').textContent = "MAZE MASTER!";
+                document.getElementById('msg-body').textContent = "You conquered all levels.";
+                currentLevel = 1;
+                document.querySelector('.btn').textContent = "Restart Challenge";
+            }
+        }
+
+        loadLevel();
+    </script>
+</body>
+</html>

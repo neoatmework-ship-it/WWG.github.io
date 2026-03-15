@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Guess The Song — Infinite Music Challenge</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        :root {
+            --music-purple: #8b5cf6;
+            --music-pink: #ec4899;
+            --music-bg: #0c0a1d;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            background: var(--music-bg);
+            color: #fff;
+            font-family: 'Outfit', sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .game-card {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(15px);
+            padding: 40px;
+            border-radius: 30px;
+            text-align: center;
+            width: 90%;
+            max-width: 500px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+        }
+
+        #visualizer {
+            height: 100px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 5px;
+            margin-bottom: 30px;
+        }
+
+        .bar {
+            width: 8px;
+            height: 20px;
+            background: var(--music-purple);
+            border-radius: 4px;
+            transition: 0.2s;
+        }
+
+        .bar.active {
+            animation: bounce 0.5s ease-in-out infinite alternate;
+        }
+
+        @keyframes bounce {
+            0% { height: 20px; background: var(--music-purple); }
+            100% { height: 80px; background: var(--music-pink); }
+        }
+
+        .btn-play {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--music-purple), var(--music-pink));
+            border: none;
+            color: white;
+            font-size: 2rem;
+            cursor: pointer;
+            box-shadow: 0 0 30px rgba(139, 92, 246, 0.4);
+            margin-bottom: 30px;
+            transition: 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .btn-play:hover {
+            transform: scale(1.1);
+            box-shadow: 0 0 50px rgba(139, 92, 246, 0.6);
+        }
+
+        .options-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            width: 100%;
+        }
+
+        .option-btn {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 15px;
+            border-radius: 12px;
+            color: white;
+            cursor: pointer;
+            font-weight: 600;
+            transition: 0.2s;
+        }
+
+        .option-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+            border-color: var(--music-purple);
+        }
+
+        .option-btn.correct {
+            background: #22c55e !important;
+            border-color: #4ade80;
+        }
+
+        .option-btn.wrong {
+            background: #ef4444 !important;
+            border-color: #f87171;
+        }
+
+        #score-display {
+            position: absolute;
+            top: 30px;
+            right: 30px;
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: var(--music-pink);
+        }
+
+        .back-btn {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            color: rgba(255,255,255,0.5);
+            text-decoration: none;
+            font-size: 0.9rem;
+        }
+
+        .back-btn:hover { color: #fff; }
+
+        #feedback {
+            margin-top: 20px;
+            font-weight: bold;
+            height: 20px;
+            opacity: 0;
+            transition: 0.3s;
+        }
+    </style>
+</head>
+<body>
+    <a href="index.html" class="back-btn">← Back to Gallery</a>
+    <div id="score-display">STREAK: 0</div>
+
+    <div class="game-card">
+        <h1 style="margin-bottom: 30px; letter-spacing: 2px;">GUESS THE SONG</h1>
+        
+        <div id="visualizer">
+            <div class="bar"></div><div class="bar"></div><div class="bar"></div>
+            <div class="bar"></div><div class="bar"></div><div class="bar"></div>
+            <div class="bar"></div><div class="bar"></div><div class="bar"></div>
+        </div>
+
+        <button class="btn-play" id="play-btn" onclick="playSnippet()">
+            <span>▶</span>
+        </button>
+        
+        <p style="opacity: 0.6; font-size: 0.9rem; margin-bottom: 25px;">Listen to 1 second. What's the song?</p>
+
+        <div class="options-grid" id="options">
+            <button class="option-btn">Song Title A</button>
+            <button class="option-btn">Song Title B</button>
+            <button class="option-btn">Song Title C</button>
+            <button class="option-btn">Song Title D</button>
+        </div>
+
+        <div id="feedback">CORRECT! ✨</div>
+    </div>
+
+    <script src="discovery.js"></script>
+    <script>
+        const SONGS = [
+            { title: "Happy Birthday", notes: [261, 261, 293, 261, 349, 329] },
+            { title: "Twinkle Twinkle", notes: [261, 261, 392, 392, 440, 440, 392] },
+            { title: "Mario Theme", notes: [659, 659, 0, 659, 0, 523, 659, 0, 783] },
+            { title: "Jingle Bells", notes: [329, 329, 329, 0, 329, 329, 329, 0, 329, 392, 261, 293, 329] },
+            { title: "Imperial March", notes: [440, 440, 440, 349, 523, 440, 349, 523, 440] },
+            { title: "Seven Nation Army", notes: [164, 164, 196, 164, 146, 130, 123] },
+            { title: "MegaloBox / Sans", notes: [293, 293, 587, 440, 0, 415, 392, 349, 293, 349, 392] },
+            { title: "Old Town Road", notes: [220, 261, 329, 329, 329, 261, 220] },
+            { title: "Shape of You", notes: [369, 440, 369, 369, 440, 369, 369, 440, 369, 493] }
+        ];
+
+        let currentSong = null;
+        let streak = 0;
+        let isPlaying = false;
+        let audioCtx = null;
+
+        function initAudio() {
+            if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        }
+
+        function playSnippet() {
+            initAudio();
+            if (isPlaying) return;
+            isPlaying = true;
+
+            const bars = document.querySelectorAll('.bar');
+            bars.forEach(b => b.classList.add('active'));
+            document.getElementById('play-btn').innerHTML = '<span>🔊</span>';
+
+            const melody = currentSong.notes;
+            let time = audioCtx.currentTime;
+            
+            melody.forEach((freq, i) => {
+                if (freq > 0) {
+                    const osc = audioCtx.createOscillator();
+                    const gain = audioCtx.createGain();
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(freq, time + i * 0.15);
+                    gain.gain.setValueAtTime(0.1, time + i * 0.15);
+                    gain.gain.exponentialRampToValueAtTime(0.0001, time + i * 0.15 + 0.14);
+                    
+                    osc.connect(gain);
+                    gain.connect(audioCtx.destination);
+                    osc.start(time + i * 0.15);
+                    osc.stop(time + i * 0.15 + 0.14);
+                }
+            });
+
+            setTimeout(() => {
+                bars.forEach(b => b.classList.remove('active'));
+                document.getElementById('play-btn').innerHTML = '<span>▶</span>';
+                isPlaying = false;
+            }, 1000);
+        }
+
+        function generateRound() {
+            currentSong = SONGS[Math.floor(Math.random() * SONGS.length)];
+            const options = [currentSong.title];
+            
+            while (options.length < 4) {
+                const randomTitle = SONGS[Math.floor(Math.random() * SONGS.length)].title;
+                if (!options.includes(randomTitle)) options.push(randomTitle);
+            }
+            
+            options.sort(() => Math.random() - 0.5);
+
+            const grid = document.getElementById('options');
+            grid.innerHTML = '';
+            options.forEach(opt => {
+                const btn = document.createElement('button');
+                btn.className = 'option-btn';
+                btn.textContent = opt;
+                btn.onclick = () => checkAnswer(opt, btn);
+                grid.appendChild(btn);
+            });
+            
+            document.getElementById('feedback').style.opacity = 0;
+        }
+
+        function checkAnswer(selected, btn) {
+            const btns = document.querySelectorAll('.option-btn');
+            btns.forEach(b => b.disabled = true);
+
+            if (selected === currentSong.title) {
+                btn.classList.add('correct');
+                streak++;
+                document.getElementById('feedback').textContent = "CORRECT! ✨";
+                document.getElementById('feedback').style.color = "#22c55e";
+            } else {
+                btn.classList.add('wrong');
+                streak = 0;
+                document.getElementById('feedback').textContent = "WRONG! It was: " + currentSong.title;
+                document.getElementById('feedback').style.color = "#ef4444";
+                
+                // Show correct one
+                btns.forEach(b => {
+                    if (b.textContent === currentSong.title) b.classList.add('correct');
+                });
+            }
+
+            document.getElementById('feedback').style.opacity = 1;
+            document.getElementById('score-display').textContent = `STREAK: ${streak}`;
+
+            setTimeout(() => {
+                generateRound();
+            }, 1500);
+        }
+
+        generateRound();
+    </script>
+</body>
+</html>

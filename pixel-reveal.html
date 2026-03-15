@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pixel Reveal — The Detection Game</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        :root {
+            --reveal-accent: #6366f1;
+            --reveal-bg: #030712;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            background: var(--reveal-bg);
+            color: #fff;
+            font-family: 'Outfit', sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .game-viewport {
+            position: relative;
+            width: 400px;
+            height: 400px;
+            background: #111827;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 0 40px rgba(99, 102, 241, 0.2);
+            border: 1px solid rgba(255,255,255,0.1);
+            margin-bottom: 30px;
+        }
+
+        #pixel-canvas {
+            width: 100%;
+            height: 100%;
+            image-rendering: pixelated;
+        }
+
+        .controls {
+            width: 90%;
+            max-width: 400px;
+            text-align: center;
+        }
+
+        .guess-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .guess-btn {
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1);
+            padding: 12px;
+            border-radius: 12px;
+            color: #fff;
+            cursor: pointer;
+            transition: 0.2s;
+            font-weight: 500;
+        }
+
+        .guess-btn:hover {
+            background: var(--reveal-accent);
+            border-color: #818cf8;
+            transform: scale(1.05);
+        }
+
+        .guess-btn.correct { background: #10b981; border-color: #34d399; }
+        .guess-btn.wrong { background: #ef4444; border-color: #f87171; }
+
+        #progress-container {
+            width: 100%;
+            height: 6px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 3px;
+            margin-top: 20px;
+            position: relative;
+        }
+
+        #progress-bar {
+            width: 0%;
+            height: 100%;
+            background: var(--reveal-accent);
+            border-radius: 3px;
+            transition: 0.1s linear;
+        }
+
+        #score-panel {
+            position: fixed;
+            top: 30px;
+            right: 30px;
+            text-align: right;
+        }
+
+        .stat-val {
+            font-size: 2rem;
+            font-weight: 800;
+            color: var(--reveal-accent);
+        }
+
+        .back-btn {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            color: rgba(255,255,255,0.4);
+            text-decoration: none;
+            font-size: 0.9rem;
+        }
+
+        .back-btn:hover { color: #fff; }
+
+        #result-text {
+            height: 24px;
+            margin-top: 15px;
+            font-weight: bold;
+            opacity: 0;
+            transition: 0.3s;
+        }
+    </style>
+</head>
+<body>
+    <a href="index.html" class="back-btn">← Back to Gallery</a>
+    
+    <div id="score-panel">
+        <div class="stat-val" id="score-val">0</div>
+        <div style="font-size: 0.7rem; opacity: 0.5;">TOTAL SCORE</div>
+    </div>
+
+    <div class="game-viewport">
+        <canvas id="pixel-canvas"></canvas>
+    </div>
+
+    <div class="controls">
+        <h2 style="margin:0; font-size: 1.5rem;">Identify the Object</h2>
+        <div id="progress-container">
+            <div id="progress-bar"></div>
+        </div>
+        
+        <div class="guess-grid" id="guess-grid">
+            <!-- Buttons dynamically populated -->
+        </div>
+
+        <div id="result-text">CORRECT! +500 PTS</div>
+        
+        <button class="guess-btn" id="next-btn" style="display:none; width: 100%; margin-top: 15px; background: var(--reveal-accent);" onclick="nextRound()">Next Round</button>
+    </div>
+
+    <script src="discovery.js"></script>
+    <script>
+        const ROUNDS = [
+            { image: 'pixel-apple.png', answer: 'Apple', options: ['Apple', 'Tomato', 'Cherries', 'Heart'] },
+            { image: 'pixel-camera.png', answer: 'Camera', options: ['Camera', 'Radio', 'Suitcase', 'Printer'] },
+            { image: 'pixel-puppy.png', answer: 'Puppy', options: ['Puppy', 'Kitten', 'Bear', 'Rabbit'] },
+            { image: 'pixel-shuttle.png', answer: 'Shuttle', options: ['Shuttle', 'Airplane', 'Missile', 'Submarine'] }
+        ];
+
+        let currentRound = 0;
+        let score = 0;
+        let pixelSize = 400;
+        let isRevealing = false;
+        let revealInterval;
+        let currentImg = new Image();
+
+        const canvas = document.getElementById('pixel-canvas');
+        const ctx = canvas.getContext('2d');
+        const progressBar = document.getElementById('progress-bar');
+        const scoreVal = document.getElementById('score-val');
+        const resultText = document.getElementById('result-text');
+        const guessGrid = document.getElementById('guess-grid');
+        const nextBtn = document.getElementById('next-btn');
+
+        function startRound() {
+            isRevealing = true;
+            pixelSize = 400;
+            currentRound = (currentRound + 1) % ROUNDS.length; // cycle or random
+            const data = ROUNDS[currentRound];
+            
+            currentImg.src = data.image;
+            currentImg.onload = () => {
+                canvas.width = 400;
+                canvas.height = 400;
+                drawPixelated();
+                revealInterval = setInterval(revealMore, 100);
+            };
+
+            // Setup buttons
+            guessGrid.innerHTML = '';
+            data.options.sort(() => Math.random() - 0.5).forEach(opt => {
+                const btn = document.createElement('button');
+                btn.className = 'guess-btn';
+                btn.textContent = opt;
+                btn.onclick = () => checkGuess(opt, btn);
+                guessGrid.appendChild(btn);
+            });
+
+            resultText.style.opacity = 0;
+            nextBtn.style.display = 'none';
+        }
+
+        function drawPixelated() {
+            // Draw original image at small size then scale up
+            const tempSize = Math.max(1, Math.round(400 / pixelSize));
+            
+            // Draw to a tiny offscreen buffer or just use context scaling
+            ctx.clearRect(0,0,400,400);
+            ctx.imageSmoothingEnabled = false;
+            
+            // Method: draw small, then draw large
+            ctx.drawImage(currentImg, 0, 0, tempSize, tempSize);
+            ctx.drawImage(canvas, 0, 0, tempSize, tempSize, 0, 0, 400, 400);
+        }
+
+        function revealMore() {
+            if (!isRevealing) return;
+            
+            pixelSize -= 4;
+            if (pixelSize < 1) {
+                pixelSize = 1;
+                isRevealing = false;
+                clearInterval(revealInterval);
+            }
+            
+            drawPixelated();
+            progressBar.style.width = ((400 - pixelSize) / 400 * 100) + '%';
+        }
+
+        function checkGuess(guess, btn) {
+            if (!isRevealing && pixelSize > 1) return; // wait after round start or already reveals
+            
+            isRevealing = false;
+            clearInterval(revealInterval);
+            
+            const correct = ROUNDS[currentRound].answer;
+            const btns = document.querySelectorAll('.guess-btn');
+            btns.forEach(b => b.disabled = true);
+
+            if (guess === correct) {
+                btn.classList.add('correct');
+                const roundScore = Math.round(pixelSize);
+                score += roundScore;
+                scoreVal.textContent = score;
+                resultText.textContent = `CORRECT! +${roundScore} PTS`;
+                resultText.style.color = '#10b981';
+            } else {
+                btn.classList.add('wrong');
+                resultText.textContent = `INCORRECT! It's a ${correct}`;
+                resultText.style.color = '#ef4444';
+                
+                btns.forEach(b => {
+                    if (b.textContent === correct) b.classList.add('correct');
+                });
+            }
+
+            // Full reveal
+            pixelSize = 1;
+            drawPixelated();
+            progressBar.style.width = '100%';
+            resultText.style.opacity = 1;
+            nextBtn.style.display = 'block';
+        }
+
+        function nextRound() {
+            startRound();
+        }
+
+        // Start first round
+        currentRound = -1;
+        startRound();
+    </script>
+</body>
+</html>
