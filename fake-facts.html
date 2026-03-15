@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fake Fact Machine — True or False?</title>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #0d0d12;
+            --accent: #facc15;
+            --text: #ffffff;
+            --error: #ef4444;
+            --success: #22c55e;
+        }
+
+        body {
+            background: var(--bg);
+            color: var(--text);
+            font-family: 'Space Mono', monospace;
+            margin: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            overflow: hidden;
+        }
+
+        .game-card {
+            width: 90%;
+            max-width: 600px;
+            background: #1a1a24;
+            padding: 40px;
+            border-radius: 30px;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.5), 0 0 2px var(--accent);
+            text-align: center;
+            position: relative;
+        }
+
+        .fact-container {
+            min-height: 180px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            font-weight: 700;
+            line-height: 1.4;
+            margin-bottom: 40px;
+            background: rgba(0,0,0,0.2);
+            padding: 20px;
+            border-radius: 20px;
+        }
+
+        .btn-group {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .btn {
+            background: rgba(255,255,255,0.05);
+            border: 2px solid rgba(255,255,255,0.1);
+            color: #fff;
+            padding: 20px;
+            border-radius: 15px;
+            cursor: pointer;
+            font-family: inherit;
+            font-weight: 700;
+            font-size: 1.1rem;
+            transition: 0.2s;
+        }
+
+        .btn:hover {
+            border-color: var(--accent);
+            background: rgba(250, 204, 21, 0.1);
+        }
+
+        .btn.correct { background: var(--success) !important; border-color: var(--success); }
+        .btn.wrong { background: var(--error) !important; border-color: var(--error); }
+
+        .score-bar {
+            position: absolute;
+            top: -60px;
+            left: 0;
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            font-weight: 700;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            font-size: 0.8rem;
+            opacity: 0.6;
+        }
+
+        .overlay {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(26, 26, 36, 0.95);
+            border-radius: 30px;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            z-index: 10;
+        }
+
+        .back-link { position: fixed; top: 20px; left: 20px; color: #444; text-decoration: none; font-size: 0.8rem; }
+    </style>
+</head>
+<body>
+
+    <a href="index.html" class="back-link">← EXIT_REALITY</a>
+
+    <div class="game-card">
+        <div class="score-bar">
+            <div id="round-info">Question 1/10</div>
+            <div id="score-info">Truth Score: 0</div>
+        </div>
+
+        <div class="fact-container" id="fact">
+            Loading fact...
+        </div>
+
+        <div class="btn-group">
+            <button class="btn" onclick="check(true)">SOUNDS TRUE</button>
+            <button class="btn" onclick="check(false)">SOUNDS FAKE</button>
+        </div>
+
+        <div class="overlay" id="overlay">
+            <div id="feedback-icon" style="font-size: 4rem; margin-bottom: 20px;">✅</div>
+            <h2 id="feedback-title">CORRECT!</h2>
+            <p id="explanation" style="opacity: 0.8; margin: 0 40px 30px; line-height: 1.6;"></p>
+            <button class="btn" style="width: 200px; background: var(--accent); color: #000;" onclick="nextFact()">NEXT</button>
+        </div>
+    </div>
+
+    <script src="discovery.js"></script>
+    <script>
+        Discovery.unlock('fake-facts');
+
+        const FACTS = [
+            { text: "Oxford University is older than the Aztec Empire.", isTrue: true, exp: "The Aztec Empire began with the founding of Tenochtitlán in 1325, while Oxford teaching existed as early as 1096." },
+            { text: "There are more trees on Earth than stars in the Milky Way.", isTrue: true, exp: "There are roughly 3 trillion trees on Earth, vs about 100-400 billion stars in our galaxy." },
+            { text: "The national animal of Scotland is the Unicorn.", isTrue: true, exp: "The unicorn was first used on the Scottish royal coat of arms by William I in the 12th century." },
+            { text: "Nintendo was founded while Jack the Ripper was still at large.", isTrue: true, exp: "Nintendo was founded in September 1889 as a playing card company. Jack the Ripper was active in 1888." },
+            { text: "A strawberry is not actually a berry, but a banana is.", isTrue: true, exp: "Botanically, a berry is a fruit that comes from one flower with one ovary. Strawberries have many ovaries." },
+            { text: "Sharks are older than trees.", isTrue: true, exp: "The earliest evidence of shark fossils dates back about 450 million years. Trees appeared about 350 million years ago." },
+            { text: "Cleopatra lived closer to the moon landing than the building of the Great Pyramid.", isTrue: true, exp: "Cleopatra died in 30 BC. The Pyramid was finished around 2560 BC. The moon landing was 1969 AD." },
+            { text: "The probability of you drinking a glass of water that contains an atom once belonging to a dinosaur is almost 100%.", isTrue: true, exp: "Water cycles mean almost all water on Earth has been recycled millions of times over 4 billion years." },
+            { text: "Russia has more surface area than Pluto.", isTrue: true, exp: "Pluto's surface area is about 16.7 million sq km. Russia is about 17.1 million sq km." },
+            { text: "Sloths can hold their breath longer than dolphins.", isTrue: true, exp: "By slowing their heart rate, sloths can hold their breath underwater for up to 40 mins. Dolphins can usually manage about 10 mins." }
+        ];
+
+        let currentRound = 0;
+        let score = 0;
+
+        function displayFact() {
+            const fact = FACTS[currentRound];
+            document.getElementById('fact').textContent = fact.text;
+            document.getElementById('round-info').textContent = `Question ${currentRound + 1}/${FACTS.length}`;
+            document.getElementById('overlay').style.display = 'none';
+        }
+
+        function check(userGuess) {
+            const fact = FACTS[currentRound];
+            const overlay = document.getElementById('overlay');
+            const icon = document.getElementById('feedback-icon');
+            const title = document.getElementById('feedback-title');
+            const exp = document.getElementById('explanation');
+
+            if(userGuess === fact.isTrue) {
+                score++;
+                icon.textContent = "✅";
+                title.textContent = "CORRECT!";
+                title.style.color = "var(--success)";
+            } else {
+                icon.textContent = "❌";
+                title.textContent = "WRONG!";
+                title.style.color = "var(--error)";
+            }
+
+            exp.textContent = fact.exp;
+            document.getElementById('score-info').textContent = `Truth Score: ${score}`;
+            overlay.style.display = 'flex';
+        }
+
+        function nextFact() {
+            currentRound++;
+            if(currentRound < FACTS.length) {
+                displayFact();
+            } else {
+                showFinal();
+            }
+        }
+
+        function showFinal() {
+            const card = document.querySelector('.game-card');
+            card.innerHTML = `
+                <div style="padding: 40px;">
+                    <h1 style="color: var(--accent); font-size: 3rem;">FACT MASTER</h1>
+                    <p style="font-size: 1.5rem; margin: 20px 0;">Final Score: ${score}/${FACTS.length}</p>
+                    <p style="opacity: 0.6;">You can no longer be fooled by the truth.</p>
+                    <button class="btn" style="width: 200px; margin-top: 30px; background: var(--accent); color: #000;" onclick="location.reload()">RE-INITIALIZE</button>
+                </div>
+            `;
+        }
+
+        displayFact();
+    </script>
+<script>
+    if(/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)){
+        document.body.innerHTML += '<a href="index.html" style="position:fixed;bottom:20px;right:20px;background:#000;color:#fff;padding:10px 20px;border-radius:30px;text-decoration:none;z-index:9999;border:1px solid #333;font-family:sans-serif;font-size:14px;">Back to Gallery</a>';
+    }
+</script>
+</body>
+</html>
+

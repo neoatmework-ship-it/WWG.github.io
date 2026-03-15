@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Infinite Photo Wall — A Collective Memory</title>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #050505;
+            --text: #ffffff;
+        }
+
+        body {
+            background: var(--bg);
+            color: var(--text);
+            font-family: 'Space Grotesk', sans-serif;
+            margin: 0;
+            overflow: hidden;
+        }
+
+        .canvas-wrap {
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: grab;
+        }
+
+        .wall {
+            display: grid;
+            grid-template-columns: repeat(10, 300px);
+            grid-template-rows: repeat(10, 300px);
+            gap: 20px;
+            transform: scale(0.5);
+            transition: transform 0.1s ease-out;
+        }
+
+        .photo-tile {
+            width: 300px;
+            height: 300px;
+            background: #111;
+            border: 1px solid #222;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.7rem;
+            color: #444;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .photo-tile img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .ui-overlay {
+            position: fixed;
+            bottom: 40px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            padding: 20px;
+            border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            z-index: 100;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        #upload-btn {
+            background: #fff;
+            color: #000;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 10px;
+            font-weight: 700;
+            cursor: pointer;
+        }
+
+        .back-link { position: fixed; top: 30px; left: 30px; color: #333; text-decoration: none; font-size: 0.8rem; z-index: 101; }
+    </style>
+</head>
+<body>
+
+    <a href="index.html" class="back-link">← DISCONNECT</a>
+
+    <div class="ui-overlay">
+        <div id="stats">1,241 Shared Memories</div>
+        <button id="upload-btn" onclick="document.getElementById('file-input').click()">ADD TO WALL</button>
+        <input type="file" id="file-input" style="display: none;" onchange="handleFile(this)">
+    </div>
+
+    <div class="canvas-wrap" id="canvas">
+        <div class="wall" id="wall"></div>
+    </div>
+
+    <script src="discovery.js"></script>
+    <script>
+        Discovery.unlock('photo-wall');
+
+        const wall = document.getElementById('wall');
+        const canvas = document.getElementById('canvas');
+        let scale = 0.5;
+        let isDragging = false;
+        let startX, startY, scrollLeft, scrollTop;
+
+        // Populate with fake content initially
+        for(let i=0; i<100; i++) {
+            const tile = document.createElement('div');
+            tile.className = 'photo-tile';
+            tile.textContent = "AWAITING DATA...";
+            
+            // Randomly fill some
+            if(Math.random() > 0.8) {
+                tile.innerHTML = `<img src="https://picsum.photos/300/300?random=${i}">`;
+            }
+            wall.appendChild(tile);
+        }
+
+        // Dragging logic
+        canvas.addEventListener('mousedown', (e) => {
+            isDragging = true;
+            startX = e.pageX - canvas.offsetLeft;
+            startY = e.pageY - canvas.offsetTop;
+            scrollLeft = canvas.scrollLeft;
+            scrollTop = canvas.scrollTop;
+            canvas.style.cursor = 'grabbing';
+        });
+
+        canvas.addEventListener('mouseleave', () => { isDragging = false; canvas.style.cursor = 'grab'; });
+        canvas.addEventListener('mouseup', () => { isDragging = false; canvas.style.cursor = 'grab'; });
+
+        canvas.addEventListener('mousemove', (e) => {
+            if(!isDragging) return;
+            e.preventDefault();
+            const x = e.pageX - canvas.offsetLeft;
+            const y = e.pageY - canvas.offsetTop;
+            const walkX = (x - startX) * 1.5;
+            const walkY = (y - startY) * 1.5;
+            canvas.scrollLeft = scrollLeft - walkX;
+            canvas.scrollTop = scrollTop - walkY;
+        });
+
+        // Zooming logic
+        canvas.addEventListener('wheel', (e) => {
+            e.preventDefault();
+            scale += e.deltaY * -0.001;
+            scale = Math.min(Math.max(0.1, scale), 2);
+            wall.style.transform = `scale(${scale})`;
+        });
+
+        function handleFile(input) {
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const emptyTiles = Array.from(document.querySelectorAll('.photo-tile')).filter(t => t.textContent === "AWAITING DATA...");
+                    if(emptyTiles.length > 0) {
+                        const target = emptyTiles[Math.floor(Math.random() * emptyTiles.length)];
+                        target.innerHTML = `<img src="${e.target.result}">`;
+                        alert("Your memory has been added to the infinite wall.");
+                    }
+                }
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+    </script>
+<script>
+    if(/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)){
+        document.body.innerHTML += '<a href="index.html" style="position:fixed;bottom:20px;right:20px;background:#000;color:#fff;padding:10px 20px;border-radius:30px;text-decoration:none;z-index:9999;border:1px solid #333;font-family:sans-serif;font-size:14px;">Back to Gallery</a>';
+    }
+</script>
+</body>
+</html>
+

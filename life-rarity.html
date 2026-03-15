@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Life Rarity Calculator — How Unique Are You?</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #f8fafc;
+            --text: #1e293b;
+            --accent: #6366f1;
+            --card-bg: #ffffff;
+        }
+
+        body {
+            background: var(--bg);
+            color: var(--text);
+            font-family: 'Outfit', sans-serif;
+            margin: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 500px;
+            background: var(--card-bg);
+            padding: 40px;
+            border-radius: 32px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+            text-align: center;
+        }
+
+        h1 { font-weight: 700; font-size: 1.8rem; margin-bottom: 10px; }
+        .subtitle { font-size: 0.9rem; opacity: 0.6; margin-bottom: 30px; }
+
+        .form-group { text-align: left; margin-bottom: 25px; }
+        label { display: block; font-size: 0.8rem; font-weight: 700; text-transform: uppercase; margin-bottom: 8px; color: var(--accent); }
+        
+        select, input {
+            width: 100%;
+            padding: 14px;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            font-family: inherit;
+            font-size: 1rem;
+            box-sizing: border-box;
+            outline: none;
+            transition: 0.2s;
+        }
+        select:focus, input:focus { border-color: var(--accent); }
+
+        .btn {
+            width: 100%;
+            background: var(--accent);
+            color: #fff;
+            border: none;
+            padding: 16px;
+            border-radius: 16px;
+            font-family: inherit;
+            font-weight: 700;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .btn:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3); }
+
+        .result-screen { display: none; }
+        .rarity-val { font-size: 4rem; font-weight: 700; color: var(--accent); margin: 20px 0; }
+        .rarity-label { font-size: 1.2rem; font-weight: 700; }
+
+        .back-link { position: fixed; top: 20px; left: 20px; color: #cbd5e1; text-decoration: none; font-size: 0.8rem; }
+    </style>
+</head>
+<body>
+
+    <a href="index.html" class="back-link">← EXIT_STATISTICS</a>
+
+    <div class="container">
+        <div id="setup">
+            <h1>Life Rarity</h1>
+            <p class="subtitle">See how common your daily habits are compared to the rest of the human population.</p>
+            
+            <div class="form-group">
+                <label>Coffee Consumption</label>
+                <select id="hab-coffee">
+                    <option value="0.4">Never</option>
+                    <option value="0.3">1 cup per day</option>
+                    <option value="0.2">2-3 cups per day</option>
+                    <option value="0.1">I am 50% caffeine</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>Typical Sleep Time</label>
+                <select id="hab-sleep">
+                    <option value="0.1">Before 9 PM</option>
+                    <option value="0.5">10 PM - 12 AM</option>
+                    <option value="0.3">1 AM - 3 AM</option>
+                    <option value="0.1">I don't sleep</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>Daily Online Hours</label>
+                <select id="hab-online">
+                    <option value="0.2">1-2 hours</option>
+                    <option value="0.4">3-5 hours</option>
+                    <option value="0.3">6-10 hours</option>
+                    <option value="0.1">Chronically Online</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>Shower Habit</label>
+                <select id="hab-shower">
+                    <option value="0.6">Morning</option>
+                    <option value="0.3">Night</option>
+                    <option value="0.1">Twice a week</option>
+                </select>
+            </div>
+
+            <button class="btn" onclick="calculate()">CALCULATE RARITY</button>
+        </div>
+
+        <div class="result-screen" id="result">
+            <div style="font-size: 0.8rem; font-weight: 700; opacity: 0.5; text-transform: uppercase;">Your Rarity Score</div>
+            <div class="rarity-val" id="res-val">3.8%</div>
+            <div class="rarity-label" id="res-label">You are an Uncommon Human</div>
+            <p style="opacity: 0.6; line-height: 1.6; margin-top: 20px;">Only 3.8% of the global population shares this specific combination of behavioral patterns.</p>
+            <button class="btn" style="margin-top: 30px; background: transparent; color: var(--accent); border: 2px solid var(--accent);" onclick="location.reload()">TRY AGAIN</button>
+        </div>
+    </div>
+
+    <script src="discovery.js"></script>
+    <script>
+        Discovery.unlock('life-rarity');
+
+        function calculate() {
+            const coffee = parseFloat(document.getElementById('hab-coffee').value);
+            const sleep = parseFloat(document.getElementById('hab-sleep').value);
+            const online = parseFloat(document.getElementById('hab-online').value);
+            const shower = parseFloat(document.getElementById('hab-shower').value);
+
+            // Simple probability multiplication (simulated stats)
+            const combinedProb = (coffee * sleep * online * shower * 100).toFixed(2);
+            
+            document.getElementById('setup').style.display = 'none';
+            document.getElementById('result').style.display = 'block';
+            document.getElementById('res-val').textContent = combinedProb + "%";
+
+            let label = "Extremely Common";
+            if(combinedProb < 1) label = "Rare Artifact of Humanity";
+            else if(combinedProb < 5) label = "Uncommon Individual";
+            else if(combinedProb < 10) label = "Fairly Unique";
+            
+            document.getElementById('res-label').textContent = label;
+        }
+    </script>
+<script>
+    if(/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)){
+        document.body.innerHTML += '<a href="index.html" style="position:fixed;bottom:20px;right:20px;background:#000;color:#fff;padding:10px 20px;border-radius:30px;text-decoration:none;z-index:9999;border:1px solid #333;font-family:sans-serif;font-size:14px;">Back to Gallery</a>';
+    }
+</script>
+</body>
+</html>
+
