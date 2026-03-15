@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Global Button — One Collective Click</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #0a0a0f;
+            --accent: #ff3e00;
+            --text: #ffffff;
+        }
+
+        body {
+            background: var(--bg);
+            color: var(--text);
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            margin: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            overflow: hidden;
+            flex-direction: column;
+        }
+
+        .counter-wrap {
+            text-align: center;
+            margin-bottom: 50px;
+        }
+
+        .global-count {
+            font-size: 6rem;
+            font-weight: 800;
+            letter-spacing: -4px;
+            line-height: 1;
+        }
+
+        .count-label {
+            text-transform: uppercase;
+            letter-spacing: 5px;
+            font-size: 0.8rem;
+            opacity: 0.5;
+            margin-top: 10px;
+        }
+
+        .main-button {
+            width: 200px;
+            height: 200px;
+            background: var(--accent);
+            border: none;
+            border-radius: 50%;
+            cursor: pointer;
+            box-shadow: 0 0 50px rgba(255, 62, 0, 0.4), inset 0 0 20px rgba(0,0,0,0.2);
+            position: relative;
+            transition: transform 0.1s, box-shadow 0.1s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .main-button:active {
+            transform: scale(0.95);
+            box-shadow: 0 0 20px rgba(255, 62, 0, 0.6);
+        }
+
+        .main-button::after {
+            content: "PRESS";
+            color: #fff;
+            font-weight: 800;
+            font-size: 1.5rem;
+        }
+
+        .stats-grid {
+            position: fixed;
+            bottom: 40px;
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 40px;
+            width: 90%;
+            max-width: 800px;
+            text-align: center;
+        }
+
+        .stat-card h3 { font-size: 0.7rem; opacity: 0.5; text-transform: uppercase; margin-bottom: 5px; }
+        .stat-card p { font-size: 1.2rem; font-weight: 700; color: var(--accent); }
+
+        .back-link { position: fixed; top: 30px; left: 30px; color: #333; text-decoration: none; font-size: 0.8rem; font-weight: 700; height: 30px; }
+
+        #milestone {
+            position: fixed;
+            top: -100px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #fff;
+            color: #000;
+            padding: 15px 30px;
+            border-radius: 100px;
+            font-weight: 800;
+            transition: top 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            z-index: 100;
+        }
+
+        #milestone.active { top: 40px; }
+
+        #particle-canvas {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            pointer-events: none;
+            z-index: 5;
+        }
+    </style>
+</head>
+<body>
+
+    <a href="index.html" class="back-link">← LOGOUT</a>
+
+    <div id="milestone">MILESTONE UNLOCKED: FIREWORKS!</div>
+    <canvas id="particle-canvas"></canvas>
+
+    <div class="counter-wrap">
+        <div class="global-count" id="count">1,241,502</div>
+        <div class="count-label">Global Presses</div>
+    </div>
+
+    <button class="main-button" id="btn" onclick="press()"></button>
+
+    <div class="stats-grid">
+        <div class="stat-card">
+            <h3>Leaderboard</h3>
+            <p>1. 🇫🇮 Finland</p>
+        </div>
+        <div class="stat-card">
+            <h3>Press Rate</h3>
+            <p id="rate">42 / sec</p>
+        </div>
+        <div class="stat-card">
+            <h3>Your Contribution</h3>
+            <p id="local-count">0</p>
+        </div>
+    </div>
+
+    <script src="discovery.js"></script>
+    <script>
+        Discovery.unlock('global-button');
+
+        let globalCount = 1241502 + Math.floor(Math.random() * 10000);
+        let localCount = 0;
+        const countEl = document.getElementById('count');
+        const localEl = document.getElementById('local-count');
+        const rateEl = document.getElementById('rate');
+
+        // Simulate global activity
+        setInterval(() => {
+            const add = Math.floor(Math.random() * 5);
+            globalCount += add;
+            countEl.textContent = globalCount.toLocaleString();
+            rateEl.textContent = (40 + Math.floor(Math.random() * 10)) + " / sec";
+        }, 800);
+
+        function press() {
+            localCount++;
+            globalCount++;
+            countEl.textContent = globalCount.toLocaleString();
+            localEl.textContent = localCount;
+
+            // Simple visual feedback
+            document.body.style.background = '#1a0a0f';
+            setTimeout(() => document.body.style.background = '#0a0a0f', 50);
+
+            if(localCount % 10 === 0) {
+                triggerMilestone();
+            }
+        }
+
+        function triggerMilestone() {
+            const ms = document.getElementById('milestone');
+            ms.classList.add('active');
+            setTimeout(() => ms.classList.remove('active'), 3000);
+            
+            // Screen shake
+            document.body.style.transform = 'translate(2px, 2px) rotate(0.1deg)';
+            setTimeout(() => document.body.style.transform = 'none', 100);
+        }
+
+        // Particle System for "fireworks"
+        const canvas = document.getElementById('particle-canvas');
+        const ctx = canvas.getContext('2d');
+        let particles = [];
+
+        function resize() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+        window.onresize = resize;
+        resize();
+
+        class Particle {
+            constructor(x, y) {
+                this.x = x;
+                this.y = y;
+                this.vx = (Math.random() - 0.5) * 10;
+                this.vy = (Math.random() - 0.5) * 10;
+                this.life = 1.0;
+                this.color = `hsl(${Math.random() * 360}, 100%, 50%)`;
+            }
+            update() {
+                this.x += this.vx;
+                this.y += this.vy;
+                this.life -= 0.02;
+            }
+            draw() {
+                ctx.fillStyle = this.color;
+                ctx.globalAlpha = this.life;
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, 3, 0, Math.PI * 2);
+                ctx.fill();
+            }
+        }
+
+        function animate() {
+            ctx.clearRect(0,0, canvas.width, canvas.height);
+            particles = particles.filter(p => p.life > 0);
+            particles.forEach(p => {
+                p.update();
+                p.draw();
+            });
+            requestAnimationFrame(animate);
+        }
+        animate();
+
+        document.getElementById('btn').addEventListener('click', (e) => {
+            for(let i=0; i<10; i++) {
+                particles.push(new Particle(e.clientX, e.clientY));
+            }
+        });
+
+    </script>
+<script>
+    if(/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)){
+        document.body.innerHTML += '<a href="index.html" style="position:fixed;bottom:20px;right:20px;background:#000;color:#fff;padding:10px 20px;border-radius:30px;text-decoration:none;z-index:9999;border:1px solid #333;font-family:sans-serif;font-size:14px;">Back to Gallery</a>';
+    }
+</script>
+</body>
+</html>
+
