@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Internet Character Test — Who Are You Really?</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #030712;
+            --surface: #111827;
+            --accent: #8b5cf6;
+            --text: #f9fafb;
+            --muted: #9ca3af;
+        }
+
+        body {
+            background: var(--bg);
+            color: var(--text);
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            margin: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+        }
+
+        .quiz-card {
+            background: var(--surface);
+            padding: 40px;
+            border-radius: 32px;
+            width: 90%;
+            max-width: 500px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .progress-bar {
+            position: absolute;
+            top: 0; left: 0; height: 4px;
+            background: var(--accent);
+            transition: width 0.3s;
+        }
+
+        h1 { font-size: 1.5rem; color: var(--accent); margin-bottom: 24px; }
+        .question { font-size: 1.25rem; font-weight: 700; margin-bottom: 30px; line-height: 1.4; }
+
+        .options { display: grid; gap: 12px; }
+        .opt {
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.05);
+            padding: 16px 20px;
+            border-radius: 16px;
+            color: var(--text);
+            text-align: left;
+            cursor: pointer;
+            transition: 0.2s;
+            font-family: inherit;
+            font-size: 1rem;
+        }
+        .opt:hover { background: rgba(139, 92, 246, 0.1); border-color: var(--accent); transform: translateX(5px); }
+
+        .result { display: none; text-align: center; }
+        .res-name { font-size: 2.5rem; font-weight: 800; color: var(--accent); margin: 20px 0; }
+        .res-desc { color: var(--muted); line-height: 1.6; margin-bottom: 30px; }
+
+        .btn-share {
+            background: var(--accent);
+            color: #fff;
+            border: none;
+            padding: 16px 32px;
+            border-radius: 100px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+        .btn-share:hover { transform: scale(1.05); box-shadow: 0 0 30px rgba(139, 92, 246, 0.4); }
+
+        .back-link { position: fixed; top: 20px; left: 20px; color: var(--muted); text-decoration: none; font-size: 0.8rem; }
+    </style>
+</head>
+<body>
+
+    <a href="index.html" class="back-link">← EXIT_TEST</a>
+
+    <div class="quiz-card">
+        <div class="progress-bar" id="progress" style="width: 0%"></div>
+        
+        <div id="quiz-screen">
+            <h1 id="q-num">Question 1/10</h1>
+            <div class="question" id="q-text">Loading...</div>
+            <div class="options" id="options"></div>
+        </div>
+
+        <div class="result" id="result-screen">
+            <div style="font-size: 0.8rem; text-transform: uppercase; letter-spacing: 2px; color: var(--muted);">Your Result:</div>
+            <div class="res-name" id="res-name">Chaos Goblin</div>
+            <div class="res-desc" id="res-desc">Description goes here.</div>
+            <button class="btn-share" onclick="location.reload()">RE-TAKE TEST</button>
+        </div>
+    </div>
+
+    <script src="discovery.js"></script>
+    <script>
+        Discovery.unlock('character-test');
+
+        const QUESTIONS = [
+            { q: "How many browser tabs are open right now?", a: [ "1-3 (Minimalist)", "10+ (Normal)", "I lost count (Chaos)", "I use bookmarks instead (Ancient)" ] },
+            { q: "A controversial take appears in your feed. You:", a: [ "Scroll past (Peace)", "Read every comment (Observer)", "Type a 4-paragraph reply (Warrior)", "Send it to a group chat (Agent)" ] },
+            { q: "Your desktop icons are:", a: [ "Perfectly organized", "Scattered everywhere", "I don't have icons", "Hidden by a giant wallpaper" ] },
+            { q: "When the internet goes out for 5 minutes, you:", a: [ "Read a book", "Refresh the router 40 times", "Stare at the wall", "Actually go outside" ] },
+            { q: "Your folder naming convention is:", a: [ "Final_v2_new_NEW.zip", "YYYY-MM-DD_Category", "untitled_folder_4", "I just search for everything" ] }
+        ];
+
+        const RESULTS = {
+            "Chaos": { name: "Chaos Goblin", desc: "You thrive in the digital storm. 100+ tabs, unread emails in the thousands, and a desktop that looks like a warzone. You are the entropy of the net." },
+            "Minimalist": { name: "Spreadsheet Wizard", desc: "Everything has a place. You are efficient, clinical, and slightly terrifying to those with messy desktops." },
+            "Observer": { name: "Silent Lurker", desc: "You see everything, you say nothing. You are the dark matter of the internet—essential but invisible." },
+            "Warrior": { name: "The Nuance Knight", desc: "You cannot sleep while someone is wrong. You are the guardian of logic, even if nobody asked you to be." }
+        };
+
+        let currentQ = 0;
+        let points = { Chaos: 0, Minimalist: 0, Observer: 0, Warrior: 0 };
+
+        function loadQuestion() {
+            const q = QUESTIONS[currentQ];
+            document.getElementById('q-num').textContent = `Question ${currentQ + 1}/${QUESTIONS.length}`;
+            document.getElementById('q-text').textContent = q.q;
+            document.getElementById('progress').style.width = `${(currentQ / QUESTIONS.length) * 100}%`;
+            
+            const optWrap = document.getElementById('options');
+            optWrap.innerHTML = '';
+            q.a.forEach((ans, i) => {
+                const btn = document.createElement('button');
+                btn.className = 'opt';
+                btn.textContent = ans;
+                btn.onclick = () => answer(i);
+                optWrap.appendChild(btn);
+            });
+        }
+
+        function answer(idx) {
+            const types = ["Minimalist", "Observer", "Chaos", "Warrior"];
+            points[types[idx]]++;
+            
+            currentQ++;
+            if(currentQ < QUESTIONS.length) {
+                loadQuestion();
+            } else {
+                showResult();
+            }
+        }
+
+        function showResult() {
+            document.getElementById('quiz-screen').style.display = 'none';
+            document.getElementById('result-screen').style.display = 'block';
+            document.getElementById('progress').style.width = '100%';
+            
+            const winner = Object.keys(points).reduce((a, b) => points[a] > points[b] ? a : b);
+            const res = RESULTS[winner];
+            document.getElementById('res-name').textContent = res.name;
+            document.getElementById('res-desc').textContent = res.desc;
+        }
+
+        loadQuestion();
+    </script>
+<script>
+    if(/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)){
+        document.body.innerHTML += '<a href="index.html" style="position:fixed;bottom:20px;right:20px;background:#000;color:#fff;padding:10px 20px;border-radius:30px;text-decoration:none;z-index:9999;border:1px solid #333;font-family:sans-serif;font-size:14px;">Back to Gallery</a>';
+    }
+</script>
+</body>
+</html>
+

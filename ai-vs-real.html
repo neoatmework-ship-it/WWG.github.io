@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI vs Real — The Detection Game</title>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;500;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #000;
+            --surface: #111;
+            --accent: #00ff88;
+            --text: #fff;
+        }
+
+        body {
+            background: var(--bg);
+            color: var(--text);
+            font-family: 'Space Grotesk', sans-serif;
+            margin: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            text-align: center;
+        }
+
+        .container { width: 90%; max-width: 800px; }
+        
+        .game-card {
+            background: var(--surface);
+            padding: 40px;
+            border-radius: 24px;
+            border: 1px solid #222;
+        }
+
+        .img-display {
+            width: 100%;
+            height: 400px;
+            background: #080808;
+            border-radius: 12px;
+            margin: 20px 0;
+            overflow: hidden;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .img-display img {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+        }
+
+        .controls { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        
+        .btn {
+            background: transparent;
+            border: 2px solid #333;
+            color: #fff;
+            padding: 20px;
+            border-radius: 12px;
+            font-size: 1.2rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        .btn:hover { border-color: var(--accent); background: rgba(0, 255, 136, 0.05); }
+        .btn.correct { background: var(--accent); color: #000; border-color: var(--accent); }
+        .btn.wrong { background: #ff4444; color: #fff; border-color: #ff4444; }
+
+        .progress { margin-top: 20px; font-size: 0.8rem; color: #666; }
+
+        .back-link { position: fixed; top: 20px; left: 20px; color: #444; text-decoration: none; }
+    </style>
+</head>
+<body>
+
+    <a href="index.html" class="back-link">← SURRENDER</a>
+
+    <div class="container">
+        <div class="game-card">
+            <h1>AI or REAL?</h1>
+            <p style="opacity: 0.6;">One side is real. One side is AI. Guess which.</p>
+            
+            <div class="img-display">
+                <img id="game-img" src="assets/ai_vs_real_1.png">
+            </div>
+
+            <div class="controls">
+                <button class="btn" id="btn-left" onclick="guess('left')">LEFT IS REAL</button>
+                <button class="btn" id="btn-right" onclick="guess('right')">RIGHT IS REAL</button>
+            </div>
+
+            <div class="progress" id="progress-text">ROUND 1/4</div>
+        </div>
+    </div>
+
+    <script src="discovery.js"></script>
+    <script>
+        Discovery.unlock('ai-vs-real');
+
+        const ROUNDS = [
+            { img: "assets/ai_vs_real_1.png", correct: "left" },
+            { img: "assets/ai_vs_real_2.png", correct: "left" },
+            { img: "assets/ai_vs_real_3.png", correct: "left" },
+            { img: "assets/ai_vs_real_4.png", correct: "right" }
+        ];
+
+        let currentRound = 0;
+        let score = 0;
+        let locked = false;
+
+        function guess(side) {
+            if(locked) return;
+            locked = true;
+
+            const round = ROUNDS[currentRound];
+            const leftBtn = document.getElementById('btn-left');
+            const rightBtn = document.getElementById('btn-right');
+
+            if(side === round.correct) {
+                score++;
+                document.getElementById('btn-' + side).classList.add('correct');
+            } else {
+                document.getElementById('btn-' + side).classList.add('wrong');
+                document.getElementById('btn-' + round.correct).classList.add('correct');
+            }
+
+            setTimeout(() => {
+                currentRound++;
+                if(currentRound < ROUNDS.length) {
+                    nextRound();
+                } else {
+                    showResult();
+                }
+            }, 1500);
+        }
+
+        function nextRound() {
+            locked = false;
+            const round = ROUNDS[currentRound];
+            document.getElementById('game-img').src = round.img;
+            document.getElementById('btn-left').className = 'btn';
+            document.getElementById('btn-right').className = 'btn';
+            document.getElementById('progress-text').textContent = `ROUND ${currentRound + 1}/${ROUNDS.length}`;
+        }
+
+        function showResult() {
+            const perc = Math.round((score / ROUNDS.length) * 100);
+            document.querySelector('.game-card').innerHTML = `
+                <h1 style="color: var(--accent);">DETECTION COMPLETE</h1>
+                <div style="font-size: 5rem; margin: 30px 0;">👁️</div>
+                <h2>You detected AI ${score}/${ROUNDS.length} times.</h2>
+                <p>You are harder to fool than ${perc + 15}% of players.</p>
+                <button class="btn" style="margin-top: 20px; padding: 15px 40px;" onclick="location.reload()">TRY AGAIN</button>
+            `;
+        }
+    </script>
+<script>
+    if(/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)){
+        document.body.innerHTML += '<a href="index.html" style="position:fixed;bottom:20px;right:20px;background:#000;color:#fff;padding:10px 20px;border-radius:30px;text-decoration:none;z-index:9999;border:1px solid #333;font-family:sans-serif;font-size:14px;">Back to Gallery</a>';
+    }
+</script>
+</body>
+</html>
+
