@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Internet Archaeology — Digital Ruins</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap');
+
+        :root {
+            --term-green: #00ff41;
+            --term-bg: #0c0c0c;
+            --crt-overlay: rgba(18, 16, 16, 0.1);
+        }
+
+        body, html {
+            margin: 0;
+            padding: 0;
+            background: #000;
+            color: var(--term-green);
+            font-family: 'Share Tech Mono', monospace;
+            height: 100vh;
+            overflow: hidden;
+            text-transform: uppercase;
+        }
+
+        /* CRT Screen Effect */
+        .crt-container {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            padding: 40px;
+            box-sizing: border-box;
+            background: radial-gradient(circle, #1a1a1a 0%, #000 100%);
+        }
+
+        .crt-container::before {
+            content: " ";
+            display: block;
+            position: absolute;
+            top: 0; left: 0; bottom: 0; right: 0;
+            background: linear-gradient(var(--crt-overlay) 50%, rgba(0, 0, 0, 0.1) 50%), 
+                        linear-gradient(90deg, rgba(255, 0, 0, 0.05), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.05));
+            z-index: 10;
+            background-size: 100% 4px, 3px 100%;
+            pointer-events: none;
+        }
+
+        .crt-container::after {
+            content: " ";
+            display: block;
+            position: absolute;
+            top: 0; left: 0; bottom: 0; right: 0;
+            background: rgba(18, 16, 16, 0.1);
+            opacity: 0;
+            z-index: 11;
+            pointer-events: none;
+            animation: flicker 0.15s infinite;
+        }
+
+        @keyframes flicker {
+            0% { opacity: 0.27861; }
+            5% { opacity: 0.34769; }
+            10% { opacity: 0.23604; }
+            100% { opacity: 0.25; }
+        }
+
+        #terminal-output {
+            flex-grow: 1;
+            overflow-y: auto;
+            margin-bottom: 20px;
+            scrollbar-width: none;
+        }
+
+        .input-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        #command-input {
+            background: transparent;
+            border: none;
+            color: var(--term-green);
+            font-family: inherit;
+            font-size: 1.2rem;
+            flex-grow: 1;
+            outline: none;
+            caret-color: var(--term-green);
+        }
+
+        .glitch-text { animation: glitch 1s linear infinite; }
+        @keyframes glitch { 2%, 64% { transform: translate(2px,0) skew(0deg); } 4%, 60% { transform: translate(-2px,0) skew(0deg); } 62% { transform: translate(0,0) skew(5deg); } }
+
+        /* Game Scene containers */
+        #game-area {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 80%;
+            max-width: 800px;
+            height: 60%;
+            border: 1px solid var(--term-green);
+            background: rgba(0, 20, 0, 0.2);
+            padding: 20px;
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 0 20px rgba(0, 255, 65, 0.2);
+        }
+
+        .artifact-img {
+            max-width: 300px;
+            max-height: 250px;
+            filter: grayscale(1) contrast(1.5) brightness(0.8);
+            border: 2px solid var(--term-green);
+            margin-bottom: 20px;
+        }
+
+        .pixel-blur { filter: brightness(0.5) blur(10px) contrast(2); }
+
+        .hidden { display: none; }
+
+        .btn {
+            background: var(--term-green);
+            color: #000;
+            padding: 10px 20px;
+            border: none;
+            cursor: pointer;
+            margin-top: 10px;
+            font-family: inherit;
+            font-weight: bold;
+        }
+
+        .btn:hover { background: #fff; }
+
+        #museum-shelf {
+            position: fixed;
+            bottom: 20px;
+            right: 40px;
+            text-align: right;
+            font-size: 0.8rem;
+        }
+
+        .history-entry { margin-bottom: 5px; opacity: 0.7; }
+        .prompt { font-weight: bold; color: #fff; }
+
+        .back-btn {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            color: var(--term-green);
+            text-decoration: none;
+            font-size: 0.8rem;
+            z-index: 100;
+        }
+    </style>
+</head>
+<body>
+    <a href="index.html" class="back-btn">[ ESC ] BACK TO HUB</a>
+
+    <div class="crt-container">
+        <div id="terminal-output">
+            <div class="glitch-text" style="font-size: 2rem;">INTERNET ARCHAEOLOGY v1.0.4</div>
+            <div class="history-entry">> INITIALIZING BOOT SEQUENCE...</div>
+            <div class="history-entry">> SCANNING SECTORS FOR LOST DATA...</div>
+            <div class="history-entry">> SIGNAL DETECTED.</div>
+            <br>
+            <div class="prompt">SYSTEM: YOU HAVE DISCOVERED THE RUINS OF THE EARLY INTERNET.</div>
+            <div class="prompt">DO YOU WISH TO COMMENCE EXPLORATION? (Type 'Y' and Enter)</div>
+        </div>
+
+        <div id="game-area">
+            <h2 id="level-title">LEVEL 1: MEME VAULT</h2>
+            <p id="level-desc">DECODE THE ANCIENT ARTIFACT</p>
+            <img id="display-img" class="artifact-img pixel-blur" src="under_construction.png" alt="Artifact">
+            <div id="puzzle-hint" style="margin-bottom: 10px;">? ? ?</div>
+        </div>
+
+        <div class="input-row">
+            <span id="label">></span>
+            <input type="text" id="command-input" autofocus>
+        </div>
+
+        <div id="museum-shelf">
+            COLLECTED FRAGMENTS: <span id="frag-count">0</span>
+        </div>
+    </div>
+
+    <script src="discovery.js"></script>
+    <script>
+        const output = document.getElementById('terminal-output');
+        const input = document.getElementById('command-input');
+        const gameArea = document.getElementById('game-area');
+        const displayImg = document.getElementById('display-img');
+        const levelTitle = document.getElementById('level-title');
+        const levelDesc = document.getElementById('level-desc');
+        const fragCountEl = document.getElementById('frag-count');
+
+        let gameState = 'START';
+        let level = 0;
+        let fragments = parseInt(localStorage.getItem('archaeology_frags') || '0');
+        fragCountEl.textContent = fragments;
+
+        const LEVELS = [
+            {
+                title: "LEVEL 1: THE MEME VAULT",
+                desc: "TYPE THE NAME OF THIS 90s WEB STATE",
+                img: "under_construction.png",
+                answer: "UNDER CONSTRUCTION",
+                hint: "U _ _ _ _   C _ _ _ _ _ _ _ _ _ _ _",
+                blur: true
+            },
+            {
+                title: "LEVEL 2: BROWSER WARS",
+                desc: "IDENTIFY THIS ANCIENT NAVIGATOR",
+                img: "ns_logo.png",
+                answer: "NETSCAPE",
+                hint: "N _ _ _ _ _ _ _",
+                blur: true
+            },
+            {
+                title: "LEVEL 3: LEGACY PROTOCOL",
+                desc: "IDENTIFY THE DOMINANT BROWSER OF 2001",
+                img: "ie_logo.png",
+                answer: "INTERNET EXPLORER",
+                hint: "I _ _ _ _ _ _ _   E _ _ _ _ _ _ _",
+                blur: true
+            }
+        ];
+
+        input.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                const cmd = input.value.toUpperCase().trim();
+                input.value = '';
+                handleCommand(cmd);
+            }
+        });
+
+        function print(text, type = 'history-entry') {
+            const div = document.createElement('div');
+            div.className = type;
+            div.textContent = `> ${text}`;
+            output.appendChild(div);
+            output.scrollTop = output.scrollHeight;
+        }
+
+        function handleCommand(cmd) {
+            if (gameState === 'START') {
+                if (cmd === 'Y') {
+                    print("CONNECTION ESTABLISHED.", "prompt");
+                    gameState = 'PLAYING';
+                    gameArea.style.display = 'flex';
+                    loadLevel();
+                } else {
+                    print("INVALID SELECTION. RE-ATTEMPT.");
+                }
+            } else if (gameState === 'PLAYING') {
+                checkAnswer(cmd);
+            }
+        }
+
+        function loadLevel() {
+            if (level >= LEVELS.length) {
+                winGame();
+                return;
+            }
+            const data = LEVELS[level];
+            levelTitle.textContent = data.title;
+            levelDesc.textContent = data.desc;
+            displayImg.src = data.img;
+            displayImg.className = data.blur ? 'artifact-img pixel-blur' : 'artifact-img';
+            document.getElementById('puzzle-hint').textContent = data.hint;
+            print(`CURRENT TASK: ${data.desc}`);
+        }
+
+        function checkAnswer(cmd) {
+            const data = LEVELS[level];
+            if (cmd === data.answer) {
+                print("SUCCESS. DATA FRAGMENT RETRIEVED.", "prompt");
+                fragments++;
+                localStorage.setItem('archaeology_frags', fragments);
+                fragCountEl.textContent = fragments;
+                level++;
+                
+                // Flash effect
+                gameArea.style.boxShadow = "0 0 50px rgba(255, 255, 255, 0.5)";
+                setTimeout(() => {
+                    gameArea.style.boxShadow = "0 0 20px rgba(0, 255, 65, 0.2)";
+                    loadLevel();
+                }, 1000);
+            } else {
+                print(`ERROR. INCORRECT SIGNATURE. HINT: ${data.hint}`);
+            }
+        }
+
+        function winGame() {
+            gameState = 'WON';
+            levelTitle.textContent = "EXPLORATION COMPLETE";
+            levelDesc.textContent = "YOU ARE A CERTIFIED INTERNET HISTORIAN";
+            displayImg.src = "best_viewed.png"; // Reusing another asset
+            displayImg.className = 'artifact-img';
+            document.getElementById('puzzle-hint').textContent = `RANK: MASTER ARCHAEOLOGIST`;
+            print("ALL DATA SECTORS CLEAR.", "prompt");
+            print("ACCESSING THE ARCHIVE GALLERY...");
+            
+            setTimeout(() => {
+                alert("CONGRATULATIONS! You have discovered " + fragments + " artifacts in total across your career.");
+            }, 1000);
+        }
+
+        // Initial cursor focus
+        window.onclick = () => input.focus();
+    </script>
+</body>
+</html>
