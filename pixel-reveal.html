@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Pixel Reveal — The Detection Game</title>
-    <link rel="stylesheet" href="style.css">
     <style>
         :root {
             --reveal-accent: #6366f1;
@@ -56,7 +55,7 @@
             margin-top: 20px;
         }
 
-        .guess-btn {
+        .guess-btn:not(#next-btn) {
             background: rgba(255,255,255,0.05);
             border: 1px solid rgba(255,255,255,0.1);
             padding: 12px;
@@ -67,14 +66,14 @@
             font-weight: 500;
         }
 
-        .guess-btn:hover {
+        .guess-btn:not(#next-btn):hover {
             background: var(--reveal-accent);
             border-color: #818cf8;
             transform: scale(1.05);
         }
 
-        .guess-btn.correct { background: #10b981; border-color: #34d399; }
-        .guess-btn.wrong { background: #ef4444; border-color: #f87171; }
+        .guess-btn.correct { background: #10b981 !important; border-color: #34d399; }
+        .guess-btn.wrong { background: #ef4444 !important; border-color: #f87171; }
 
         #progress-container {
             width: 100%;
@@ -202,6 +201,7 @@
             });
 
             resultText.style.opacity = 0;
+            resultText.textContent = '';
             nextBtn.style.display = 'none';
         }
 
@@ -239,7 +239,7 @@
             clearInterval(revealInterval);
             
             const correct = ROUNDS[currentRound].answer;
-            const btns = document.querySelectorAll('.guess-btn');
+            const btns = document.querySelectorAll('.guess-grid .guess-btn');
             btns.forEach(b => b.disabled = true);
 
             if (guess === correct) {
