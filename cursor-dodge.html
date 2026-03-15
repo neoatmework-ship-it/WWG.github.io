@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cursor Dodge — Neon Survival</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap');
+
+        :root {
+            --bg: #000;
+            --player: #00ff88;
+            --enemy: #ff0055;
+        }
+
+        body, html {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            background: var(--bg);
+            color: #fff;
+            font-family: 'Share Tech Mono', monospace;
+            overflow: hidden;
+            cursor: none; /* We'll custom render a cursor dot */
+        }
+
+        #game-canvas {
+            display: block;
+        }
+
+        .ui {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            pointer-events: none;
+            text-transform: uppercase;
+        }
+
+        .score-val { font-size: 2rem; color: var(--player); }
+
+        #game-over {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.9);
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            z-index: 100;
+        }
+
+        .btn {
+            background: var(--player);
+            color: #000;
+            padding: 15px 30px;
+            border: none;
+            font-family: inherit;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 20px;
+            pointer-events: all;
+        }
+
+        .back-btn {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            color: #fff;
+            text-decoration: none;
+            font-size: 0.8rem;
+            opacity: 0.5;
+            pointer-events: all;
+        }
+    </style>
+</head>
+<body>
+    <a href="index.html" class="back-btn">[ ESC ] GALLERY</a>
+    
+    <div class="ui">
+        TIME: <span id="time" class="score-val">0.00</span>s<br>
+        THRESHOLD: <span id="difficulty">NORMAL</span>
+    </div>
+
+    <div id="game-over">
+        <h1 style="color: var(--enemy); font-size: 4rem;">EXTERMINATED</h1>
+        <p id="final-time">YOU SURVIVED FOR 0.00 SECONDS</p>
+        <button class="btn" onclick="location.reload()">RE-INITIALIZE</button>
+    </div>
+
+    <canvas id="game-canvas"></canvas>
+
+    <script>
+        const canvas = document.getElementById('game-canvas');
+        const ctx = canvas.getContext('2d');
+        const timeEl = document.getElementById('time');
+        const diffEl = document.getElementById('difficulty');
+        const overEl = document.getElementById('game-over');
+        const finalEl = document.getElementById('final-time');
+
+        let width, height;
+        let mouse = { x: 0, y: 0 };
+        let startTime = Date.now();
+        let enemies = [];
+        let gameRunning = true;
+
+        function resize() {
+            width = canvas.width = window.innerWidth;
+            height = canvas.height = window.innerHeight;
+            mouse.x = width / 2;
+            mouse.y = height / 2;
+        }
+
+        window.onresize = resize;
+        resize();
+
+        window.onmousemove = (e) => {
+            mouse.x = e.clientX;
+            mouse.y = e.clientY;
+        };
+
+        class Enemy {
+            constructor() {
+                // Spawn off-screen
+                const side = Math.floor(Math.random() * 4);
+                if (side === 0) { this.x = -50; this.y = Math.random() * height; }
+                else if (side === 1) { this.x = width + 50; this.y = Math.random() * height; }
+                else if (side === 2) { this.x = Math.random() * width; this.y = -50; }
+                else { this.x = Math.random() * width; this.y = height + 50; }
+                
+                this.size = 15 + Math.random() * 20;
+                this.speed = 2 + Math.random() * 3;
+                this.color = '#ff0055';
+            }
+
+            update() {
+                const dx = mouse.x - this.x;
+                const dy = mouse.y - this.y;
+                const dist = Math.sqrt(dx * dx + dy * dy);
+                
+                this.x += (dx / dist) * this.speed;
+                this.y += (dy / dist) * this.speed;
+
+                // Collision
+                if (dist < (this.size / 2 + 5)) {
+                    endGame();
+                }
+            }
+
+            draw() {
+                ctx.strokeStyle = this.color;
+                ctx.lineWidth = 2;
+                ctx.strokeRect(this.x - this.size / 2, this.y - this.size / 2, this.size, this.size);
+                
+                // Trail
+                ctx.fillStyle = this.color + '33';
+                ctx.fillRect(this.x - this.size / 2, this.y - this.size / 2, this.size, this.size);
+            }
+        }
+
+        function spawn() {
+            if (!gameRunning) return;
+            enemies.push(new Enemy());
+            
+            // Speed up spawn rate over time
+            const elapsed = (Date.now() - startTime) / 1000;
+            const delay = Math.max(100, 800 - (elapsed * 20));
+            setTimeout(spawn, delay);
+        }
+
+        function endGame() {
+            gameRunning = false;
+            overEl.style.display = 'flex';
+            const elapsed = (Date.now() - startTime) / 1000;
+            finalEl.textContent = `YOU SURVIVED FOR ${elapsed.toFixed(2)} SECONDS`;
+        }
+
+        function animate() {
+            if (!gameRunning) return;
+
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.2)'; // Motion blur
+            ctx.fillRect(0, 0, width, height);
+
+            const elapsed = (Date.now() - startTime) / 1000;
+            timeEl.textContent = elapsed.toFixed(2);
+
+            if (elapsed > 30) { diffEl.textContent = 'EXTREME'; diffEl.style.color = '#ff0055'; }
+            else if (elapsed > 15) { diffEl.textContent = 'HARD'; diffEl.style.color = '#ff9900'; }
+
+            enemies.forEach(e => {
+                e.update();
+                e.draw();
+            });
+
+            // Player cursor
+            ctx.fillStyle = varColor('--player');
+            ctx.beginPath();
+            ctx.arc(mouse.x, mouse.y, 5, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.shadowBlur = 15;
+            ctx.shadowColor = varColor('--player');
+
+            requestAnimationFrame(animate);
+        }
+
+        function varColor(name) {
+            return getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+        }
+
+        spawn();
+        animate();
+    </script>
+</body>
+</html>

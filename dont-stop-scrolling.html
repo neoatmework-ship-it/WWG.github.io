@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Don't Stop Scrolling — Self-Destructing Page</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;700&display=swap');
+
+        body {
+            margin: 0;
+            background: #000;
+            color: #fff;
+            font-family: 'Cormorant Garamond', serif;
+            height: 5000px; /* Long page to scroll */
+            overflow-x: hidden;
+        }
+
+        #overlay {
+            position: fixed;
+            inset: 0;
+            background: #000;
+            opacity: 0;
+            pointer-events: none;
+            z-index: 1000;
+            transition: opacity 0.2s;
+        }
+
+        .content-section {
+            padding: 100px 20px;
+            text-align: center;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        h1 { font-size: 4rem; letter-spacing: 10px; margin-bottom: 500px; }
+        p { font-size: 1.5rem; line-height: 2; margin-bottom: 800px; opacity: 0.5; }
+
+        #warning {
+            position: fixed;
+            top: 20px;
+            width: 100%;
+            text-align: center;
+            font-size: 0.8rem;
+            letter-spacing: 5px;
+            color: #ff3e3e;
+            text-transform: uppercase;
+        }
+
+        .back-btn {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            color: #fff;
+            text-decoration: none;
+            z-index: 2000;
+            opacity: 0.5;
+        }
+    </style>
+</head>
+<body>
+    <div id="overlay"></div>
+    <div id="warning">DO NOT CEASE SCROLLING</div>
+    <a href="index.html" class="back-btn">[ ESCAPE ]</a>
+
+    <div class="content-section">
+        <h1>The page is fragile.</h1>
+        <p>Your movement is the only thing keeping reality intact.</p>
+        <p>If you pause, the void consumes the data.</p>
+        <p>Keep moving.</p>
+        <p>Deeper into the silence.</p>
+        <p>Don't stop.</p>
+        <p>Wait, did you hear that?</p>
+        <p>Just kidding. Keep scrolling.</p>
+        <p>Almost there.</p>
+        <h1 style="margin-bottom: 1000px;">THE END?</h1>
+    </div>
+
+    <script>
+        const overlay = document.getElementById('overlay');
+        let scrollTimeout;
+        let lastScroll = Date.now();
+        let opacity = 0;
+
+        function checkScroll() {
+            const now = Date.now();
+            const elapsed = now - lastScroll;
+
+            if (elapsed > 500) {
+                // User stopped! FADE TO BLACK FAST
+                opacity = Math.min(1, opacity + 0.05);
+            } else {
+                // User is moving! RESTORE
+                opacity = Math.max(0, opacity - 0.1);
+            }
+
+            overlay.style.opacity = opacity;
+            requestAnimationFrame(checkScroll);
+        }
+
+        window.onscroll = () => {
+            lastScroll = Date.now();
+        };
+
+        checkScroll();
+    </script>
+</body>
+</html>

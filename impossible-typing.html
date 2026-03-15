@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Impossible Typing — Reality Glitch</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@600&family=Inter:wght@400;700&display=swap');
+
+        :root {
+            --bg: #050505;
+            --accent: #a78bfa;
+        }
+
+        body {
+            margin: 0;
+            background: var(--bg);
+            color: #fff;
+            font-family: 'Inter', sans-serif;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+        .word-container {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 4rem;
+            display: flex;
+            gap: 15px;
+            perspective: 1000px;
+            margin-bottom: 2rem;
+            height: 150px;
+            align-items: center;
+        }
+
+        .word {
+            display: inline-block;
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            opacity: 0.3;
+        }
+
+        .word.active {
+            opacity: 1;
+            color: var(--accent);
+            text-shadow: 0 0 20px var(--accent);
+        }
+
+        .word.correct { color: #4ade80; opacity: 0.5; }
+        .word.wrong { color: #f87171; animation: shake 0.5s; }
+
+        #input-area {
+            background: transparent;
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            color: #fff;
+            padding: 15px 30px;
+            font-size: 1.5rem;
+            border-radius: 12px;
+            outline: none;
+            text-align: center;
+            width: 300px;
+            font-family: inherit;
+        }
+
+        #input-area:focus { border-color: var(--accent); }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-10px); }
+            75% { transform: translateX(10px); }
+        }
+
+        .glitch-stats {
+            margin-top: 3rem;
+            display: flex;
+            gap: 50px;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            opacity: 0.5;
+        }
+
+        .back-btn {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            color: #fff;
+            text-decoration: none;
+            font-size: 0.8rem;
+            opacity: 0.3;
+        }
+    </style>
+</head>
+<body>
+    <a href="index.html" class="back-btn">[ ESC ] GALLERY</a>
+    
+    <div class="word-container" id="words-wrap"></div>
+    <input type="text" id="input-area" placeholder="Type here..." autocomplete="off">
+
+    <div class="glitch-stats">
+        <span>WPM: <b id="wpm">0</b></span>
+        <span>ACC: <b id="acc">100%</b></span>
+        <span>STREAK: <b id="streak">0</b></span>
+    </div>
+
+    <script>
+        const wrap = document.getElementById('words-wrap');
+        const input = document.getElementById('input-area');
+        const wpmEl = document.getElementById('wpm');
+        const accEl = document.getElementById('acc');
+        const streakEl = document.getElementById('streak');
+
+        const DICTIONARY = ["glitch", "reality", "phantom", "void", "digital", "echo", "nexus", "cipher", "binary", "system", "ghost", "vector", "static", "flux"];
+        
+        let activeIdx = 0;
+        let score = 0;
+        let totalWords = 0;
+        let streak = 0;
+        let startTime = 0;
+        let gameActive = false;
+
+        function generate() {
+            wrap.innerHTML = '';
+            for(let i=0; i<3; i++) {
+                const w = DICTIONARY[Math.floor(Math.random() * DICTIONARY.length)];
+                const span = document.createElement('span');
+                span.className = 'word';
+                span.textContent = w;
+                if (i === 0) span.classList.add('active');
+                wrap.appendChild(span);
+            }
+            applyChaos();
+        }
+
+        function applyChaos() {
+            const words = document.querySelectorAll('.word');
+            words.forEach((w, idx) => {
+                if (idx < activeIdx) return;
+                
+                // Random transformations to make it "Impossible"
+                const rotX = Math.random() * 60 - 30;
+                const rotY = Math.random() * 60 - 30;
+                const rotZ = Math.random() * 360;
+                const scale = 0.8 + Math.random() * 0.4;
+                const blur = idx === activeIdx ? 0 : 5;
+                
+                w.style.transform = `rotateX(${rotX}deg) rotateY(${rotY}deg) rotateZ(${rotZ}deg) scale(${scale})`;
+                w.style.filter = `blur(${blur}px)`;
+                
+                // Occasional flip
+                if (Math.random() > 0.8) w.style.transform += ' scaleY(-1)';
+            });
+        }
+
+        input.oninput = () => {
+            if (!gameActive) {
+                gameActive = true;
+                startTime = Date.now();
+            }
+
+            const current = input.value.trim();
+            const target = document.querySelectorAll('.word')[activeIdx].textContent;
+
+            if (input.value.endsWith(' ')) {
+                totalWords++;
+                if (current === target) {
+                    document.querySelectorAll('.word')[activeIdx].className = 'word correct';
+                    score++;
+                    streak++;
+                } else {
+                    document.querySelectorAll('.word')[activeIdx].className = 'word wrong';
+                    streak = 0;
+                }
+                
+                input.value = '';
+                activeIdx++;
+                
+                if (activeIdx >= 3) {
+                    activeIdx = 0;
+                    generate();
+                } else {
+                    const words = document.querySelectorAll('.word');
+                    words[activeIdx].classList.add('active');
+                    applyChaos();
+                }
+                
+                updateStats();
+            }
+        };
+
+        function updateStats() {
+            const elapsed = (Date.now() - startTime) / 60000;
+            const wpm = Math.round(score / elapsed) || 0;
+            const acc = Math.round((score / totalWords) * 100) || 100;
+            
+            wpmEl.textContent = wpm;
+            accEl.textContent = acc + '%';
+            streakEl.textContent = streak;
+        }
+
+        generate();
+        updateStats();
+
+        // Focus management
+        window.onclick = () => input.focus();
+    </script>
+</body>
+</html>

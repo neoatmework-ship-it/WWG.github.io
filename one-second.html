@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>1 Second — The Perfectionist's Test</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Fragment+Mono&family=Inter:wght@400;700&display=swap');
+
+        :root {
+            --bg: #0a0a0a;
+            --accent: #ff3e3e;
+            --text: #ffffff;
+        }
+
+        body {
+            margin: 0;
+            background: var(--bg);
+            color: var(--text);
+            font-family: 'Inter', sans-serif;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+        .timer-display {
+            font-family: 'Fragment Mono', monospace;
+            font-size: 8rem;
+            margin-bottom: 2rem;
+            font-variant-numeric: tabular-nums;
+            letter-spacing: -2px;
+        }
+
+        .hint {
+            opacity: 0.5;
+            font-size: 0.9rem;
+            margin-bottom: 3rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .main-btn {
+            width: 200px;
+            height: 200px;
+            border-radius: 50%;
+            background: transparent;
+            border: 4px solid var(--accent);
+            color: var(--accent);
+            font-family: inherit;
+            font-size: 1.5rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            outline: none;
+            box-shadow: 0 0 20px rgba(255, 62, 62, 0.1);
+        }
+
+        .main-btn:hover {
+            transform: scale(1.05);
+            background: rgba(255, 62, 62, 0.1);
+            box-shadow: 0 0 40px rgba(255, 62, 62, 0.2);
+        }
+
+        .main-btn:active {
+            transform: scale(0.95);
+        }
+
+        .main-btn.running {
+            background: var(--accent);
+            color: #000;
+        }
+
+        .result {
+            position: absolute;
+            bottom: 10%;
+            text-align: center;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: all 0.4s;
+        }
+
+        .result.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .best {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            font-size: 0.8rem;
+            opacity: 0.4;
+        }
+
+        .back-btn {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            color: var(--text);
+            text-decoration: none;
+            font-size: 0.8rem;
+            opacity: 0.5;
+        }
+
+        .back-btn:hover { opacity: 1; }
+
+        .perfect-flash {
+            position: fixed;
+            inset: 0;
+            background: #fff;
+            z-index: 1000;
+            pointer-events: none;
+            opacity: 0;
+        }
+
+        @keyframes perfect-hit {
+            0% { opacity: 0; }
+            10% { opacity: 0.8; }
+            100% { opacity: 0; }
+        }
+    </style>
+</head>
+<body>
+    <a href="index.html" class="back-btn">[ ESC ] GALLERY</a>
+    <div class="best">ALL-TIME BEST: <span id="best-score">---</span></div>
+    
+    <div class="timer-display" id="timer">0.000</div>
+    <div class="hint">CLICK EXACTLY AT 1.000s</div>
+    
+    <button class="main-btn" id="action-btn">START</button>
+    
+    <div class="result" id="result-box">
+        <h2 id="result-title">TOO EARLY</h2>
+        <p id="result-diff">+0.042s difference</p>
+    </div>
+
+    <div class="perfect-flash" id="flash"></div>
+
+    <script>
+        const btn = document.getElementById('action-btn');
+        const timer = document.getElementById('timer');
+        const resultBox = document.getElementById('result-box');
+        const resultTitle = document.getElementById('result-title');
+        const resultDiff = document.getElementById('result-diff');
+        const bestEl = document.getElementById('best-score');
+        const flash = document.getElementById('flash');
+
+        let startTime = 0;
+        let running = false;
+        let best = localStorage.getItem('one_sec_best') || Infinity;
+        if (best !== Infinity) bestEl.textContent = Number(best).toFixed(3) + 's';
+
+        function updateTimer() {
+            if (!running) return;
+            const elapsed = (Date.now() - startTime) / 1000;
+            timer.textContent = elapsed.toFixed(3);
+            requestAnimationFrame(updateTimer);
+        }
+
+        btn.onclick = () => {
+            if (!running) {
+                // Start
+                startTime = Date.now();
+                running = true;
+                btn.textContent = 'STOP';
+                btn.classList.add('running');
+                resultBox.classList.remove('visible');
+                updateTimer();
+            } else {
+                // Stop
+                running = false;
+                const finalTime = (Date.now() - startTime) / 1000;
+                timer.textContent = finalTime.toFixed(3);
+                btn.textContent = 'START';
+                btn.classList.remove('running');
+                showResult(finalTime);
+            }
+        };
+
+        function showResult(time) {
+            const diff = Math.abs(1.000 - time);
+            resultBox.classList.add('visible');
+            
+            if (time === 1.000) {
+                resultTitle.textContent = "ABSOLUTE PERFECTION";
+                resultTitle.style.color = "#4ade80";
+                flash.style.animation = "perfect-hit 1s ease-out";
+                setTimeout(() => flash.style.animation = "", 1000);
+            } else if (diff < 0.01) {
+                resultTitle.textContent = "INSANE";
+                resultTitle.style.color = "#4ade80";
+            } else if (diff < 0.05) {
+                resultTitle.textContent = "ALMOST PERFECT";
+                resultTitle.style.color = "#fb923c";
+            } else {
+                resultTitle.textContent = time < 1 ? "TOO EARLY" : "TOO LATE";
+                resultTitle.style.color = "#ff3e3e";
+            }
+
+            resultDiff.textContent = `${time < 1 ? '-' : '+'}${diff.toFixed(3)}s difference`;
+
+            if (diff < best) {
+                best = diff;
+                localStorage.setItem('one_sec_best', best);
+                bestEl.textContent = best.toFixed(3) + 's (NEW BEST)';
+            }
+        }
+    </script>
+</body>
+</html>

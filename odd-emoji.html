@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Odd One Out — Emoji Perception</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap');
+
+        :root {
+            --bg: #0f172a;
+            --accent: #38bdf8;
+            --grid-size: 8;
+        }
+
+        body {
+            margin: 0;
+            background: var(--bg);
+            color: #fff;
+            font-family: 'Inter', sans-serif;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+        #game-grid {
+            display: grid;
+            grid-template-columns: repeat(var(--grid-size), 1fr);
+            gap: 10px;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+        }
+
+        .emoji-cell {
+            width: 50px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            cursor: pointer;
+            transition: transform 0.1s;
+            user-select: none;
+        }
+
+        .emoji-cell:hover {
+            transform: scale(1.15);
+        }
+
+        .emoji-cell.odd {
+            /* Injected anomaly (e.g., slight rotation or filter) */
+            filter: hue-rotate(15deg);
+            transform: rotate(5deg);
+        }
+
+        .stats {
+            margin-bottom: 2rem;
+            display: flex;
+            gap: 40px;
+            font-size: 1.2rem;
+            font-weight: 700;
+        }
+
+        .stat-val { color: var(--accent); }
+
+        #timer-bar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 6px;
+            background: var(--accent);
+            width: 100%;
+            transition: width linear;
+        }
+
+        .intro {
+            text-align: center;
+            max-width: 400px;
+        }
+
+        .btn {
+            background: var(--accent);
+            color: #000;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-weight: 700;
+            cursor: pointer;
+            margin-top: 20px;
+        }
+
+        #level-indicator {
+            position: fixed;
+            top: 40px;
+            font-size: 3rem;
+            opacity: 0.1;
+            font-weight: 900;
+            z-index: -1;
+        }
+
+        .back-btn {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            color: #fff;
+            text-decoration: none;
+            font-size: 0.8rem;
+            opacity: 0.5;
+        }
+    </style>
+</head>
+<body>
+    <a href="index.html" class="back-btn">[ ESC ] GALLERY</a>
+    <div id="level-indicator">LEVEL 1</div>
+    <div id="timer-bar"></div>
+
+    <div id="intro-screen" class="intro">
+        <h1>Find the Odd One Out</h1>
+        <p>One emoji in the grid is slightly different. Find it as fast as you can.</p>
+        <button class="btn" id="start-btn">START GAME</button>
+    </div>
+
+    <div id="game-screen" style="display: none;">
+        <div class="stats">
+            <div>SCORE: <span id="score" class="stat-val">0</span></div>
+            <div>TIME: <span id="time-left" class="stat-val">10</span>s</div>
+        </div>
+        <div id="game-grid"></div>
+    </div>
+
+    <script>
+        const grid = document.getElementById('game-grid');
+        const intro = document.getElementById('intro-screen');
+        const game = document.getElementById('game-screen');
+        const startBtn = document.getElementById('start-btn');
+        const scoreEl = document.getElementById('score');
+        const timeEl = document.getElementById('time-left');
+        const timerBar = document.getElementById('timer-bar');
+        const levelEl = document.getElementById('level-indicator');
+
+        let score = 0;
+        let timeLeft = 10;
+        let timerInterval;
+        let currentLevel = 1;
+        
+        const EMOJIS = ['😀', '😎', '😜', '👻', '👾', '🐱', '🦄', '🍎', '🔥', '💎', '🚀'];
+
+        startBtn.onclick = startNextLevel;
+
+        function startNextLevel() {
+            intro.style.display = 'none';
+            game.style.display = 'flex';
+            clearInterval(timerInterval);
+            
+            timeLeft = Math.max(2, 5 - (currentLevel * 0.2)); // Less time each level
+            updateTimerDisplay();
+            
+            generateGrid();
+            
+            timerInterval = setInterval(() => {
+                timeLeft -= 0.1;
+                updateTimerDisplay();
+                if (timeLeft <= 0) {
+                    gameOver();
+                }
+            }, 100);
+        }
+
+        function generateGrid() {
+            grid.innerHTML = '';
+            const size = Math.min(10, 4 + Math.floor(currentLevel / 2));
+            document.documentElement.style.setProperty('--grid-size', size);
+            
+            const total = size * size;
+            const emoji = EMOJIS[Math.floor(Math.random() * EMOJIS.length)];
+            const oddIndex = Math.floor(Math.random() * total);
+
+            for(let i=0; i<total; i++) {
+                const cell = document.createElement('div');
+                cell.className = 'emoji-cell';
+                cell.textContent = emoji;
+                
+                if (i === oddIndex) {
+                    cell.classList.add('odd');
+                    cell.onclick = () => {
+                        score += Math.ceil(timeLeft * 10);
+                        scoreEl.textContent = score;
+                        currentLevel++;
+                        levelEl.textContent = `LEVEL ${currentLevel}`;
+                        startNextLevel();
+                    };
+                } else {
+                    cell.onclick = () => {
+                        timeLeft -= 2; // Penalty
+                        cell.style.filter = 'grayscale(1) brightness(0.5)';
+                    };
+                }
+                
+                grid.appendChild(cell);
+            }
+        }
+
+        function updateTimerDisplay() {
+            timeEl.textContent = Math.max(0, timeLeft).toFixed(1);
+            const percent = (timeLeft / 5) * 100;
+            timerBar.style.width = `${percent}%`;
+            if (percent < 20) timerBar.style.background = '#ff3e3e';
+            else timerBar.style.background = 'var(--accent)';
+        }
+
+        function gameOver() {
+            clearInterval(timerInterval);
+            alert(`GAME OVER! Final Score: ${score}\nYou reached Level ${currentLevel}`);
+            location.reload();
+        }
+    </script>
+</body>
+</html>

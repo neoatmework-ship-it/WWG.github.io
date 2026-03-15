@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Boringest Website — Milestone 100</title>
+    <style>
+        body {
+            margin: 0;
+            background: #dcdcdc;
+            color: #444;
+            font-family: serif;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+        }
+        #clock { font-size: 1.2rem; margin-top: 20px; color: #888; }
+        .beige-note {
+            background: #f5f5dc;
+            padding: 2px 10px;
+            margin-top: 100px;
+            font-size: 0.8rem;
+            border: 1px solid #ccc;
+        }
+        .back-btn {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            color: #666;
+            text-decoration: none;
+            font-size: 0.8rem;
+        }
+    </style>
+</head>
+<body>
+    <a href="index.html" class="back-btn">Go back</a>
+    
+    <h1 style="font-weight: normal;">This is a website.</h1>
+    <p>Nothing is happening right now.</p>
+    
+    <div id="clock">Current Time: --:--:--</div>
+
+    <div class="beige-note">
+        Stat: Currently 102 sites in the gallery. This is one of them.
+    </div>
+
+    <script>
+        function update() {
+            const now = new Date();
+            document.getElementById('clock').textContent = 'Current Time: ' + now.toLocaleTimeString();
+        }
+        setInterval(update, 1000);
+        update();
+
+        // Occasionally change the background to a slightly different grey
+        setInterval(() => {
+            const shades = ['#dcdcdc', '#d8d8d8', '#dfdfdf'];
+            document.body.style.backgroundColor = shades[Math.floor(Math.random() * shades.length)];
+        }, 10000);
+    </script>
+</body>
+</html>
