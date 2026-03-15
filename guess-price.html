@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Guess The Price — Weird Edition</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #0f172a;
+            --surface: #1e293b;
+            --accent: #f59e0b;
+            --text: #f8fafc;
+            --success: #10b981;
+            --error: #ef4444;
+        }
+
+        body {
+            background: var(--bg);
+            color: var(--text);
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            margin: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            text-align: center;
+        }
+
+        .game-card {
+            background: var(--surface);
+            padding: 40px;
+            border-radius: 32px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            width: 90%;
+            max-width: 500px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        .image-container {
+            width: 100%;
+            height: 300px;
+            background: #000;
+            border-radius: 20px;
+            margin-bottom: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 4rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .image-container::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(0deg, var(--surface) 0%, transparent 50%);
+        }
+
+        h1 { margin: 0 0 10px 0; font-size: 1.5rem; color: var(--accent); }
+        h2 { margin: 0 0 24px 0; font-size: 2rem; font-weight: 800; }
+
+        .input-group {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        input {
+            flex: 1;
+            background: rgba(255, 255, 255, 0.05);
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            padding: 16px;
+            color: #fff;
+            font-size: 1.2rem;
+            font-weight: 600;
+            outline: none;
+            transition: 0.2s;
+        }
+
+        input:focus { border-color: var(--accent); background: rgba(245, 158, 11, 0.05); }
+
+        .guess-btn {
+            background: var(--accent);
+            color: #000;
+            border: none;
+            border-radius: 16px;
+            padding: 0 24px;
+            font-weight: 800;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .guess-btn:hover { transform: scale(1.05); filter: brightness(1.1); }
+
+        .feedback {
+            font-weight: 600;
+            margin-top: 10px;
+            min-height: 24px;
+            font-size: 1.1rem;
+        }
+
+        .stats {
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            justify-content: space-around;
+            font-size: 0.9rem;
+            color: #94a3b8;
+        }
+
+        .back-link {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            color: #64748b;
+            text-decoration: none;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body>
+
+    <a href="index.html" class="back-link">← SURRENDER</a>
+
+    <div class="game-card" id="game-card">
+        <h1>GUESS THE PRICE</h1>
+        <div class="image-container" id="item-img">🪑</div>
+        <h2 id="item-name">Vintage Mid-Century Chair</h2>
+        
+        <div class="input-group">
+            <input type="number" id="guess-input" placeholder="Enter Price ($)">
+            <button class="guess-btn" onclick="checkGuess()">GUESS</button>
+        </div>
+
+        <div class="feedback" id="feedback"></div>
+
+        <div class="stats">
+            <div>Score: <span id="score">0</span></div>
+            <div>Remaining: <span id="lives">5</span></div>
+        </div>
+    </div>
+
+    <script src="discovery.js"></script>
+    <script>
+        Discovery.unlock('guess-price');
+
+        const ITEMS = [
+            { name: "Vintage Eames Chair", price: 1200, icon: "🪑" },
+            { name: "Original 1984 Macintosh", price: 2500, icon: "🖥️" },
+            { name: "Rare Pokemon Card (Mint)", price: 45000, icon: "🃏" },
+            { name: "Cyberpunk Sneakers", price: 350, icon: "👟" },
+            { name: "DeLorean Time Machine", price: 85000, icon: "🏎️" },
+            { name: "Smart Toaster Pro Max", price: 199, icon: "🍞" },
+            { name: "SpaceX Starship Model", price: 75, icon: "🚀" }
+        ];
+
+        let currentItem = 0;
+        let score = 0;
+        let lives = 5;
+
+        function loadItem() {
+            const item = ITEMS[currentItem];
+            document.getElementById('item-name').textContent = item.name;
+            document.getElementById('item-img').textContent = item.icon;
+            document.getElementById('guess-input').value = '';
+            document.getElementById('feedback').textContent = '';
+            document.getElementById('feedback').style.color = '#fff';
+        }
+
+        function checkGuess() {
+            const val = parseInt(document.getElementById('guess-input').value);
+            if(isNaN(val)) return;
+
+            const target = ITEMS[currentItem].price;
+            const diff = Math.abs(val - target);
+            const tolerance = target * 0.15;
+
+            if(diff <= tolerance) {
+                score += 10;
+                document.getElementById('feedback').textContent = "MATCH! Actual: $" + target;
+                document.getElementById('feedback').style.color = 'var(--success)';
+                document.getElementById('score').textContent = score;
+                
+                setTimeout(() => {
+                    currentItem = (currentItem + 1) % ITEMS.length;
+                    loadItem();
+                }, 2000);
+            } else {
+                lives--;
+                document.getElementById('lives').textContent = lives;
+                document.getElementById('feedback').textContent = val > target ? "TOO HIGH! Try lower." : "TOO LOW! Try higher.";
+                document.getElementById('feedback').style.color = 'var(--error)';
+                
+                if(lives <= 0) {
+                    gameOver();
+                }
+            }
+        }
+
+        function gameOver() {
+            document.getElementById('game-card').innerHTML = `
+                <h1 style="color: var(--error);">GAME OVER</h1>
+                <div style="font-size: 5rem; margin: 20px 0;">💸</div>
+                <h2>Score: ${score}</h2>
+                <button class="guess-btn" style="padding: 15px 30px;" onclick="location.reload()">TRY AGAIN</button>
+            `;
+        }
+
+        loadItem();
+    </script>
+<script>
+    if(/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)){
+        document.body.innerHTML += '<a href="index.html" style="position:fixed;bottom:20px;right:20px;background:#000;color:#fff;padding:10px 20px;border-radius:30px;text-decoration:none;z-index:9999;border:1px solid #333;font-family:sans-serif;font-size:14px;">Back to Gallery</a>';
+    }
+</script>
+</body>
+</html>
+

@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>How Rare Is Your Name? — Data Visualizer</title>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;500;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #0f121a;
+            --surface: #1a1e2e;
+            --accent: #3b82f6;
+            --text: #f1f5f9;
+            --border: rgba(59, 130, 246, 0.2);
+        }
+
+        body {
+            background: var(--bg);
+            color: var(--text);
+            font-family: 'Space Grotesk', sans-serif;
+            margin: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        .search-container {
+            width: 90%;
+            max-width: 600px;
+            text-align: center;
+        }
+
+        h1 { font-size: 2.5rem; margin-bottom: 10px; }
+        p { color: #94a3b8; margin-bottom: 40px; }
+
+        .input-group {
+            display: flex;
+            background: var(--surface);
+            padding: 8px;
+            border-radius: 20px;
+            border: 2px solid var(--border);
+            margin-bottom: 40px;
+        }
+
+        input {
+            flex: 1;
+            background: transparent;
+            border: none;
+            color: #fff;
+            padding: 15px 25px;
+            font-size: 1.2rem;
+            outline: none;
+            font-family: inherit;
+        }
+
+        .search-btn {
+            background: var(--accent);
+            color: #fff;
+            border: none;
+            padding: 0 30px;
+            border-radius: 12px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        .search-btn:hover { background: #2563eb; }
+
+        .results {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: all 0.5s;
+        }
+
+        .stat-card {
+            background: var(--surface);
+            padding: 24px;
+            border-radius: 24px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            text-align: left;
+        }
+
+        .stat-label { font-size: 0.8rem; color: #94a3b8; text-transform: uppercase; margin-bottom: 8px; }
+        .stat-value { font-size: 1.8rem; font-weight: 700; color: var(--accent); }
+
+        .back-link {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            color: #475569;
+            text-decoration: none;
+        }
+    </style>
+</head>
+<body>
+
+    <a href="index.html" class="back-link">← RETURN</a>
+
+    <div class="search-container">
+        <h1>How Rare?</h1>
+        <p>Analyze your name's global footprint and rarity score.</p>
+        
+        <div class="input-group">
+            <input type="text" id="name-input" placeholder="Type your name...">
+            <button class="search-btn" onclick="analyze()">ANALYZE</button>
+        </div>
+
+        <div class="results" id="results">
+            <div class="stat-card">
+                <div class="stat-label">Rarity Score</div>
+                <div class="stat-value" id="rarity">---</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Global Rank</div>
+                <div class="stat-value" id="rank">---</div>
+            </div>
+            <div class="stat-card" style="grid-column: span 2;">
+                <div class="stat-label">Origin Dominance</div>
+                <div class="stat-value" id="origin">---</div>
+            </div>
+        </div>
+    </div>
+
+    <script src="discovery.js"></script>
+    <script>
+        Discovery.unlock('name-rarity');
+
+        function analyze() {
+            const name = document.getElementById('name-input').value.trim();
+            if(!name) return;
+
+            const results = document.getElementById('results');
+            results.style.opacity = '1';
+            results.style.transform = 'translateY(0)';
+
+            // Simulated statistical engine
+            const seed = name.split('').reduce((a, b) => a + b.charCodeAt(0), 0);
+            const rarity = 100 - (seed % 99);
+            const rank = (seed * 1234) % 1000000;
+            const origins = ["Scandinavia", "Ancient Greece", "Latin America", "Sub-Saharan Africa", "East Asia", "Slavic Europe"];
+            
+            document.getElementById('rarity').textContent = rarity + (rarity > 90 ? " (EXTREME)" : "%");
+            document.getElementById('rank').textContent = "#" + rank.toLocaleString();
+            document.getElementById('origin').textContent = origins[seed % origins.length];
+        }
+    </script>
+<script>
+    if(/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)){
+        document.body.innerHTML += '<a href="index.html" style="position:fixed;bottom:20px;right:20px;background:#000;color:#fff;padding:10px 20px;border-radius:30px;text-decoration:none;z-index:9999;border:1px solid #333;font-family:sans-serif;font-size:14px;">Back to Gallery</a>';
+    }
+</script>
+</body>
+</html>
+

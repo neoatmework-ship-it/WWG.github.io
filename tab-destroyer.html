@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>THE TAB DESTROYER — ENTER AT YOUR OWN RISK</title>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@700&family=Inter:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            background: #000;
+            color: #ff0000;
+            font-family: 'Inter', sans-serif;
+            margin: 0;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            text-align: center;
+        }
+
+        .warning-container {
+            max-width: 600px;
+            padding: 40px;
+            border: 2px solid #ff0000;
+            background: rgba(255, 0, 0, 0.05);
+            position: relative;
+        }
+
+        h1 {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 3rem;
+            margin: 0 0 20px 0;
+            text-transform: uppercase;
+            letter-spacing: 5px;
+            animation: flicker 0.1s infinite;
+        }
+
+        @keyframes flicker {
+            0% { opacity: 1; text-shadow: 2px 0 red; }
+            50% { opacity: 0.8; text-shadow: -2px 0 blue; }
+            100% { opacity: 1; text-shadow: 0 0 red; }
+        }
+
+        .desc {
+            font-size: 1rem;
+            line-height: 1.6;
+            margin-bottom: 30px;
+            color: #fff;
+        }
+
+        .destruct-btn {
+            background: #ff0000;
+            color: #000;
+            border: none;
+            padding: 20px 40px;
+            font-size: 1.5rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s;
+            clip-path: polygon(10% 0, 100% 0, 90% 100%, 0% 100%);
+        }
+
+        .destruct-btn:hover {
+            transform: scale(1.1);
+            background: #fff;
+            color: #ff0000;
+            box-shadow: 0 0 50px rgba(255, 0, 0, 0.5);
+        }
+
+        .disclaimer {
+            margin-top: 30px;
+            font-size: 0.7rem;
+            opacity: 0.5;
+            color: #ff0;
+        }
+
+        .glitch-bg {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: repeating-linear-gradient(0deg, rgba(255,0,0,0.03) 0px, transparent 1px, transparent 2px);
+            pointer-events: none;
+        }
+
+        .back-link {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            color: #fff;
+            text-decoration: underline;
+            font-size: 0.8rem;
+        }
+    </style>
+</head>
+<body>
+
+    <a href="index.html" class="back-link">ABORT MISSION</a>
+
+    <div class="warning-container">
+        <div class="glitch-bg"></div>
+        <h1>WARNING</h1>
+        <div class="desc">
+            Pressing the button below will initiate a <b>CHAOTIC EXPLORATION PROTOCOL</b>.<br>
+            It will attempt to open 15+ windows to the strangest corners of the web simultaneously.
+        </div>
+        
+        <button class="destruct-btn" onclick="initiateChaos()">SELF-DESTRUCT BROWSER</button>
+
+        <div class="disclaimer">
+            Note: Your browser's pop-up blocker will think I'm a virus. <br>
+            You must manually allow pop-ups for this domain to experience true chaos.
+        </div>
+    </div>
+
+    <script src="discovery.js"></script>
+    <script>
+        Discovery.unlock('tab-destroyer');
+
+        const WEIRD_LINKS = [
+            "https://en.wikipedia.org/wiki/Special:Random",
+            "https://puginarug.com/",
+            "https://theuselessweb.com/",
+            "https://zoomquilt.org/",
+            "https://www.pointerpointer.com/",
+            "https://longdogechallenge.com/",
+            "http://pixelsfighting.com/",
+            "https://optical.is/vision/",
+            "http://endless.horse/",
+            "https://thatsthefinger.com/",
+            "https://www.movenowthinklater.com/",
+            "http://www.staggeringbeauty.com/",
+            "https://findtheinvisiblecow.com/",
+            "https://www.rrrgggbbb.com/",
+            "http://burymewithmymoney.com/"
+        ];
+
+        function initiateChaos() {
+            if(confirm("ARE YOU ABSOLUTELY SURE? Your device fans might start spinning.")) {
+                WEIRD_LINKS.forEach(link => {
+                    window.open(link, '_blank');
+                });
+                
+                document.querySelector('.warning-container').innerHTML = `
+                    <h1 style="color: #0f0;">CHAOS DEPLOYED</h1>
+                    <p style="color: #fff;">If nothing happened, check your pop-up blocker at the top right of your browser.</p>
+                    <button class="destruct-btn" style="background: #0f0;" onclick="location.reload()">RE-ARM</button>
+                `;
+            }
+        }
+    </script>
+<script>
+    if(/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)){
+        document.body.innerHTML += '<a href="index.html" style="position:fixed;bottom:20px;right:20px;background:#000;color:#fff;padding:10px 20px;border-radius:30px;text-decoration:none;z-index:9999;border:1px solid #333;font-family:sans-serif;font-size:14px;">Back to Gallery</a>';
+    }
+</script>
+</body>
+</html>
+

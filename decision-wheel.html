@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>THE TWISTED WHEEL — Decision Pressure</title>
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E🎡%3C/text%3E%3C/svg%3E">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600;900&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #0a0a10;
+            --accent: #f472b6;
+            --secondary: #a78bfa;
+        }
+
+        * { margin:0; padding:0; box-sizing:border-box; }
+
+        body {
+            background: var(--bg);
+            color: #fff;
+            font-family: 'Orbitron', sans-serif;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            background-image: radial-gradient(circle at center, #1b1b2f 0%, #0a0a10 100%);
+        }
+
+        #wheel-container {
+            position: relative;
+            width: 400px;
+            height: 400px;
+            margin-bottom: 50px;
+        }
+
+        #wheel {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            border: 8px solid #fff;
+            position: relative;
+            overflow: hidden;
+            transition: transform 5s cubic-bezier(0.15, 0, 0.15, 1);
+            box-shadow: 0 0 50px rgba(244, 114, 182, 0.3);
+            background: #222;
+        }
+
+        .pointer {
+            position: absolute;
+            top: -20px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 0;
+            height: 0;
+            border-left: 20px solid transparent;
+            border-right: 20px solid transparent;
+            border-top: 40px solid #fff;
+            z-index: 10;
+            filter: drop-shadow(0 0 10px rgba(0,0,0,0.5));
+        }
+
+        .sector {
+            position: absolute;
+            width: 50%;
+            height: 50%;
+            transform-origin: bottom right;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 900;
+            font-size: 0.8rem;
+            color: #fff;
+            text-shadow: 0 2px 5px rgba(0,0,0,0.5);
+            padding-bottom: 60px;
+            padding-right: 20px;
+        }
+
+        #ui {
+            text-align: center;
+            max-width: 400px;
+            z-index: 20;
+        }
+
+        h1 {
+            font-size: 1.5rem;
+            letter-spacing: 5px;
+            margin-bottom: 20px;
+            background: linear-gradient(90deg, var(--accent), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .hesitation-meter {
+            width: 100%;
+            height: 10px;
+            background: rgba(255,255,255,0.05);
+            border-radius: 5px;
+            margin-bottom: 10px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        #meter-fill {
+            width: 0%;
+            height: 100%;
+            background: var(--accent);
+            transition: width 0.1s linear;
+        }
+
+        .meter-label {
+            font-size: 0.6rem;
+            letter-spacing: 2px;
+            color: #555;
+            margin-bottom: 20px;
+        }
+
+        #spin-btn {
+            background: #fff;
+            color: #000;
+            border: none;
+            padding: 15px 40px;
+            border-radius: 50px;
+            font-family: inherit;
+            font-weight: 900;
+            cursor: pointer;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            transition: all 0.3s;
+        }
+
+        #spin-btn:hover {
+            transform: scale(1.1);
+            box-shadow: 0 0 30px #fff;
+        }
+
+        #spin-btn:disabled {
+            background: #444;
+            color: #222;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        #result {
+            margin-top: 30px;
+            font-size: 1.2rem;
+            color: var(--accent);
+            min-height: 1.5rem;
+            font-weight: 900;
+            letter-spacing: 2px;
+        }
+
+        .back-link {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            color: #444;
+            text-decoration: none;
+            font-size: 0.7rem;
+        }
+    </style>
+</head>
+<body>
+
+    <a href="index.html" class="back-link">← ESCAPE FATE</a>
+
+    <div id="wheel-container">
+        <div class="pointer"></div>
+        <div id="wheel"></div>
+    </div>
+
+    <div id="ui">
+        <h1>TWISTED WHEEL</h1>
+        
+        <div class="hesitation-meter">
+            <div id="meter-fill"></div>
+        </div>
+        <div class="meter-label">HESITATION PENALTY: <span id="penalty-val">0%</span></div>
+
+        <button id="spin-btn" onclick="spin()">Spin the Void</button>
+        <div id="result"></div>
+    </div>
+
+    <script src="discovery.js"></script>
+    <script>
+        Discovery.unlock('decision-wheel');
+
+        const OPTIONS = [
+            { text: "YES", color: "#f472b6" },
+            { text: "NO", color: "#a78bfa" },
+            { text: "MAYBE", color: "#fbbf24" },
+            { text: "LATER", color: "#34d399" },
+            { text: "NEVER", color: "#f87171" },
+            { text: "AGAIN", color: "#60a5fa" }
+        ];
+
+        const wheel = document.getElementById('wheel');
+        const numOptions = OPTIONS.length;
+        const degPerOption = 360 / numOptions;
+
+        // Create Wheel Sectors
+        OPTIONS.forEach((opt, i) => {
+            const sector = document.createElement('div');
+            sector.className = 'sector';
+            sector.style.transform = `rotate(${i * degPerOption}deg)`;
+            sector.style.background = opt.color;
+            sector.style.clipPath = `polygon(0 0, 100% 0, 100% 100%, 0 0)`; // Hacky triangle
+            
+            // Re-think sector drawing with SVG for precise triangles
+            // Using a visual trick for now:
+            sector.style.backgroundColor = opt.color;
+            sector.style.width = '100%';
+            sector.style.height = '100%';
+            sector.style.position = 'absolute';
+            sector.style.top = '0';
+            sector.style.left = '0';
+            sector.style.transformOrigin = '50% 50%';
+            sector.style.transform = `rotate(${i * degPerOption}deg)`;
+            
+            // Just use a conic-gradient for the background for simplicity and 100% precision
+        });
+
+        const colors = OPTIONS.map(o => o.color);
+        const stops = colors.map((c, i) => `${c} ${i*degPerOption}deg ${(i+1)*degPerOption}deg`).join(', ');
+        wheel.style.background = `conic-gradient(${stops})`;
+
+        // Text labels (floating above)
+        OPTIONS.forEach((opt, i) => {
+            const label = document.createElement('div');
+            label.className = 'sector';
+            label.style.transform = `rotate(${i * degPerOption + degPerOption/2}deg)`;
+            label.innerHTML = `<span style="transform: rotate(90deg)">${opt.text}</span>`;
+            wheel.appendChild(label);
+        });
+
+        let rotation = 0;
+        let hesitation = 0;
+        const spinBtn = document.getElementById('spin-btn');
+        const meterFill = document.getElementById('meter-fill');
+        const penaltyVal = document.getElementById('penalty-val');
+
+        // Hesitation Timer
+        setInterval(() => {
+            if(spinBtn.disabled) return;
+            hesitation = Math.min(100, hesitation + 0.1);
+            meterFill.style.width = `${hesitation}%`;
+            penaltyVal.textContent = `${Math.floor(hesitation)}%`;
+            
+            if(hesitation > 80) {
+                spinBtn.style.boxShadow = `0 0 ${hesitation/2}px var(--accent)`;
+                spinBtn.textContent = "DECIDE NOW!";
+            }
+        }, 50);
+
+        function spin() {
+            spinBtn.disabled = true;
+            document.getElementById('result').textContent = "";
+            
+            // Bias the spin based on hesitation
+            // The longer you wait, the more likely the wheel pushes towards "NEVER" or "LATER" (index 3 and 4)
+            const bias = hesitation / 100;
+            let targetDeg = rotation + 1800 + Math.random() * 360;
+            
+            // Optional: Manipulate targetDeg based on bias
+            
+            rotation = targetDeg;
+            wheel.style.transform = `rotate(${rotation}deg)`;
+
+            setTimeout(() => {
+                const actualDeg = rotation % 360;
+                // Pointer is at top (270 corrected index)
+                const index = Math.floor((360 - (actualDeg % 360)) / degPerOption) % numOptions;
+                const result = OPTIONS[index].text;
+                
+                document.getElementById('result').textContent = `THE VOID SAYS: ${result}`;
+                
+                // Allow restart
+                setTimeout(() => {
+                    spinBtn.disabled = false;
+                    spinBtn.textContent = "Spin Again";
+                    hesitation = 0;
+                }, 1000);
+            }, 5000);
+        }
+    </script>
+    <script>
+        if(/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)){
+            document.body.innerHTML += '<a href="index.html" style="position:fixed;bottom:20px;right:20px;background:#000;color:#fff;padding:10px 20px;border-radius:30px;text-decoration:none;z-index:9999;border:1px solid #333;font-family:sans-serif;font-size:14px;">Back to Gallery</a>';
+        }
+    </script>
+</body>
+</html>

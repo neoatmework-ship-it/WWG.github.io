@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Internet IQ Test — How Online Are You?</title>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;500;700&family=Inter:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #050505;
+            --accent: #a78bfa;
+            --text: #e2e8f0;
+            --text-sub: #94a3b8;
+            --border: rgba(167, 139, 250, 0.2);
+        }
+
+        body {
+            background: var(--bg);
+            color: var(--text);
+            font-family: 'Inter', sans-serif;
+            margin: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            overflow: hidden;
+        }
+
+        .container {
+            width: 90%;
+            max-width: 600px;
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--border);
+            border-radius: 24px;
+            padding: 40px;
+            position: relative;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        h1 {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 2rem;
+            margin: 0;
+            background: linear-gradient(135deg, #fff 0%, var(--accent) 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 4px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 2px;
+            margin-top: 20px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: var(--accent);
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+
+        .question-box {
+            min-height: 200px;
+        }
+
+        .question-text {
+            font-size: 1.2rem;
+            font-weight: 500;
+            margin-bottom: 24px;
+            line-height: 1.4;
+        }
+
+        .options {
+            display: grid;
+            gap: 12px;
+        }
+
+        .option-btn {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 16px 20px;
+            border-radius: 12px;
+            color: var(--text);
+            text-align: left;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 1rem;
+        }
+
+        .option-btn:hover {
+            background: rgba(167, 139, 250, 0.1);
+            border-color: var(--accent);
+            transform: translateX(5px);
+        }
+
+        .result-screen {
+            text-align: center;
+            display: none;
+        }
+
+        .iq-score {
+            font-size: 4rem;
+            font-weight: 700;
+            font-family: 'Space Grotesk', sans-serif;
+            color: var(--accent);
+            margin: 20px 0;
+            text-shadow: 0 0 30px rgba(167, 139, 250, 0.3);
+        }
+
+        .iq-label {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 20px;
+        }
+
+        .iq-desc {
+            color: var(--text-sub);
+            line-height: 1.6;
+            margin-bottom: 30px;
+        }
+
+        .retry-btn {
+            padding: 12px 30px;
+            background: var(--accent);
+            color: #000;
+            border: none;
+            border-radius: 100px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        .retry-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 10px 20px rgba(167, 139, 250, 0.3);
+        }
+
+        .back-link {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            color: var(--text-sub);
+            text-decoration: none;
+            font-size: 0.8rem;
+            opacity: 0.5;
+            transition: 0.3s;
+        }
+
+        .back-link:hover { opacity: 1; color: var(--accent); }
+
+        /* Scanning effect */
+        .scanning {
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: linear-gradient(transparent 50%, rgba(167, 139, 250, 0.05) 50%);
+            background-size: 100% 4px;
+            pointer-events: none;
+            z-index: 10;
+        }
+    </style>
+</head>
+<body>
+
+    <a href="index.html" class="back-link">← EXIT TEST</a>
+
+    <div class="container">
+        <div class="scanning"></div>
+        
+        <div id="quiz-screen">
+            <div class="header">
+                <h1>Internet IQ Test</h1>
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progress"></div>
+                </div>
+            </div>
+
+            <div class="question-box">
+                <div class="question-text" id="question">Loading assessment...</div>
+                <div class="options" id="options"></div>
+            </div>
+        </div>
+
+        <div class="result-screen" id="result-screen">
+            <h2 style="font-family: 'Space Grotesk';">ASSESSMENT COMPLETE</h2>
+            <div class="iq-score" id="score">0</div>
+            <div class="iq-label" id="label">Digital Nomad</div>
+            <p class="iq-desc" id="desc">Your brain has been successfully rewired by high-speed fiber optics.</p>
+            <button class="retry-btn" onclick="location.reload()">RE-CALIBRATE</button>
+        </div>
+    </div>
+
+    <script src="discovery.js"></script>
+    <script>
+        Discovery.unlock('internet-iq');
+
+        const questions = [
+            {
+                q: "Which meme is historically older?",
+                a: ["Nyan Cat", "Bad Luck Brian", "Dancing Baby", "Doge"],
+                c: 2
+            },
+            {
+                q: "Finish the viral quote: 'All your base are belong to...'",
+                a: ["Them", "Us", "Me", "The Void"],
+                c: 1
+            },
+            {
+                q: "What was the first video ever uploaded to YouTube?",
+                a: ["Evolution of Dance", "Me at the zoo", "Charlie bit my finger", "Lofi girl"],
+                c: 1
+            },
+            {
+                q: "In what year did the 'Rickroll' phenomenon begin?",
+                a: ["2005", "2007", "2010", "2012"],
+                c: 1
+            },
+            {
+                q: "Which of these was a real social media site?",
+                a: ["Friendster", "Blip", "Google Plus", "All of the above"],
+                c: 3
+            }
+        ];
+
+        const labels = [
+            { min: 0, label: "Dial-up Human", desc: "You probably still use Internet Explorer. Your latency is biological." },
+            { min: 3, label: "Digital Denizen", desc: "You know your way around, but you still have a life. Pathetic." },
+            { min: 5, label: "Chronically Online", desc: "Certified brain rot. You speak in emojis and your blood is 40% caffeine." }
+        ];
+
+        let currentQ = 0;
+        let score = 0;
+
+        function loadQuestion() {
+            const q = questions[currentQ];
+            document.getElementById('question').textContent = q.q;
+            document.getElementById('progress').style.width = (currentQ / questions.length) * 100 + "%";
+            
+            const optionsDiv = document.getElementById('options');
+            optionsDiv.innerHTML = '';
+            
+            q.a.forEach((opt, i) => {
+                const btn = document.createElement('button');
+                btn.className = 'option-btn';
+                btn.textContent = opt;
+                btn.onclick = () => selectOption(i);
+                optionsDiv.appendChild(btn);
+            });
+        }
+
+        function selectOption(idx) {
+            if(idx === questions[currentQ].c) score++;
+            
+            currentQ++;
+            if(currentQ < questions.length) {
+                loadQuestion();
+            } else {
+                showResults();
+            }
+        }
+
+        function showResults() {
+            document.getElementById('quiz-screen').style.display = 'none';
+            document.getElementById('result-screen').style.display = 'block';
+            
+            const finalIQ = 70 + (score * 20) + Math.floor(Math.random() * 15);
+            document.getElementById('score').textContent = finalIQ;
+            
+            const result = labels.slice().reverse().find(l => score >= l.min);
+            document.getElementById('label').textContent = result.label;
+            document.getElementById('desc').textContent = result.desc;
+        }
+
+        loadQuestion();
+    </script>
+<script>
+    if(/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)){
+        document.body.innerHTML += '<a href="index.html" style="position:fixed;bottom:20px;right:20px;background:#000;color:#fff;padding:10px 20px;border-radius:30px;text-decoration:none;z-index:9999;border:1px solid #333;font-family:sans-serif;font-size:14px;">Back to Gallery</a>';
+    }
+</script>
+</body>
+</html>
+

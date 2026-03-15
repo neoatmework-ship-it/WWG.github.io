@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Weirder Site — Perpetual Evolution</title>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            background: #fff;
+            color: #000;
+            font-family: 'Space Grotesk', sans-serif;
+            margin: 0;
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            transition: all 1s ease;
+        }
+
+        #container {
+            text-align: center;
+            transition: transform 0.5s;
+        }
+
+        h1 { font-size: 3rem; transition: all 0.5s; }
+        p { font-size: 1.2rem; transition: all 0.5s; }
+
+        .back-link {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            color: #000;
+            text-decoration: none;
+            font-size: 0.8rem;
+            opacity: 0.5;
+            z-index: 1000;
+        }
+
+        .ghost-char {
+            position: absolute;
+            font-size: 2rem;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 1s;
+        }
+    </style>
+</head>
+<body>
+
+    <a href="index.html" class="back-link">← COWARD'S EXIT</a>
+
+    <div id="container">
+        <h1 id="status-title">Everything is normal.</h1>
+        <p id="timer-text">You have been here for <span id="seconds">0</span> seconds.</p>
+        <div id="evolution-msg" style="margin-top: 20px; font-weight: bold; opacity: 0.6;">Stay a while.</div>
+    </div>
+
+    <script src="discovery.js"></script>
+    <script>
+        Discovery.unlock('getting-weirder');
+
+        let seconds = 0;
+        const body = document.body;
+        const container = document.getElementById('container');
+        const title = document.getElementById('status-title');
+        const evolutionMsg = document.getElementById('evolution-msg');
+
+        const EVENTS = [
+            { time: 5, action: () => { evolutionMsg.textContent = "Did the background just shift?"; body.style.background = "#f0f0f0"; } },
+            { time: 15, action: () => { title.textContent = "It starts now."; body.style.background = "#e0e0ff"; container.style.transform = "rotate(2deg)"; } },
+            { time: 30, action: () => { evolutionMsg.textContent = "Gravity is failing."; body.style.filter = "hue-rotate(45deg)"; container.style.transform = "translateY(-50px) rotate(-5deg)"; } },
+            { time: 45, action: () => { title.textContent = "Don't blink."; body.style.background = "#1a1a2e"; body.style.color = "#fff"; } },
+            { time: 60, action: () => { evolutionMsg.textContent = "THE VOID IS HUNGRY."; body.style.filter = "invert(1) hue-rotate(180deg)"; setInterval(spawnGhost, 1000); } },
+            { time: 90, action: () => { title.textContent = "WHY ARE YOU STILL HERE?"; container.style.animation = "shake 0.1s infinite"; } },
+            { time: 120, action: () => { title.style.fontSize = "8rem"; body.style.perspective = "1000px"; container.style.transform = "rotateX(45deg) scale(2)"; } }
+        ];
+
+        function spawnGhost() {
+            const char = document.createElement('div');
+            char.className = 'ghost-char';
+            char.textContent = ['👁️', '🦷', '👣', '🩸', '💀'][Math.floor(Math.random()*5)];
+            char.style.left = Math.random() * 100 + 'vw';
+            char.style.top = Math.random() * 100 + 'vh';
+            body.appendChild(char);
+            setTimeout(() => char.style.opacity = "0.5", 100);
+            setTimeout(() => { char.style.opacity = "0"; setTimeout(() => char.remove(), 1000); }, 3000);
+        }
+
+        const shakeStyle = document.createElement('style');
+        shakeStyle.textContent = `@keyframes shake { 0% { transform: translate(1px, 1px) rotate(0deg); } 10% { transform: translate(-1px, -2px) rotate(-1deg); } 20% { transform: translate(-3px, 0px) rotate(1deg); } 30% { transform: translate(3px, 2px) rotate(0deg); } 40% { transform: translate(1px, -1px) rotate(1deg); } 50% { transform: translate(-1px, 2px) rotate(-1deg); } 60% { transform: translate(-3px, 1px) rotate(0deg); } 70% { transform: translate(3px, 1px) rotate(-1deg); } 80% { transform: translate(-1px, -1px) rotate(1deg); } 90% { transform: translate(1px, 2px) rotate(0deg); } 100% { transform: translate(1px, -2px) rotate(-1deg); } }`;
+        document.head.appendChild(shakeStyle);
+
+        setInterval(() => {
+            seconds++;
+            document.getElementById('seconds').textContent = seconds;
+            
+            const event = EVENTS.find(e => e.time === seconds);
+            if(event) event.action();
+        }, 1000);
+    </script>
+<script>
+    if(/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)){
+        document.body.innerHTML += '<a href="index.html" style="position:fixed;bottom:20px;right:20px;background:#000;color:#fff;padding:10px 20px;border-radius:30px;text-decoration:none;z-index:9999;border:1px solid #333;font-family:sans-serif;font-size:14px;">Back to Gallery</a>';
+    }
+</script>
+</body>
+</html>
+

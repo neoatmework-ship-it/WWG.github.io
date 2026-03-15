@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>THE STRESS BUTTON — Dopamine Release</title>
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E💥%3C/text%3E%3C/svg%3E">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@900&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #111;
+            --red: #ff3333;
+            --dark-red: #990000;
+        }
+
+        * { margin:0; padding:0; box-sizing:border-box; }
+
+        body {
+            background: var(--bg);
+            color: #fff;
+            font-family: 'Orbitron', sans-serif;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            transition: background-color 0.1s;
+        }
+
+        .button-case {
+            width: 300px;
+            height: 300px;
+            background: #222;
+            border-radius: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-bottom: 15px solid #000;
+            box-shadow: 0 30px 60px rgba(0,0,0,0.8);
+            cursor: pointer;
+            position: relative;
+        }
+
+        .red-button {
+            width: 200px;
+            height: 200px;
+            background: var(--red);
+            border-radius: 50%;
+            border-bottom: 20px solid var(--dark-red);
+            transition: all 0.05s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: rgba(255,255,255,0.2);
+            font-size: 0.8rem;
+            text-align: center;
+            padding: 20px;
+            user-select: none;
+        }
+
+        .button-case:active .red-button {
+            transform: translateY(15px);
+            border-bottom-width: 0;
+            filter: brightness(0.8);
+        }
+
+        #quote-display {
+            margin-top: 60px;
+            max-width: 500px;
+            text-align: center;
+            font-size: 1.2rem;
+            line-height: 1.4;
+            opacity: 0;
+            transition: opacity 1s;
+            color: #888;
+            font-style: italic;
+        }
+
+        .shake {
+            animation: shake 0.2s cubic-bezier(.36,.07,.19,.97) both;
+        }
+
+        @keyframes shake {
+            10%, 90% { transform: translate3d(-1px, 0, 0); }
+            20%, 80% { transform: translate3d(2px, 0, 0); }
+            30%, 50%, 70% { transform: translate3d(-4px, 0, 0); }
+            40%, 60% { transform: translate3d(4px, 0, 0); }
+        }
+
+        .particle {
+            position: absolute;
+            pointer-events: none;
+            background: var(--red);
+            border-radius: 50%;
+            animation: particleOut 0.5s ease-out forwards;
+        }
+
+        @keyframes particleOut {
+            to {
+                transform: translate(var(--mx), var(--my)) scale(0);
+                opacity: 0;
+            }
+        }
+
+        .back-link {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            color: #333;
+            text-decoration: none;
+            font-size: 0.8rem;
+        }
+        .back-link:hover { color: #fff; }
+
+        #flash {
+            position: fixed;
+            inset: 0;
+            background: #fff;
+            opacity: 0;
+            pointer-events: none;
+            z-index: 100;
+        }
+        
+        .counter {
+            position: fixed;
+            bottom: 20px;
+            color: #333;
+            font-size: 0.8rem;
+            letter-spacing: 5px;
+        }
+    </style>
+</head>
+<body>
+
+    <a href="index.html" class="back-link">← GO BACK</a>
+
+    <div id="flash"></div>
+
+    <div class="button-case" onclick="trigger()">
+        <div class="red-button">DO NOT PRESS</div>
+    </div>
+
+    <div id="quote-display">"Sometimes the best release is just a click away."</div>
+
+    <div class="counter" id="press-count">0 RELEASES</div>
+
+    <script src="discovery.js"></script>
+    <script>
+        Discovery.unlock('stress-button');
+
+        const quotes = [
+            "Your anxiety does not define your future.",
+            "Take a deep breath. You are doing enough.",
+            "This too shall pass.",
+            "You are stronger than the things that worry you.",
+            "Rest is a weapon. Use it.",
+            "Focus on the step, not the staircase.",
+            "It's okay to not be okay right now.",
+            "The world can wait for five minutes.",
+            "Release the pressure. You are safe.",
+            "One click at a time."
+        ];
+
+        let count = 0;
+        let audioCtx;
+
+        function trigger() {
+            if(!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            
+            count++;
+            document.getElementById('press-count').textContent = `${count} RELEASES`;
+
+            // Visuals
+            document.body.classList.add('shake');
+            setTimeout(() => document.body.classList.remove('shake'), 200);
+
+            const flash = document.getElementById('flash');
+            flash.style.opacity = '0.3';
+            setTimeout(() => flash.style.opacity = '0', 100);
+
+            createParticles();
+
+            // Quotes
+            const q = document.getElementById('quote-display');
+            q.style.opacity = '1';
+            q.textContent = `"${quotes[Math.floor(Math.random() * quotes.length)]}"`;
+
+            // Sound
+            playExplosion();
+        }
+
+        function playExplosion() {
+            if(!audioCtx) return;
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            const noise = audioCtx.createBufferSource();
+            
+            // Low boom
+            osc.frequency.setValueAtTime(100, audioCtx.currentTime);
+            osc.frequency.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.5);
+            gain.gain.setValueAtTime(0.5, audioCtx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.5);
+            
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            osc.start();
+            osc.stop(audioCtx.currentTime + 0.5);
+        }
+
+        function createParticles() {
+            for(let i=0; i<15; i++) {
+                const p = document.createElement('div');
+                p.className = 'particle';
+                const size = Math.random() * 20 + 10;
+                p.style.width = p.style.height = `${size}px`;
+                p.style.setProperty('--mx', `${(Math.random()-0.5) * 600}px`);
+                p.style.setProperty('--my', `${(Math.random()-0.5) * 600}px`);
+                p.style.left = '50%';
+                p.style.top = '50%';
+                document.body.appendChild(p);
+                setTimeout(() => p.remove(), 500);
+            }
+        }
+    </script>
+    <script>
+        if(/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)){
+            document.body.innerHTML += '<a href="index.html" style="position:fixed;bottom:20px;right:20px;background:#000;color:#fff;padding:10px 20px;border-radius:30px;text-decoration:none;z-index:9999;border:1px solid #333;font-family:sans-serif;font-size:14px;">Back to Gallery</a>';
+        }
+    </script>
+</body>
+</html>

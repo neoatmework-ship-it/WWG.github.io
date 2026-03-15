@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KEYBOARD PIANO — Interactive Music</title>
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E🎹%3C/text%3E%3C/svg%3E">
+    <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Orbitron:wght@700;900&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #0a0a0c;
+            --key-white: #e5e7eb;
+            --key-black: #1f2937;
+            --accent: #f472b6;
+        }
+
+        * { margin:0; padding:0; box-sizing:border-box; }
+
+        body {
+            background: var(--bg);
+            color: #fff;
+            font-family: 'Share Tech Mono', monospace;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+        .piano {
+            display: flex;
+            position: relative;
+            background: #000;
+            padding: 20px;
+            border-radius: 20px;
+            border: 4px solid #333;
+            box-shadow: 0 50px 100px rgba(0,0,0,0.8);
+        }
+
+        .key {
+            width: 60px;
+            height: 250px;
+            background: var(--key-white);
+            border: 1px solid #000;
+            border-radius: 0 0 8px 8px;
+            cursor: pointer;
+            transition: all 0.1s;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+            align-items: center;
+            padding-bottom: 20px;
+            color: #999;
+            font-weight: bold;
+        }
+
+        .key.black {
+            width: 40px;
+            height: 150px;
+            background: var(--key-black);
+            z-index: 2;
+            margin-left: -20px;
+            margin-right: -20px;
+            border-radius: 0 0 5px 5px;
+        }
+
+        .key:active, .key.active {
+            filter: brightness(1.2);
+            height: 245px;
+            box-shadow: inset 0 0 20px var(--accent);
+            color: var(--accent);
+        }
+
+        .key.black:active, .key.black.active {
+            height: 145px;
+        }
+
+        .controls {
+            margin-top: 50px;
+            text-align: center;
+            max-width: 600px;
+        }
+
+        h1 {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.5rem;
+            letter-spacing: 10px;
+            margin-bottom: 20px;
+            color: #444;
+        }
+
+        .hint {
+            color: #555;
+            font-size: 0.8rem;
+            letter-spacing: 2px;
+            line-height: 1.6;
+        }
+
+        kbd {
+            background: #222;
+            padding: 2px 6px;
+            border-radius: 4px;
+            color: var(--accent);
+            font-family: inherit;
+        }
+
+        .back-link {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            color: #333;
+            text-decoration: none;
+            font-size: 0.8rem;
+        }
+        .back-link:hover { color: #fff; }
+
+        #overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.95);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 100;
+        }
+
+        .start-btn {
+            background: var(--accent);
+            color: #000;
+            border: none;
+            padding: 20px 50px;
+            border-radius: 10px;
+            font-family: 'Orbitron', sans-serif;
+            font-weight: 900;
+            cursor: pointer;
+            text-transform: uppercase;
+            letter-spacing: 5px;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="overlay">
+        <h1 style="color: #fff; opacity: 1;">VIRTUAL_SYMPHONY</h1>
+        <button class="start-btn" onclick="startPiano()">Initialize Audio</button>
+    </div>
+
+    <a href="index.html" class="back-link">← EXIT CONCERT</a>
+
+    <div class="piano" id="piano">
+        <!-- Generatively filled -->
+    </div>
+
+    <div class="controls">
+        <h1>KEYBOARD PIANO</h1>
+        <div class="hint">
+            Use keys <kbd>A</kbd> <kbd>S</kbd> <kbd>D</kbd> <kbd>F</kbd> <kbd>G</kbd> <kbd>H</kbd> <kbd>J</kbd> <kbd>K</kbd> for white keys.<br>
+            Use <kbd>W</kbd> <kbd>E</kbd> <kbd>T</kbd> <kbd>Y</kbd> <kbd>U</kbd> for black keys.<br>
+            <span style="color: #333; font-size: 0.6rem; display: block; margin-top: 10px;">PROXIMITY DETECTION: ON</span>
+        </div>
+    </div>
+
+    <script src="discovery.js"></script>
+    <script>
+        Discovery.unlock('keyboard-piano');
+
+        const NOTES = [
+            { key: 'a', note: 'C', freq: 261.63 },
+            { key: 'w', note: 'C#', freq: 277.18, black: true },
+            { key: 's', note: 'D', freq: 293.66 },
+            { key: 'e', note: 'D#', freq: 311.13, black: true },
+            { key: 'd', note: 'E', freq: 329.63 },
+            { key: 'f', note: 'F', freq: 349.23 },
+            { key: 't', note: 'F#', freq: 369.99, black: true },
+            { key: 'g', note: 'G', freq: 392.00 },
+            { key: 'y', note: 'G#', freq: 415.30, black: true },
+            { key: 'h', note: 'A', freq: 440.00 },
+            { key: 'u', note: 'A#', freq: 466.16, black: true },
+            { key: 'j', note: 'B', freq: 493.88 },
+            { key: 'k', note: 'C', freq: 523.25 }
+        ];
+
+        let audioCtx;
+        const activeOscillators = {};
+
+        function startPiano() {
+            audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            document.getElementById('overlay').style.display = 'none';
+        }
+
+        const piano = document.getElementById('piano');
+        NOTES.forEach(n => {
+            const key = document.createElement('div');
+            key.className = `key ${n.black ? 'black' : ''}`;
+            key.id = `key-${n.key}`;
+            key.innerHTML = `<span>${n.key.toUpperCase()}</span>`;
+            
+            key.onmousedown = () => playNote(n.key, n.freq);
+            key.onmouseup = () => stopNote(n.key);
+            key.onmouseleave = () => stopNote(n.key);
+            
+            piano.appendChild(key);
+        });
+
+        window.onkeydown = (e) => {
+            const n = NOTES.find(x => x.key === e.key.toLowerCase());
+            if(n && !activeOscillators[n.key]) {
+                playNote(n.key, n.freq);
+                document.getElementById(`key-${n.key}`).classList.add('active');
+            }
+        };
+
+        window.onkeyup = (e) => {
+            const n = NOTES.find(x => x.key === e.key.toLowerCase());
+            if(n) {
+                stopNote(n.key);
+                document.getElementById(`key-${n.key}`).classList.remove('active');
+            }
+        };
+
+        function playNote(id, freq) {
+            if(!audioCtx) return;
+            
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            
+            osc.type = 'triangle';
+            osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+            
+            gain.gain.setValueAtTime(0, audioCtx.currentTime);
+            gain.gain.linearRampToValueAtTime(0.2, audioCtx.currentTime + 0.05);
+            
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            
+            osc.start();
+            activeOscillators[id] = { osc, gain };
+        }
+
+        function stopNote(id) {
+            const obj = activeOscillators[id];
+            if(obj) {
+                const { osc, gain } = obj;
+                gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.1);
+                osc.stop(audioCtx.currentTime + 0.1);
+                delete activeOscillators[id];
+            }
+        }
+    </script>
+    <script>
+        if(/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)){
+            document.body.innerHTML += '<a href="index.html" style="position:fixed;bottom:20px;right:20px;background:#000;color:#fff;padding:10px 20px;border-radius:30px;text-decoration:none;z-index:9999;border:1px solid #333;font-family:sans-serif;font-size:14px;">Back to Gallery</a>';
+        }
+    </script>
+</body>
+</html>

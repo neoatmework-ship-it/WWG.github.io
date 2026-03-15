@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SHAKESPEAREAN INSULT GENERATOR</title>
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E🎭%3C/text%3E%3C/svg%3E">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@1,700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --paper: #f4ece1;
+            --ink: #2b2b2b;
+            --highlight: #b22222;
+        }
+
+        * { margin:0; padding:0; box-sizing:border-box; }
+
+        body {
+            background: #111;
+            color: var(--ink);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            font-family: 'Playfair Display', serif;
+            padding: 20px;
+        }
+
+        .parchment {
+            background: var(--paper);
+            max-width: 600px;
+            width: 100%;
+            padding: 60px;
+            position: relative;
+            box-shadow: 
+                0 0 50px rgba(0,0,0,0.5),
+                inset 0 0 100px rgba(0,0,0,0.1);
+            border-radius: 5px;
+            text-align: center;
+            overflow: hidden;
+        }
+
+        /* Burned edges effect */
+        .parchment::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+            box-shadow: inset 0 0 30px rgba(84, 56, 30, 0.4);
+            border: 2px solid rgba(84, 56, 30, 0.2);
+        }
+
+        h1 {
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 5px;
+            color: rgba(0,0,0,0.4);
+            margin-bottom: 40px;
+            font-family: 'Share Tech Mono', monospace;
+        }
+
+        .input-box {
+            margin-bottom: 40px;
+        }
+
+        input {
+            background: transparent;
+            border: none;
+            border-bottom: 2px solid var(--ink);
+            width: 100%;
+            font-family: 'Playfair Display', italic;
+            font-size: 1.5rem;
+            text-align: center;
+            outline: none;
+            padding: 10px;
+            color: var(--ink);
+        }
+
+        .insult-display {
+            min-height: 120px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            line-height: 1.2;
+            margin: 40px 0;
+            font-style: italic;
+            animation: fadeIn 0.5s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        button {
+            background: var(--ink);
+            color: var(--paper);
+            border: none;
+            padding: 15px 30px;
+            font-family: 'Playfair Display', serif;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        button:hover {
+            background: var(--highlight);
+            transform: scale(1.05);
+        }
+
+        .back-link {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            color: #666;
+            text-decoration: none;
+            font-size: 0.8rem;
+            font-family: 'Share Tech Mono', monospace;
+            z-index: 100;
+        }
+
+        .share-ui {
+            margin-top: 30px;
+            display: none;
+        }
+
+        .wax-seal {
+            width: 60px;
+            height: 60px;
+            background: var(--highlight);
+            border-radius: 50%;
+            margin: 0 auto 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+            cursor: pointer;
+            color: var(--paper);
+            font-size: 1.5rem;
+            font-family: serif;
+        }
+    </style>
+</head>
+<body>
+
+    <a href="index.html" class="back-link">← EXIT THEATER</a>
+
+    <div class="parchment">
+        <h1>Bard's Bitter Tongue</h1>
+
+        <div class="input-box">
+            <input type="text" id="target-name" placeholder="Enter a name for the victim..." maxlength="20">
+        </div>
+
+        <div class="insult-display" id="display">
+            Enter a name to begin the verbal onslaught.
+        </div>
+
+        <button onclick="generateInsult()">Unleash Drama</button>
+
+        <div class="share-ui" id="share-ui">
+            <div class="wax-seal" onclick="copyInsult()">📜</div>
+            <p style="font-size: 0.7rem; letter-spacing: 1px; color: #888;">TAP SEAL TO COPY TEXT</p>
+        </div>
+    </div>
+
+    <script src="discovery.js"></script>
+    <script>
+        Discovery.unlock('insult-generator');
+
+        const col1 = [
+            'artless', 'bawdy', 'beslubbering', 'bootless', 'churlish', 'cockered', 'clouted', 'craven', 'currish', 'dankish',
+            'dissembling', 'droning', 'errant', 'fawning', 'fobbing', 'froward', 'frothy', 'gleeking', 'goatish', 'gorbellied',
+            'impertinent', 'infectious', 'jarring', 'loggerheaded', 'lumpish', 'mammering', 'mangled', 'mewling', 'paunchy', 'pribbling'
+        ];
+        const col2 = [
+            'base-court', 'bat-fowling', 'beef-witted', 'beetle-headed', 'boar-pigged', 'clapper-clawed', 'clay-brained', 'common-kissing', 'crook-pated', 'dismal-dreaming',
+            'dizzy-eyed', 'doghearted', 'dread-bolted', 'earth-vexing', 'elf-skinned', 'fat-kidneyed', 'fen-sucked', 'flap-mouthed', 'fly-bitten', 'folly-fallen',
+            'fool-born', 'full-gorged', 'guts-griping', 'half-faced', 'hasty-witted', 'hedge-born', 'hell-hated', 'idle-headed', 'ill-breeding', 'ill-nurtured'
+        ];
+        const col3 = [
+            'apple-john', 'baggage', 'barnacle', 'bladder', 'boar-pig', 'bugbear', 'bum-bailey', 'canker-blossom', 'clack-dish', 'clotpole',
+            'coxcomb', 'codpiece', 'death-token', 'dewberry', 'flap-dragon', 'flax-wench', 'flirt-gill', 'foot-licker', 'fustilarian', 'giglet',
+            'gudgeon', 'haggard', 'harpy', 'hedge-pig', 'horn-beast', 'hugger-mugger', 'joithead', 'lewdster', 'lout', 'maggot-pie'
+        ];
+
+        function generateInsult() {
+            const name = document.getElementById('target-name').value || "Thou";
+            const a = col1[Math.floor(Math.random() * col1.length)];
+            const b = col2[Math.floor(Math.random() * col2.length)];
+            const c = col3[Math.floor(Math.random() * col3.length)];
+
+            const insult = `${name}, thou ${a} ${b} ${c}!`;
+            document.getElementById('display').textContent = insult;
+            document.getElementById('share-ui').style.display = 'block';
+
+            // Reset animation
+            const el = document.getElementById('display');
+            el.style.animation = 'none';
+            void el.offsetWidth;
+            el.style.animation = 'fadeIn 0.5s ease-out';
+        }
+
+        function copyInsult() {
+            const text = document.getElementById('display').textContent;
+            navigator.clipboard.writeText(text);
+            const original = document.getElementById('display').textContent;
+            document.getElementById('display').textContent = "Copied to the scrolls!";
+            setTimeout(() => {
+                document.getElementById('display').textContent = original;
+            }, 1000);
+        }
+    </script>
+    <script>
+        if(/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)){
+            document.body.innerHTML += '<a href="index.html" style="position:fixed;bottom:20px;right:20px;background:#000;color:#fff;padding:10px 20px;border-radius:30px;text-decoration:none;z-index:9999;border:1px solid #333;font-family:sans-serif;font-size:14px;">Back to Gallery</a>';
+        }
+    </script>
+</body>
+</html>

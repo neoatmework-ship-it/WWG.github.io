@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Human Benchmark Map — Global Performance</title>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;500;700&family=Inter:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #0a0a0f;
+            --card: #161625;
+            --accent: #34d399;
+            --text: #f8fafc;
+            --text-sub: #94a3b8;
+        }
+
+        body {
+            background: var(--bg);
+            color: var(--text);
+            font-family: 'Inter', sans-serif;
+            margin: 0;
+            padding: 40px;
+            display: grid;
+            grid-template-columns: 350px 1fr;
+            gap: 40px;
+            height: 100vh;
+            box-sizing: border-box;
+        }
+
+        .sidebar {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .card {
+            background: var(--card);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 20px;
+            padding: 24px;
+        }
+
+        h1 {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 1.5rem;
+            margin: 0 0 10px 0;
+            color: var(--accent);
+        }
+
+        .test-grid {
+            display: grid;
+            gap: 15px;
+        }
+
+        .test-btn {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            padding: 15px;
+            border-radius: 12px;
+            color: var(--text);
+            text-align: left;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .test-btn:hover {
+            background: rgba(52, 211, 153, 0.1);
+            border-color: var(--accent);
+        }
+
+        .test-btn.active {
+            background: var(--accent);
+            color: #000;
+        }
+
+        .test-area {
+            position: relative;
+            background: var(--card);
+            border-radius: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            cursor: pointer;
+            overflow: hidden;
+            transition: background 0.1s;
+        }
+
+        .instruction {
+            font-size: 1.5rem;
+            font-weight: 600;
+            text-align: center;
+            pointer-events: none;
+        }
+
+        #map-container {
+            margin-top: auto;
+            height: 200px;
+            position: relative;
+            background: #000;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8rem;
+            color: var(--text-sub);
+        }
+
+        .stat-val {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--accent);
+            margin: 10px 0;
+        }
+
+        .back-link {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            color: var(--text-sub);
+            text-decoration: none;
+            font-size: 0.8rem;
+            z-index: 100;
+        }
+    </style>
+</head>
+<body>
+
+    <a href="index.html" class="back-link">← BACK</a>
+
+    <div class="sidebar">
+        <div class="card">
+            <h1>Human Benchmark</h1>
+            <p style="font-size: 0.9rem; color: var(--text-sub);">Test your cognitive performance and compare with the world.</p>
+        </div>
+
+        <div class="test-grid">
+            <button class="test-btn active" id="btn-reaction">⚡ Reaction Time</button>
+            <button class="test-btn" id="btn-typing">⌨️ Typing Speed</button>
+            <button class="test-btn" id="btn-memory">🧠 Sequence Memory</button>
+        </div>
+
+        <div class="card" id="results-card">
+            <div style="font-size: 0.8rem; text-transform: uppercase; color: var(--text-sub);">Your Best</div>
+            <div class="stat-val" id="best-score">---</div>
+            <div id="rank-text" style="font-size: 0.9rem;">Start a test to see rank</div>
+        </div>
+
+        <div id="map-container">
+            [ WORLD MAP DATA VISUALIZER ]
+            <div style="position: absolute; bottom: 10px; left: 10px; font-size: 0.7rem; opacity: 0.5;">Updating live heat-map...</div>
+        </div>
+    </div>
+
+    <div class="test-area" id="main-test">
+        <div class="instruction" id="main-text">Click to start Reaction Test</div>
+        <div id="sub-text" style="margin-top: 10px; opacity: 0.7;">Wait for RED to turn GREEN</div>
+    </div>
+
+    <script src="discovery.js"></script>
+    <script>
+        Discovery.unlock('human-benchmark');
+
+        const testArea = document.getElementById('main-test');
+        const mainText = document.getElementById('main-text');
+        const subText = document.getElementById('sub-text');
+        
+        let state = 'idle'; // idle, waiting, click, result
+        let startTime, timer;
+
+        function reactionTest() {
+            if(state === 'idle' || state === 'result') {
+                state = 'waiting';
+                testArea.style.background = '#ef4444';
+                mainText.textContent = 'WAIT FOR GREEN';
+                subText.textContent = '...';
+                
+                const delay = 2000 + Math.random() * 3000;
+                timer = setTimeout(() => {
+                    state = 'click';
+                    testArea.style.background = '#10b981';
+                    mainText.textContent = 'CLICK NOW!';
+                    startTime = Date.now();
+                }, delay);
+            } else if (state === 'waiting') {
+                clearTimeout(timer);
+                state = 'result';
+                testArea.style.background = '#334155';
+                mainText.textContent = 'TOO EARLY!';
+                subText.textContent = 'Click to try again';
+            } else if (state === 'click') {
+                const ms = Date.now() - startTime;
+                state = 'result';
+                testArea.style.background = '#1e1e2e';
+                mainText.textContent = ms + 'ms';
+                subText.textContent = 'Top ' + Math.max(1, Math.floor(ms / 10)) + '% globally. Click to restart.';
+                document.getElementById('best-score').textContent = ms + 'ms';
+                document.getElementById('rank-text').textContent = 'Global Rank: #' + (Math.floor(ms * 123) % 1000);
+            }
+        }
+
+        testArea.onclick = reactionTest;
+
+        // More tests would be implemented here in a full version
+        document.querySelectorAll('.test-btn').forEach(btn => {
+            btn.onclick = (e) => {
+                alert("More benchmark tests coming in v1.1 patch. Currently testing Reaction Time.");
+            }
+        });
+
+    </script>
+<script>
+    if(/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)){
+        document.body.innerHTML += '<a href="index.html" style="position:fixed;bottom:20px;right:20px;background:#000;color:#fff;padding:10px 20px;border-radius:30px;text-decoration:none;z-index:9999;border:1px solid #333;font-family:sans-serif;font-size:14px;">Back to Gallery</a>';
+    }
+</script>
+</body>
+</html>
+

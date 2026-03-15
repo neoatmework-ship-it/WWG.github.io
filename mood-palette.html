@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MOOD PALETTE — Emotional Visualization</title>
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E🌈%3C/text%3E%3C/svg%3E">
+    <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Inter:wght@300;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #0a0a0f;
+            --glass: rgba(255, 255, 255, 0.05);
+        }
+
+        * { margin:0; padding:0; box-sizing:border-box; }
+
+        body {
+            background: var(--bg);
+            color: #fff;
+            font-family: 'Inter', sans-serif;
+            height: 100vh;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 2s ease;
+        }
+
+        #canvas-bg {
+            position: fixed;
+            inset: 0;
+            z-index: 1;
+            filter: blur(80px);
+            opacity: 0.6;
+        }
+
+        .mood-blob {
+            position: absolute;
+            width: 60vw;
+            height: 60vw;
+            border-radius: 50%;
+            background: radial-gradient(circle, var(--c1), transparent 70%);
+            transition: all 4s ease;
+            animation: float 20s infinite alternate;
+        }
+
+        @keyframes float {
+            0% { transform: translate(-10%, -10%) scale(1); }
+            100% { transform: translate(10%, 10%) scale(1.2); }
+        }
+
+        .container {
+            position: relative;
+            z-index: 10;
+            background: var(--glass);
+            backdrop-filter: blur(30px);
+            border: 1px solid rgba(255,255,255,0.1);
+            padding: 50px;
+            border-radius: 30px;
+            width: 90%;
+            max-width: 500px;
+            text-align: center;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+        }
+
+        h1 {
+            font-size: 0.7rem;
+            letter-spacing: 5px;
+            text-transform: uppercase;
+            color: #888;
+            margin-bottom: 30px;
+            font-family: 'Share Tech Mono', monospace;
+        }
+
+        textarea {
+            width: 100%;
+            background: transparent;
+            border: none;
+            border-bottom: 2px solid rgba(255,255,255,0.1);
+            color: #fff;
+            font-size: 1.5rem;
+            font-family: inherit;
+            resize: none;
+            outline: none;
+            text-align: center;
+            margin-bottom: 30px;
+            transition: border-color 0.5s;
+        }
+
+        textarea::placeholder { color: #333; }
+        textarea:focus { border-color: rgba(255,255,255,0.5); }
+
+        .palette {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin-top: 30px;
+        }
+
+        .swatch {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            transition: transform 0.3s;
+        }
+        .swatch:hover { transform: scale(1.2); }
+
+        .back-link {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            color: #444;
+            text-decoration: none;
+            font-size: 0.8rem;
+            z-index: 100;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="canvas-bg">
+        <div class="mood-blob" id="blob1" style="--c1: #3b82f6; top: 10%; left: 10%;"></div>
+        <div class="mood-blob" id="blob2" style="--c1: #8b5cf6; bottom: 10%; right: 10%; animation-delay: -5s;"></div>
+    </div>
+
+    <a href="index.html" class="back-link">← EXIT DREAM</a>
+
+    <div class="container">
+        <h1>Mood Scanner</h1>
+        <textarea id="mood-input" rows="2" placeholder="How do you feel right now?" oninput="updateMood()"></textarea>
+        
+        <p id="mood-label" style="font-size: 0.8rem; color: #666; letter-spacing: 2px;">NEUTRAL_RESONANCE</p>
+
+        <div class="palette" id="palette">
+            <div class="swatch" style="background: #3b82f6;"></div>
+            <div class="swatch" style="background: #60a5fa;"></div>
+            <div class="swatch" style="background: #93c5fd;"></div>
+        </div>
+    </div>
+
+    <script src="discovery.js"></script>
+    <script>
+        Discovery.unlock('mood-palette');
+
+        const MOODS = {
+            happy: { hue: 45, label: "ELEVATED_VIBE", colors: ["#fbbf24", "#fcd34d", "#fef3c7"] },
+            sad: { hue: 220, label: "MELANCHOLY_DRIVE", colors: ["#1e3a8a", "#2563eb", "#60a5fa"] },
+            angry: { hue: 0, label: "COMBUSTION_RISK", colors: ["#991b1b", "#dc2626", "#ef4444"] },
+            calm: { hue: 160, label: "SERENE_FREQUENCY", colors: ["#065f46", "#10b981", "#6ee7b7"] },
+            anxious: { hue: 280, label: "CHAOTIC_PULSE", colors: ["#581c87", "#9333ea", "#c084fc"] },
+            loving: { hue: 330, label: "EMPATHIC_OVERLOAD", colors: ["#9d174d", "#db2777", "#f472b6"] }
+        };
+
+        const KEYWORDS = {
+            happy: ["good", "great", "content", "joy", "Happy", "amazing", "yes", "fun"],
+            sad: ["bad", "down", "blue", "lonely", "hurt", "Sad", "crying", "miss"],
+            angry: ["mad", "hate", "fight", "Angry", "annoyed", "stop", "furious"],
+            calm: ["peace", "chill", "relax", "Quiet", "sleepy", "still", "Calm"],
+            anxious: ["scared", "nervous", "worry", "Stress", "fast", "Afraid"],
+            loving: ["love", "heart", "warm", "Kind", "sweet", "Beautiful"]
+        };
+
+        function updateMood() {
+            const input = document.getElementById('mood-input').value.toLowerCase();
+            let detected = 'calm'; // Default
+
+            for (let mood in KEYWORDS) {
+                if (KEYWORDS[mood].some(word => input.includes(word))) {
+                    detected = mood;
+                    break;
+                }
+            }
+
+            const config = MOODS[detected];
+            
+            // Update Blubs
+            document.getElementById('blob1').style.setProperty('--c1', config.colors[0]);
+            document.getElementById('blob2').style.setProperty('--c1', config.colors[1]);
+            
+            // Update Label
+            const label = document.getElementById('mood-label');
+            label.textContent = config.label;
+            label.style.color = config.colors[1];
+
+            // Update Swatches
+            const palette = document.getElementById('palette');
+            palette.innerHTML = '';
+            config.colors.forEach(c => {
+                const s = document.createElement('div');
+                s.className = 'swatch';
+                s.style.background = c;
+                palette.appendChild(s);
+            });
+
+            // Gentle body shift
+            document.body.style.background = `radial-gradient(circle at center, ${config.colors[0]}22 0%, #0a0a0f 100%)`;
+        }
+    </script>
+    <script>
+        if(/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)){
+            document.body.innerHTML += '<a href="index.html" style="position:fixed;bottom:20px;right:20px;background:#000;color:#fff;padding:10px 20px;border-radius:30px;text-decoration:none;z-index:9999;border:1px solid #333;font-family:sans-serif;font-size:14px;">Back to Gallery</a>';
+        }
+    </script>
+</body>
+</html>

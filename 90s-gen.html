@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>1998 WEB GENERATOR — Nostalgia Overload</title>
+    <style>
+        /* Base 90s styles */
+        body {
+            background-color: #c0c0c0;
+            color: #000;
+            font-family: "Times New Roman", serif;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .win95-border {
+            border: 2px solid;
+            border-color: #fff #808080 #808080 #fff;
+            padding: 10px;
+            background: #c0c0c0;
+        }
+
+        .win95-btn {
+            background: #c0c0c0;
+            border: 2px solid;
+            border-color: #fff #808080 #808080 #fff;
+            padding: 5px 15px;
+            font-family: "MS Sans Serif", "Arial", sans-serif;
+            font-size: 12px;
+            cursor: pointer;
+            box-shadow: inset 1px 1px #dfdfdf;
+        }
+
+        .win95-btn:active {
+            border-color: #808080 #fff #fff #808080;
+            box-shadow: none;
+        }
+
+        .blink {
+            animation: blinker 1s linear infinite;
+        }
+
+        @keyframes blinker {
+            50% { opacity: 0; }
+        }
+
+        #site-container {
+            width: 100%;
+            max-width: 800px;
+            margin: 20px auto;
+            min-height: 500px;
+            overflow: auto;
+        }
+
+        .generator-ui {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+            width: 200px;
+            text-align: center;
+        }
+
+        .back-link {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 1000;
+            font-family: "MS Sans Serif", sans-serif;
+            font-size: 12px;
+            color: blue;
+            text-decoration: underline;
+        }
+
+        /* Procedural Elements */
+        .generated-header { text-align: center; border-bottom: 3px double #000; margin-bottom: 20px; }
+        .hit-counter { font-family: monospace; background: #000; color: #0f0; padding: 5px; border: 2px solid #555; }
+        .tiled-bg-1 { background-image: url('https://www.transparenttextures.com/patterns/carbon-fibre.png'); }
+        .tiled-bg-2 { background-image: url('https://www.transparenttextures.com/patterns/cubes.png'); }
+        .tiled-bg-3 { background-image: url('https://www.transparenttextures.com/patterns/diagonal-stripes.png'); }
+    </style>
+</head>
+<body>
+
+    <a href="index.html" class="back-link">Back to Reality</a>
+
+    <div class="generator-ui win95-border">
+        <p style="margin: 0 0 10px 0; font-weight: bold;">WEB GEN v1.0</p>
+        <button class="win95-btn" onclick="generate()">GENERATE RANDOM SITE</button>
+        <p style="font-size: 10px; color: #444; margin-top: 10px;">Best viewed in Netscape Navigator 4.0</p>
+    </div>
+
+    <div id="site-container">
+        <!-- Site content will be injected here -->
+        <div class="win95-border" style="text-align: center; margin-top: 100px;">
+            <h1 class="blink">CLICK GENERATE</h1>
+            <p>Welcome to the 1998 Procedural Web Experience.</p>
+            <img src="under_construction.png" alt="Under Construction" style="max-width: 200px;">
+        </div>
+    </div>
+
+    <script src="discovery.js"></script>
+    <script>
+        Discovery.unlock('90s-gen');
+
+        const NAMES = ["CoolCyberSpace", "The Ultimate Fan Page", "Global Network Zone", "Matrix Reloaded 1999", "Hyperlink Heaven", "Data Void", "Pixel Paradise"];
+        const COLORS = ["#000080", "#ff0000", "#008000", "#800080", "#00ffff", "#ffff00", "#000000"];
+        const BGS = ["#ffffff", "#c0c0c0", "#000080", "#008080", "#800000"];
+        const QUOTES = [
+            "This site is hosted by GeoCities!",
+            "You are visitor #000452",
+            "Best viewed at 800x600 resolution.",
+            "Click here for my MIDI collection!",
+            "Sign my Guestbook please!",
+            "Proud member of the HTML Writers Guild."
+        ];
+
+        function generate() {
+            const container = document.getElementById('site-container');
+            const name = NAMES[Math.floor(Math.random() * NAMES.length)];
+            const bg = BGS[Math.floor(Math.random() * BGS.length)];
+            const text = bg === "#000080" || bg === "#800000" || bg === "#000000" ? "#ffffff" : "#000000";
+            
+            let html = `
+                <div style="background-color: ${bg}; color: ${text}; padding: 40px; min-height: 600px; border: 4px ridge #fff;">
+                    <marquee scrollamount="5" style="background: #000; color: #fff; padding: 5px;">+++ WELCOME TO ${name.toUpperCase()} +++ WE HAVE THE BEST LINKS +++ NO FRAMES VERSION +++</marquee>
+                    
+                    <div class="generated-header">
+                        <h1 style="font-size: 3rem; margin: 20px 0;">${name}</h1>
+                        <p class="blink" style="color: red; font-weight: bold;">NEW STUFF ADDED ON ${new Date().toLocaleDateString()}</p>
+                    </div>
+
+                    <div style="display: flex; gap: 20px;">
+                        <nav style="width: 150px; border: 2px inset #fff; padding: 10px;">
+                            <p><b>Navigation</b></p>
+                            <a href="#" style="color: yellow;">Home</a><br>
+                            <a href="#" style="color: yellow;">About Me</a><br>
+                            <a href="#" style="color: yellow;">My Gear</a><br>
+                            <a href="#" style="color: yellow;">Top 10 GIFs</a><br>
+                            <p style="margin-top: 50px;">
+                                <img src="ie_logo.png" width="88">
+                                <img src="ns_logo.png" width="88">
+                            </p>
+                        </nav>
+
+                        <main style="flex: 1;">
+                            <h2>My Very Cool Page</h2>
+                            <p>Hello world! This is my personal space on the information superhighway. I hope you like the colors. I spent 3 hours choosing them!</p>
+                            <center>
+                                <img src="under_construction.png" style="max-width: 150px;">
+                            </center>
+                            <p>${QUOTES[Math.floor(Math.random() * QUOTES.length)]}</p>
+                            <p>Here is a list of my favorite things:</p>
+                            <ul>
+                                <li>The X-Files</li>
+                                <li>Dial-up modems</li>
+                                <li>Napster</li>
+                                <li>Dancing Baby GIF</li>
+                            </ul>
+                            
+                            <hr>
+                            <div style="text-align: center;">
+                                <p>This site is optimized for:</p>
+                                <span class="hit-counter">0 0 0 ${Math.floor(Math.random()*999)}</span>
+                            </div>
+                        </main>
+                    </div>
+
+                    <div style="text-align: center; margin-top: 50px;">
+                        <img src="best_viewed.png" width="88">
+                        <p>&copy; 1998 ${name} Productions</p>
+                        <p><font size="1">Made with Notepad</font></p>
+                    </div>
+                </div>
+            `;
+
+            container.innerHTML = html;
+        }
+    </script>
+    <script>
+        if(/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)){
+            document.body.innerHTML += '<a href="index.html" style="position:fixed;bottom:20px;right:20px;background:#000;color:#fff;padding:10px 20px;border-radius:30px;text-decoration:none;z-index:9999;border:1px solid #333;font-family:sans-serif;font-size:14px;">Back to Gallery</a>';
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TIME CAPSULE — Digital Vault</title>
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E🔒%3C/text%3E%3C/svg%3E">
+    <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Orbitron:wght@600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #050508;
+            --accent: #a78bfa;
+            --glass: rgba(255, 255, 255, 0.03);
+            --border: rgba(255, 255, 255, 0.1);
+            --green: #4ade80;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            background: var(--bg);
+            color: #fff;
+            font-family: 'Share Tech Mono', monospace;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow-x: hidden;
+            background-image: 
+                radial-gradient(circle at 50% 50%, rgba(167, 139, 250, 0.05) 0%, transparent 70%);
+        }
+
+        .container {
+            width: 90%;
+            max-width: 500px;
+            padding: 40px;
+            background: var(--glass);
+            border: 1px solid var(--border);
+            border-radius: 30px;
+            backdrop-filter: blur(20px);
+            text-align: center;
+            position: relative;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+        }
+
+        h1 {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.8rem;
+            margin-bottom: 20px;
+            letter-spacing: 4px;
+            color: var(--accent);
+            text-shadow: 0 0 20px rgba(167, 139, 250, 0.4);
+        }
+
+        .view { display: none; }
+        .view.active { display: block; }
+
+        textarea {
+            width: 100%;
+            height: 150px;
+            background: rgba(0,0,0,0.3);
+            border: 1px solid var(--border);
+            border-radius: 15px;
+            padding: 15px;
+            color: #fff;
+            font-family: inherit;
+            resize: none;
+            margin-bottom: 20px;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+        textarea:focus { border-color: var(--accent); }
+
+        .input-group {
+            margin-bottom: 20px;
+            text-align: left;
+        }
+
+        label {
+            display: block;
+            font-size: 0.8rem;
+            color: #888;
+            margin-bottom: 8px;
+            letter-spacing: 1px;
+        }
+
+        input {
+            width: 100%;
+            background: rgba(0,0,0,0.3);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 12px;
+            color: #fff;
+            font-family: inherit;
+            outline: none;
+        }
+
+        button {
+            width: 100%;
+            padding: 15px;
+            background: var(--accent);
+            border: none;
+            border-radius: 15px;
+            color: #000;
+            font-weight: 700;
+            font-family: 'Orbitron', sans-serif;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-top: 10px;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 0 30px rgba(167, 139, 250, 0.4);
+            filter: brightness(1.1);
+        }
+
+        .countdown {
+            margin: 30px 0;
+        }
+
+        .timer-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+        }
+
+        .timer-item {
+            background: rgba(255,255,255,0.05);
+            padding: 10px;
+            border-radius: 10px;
+        }
+
+        .timer-val {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.5rem;
+            display: block;
+        }
+
+        .timer-label {
+            font-size: 0.6rem;
+            color: #888;
+            text-transform: uppercase;
+        }
+
+        .lock-icon {
+            font-size: 4rem;
+            margin-bottom: 20px;
+            display: inline-block;
+            transition: transform 0.5s;
+        }
+
+        .locked .lock-icon { animation: shake 0.5s infinite alternate; }
+
+        @keyframes shake {
+            from { transform: rotate(-5deg); }
+            to { transform: rotate(5deg); }
+        }
+
+        .vault-status {
+            font-size: 0.9rem;
+            color: #888;
+            margin-top: 10px;
+        }
+
+        .share-link {
+            word-break: break-all;
+            background: rgba(0,0,0,0.5);
+            padding: 15px;
+            border-radius: 10px;
+            font-size: 0.8rem;
+            margin-top: 20px;
+            border: 1px dashed var(--border);
+            cursor: pointer;
+        }
+
+        .back-link {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            color: #666;
+            text-decoration: none;
+            font-size: 0.8rem;
+            transition: color 0.3s;
+        }
+        .back-link:hover { color: #fff; }
+
+        /* Animation for success */
+        .reveal-anim {
+            animation: explode 0.8s cubic-bezier(0.17, 0.89, 0.32, 1.49);
+        }
+
+        @keyframes explode {
+            0% { transform: scale(0.8); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+    </style>
+</head>
+<body>
+
+    <a href="index.html" class="back-link">← BACK TO GALLERY</a>
+
+    <div class="container" id="main-container">
+        <!-- Create View -->
+        <div id="view-create" class="view active">
+            <h1>TIME CAPSULE</h1>
+            <p style="font-size: 0.9rem; color: #888; margin-bottom: 20px;">Send a message to your future self.</p>
+            
+            <textarea id="msg-input" placeholder="Type your message to the future..."></textarea>
+            
+            <div class="input-group">
+                <label>UNLOCK DATE</label>
+                <input type="datetime-local" id="date-input">
+            </div>
+
+            <div class="input-group">
+                <label>PASSCODE (OPTIONAL)</label>
+                <input type="password" id="pass-input" placeholder="Keep it secret...">
+            </div>
+
+            <button onclick="sealCapsule()">SEAL CAPSULE 🔒</button>
+        </div>
+
+        <!-- Result View -->
+        <div id="view-result" class="view">
+            <h1>CAPSULE SEALED</h1>
+            <p style="font-size: 0.9rem; color: #888;">Share this link. It cannot be opened until the time is right.</p>
+            <div class="share-link" id="share-display" onclick="copyLink()">
+                <!-- Link goes here -->
+            </div>
+            <p style="font-size: 0.7rem; color: var(--accent); margin-top: 10px;">Click to copy URL</p>
+            <button onclick="location.reload()" style="background: transparent; border: 1px solid var(--border); color: #fff; margin-top: 20px;">CREATE ANOTHER</button>
+        </div>
+
+        <!-- Locked View -->
+        <div id="view-locked" class="view">
+            <div class="lock-icon">🔒</div>
+            <h1>VAULT LOCKED</h1>
+            <div class="countdown">
+                <div class="timer-grid">
+                    <div class="timer-item"><span class="timer-val" id="t-d">00</span><span class="timer-label">DAYS</span></div>
+                    <div class="timer-item"><span class="timer-val" id="t-h">00</span><span class="timer-label">HRS</span></div>
+                    <div class="timer-item"><span class="timer-val" id="t-m">00</span><span class="timer-label">MIN</span></div>
+                    <div class="timer-item"><span class="timer-val" id="t-s">00</span><span class="timer-label">SEC</span></div>
+                </div>
+            </div>
+            <p class="vault-status" id="vault-status">Integrity: 100%</p>
+        </div>
+
+        <!-- Unlocking View -->
+        <div id="view-unlock" class="view">
+            <div class="lock-icon" style="animation: none; transform: scale(1.2);">🔓</div>
+            <h1>UNLOCKED</h1>
+            <p style="margin-bottom: 20px; color: #888;">The time has arrived.</p>
+            
+            <div id="pass-needed" style="display: none;">
+                <div class="input-group">
+                    <label>ACCESS PASSCODE REQUIRED</label>
+                    <input type="password" id="pass-verify" placeholder="Enter password...">
+                </div>
+                <button onclick="verifyAndReveal()">REVEAL MESSAGE</button>
+            </div>
+            
+            <div id="revealed-msg" style="display: none;" class="reveal-anim">
+                <div style="background: rgba(0,0,0,0.5); padding: 30px; border-radius: 20px; border: 1px solid var(--accent); text-align: left; line-height: 1.6;">
+                    <p id="msg-content" style="white-space: pre-wrap;"></p>
+                </div>
+                <button onclick="window.location.href = window.location.pathname" style="margin-top: 20px;">CREATE NEW</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="discovery.js"></script>
+    <script>
+        Discovery.unlock('time-capsule');
+
+        const params = new URLSearchParams(window.location.search);
+        const data = window.location.hash.substring(1);
+
+        // Encryption/Decryption helper (Simple but effective for this toy)
+        function encode(str) { return btoa(unescape(encodeURIComponent(str))); }
+        function decode(str) { return decodeURIComponent(escape(atob(str))); }
+
+        function sealCapsule() {
+            const msg = document.getElementById('msg-input').value;
+            const date = document.getElementById('date-input').value;
+            const pass = document.getElementById('pass-input').value;
+
+            if(!msg || !date) {
+                alert("Please provide a message and an unlock date.");
+                return;
+            }
+
+            const payload = {
+                m: encode(msg),
+                d: new Date(date).getTime(),
+                p: pass ? encode(pass) : ''
+            };
+
+            const hash = btoa(JSON.stringify(payload));
+            const url = window.location.origin + window.location.pathname + "#" + hash;
+            
+            document.getElementById('share-display').textContent = url;
+            switchView('view-result');
+        }
+
+        function copyLink() {
+            const text = document.getElementById('share-display').textContent;
+            navigator.clipboard.writeText(text);
+            const original = document.getElementById('share-display').textContent;
+            document.getElementById('share-display').textContent = "COPIED TO CLIPBOARD!";
+            document.getElementById('share-display').style.color = "var(--green)";
+            setTimeout(() => {
+                document.getElementById('share-display').textContent = original;
+                document.getElementById('share-display').style.color = "";
+            }, 2000);
+        }
+
+        function switchView(id) {
+            document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+            document.getElementById(id).classList.add('active');
+        }
+
+        // Check hash on load
+        if(data) {
+            try {
+                const payload = JSON.parse(atob(data));
+                const now = Date.now();
+                
+                if(now < payload.d) {
+                    switchView('view-locked');
+                    document.body.classList.add('locked');
+                    startCountdown(payload.d);
+                } else {
+                    switchView('view-unlock');
+                    if(payload.p) {
+                        document.getElementById('pass-needed').style.display = 'block';
+                    } else {
+                        revealMessage(payload.m);
+                    }
+                }
+            } catch(e) {
+                console.error("Corrupt capsule");
+            }
+        }
+
+        function startCountdown(target) {
+            function update() {
+                const now = Date.now();
+                const diff = target - now;
+
+                if(diff <= 0) {
+                    location.reload(); // Refresh to show unlock view
+                    return;
+                }
+
+                const d = Math.floor(diff / (1000 * 60 * 60 * 24));
+                const h = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                const m = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+                const s = Math.floor((diff % (1000 * 60)) / 1000);
+
+                document.getElementById('t-d').textContent = String(d).padStart(2, '0');
+                document.getElementById('t-h').textContent = String(h).padStart(2, '0');
+                document.getElementById('t-m').textContent = String(m).padStart(2, '0');
+                document.getElementById('t-s').textContent = String(s).padStart(2, '0');
+            }
+            setInterval(update, 1000);
+            update();
+        }
+
+        function verifyAndReveal() {
+            const payload = JSON.parse(atob(data));
+            const input = document.getElementById('pass-verify').value;
+            if(encode(input) === payload.p) {
+                document.getElementById('pass-needed').style.display = 'none';
+                revealMessage(payload.m);
+            } else {
+                alert("Incorrect passcode. The vault remains sealed.");
+            }
+        }
+
+        function revealMessage(encodedMsg) {
+            document.getElementById('revealed-msg').style.display = 'block';
+            document.getElementById('msg-content').textContent = decode(encodedMsg);
+        }
+    </script>
+    <script>
+        if(/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)){
+            document.body.innerHTML += '<a href="index.html" style="position:fixed;bottom:20px;right:20px;background:#000;color:#fff;padding:10px 20px;border-radius:30px;text-decoration:none;z-index:9999;border:1px solid #333;font-family:sans-serif;font-size:14px;">Back to Gallery</a>';
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GRAVITY WELL — Cursor Orbit Simulator</title>
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E🌌%3C/text%3E%3C/svg%3E">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #020205;
+            --accent: #60a5fa;
+        }
+
+        * { margin:0; padding:0; box-sizing:border-box; }
+
+        body {
+            background: var(--bg);
+            color: #fff;
+            overflow: hidden;
+            font-family: 'Orbitron', sans-serif;
+            touch-action: none;
+        }
+
+        canvas {
+            display: block;
+            width: 100vw;
+            height: 100vh;
+        }
+
+        .ui {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            text-align: center;
+            pointer-events: none;
+            z-index: 10;
+        }
+
+        h1 {
+            font-size: 1.2rem;
+            letter-spacing: 10px;
+            margin-bottom: 5px;
+            opacity: 0.5;
+        }
+
+        .stats {
+            font-size: 0.6rem;
+            letter-spacing: 2px;
+            color: var(--accent);
+            opacity: 0.8;
+        }
+
+        .controls {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            padding: 10px 20px;
+            border-radius: 50px;
+            display: flex;
+            gap: 20px;
+            font-size: 0.7rem;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: #888;
+        }
+
+        .back-link {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            color: #444;
+            text-decoration: none;
+            font-size: 0.7rem;
+            z-index: 20;
+        }
+        .back-link:hover { color: #fff; }
+    </style>
+</head>
+<body>
+
+    <a href="index.html" class="back-link">← RETURN TO BASE</a>
+
+    <div class="ui">
+        <h1>GRAVITY WELL</h1>
+        <div class="stats" id="stats">Orbits Active: 0</div>
+    </div>
+
+    <div class="controls">
+        <span>Click to Spawn</span>
+        <span>Drag to Attract</span>
+        <span onclick="spawnBatch(20)" style="cursor: pointer; color: #fff;">[ Spawn Batch ]</span>
+    </div>
+
+    <canvas id="gravity-canvas"></canvas>
+
+    <script src="discovery.js"></script>
+    <script>
+        Discovery.unlock('cursor-gravity');
+
+        const canvas = document.getElementById('gravity-canvas');
+        const ctx = canvas.getContext('2d');
+        const stats = document.getElementById('stats');
+
+        let width, height;
+        let particles = [];
+        let mouse = { x: -1000, y: -1000, active: false };
+
+        const OBJECT_TYPES = ['🪐', '☄️', '💎', '💰', '🌕', '🛸', '🗿'];
+
+        class Particle {
+            constructor(x, y) {
+                this.x = x || Math.random() * width;
+                this.y = y || Math.random() * height;
+                this.vx = (Math.random() - 0.5) * 4;
+                this.vy = (Math.random() - 0.5) * 4;
+                this.size = Math.random() * 20 + 20;
+                this.char = OBJECT_TYPES[Math.floor(Math.random() * OBJECT_TYPES.length)];
+                this.mass = this.size / 10;
+                this.angle = 0;
+                this.rotSpeed = (Math.random() - 0.5) * 0.1;
+            }
+
+            update() {
+                if(mouse.active) {
+                    const dx = mouse.x - this.x;
+                    const dy = mouse.y - this.y;
+                    const distSq = dx*dx + dy*dy;
+                    const dist = Math.sqrt(distSq);
+                    
+                    if(dist < 500) {
+                        const force = (500 - dist) / 5000;
+                        this.vx += (dx / dist) * force;
+                        this.vy += (dy / dist) * force;
+                    }
+                }
+
+                this.vx *= 0.99; // Friction
+                this.vy *= 0.99;
+
+                this.x += this.vx;
+                this.y += this.vy;
+                this.angle += this.rotSpeed;
+
+                // Bounce
+                if(this.x < 0 || this.x > width) this.vx *= -1;
+                if(this.y < 0 || this.y > height) this.vy *= -1;
+            }
+
+            draw() {
+                ctx.save();
+                ctx.translate(this.x, this.y);
+                ctx.rotate(this.angle);
+                ctx.font = `${this.size}px serif`;
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText(this.char, 0, 0);
+                
+                // Trace line to mouse if active
+                if(mouse.active) {
+                    const dist = Math.sqrt((mouse.x - this.x)**2 + (mouse.y - this.y)**2);
+                    if(dist < 300) {
+                        ctx.restore();
+                        ctx.save();
+                        ctx.beginPath();
+                        ctx.moveTo(this.x, this.y);
+                        ctx.lineTo(mouse.x, mouse.y);
+                        ctx.strokeStyle = `rgba(96, 165, 250, ${0.3 * (1 - dist/300)})`;
+                        ctx.lineWidth = 1;
+                        ctx.stroke();
+                    }
+                }
+                ctx.restore();
+            }
+        }
+
+        function resize() {
+            width = canvas.width = window.innerWidth;
+            height = canvas.height = window.innerHeight;
+        }
+
+        window.addEventListener('resize', resize);
+        resize();
+
+        function spawn(x, y) {
+            particles.push(new Particle(x, y));
+            stats.textContent = `Orbits Active: ${particles.length}`;
+        }
+
+        function spawnBatch(n) {
+            for(let i=0; i<n; i++) spawn();
+        }
+
+        canvas.addEventListener('mousedown', (e) => { mouse.active = true; spawn(e.clientX, e.clientY); });
+        canvas.addEventListener('mousemove', (e) => { mouse.x = e.clientX; mouse.y = e.clientY; });
+        window.addEventListener('mouseup', () => { mouse.active = false; });
+
+        canvas.addEventListener('touchstart', (e) => { mouse.active = true; mouse.x = e.touches[0].clientX; mouse.y = e.touches[0].clientY; spawn(mouse.x, mouse.y); });
+        canvas.addEventListener('touchmove', (e) => { mouse.x = e.touches[0].clientX; mouse.y = e.touches[0].clientY; });
+        window.addEventListener('touchend', () => { mouse.active = false; });
+
+        function animate() {
+            ctx.fillStyle = 'rgba(2, 2, 5, 0.2)'; // Tail effect
+            ctx.fillRect(0, 0, width, height);
+
+            particles.forEach(p => {
+                p.update();
+                p.draw();
+            });
+
+            requestAnimationFrame(animate);
+        }
+
+        spawnBatch(10);
+        animate();
+    </script>
+    <script>
+        if(/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)){
+            document.body.innerHTML += '<a href="index.html" style="position:fixed;bottom:20px;right:20px;background:#000;color:#fff;padding:10px 20px;border-radius:30px;text-decoration:none;z-index:9999;border:1px solid #333;font-family:sans-serif;font-size:14px;">Back to Gallery</a>';
+        }
+    </script>
+</body>
+</html>

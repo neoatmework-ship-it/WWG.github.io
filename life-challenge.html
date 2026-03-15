@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Daily Life Challenge — Exit the Digital</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #fafafa;
+            --accent: #10b981;
+            --text: #1f2937;
+            --card: #ffffff;
+        }
+
+        body {
+            background: var(--bg);
+            color: var(--text);
+            font-family: 'Outfit', sans-serif;
+            margin: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            overflow: hidden;
+        }
+
+        .challenge-container {
+            width: 90%;
+            max-width: 450px;
+            text-align: center;
+        }
+
+        .date-badge {
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: var(--accent);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-bottom: 20px;
+        }
+
+        .card {
+            background: var(--card);
+            padding: 50px 40px;
+            border-radius: 40px;
+            box-shadow: 0 40px 100px rgba(0,0,0,0.05);
+            border: 1px solid rgba(0,0,0,0.02);
+            position: relative;
+        }
+
+        h1 {
+            font-size: 2.2rem;
+            font-weight: 600;
+            margin: 0 0 15px 0;
+            line-height: 1.2;
+        }
+
+        p {
+            font-size: 1.1rem;
+            color: #6b7280;
+            line-height: 1.6;
+            margin: 0 0 40px 0;
+        }
+
+        .complete-btn {
+            background: #000;
+            color: #fff;
+            border: none;
+            padding: 18px 40px;
+            border-radius: 100px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .complete-btn:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+        }
+
+        .complete-btn.active {
+            background: var(--accent);
+            transform: scale(0.95);
+        }
+
+        .footer {
+            margin-top: 30px;
+            font-size: 0.8rem;
+            color: #9ca3af;
+        }
+
+        .back-link {
+            position: fixed;
+            top: 30px;
+            left: 30px;
+            color: #000;
+            text-decoration: none;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        /* Ambient background shapes */
+        .shape {
+            position: absolute;
+            z-index: -1;
+            filter: blur(80px);
+            opacity: 0.1;
+        }
+        .shape-1 { top: -100px; left: -100px; width: 300px; height: 300px; background: var(--accent); border-radius: 50%; }
+        .shape-2 { bottom: -100px; right: -100px; width: 300px; height: 300px; background: #3b82f6; border-radius: 50%; }
+    </style>
+</head>
+<body>
+
+    <div class="shape shape-1"></div>
+    <div class="shape shape-2"></div>
+
+    <a href="index.html" class="back-link">← Gallery</a>
+
+    <div class="challenge-container">
+        <div class="date-badge" id="date">March 15, 2026</div>
+        
+        <div class="card">
+            <div id="icon" style="font-size: 4rem; margin-bottom: 20px;">🌿</div>
+            <h1 id="task-title">Talk to a stranger.</h1>
+            <p id="task-desc">Today, your goal is simple but powerful. Strike up a small conversation with someone you don't know.</p>
+            
+            <button class="complete-btn" id="done-btn" onclick="markDone()">I DID THIS TODAY</button>
+            <div id="status" style="margin-top: 15px; font-weight: 600; color: var(--accent); display: none;">CHALLENGE COMPLETE. SEE YOU TOMORROW.</div>
+        </div>
+
+        <div class="footer">
+            New challenge available in <span id="timer">00:00:00</span>
+        </div>
+    </div>
+
+    <script src="discovery.js"></script>
+    <script>
+        Discovery.unlock('life-challenge');
+
+        const TASKS = [
+            { icon: "🌿", title: "Talk to a stranger.", desc: "Exchange a few words with someone you don't know. A compliment, a question, or just hello." },
+            { icon: "🍎", title: "Eat something new.", desc: "Try a fruit, vegetable, or dish you've never tasted before. Focus on the flavor." },
+            { icon: "🚶", title: "Walk without your phone.", desc: "Take a 15-minute walk outside. Leave your phone at home. Just look around." },
+            { icon: "✉️", title: "Write a physical note.", desc: "Write a letter or a small thank-you note to someone on real paper and give it to them." },
+            { icon: "📵", title: "1 Hour of Deep Silence.", desc: "No music, no podcasts, no screens. Just sit or read for 60 minutes." },
+            { icon: "🧘", title: "Digital Detox Morning.", desc: "Don't check any notifications for the first 2 hours after waking up." },
+            { icon: "🧹", title: "Clean one small space.", desc: "Pick one drawer, one shelf, or one corner and make it perfect." }
+        ];
+
+        // Seeded random based on date
+        const today = new Date();
+        const seed = today.getFullYear() * 10000 + (today.getMonth() + 1) * 100 + today.getDate();
+        const taskIndex = seed % TASKS.length;
+        const task = TASKS[taskIndex];
+
+        document.getElementById('task-title').textContent = task.title;
+        document.getElementById('task-desc').textContent = task.desc;
+        document.getElementById('icon').textContent = task.icon;
+        document.getElementById('date').textContent = today.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+
+        const storageKey = 'life_challenge_' + seed;
+        if(localStorage.getItem(storageKey)) {
+            showComplete();
+        }
+
+        function markDone() {
+            localStorage.setItem(storageKey, 'true');
+            showComplete();
+            
+            // Celebration effect
+            const btn = document.getElementById('done-btn');
+            btn.classList.add('active');
+            btn.textContent = 'WELL DONE';
+        }
+
+        function showComplete() {
+            document.getElementById('status').style.display = 'block';
+            document.getElementById('done-btn').style.background = '#10b981';
+            document.getElementById('done-btn').textContent = 'CHALLENGE COMPLETE';
+            document.getElementById('done-btn').disabled = true;
+        }
+
+        // Countdown to midnight
+        function updateTimer() {
+            const now = new Date();
+            const tomorrow = new Date(now);
+            tomorrow.setHours(24, 0, 0, 0);
+            const diff = tomorrow - now;
+            
+            const h = Math.floor(diff / 3600000).toString().padStart(2, '0');
+            const m = Math.floor((diff % 3600000) / 60000).toString().padStart(2, '0');
+            const s = Math.floor((diff % 60000) / 1000).toString().padStart(2, '0');
+            
+            document.getElementById('timer').textContent = `${h}:${m}:${s}`;
+        }
+
+        setInterval(updateTimer, 1000);
+        updateTimer();
+    </script>
+<script>
+    if(/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)){
+        document.body.innerHTML += '<a href="index.html" style="position:fixed;bottom:20px;right:20px;background:#000;color:#fff;padding:10px 20px;border-radius:30px;text-decoration:none;z-index:9999;border:1px solid #333;font-family:sans-serif;font-size:14px;">Back to Gallery</a>';
+    }
+</script>
+</body>
+</html>
+

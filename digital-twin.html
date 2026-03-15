@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Digital Twin Identifier — Persona Scanner</title>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #000;
+            --accent: #22c55e;
+            --text: #dcfce7;
+            --border: #166534;
+        }
+
+        body {
+            background: var(--bg);
+            color: var(--text);
+            font-family: 'JetBrains Mono', monospace;
+            margin: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            overflow: hidden;
+        }
+
+        .scanner-box {
+            width: 90%;
+            max-width: 500px;
+            border: 1px solid var(--border);
+            padding: 40px;
+            position: relative;
+            background: rgba(22, 101, 52, 0.05);
+        }
+
+        .scanner-line {
+            position: absolute;
+            left: 0; top: 0; width: 100%; height: 2px;
+            background: var(--accent);
+            opacity: 0.5;
+            box-shadow: 0 0 15px var(--accent);
+            animation: scan 4s linear infinite;
+        }
+
+        @keyframes scan {
+            0% { top: 0; }
+            50% { top: 100%; }
+            100% { top: 0; }
+        }
+
+        h1 { font-size: 1.2rem; margin: 0 0 30px 0; text-transform: uppercase; letter-spacing: 2px; }
+
+        .question { margin-bottom: 40px; }
+        .q-text { font-size: 0.9rem; margin-bottom: 20px; color: #86efac; }
+        
+        .options { display: grid; gap: 10px; }
+        .opt {
+            background: transparent;
+            border: 1px solid var(--border);
+            padding: 12px;
+            color: var(--text);
+            font-family: inherit;
+            cursor: pointer;
+            text-align: left;
+            transition: 0.2s;
+        }
+        .opt:hover { background: var(--border); color: #fff; }
+
+        .result { display: none; text-align: left; }
+        .persona-name { font-size: 1.5rem; color: var(--accent); margin-bottom: 15px; font-weight: 700; }
+        .persona-desc { font-size: 0.85rem; line-height: 1.6; color: #86efac; }
+
+        .back-link {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            color: var(--border);
+            text-decoration: none;
+            font-size: 0.7rem;
+        }
+
+        .btn-reset {
+            margin-top: 30px;
+            background: var(--accent);
+            color: #000;
+            border: none;
+            padding: 10px 20px;
+            cursor: pointer;
+            font-weight: 700;
+        }
+    </style>
+</head>
+<body>
+
+    <a href="index.html" class="back-link">[ ABORT_SCAN ]</a>
+
+    <div class="scanner-box">
+        <div class="scanner-line"></div>
+        <div id="quiz">
+            <h1>Persona Analysis v2.0</h1>
+            <div class="question">
+                <div class="q-text" id="question">What is your primary digital behavior?</div>
+                <div class="options" id="options">
+                    <button class="opt" onclick="answer(1)">Lurking without interaction</button>
+                    <button class="opt" onclick="answer(2)">Opening 40+ tabs simultaneously</button>
+                    <button class="opt" onclick="answer(3)">Debating strangers over nuances</button>
+                    <button class="opt" onclick="answer(4)">Cleaning up your desktop weekly</button>
+                </div>
+            </div>
+            <div style="font-size: 0.7rem; color: var(--border);">STATUS: WAITING FOR INPUT...</div>
+        </div>
+
+        <div class="result" id="result">
+            <div style="font-size: 0.7rem; color: var(--accent); margin-bottom: 10px;">MATCH RECOVERED:</div>
+            <div class="persona-name" id="p-name">The Data Ghost</div>
+            <div class="persona-desc" id="p-desc">Description of persona goes here.</div>
+            <button class="btn-reset" onclick="location.reload()">RE-SCAN</button>
+        </div>
+    </div>
+
+    <script src="discovery.js"></script>
+    <script>
+        Discovery.unlock('digital-twin');
+
+        const PERSONAS = [
+            { name: "The Browser Goblin", desc: "You treat browser tabs like collectibles. You have a distinct fear of 'The Red X'. Your memory is mostly secondary cache." },
+            { name: "The Silent Watcher", desc: "You exist in the shadows of the internet. You see everything but leave no trace. You are the reason privacy policies are 40 pages long." },
+            { name: "The Nuance Knight", desc: "The internet is a battlefield of logic. You cannot sleep while someone is wrong. Your keyboard has a permanent shine on the 'Enter' key." },
+            { name: "The Pixel Perfectionist", desc: "You organize your folders by color. Your desktop is empty. Your existence is a series of controlled backups." }
+        ];
+
+        function answer(idx) {
+            document.getElementById('quiz').style.display = 'none';
+            document.getElementById('result').style.display = 'block';
+            
+            const p = PERSONAS[idx - 1];
+            document.getElementById('p-name').textContent = p.name;
+            document.getElementById('p-desc').textContent = p.desc;
+        }
+    </script>
+<script>
+    if(/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)){
+        document.body.innerHTML += '<a href="index.html" style="position:fixed;bottom:20px;right:20px;background:#000;color:#fff;padding:10px 20px;border-radius:30px;text-decoration:none;z-index:9999;border:1px solid #333;font-family:sans-serif;font-size:14px;">Back to Gallery</a>';
+    }
+</script>
+</body>
+</html>
+
