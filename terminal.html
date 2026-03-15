@@ -417,6 +417,10 @@
                 <div class="card-value" id="val-visitors"><span class="loading-text">SYNCING...</span></div>
             </div>
             <div class="metric-card">
+                <div class="card-label">Total Visits</div>
+                <div class="card-value" id="val-total-visits"><span class="loading-text">SYNCING...</span></div>
+            </div>
+            <div class="metric-card">
                 <div class="card-label">Total Clicks</div>
                 <div class="card-value" id="val-clicks"><span class="loading-text">SYNCING...</span></div>
             </div>
@@ -626,11 +630,14 @@
             (async () => {
                 try {
                     const visitors = await fetchMetric('visitors');
+                    const totalVisits = await fetchMetric('total_visits');
                     const clicks = await fetchMetric('clicks');
                     animateValue('val-visitors', 0, visitors, 1500);
+                    animateValue('val-total-visits', 0, totalVisits, 1500);
                     animateValue('val-clicks', 0, clicks, 1500);
                 } catch(e) {
                     document.getElementById('val-visitors').textContent = 'OFFLINE';
+                    document.getElementById('val-total-visits').textContent = 'OFFLINE';
                     document.getElementById('val-clicks').textContent = 'OFFLINE';
                 }
             })();

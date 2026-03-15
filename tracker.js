@@ -24,7 +24,11 @@ const BEACON_API = `https://api.counterapi.dev/v1/${BEACON_NAMESPACE}`;
         }
     };
 
+    // ── Total Visits (every page load) ──────────────────────────────────────────
+    beaconFetch('total_visits');
+
     // ── Unique visitor (once per browser) ────────────────────────────────────────
+
     if (!localStorage.getItem('wwg_beacon_visited')) {
         beaconFetch('visitors');
         localStorage.setItem('wwg_beacon_visited', 'true');
