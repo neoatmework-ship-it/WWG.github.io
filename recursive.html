@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Browser 2.0 // Meta Tab</title>
+    <style>
+        :root {
+            --bg: #1a1a1a;
+            --tab-bg: #2d2d2d;
+            --tab-active: #3d3d3d;
+            --text: #e0e0e0;
+            --accent: #5c5cff;
+            --border: #444;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background-color: var(--bg);
+            color: var(--text);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+        }
+
+        .browser-ui {
+            width: 90vw;
+            height: 85vh;
+            background: #202124;
+            border-radius: 12px;
+            box-shadow: 0 30px 60px rgba(0,0,0,0.5);
+            display: flex;
+            flex-direction: column;
+            border: 1px solid var(--border);
+            position: relative;
+        }
+
+        .tab-bar {
+            background: #202124;
+            height: 40px;
+            display: flex;
+            align-items: flex-end;
+            padding: 0 10px;
+            gap: 5px;
+        }
+
+        .tab {
+            background: #292a2d;
+            height: 32px;
+            width: 180px;
+            border-radius: 8px 8px 0 0;
+            padding: 0 12px;
+            display: flex;
+            align-items: center;
+            font-size: 12px;
+            gap: 10px;
+            color: #9aa0a6;
+            cursor: pointer;
+        }
+
+        .tab.active {
+            background: #35363a;
+            color: #fff;
+        }
+
+        .tab-icon {
+            width: 16px;
+            height: 16px;
+            background: var(--accent);
+            border-radius: 4px;
+        }
+
+        .address-bar {
+            background: #35363a;
+            height: 44px;
+            display: flex;
+            align-items: center;
+            padding: 0 15px;
+            gap: 15px;
+            border-bottom: 1px solid #202124;
+        }
+
+        .btn-circle {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #5f6368;
+        }
+
+        .url-field {
+            flex-grow: 1;
+            background: #202124;
+            height: 28px;
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            padding: 0 15px;
+            font-size: 13px;
+            color: #e8eaed;
+        }
+
+        .content-area {
+            flex-grow: 1;
+            background: #fff;
+            margin: 10px;
+            border-radius: 8px;
+            overflow: auto;
+            position: relative;
+            background: #1a1a1a;
+        }
+
+        .recursive-container {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            /* Zoom scale effect */
+            transform: scale(0.9);
+            transform-origin: center;
+        }
+
+        .infinity-label {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            font-family: monospace;
+            color: var(--accent);
+            opacity: 0.5;
+            pointer-events: none;
+        }
+
+        /* The trick: using an iframe that points to itself is dangerous, 
+           instead we manually nest the UI divs several times to simulate it */
+        
+        .nested-ui {
+            width: 95%;
+            height: 95%;
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 6px;
+            display: flex;
+            flex-direction: column;
+            background: #202124;
+            transform: scale(0.95);
+        }
+
+        .loading-line {
+            height: 2px;
+            background: var(--accent);
+            width: 0%;
+            animation: load 2s infinite linear;
+        }
+
+        @keyframes load {
+            0% { width: 0%; left: 0; }
+            50% { width: 100%; left: 0; }
+            100% { width: 0%; left: 100%; }
+        }
+
+        /* Interactive glitch */
+        .glitch-overlay {
+            position: absolute;
+            inset: 0;
+            background: rgba(92, 92, 255, 0.05);
+            pointer-events: none;
+            mix-blend-mode: overlay;
+            animation: flicker 0.1s infinite;
+            display: none;
+        }
+
+        @keyframes flicker {
+            0% { opacity: 0.5; }
+            100% { opacity: 0.8; }
+        }
+
+        .browser-ui:hover .glitch-overlay {
+            display: block;
+        }
+
+    </style>
+</head>
+<body>
+    <div class="infinity-label">PATH: NULL_RECURSION_V1</div>
+
+    <div class="browser-ui">
+        <div class="tab-bar">
+            <div class="tab">
+                <div class="tab-icon"></div>
+                <span>New Tab</span>
+            </div>
+            <div class="tab active">
+                <div class="tab-icon" style="background: #ff5c5c;"></div>
+                <span>[RECURSIVE] Tab</span>
+            </div>
+            <div class="tab">
+                <span>+</span>
+            </div>
+        </div>
+        <div class="address-bar">
+            <div style="display: flex; gap: 8px;">
+                <div class="btn-circle"></div>
+                <div class="btn-circle"></div>
+                <div class="btn-circle"></div>
+            </div>
+            <div class="url-field">
+                meta://infinity.void/recursive
+            </div>
+        </div>
+        <div class="content-area" id="recursive-root">
+            <!-- Recursion happens here via JS -->
+        </div>
+        <div class="glitch-overlay"></div>
+    </div>
+
+    <script>
+        const root = document.getElementById('recursive-root');
+        
+        function createNestedUI(depth) {
+            if (depth <= 0) {
+                const end = document.createElement('div');
+                end.style.padding = "20px";
+                end.style.color = "#5c5cff";
+                end.style.textAlign = "center";
+                end.style.fontFamily = "monospace";
+                end.innerHTML = "SYSTEM ERROR: DEPTH_LIMIT_REACHED<br><br>RECURSION TERMINATED AT LEVEL 0";
+                return end;
+            }
+
+            const wrapper = document.createElement('div');
+            wrapper.className = 'recursive-container';
+
+            const ui = document.createElement('div');
+            ui.className = 'nested-ui';
+            
+            // Tab bar simplified
+            const bar = document.createElement('div');
+            bar.className = 'tab-bar';
+            bar.style.height = "20px";
+            bar.style.gap = "2px";
+            for(let i=0; i<2; i++) {
+                const t = document.createElement('div');
+                t.className = 'tab' + (i===1 ? ' active' : '');
+                t.style.height = "16px";
+                t.style.width = "60px";
+                ui.appendChild(t);
+            }
+
+            const address = document.createElement('div');
+            address.className = 'address-bar';
+            address.style.height = "25px";
+            ui.appendChild(address);
+
+            const inner = document.createElement('div');
+            inner.className = 'content-area';
+            inner.appendChild(createNestedUI(depth - 1));
+            
+            ui.appendChild(inner);
+            wrapper.appendChild(ui);
+            return wrapper;
+        }
+
+        // Initialize recursion
+        root.appendChild(createNestedUI(12));
+
+        // Add subtle animation to the scale
+        let scale = 1;
+        let dir = 1;
+        function animate() {
+            scale += 0.0001 * dir;
+            if (scale > 1.05) dir = -1;
+            if (scale < 0.95) dir = 1;
+            
+            document.querySelectorAll('.recursive-container').forEach(el => {
+                el.style.transform = `scale(${scale})`;
+            });
+            requestAnimationFrame(animate);
+        }
+        animate();
+    </script>
+</body>
+</html>

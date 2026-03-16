@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Glitch Earth // World Anomaly Map</title>
+    <style>
+        :root {
+            --bg: #000;
+            --land: #1a1a1a;
+            --water: #050505;
+            --glitch-1: #00ffcc;
+            --glitch-2: #ff00ff;
+            --ui-text: #00ffcc;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background-color: var(--bg);
+            color: var(--ui-text);
+            font-family: 'Share Tech Mono', monospace;
+            overflow: hidden;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        header {
+            padding: 20px;
+            border-bottom: 1px solid rgba(0, 255, 204, 0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 10;
+        }
+
+        .stats {
+            display: flex;
+            gap: 20px;
+            font-size: 0.8rem;
+        }
+
+        #map-container {
+            flex-grow: 1;
+            position: relative;
+            cursor: crosshair;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        svg {
+            width: 90%;
+            height: 90%;
+            transition: all 0.5s;
+        }
+
+        .land {
+            fill: var(--land);
+            stroke: rgba(255, 255, 255, 0.05);
+            stroke-width: 0.5;
+            transition: fill 0.3s;
+        }
+
+        .land:hover {
+            fill: #333;
+        }
+
+        .glitch-active {
+            filter: url(#glitch-filter);
+            animation: glitch-anim 0.2s infinite;
+        }
+
+        @keyframes glitch-anim {
+            0% { transform: translate(0); }
+            20% { transform: translate(-2px, 2px); }
+            40% { transform: translate(-2px, -2px); }
+            60% { transform: translate(2px, 2px); }
+            80% { transform: translate(2px, -2px); }
+            100% { transform: translate(0); }
+        }
+
+        .anomaly-point {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            background: var(--glitch-1);
+            border-radius: 50%;
+            box-shadow: 0 0 10px var(--glitch-1);
+            pointer-events: none;
+            transform: translate(-50%, -50%);
+        }
+
+        .ui-overlay {
+            position: absolute;
+            bottom: 40px;
+            left: 20px;
+            max-width: 300px;
+            background: rgba(0,0,0,0.8);
+            padding: 15px;
+            border-left: 3px solid var(--glitch-1);
+            font-size: 0.9rem;
+            pointer-events: none;
+        }
+
+        .btn-group {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        button {
+            background: transparent;
+            border: 1px solid var(--ui-text);
+            color: var(--ui-text);
+            padding: 8px 15px;
+            cursor: pointer;
+            font-family: inherit;
+            transition: 0.3s;
+        }
+
+        button:hover {
+            background: var(--ui-text);
+            color: #000;
+        }
+
+        .grid {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background-image: linear-gradient(rgba(0, 255, 204, 0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(0, 255, 204, 0.03) 1px, transparent 1px);
+            background-size: 50px 50px;
+            pointer-events: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="grid"></div>
+    <header>
+        <div>EARTH_ANOMALY_TRACKER_V1.3</div>
+        <div class="stats">
+            <div>REGION: <span id="reg">N/A</span></div>
+            <div>STATUS: <span id="stat" style="color: #4ade80;">STABLE</span></div>
+        </div>
+    </header>
+
+    <div id="map-container">
+        <!-- Minimalist World SVG -->
+        <svg viewBox="0 0 1000 500" id="world-map">
+            <defs>
+                <filter id="glitch-filter">
+                    <feTurbulence type="fractalNoise" baseFrequency="0.01 0.1" numOctaves="1" result="noise" />
+                    <feDisplacementMap in="SourceGraphic" in2="noise" scale="20" xChannelSelector="R" yChannelSelector="G" />
+                </filter>
+            </defs>
+            <!-- Simplified land masses -->
+            <path class="land" d="M150,150 L250,150 L280,250 L200,300 L120,250 Z" /> <!-- N. Americaish -->
+            <path class="land" d="M180,320 L220,320 L250,450 L180,480 Z" /> <!-- S. Americaish -->
+            <path class="land" d="M450,100 L550,120 L580,200 L420,220 Z" /> <!-- Europeish -->
+            <path class="land" d="M450,230 L550,230 L530,380 L420,350 Z" /> <!-- Africaish -->
+            <path class="land" d="M600,100 L850,150 L900,350 L750,400 L600,300 Z" /> <!-- Asiaish -->
+            <path class="land" d="M800,400 L880,400 L880,480 L800,480 Z" /> <!-- Australiaish -->
+        </svg>
+
+        <div class="ui-overlay">
+            SYSTEM LOG:<br>
+            Awaiting spatial trigger...<br>
+            Click a region to inject noise.
+        </div>
+    </div>
+
+    <div class="btn-group">
+        <button onclick="resetMap()">FULL RESET</button>
+        <button onclick="toggleGlobalGlitch()">GLOBAL NULL</button>
+    </div>
+
+    <script>
+        const map = document.getElementById('world-map');
+        const stat = document.getElementById('stat');
+        const reg = document.getElementById('reg');
+
+        document.querySelectorAll('.land').forEach((path, index) => {
+            path.addEventListener('click', (e) => {
+                const isGlitching = path.classList.contains('glitch-active');
+                
+                if (isGlitching) {
+                    path.classList.remove('glitch-active');
+                    stat.textContent = "STABLE";
+                    stat.style.color = "#4ade80";
+                } else {
+                    path.classList.add('glitch-active');
+                    stat.textContent = "CRITICAL";
+                    stat.style.color = "#ff0055";
+                    
+                    // Create effect particles
+                    for(let i=0; i<5; i++) {
+                        const p = document.createElement('div');
+                        p.className = 'anomaly-point';
+                        p.style.left = e.clientX + (Math.random()-0.5)*50 + "px";
+                        p.style.top = e.clientY + (Math.random()-0.5)*50 + "px";
+                        document.body.appendChild(p);
+                        setTimeout(() => p.remove(), 500);
+                    }
+                }
+                reg.textContent = "SECTOR_" + (index + 101);
+            });
+        });
+
+        function resetMap() {
+            document.querySelectorAll('.land').forEach(p => p.classList.remove('glitch-active'));
+            stat.textContent = "STABLE";
+            stat.style.color = "#4ade80";
+        }
+
+        function toggleGlobalGlitch() {
+            map.classList.toggle('glitch-active');
+            stat.textContent = map.classList.contains('glitch-active') ? "GLOBAL_FAILURE" : "STABLE";
+        }
+    </script>
+</body>
+</html>

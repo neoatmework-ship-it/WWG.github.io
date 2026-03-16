@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Infinite Lore // The Void Chronology</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap');
+
+        :root {
+            --bg: #050505;
+            --text: #888;
+            --accent: #ff0055;
+            --lore-text: #ddd;
+        }
+
+        body {
+            background-color: var(--bg);
+            color: var(--text);
+            font-family: 'Share Tech Mono', monospace;
+            margin: 0;
+            padding: 0;
+            overflow-x: hidden;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        header {
+            width: 100%;
+            padding: 40px;
+            text-align: center;
+            border-bottom: 1px solid rgba(255, 0, 85, 0.1);
+            background: rgba(0,0,0,0.8);
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        .title {
+            color: var(--accent);
+            font-size: 1.5rem;
+            letter-spacing: 5px;
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            font-size: 0.8rem;
+            opacity: 0.5;
+        }
+
+        #lore-container {
+            max-width: 800px;
+            width: 100%;
+            padding: 40px 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 60px;
+        }
+
+        .lore-entry {
+            opacity: 0;
+            transform: translateY(20px);
+            transition: all 1s;
+            border-left: 2px solid rgba(255, 255, 255, 0.05);
+            padding-left: 30px;
+        }
+
+        .lore-entry.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .year {
+            color: var(--accent);
+            font-size: 1.2rem;
+            margin-bottom: 10px;
+        }
+
+        .content {
+            color: var(--lore-text);
+            line-height: 1.8;
+            font-size: 1.1rem;
+        }
+
+        .tag {
+            display: inline-block;
+            margin-top: 15px;
+            font-size: 0.7rem;
+            color: #555;
+            background: rgba(255,255,255,0.03);
+            padding: 2px 8px;
+            border-radius: 4px;
+        }
+
+        .scanner {
+            height: 2px;
+            background: var(--accent);
+            width: 100%;
+            position: fixed;
+            top: 0;
+            left: 0;
+            z-index: 100;
+            opacity: 0.5;
+            box-shadow: 0 0 10px var(--accent);
+        }
+
+    </style>
+</head>
+<body>
+    <div class="scanner"></div>
+    <header>
+        <div class="title">THE VOID CHRONOLOGY</div>
+        <div class="subtitle">SCROLLING THROUGH INFINITE ARCHAEOLOGICAL FRAGMENTS...</div>
+    </header>
+
+    <div id="lore-container">
+        <!-- Entries generated here -->
+    </div>
+
+    <script>
+        const container = document.getElementById('lore-container');
+
+        const SUBJECTS = ["The first pixel", "A forgotten avatar", "The 404 void", "The dance of the cursor", "The legacy of Geocities", "The Great Glitch of 1997", "The sound of 56k", "The mysterious Under Construction GIF", "A ghost in the forum", "The viral sequence zero"];
+        const VERBS = ["was discovered in", "was synthesized by", "corrupted the memory of", "emerged from", "haunted the servers of", "was encoded within", "transcended the code of"];
+        const LOCATIONS = ["a subnet of the deep web", "the ruin of a static home page", "the cache of a dead server", "the silence between packets", "the first high-speed backbone", "an encrypted chat room", "a hidden sector of the void"];
+
+        function generateLoreEntry() {
+            const year = 1990 + Math.floor(Math.random() * 40);
+            const sub = SUBJECTS[Math.floor(Math.random() * SUBJECTS.length)];
+            const verb = VERBS[Math.floor(Math.random() * VERBS.length)];
+            const loc = LOCATIONS[Math.floor(Math.random() * LOCATIONS.length)];
+
+            const entry = document.createElement('div');
+            entry.className = 'lore-entry';
+            entry.innerHTML = `
+                <div class="year">YEAR: ${year}</div>
+                <div class="content">
+                    It is documented that ${sub.toLowerCase()} ${verb} ${loc}. 
+                    Witnesses describe the event as "anomalous" and "highly atmospheric". 
+                    No further records remain in the primary database.
+                </div>
+                <div class="tag">#FRAGMENT_${Math.floor(Math.random()*10000)}</div>
+            `;
+            container.appendChild(entry);
+            
+            // Intersection Observer to trigger visibility
+            observer.observe(entry);
+        }
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('visible');
+                }
+            });
+        }, { threshold: 0.1 });
+
+        // Initial set
+        for(let i=0; i<10; i++) generateLoreEntry();
+
+        // Infinite scroll logic
+        window.addEventListener('scroll', () => {
+            if (window.innerHeight + window.scrollY >= document.body.offsetHeight - 500) {
+                generateLoreEntry();
+                generateLoreEntry();
+            }
+        });
+    </script>
+</body>
+</html>

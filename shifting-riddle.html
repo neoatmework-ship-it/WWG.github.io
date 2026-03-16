@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Shifting Riddle // Meta Mystery</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Crimson+Pro:ital,wght@0,400;0,700;1,400&family=Share+Tech+Mono&display=swap');
+
+        :root {
+            --bg: #0c0c0e;
+            --text: #c0c0c8;
+            --accent: #d4af37;
+            --glitch: #ff3e3e;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background-color: var(--bg);
+            color: var(--text);
+            font-family: 'Crimson Pro', serif;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+            background-image: 
+                radial-gradient(circle at center, rgba(212, 175, 55, 0.05) 0%, transparent 70%);
+        }
+
+        .riddle-container {
+            max-width: 600px;
+            text-align: center;
+            padding: 40px;
+            position: relative;
+        }
+
+        .question {
+            font-size: 2.5rem;
+            margin-bottom: 40px;
+            font-style: italic;
+            line-height: 1.2;
+            transition: all 0.5s;
+        }
+
+        .input-wrap {
+            position: relative;
+            margin-bottom: 20px;
+        }
+
+        input {
+            background: transparent;
+            border: none;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            color: var(--accent);
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 1.5rem;
+            text-align: center;
+            width: 100%;
+            outline: none;
+            padding: 10px;
+            transition: 0.3s;
+        }
+
+        input:focus {
+            border-bottom-color: var(--accent);
+        }
+
+        .hint {
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            opacity: 0.4;
+            margin-top: 20px;
+        }
+
+        .status-msg {
+            height: 20px;
+            margin-top: 10px;
+            font-size: 0.9rem;
+            color: var(--glitch);
+            font-family: 'Share Tech Mono', monospace;
+        }
+
+        .attempt-counter {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 0.7rem;
+            opacity: 0.3;
+        }
+
+        /* Glitch Effect */
+        .glitch {
+            animation: glitch 0.3s cubic-bezier(.25, .46, .45, .94) both infinite;
+        }
+
+        @keyframes glitch {
+            0% { transform: translate(0); }
+            20% { transform: translate(-2px, 2px); }
+            40% { transform: translate(-2px, -2px); }
+            60% { transform: translate(2px, 2px); }
+            80% { transform: translate(2px, -2px); }
+            100% { transform: translate(0); }
+        }
+
+    </style>
+</head>
+<body>
+
+    <div class="attempt-counter">ATTEMPTS: <span id="count">0</span></div>
+
+    <div class="riddle-container">
+        <div class="question" id="q">"What is the only thing that changes when you look at it?"</div>
+        
+        <div class="input-wrap">
+            <input type="text" id="answer" autocomplete="off" placeholder="...">
+            <div class="status-msg" id="status"></div>
+        </div>
+
+        <div class="hint" id="hint">SEARCHING FOR TRUTH...</div>
+    </div>
+
+    <script>
+        const qEl = document.getElementById('q');
+        const input = document.getElementById('answer');
+        const status = document.getElementById('status');
+        const countEl = document.getElementById('count');
+        const hintEl = document.getElementById('hint');
+
+        let attempts = 0;
+
+        const RIDDLES = [
+            { q: '"What is the only thing that changes when you look at it?"', a: "THE RIDDLE" },
+            { q: '"What grows smaller the more you define it?"', a: "MYSTERY" },
+            { q: '"I am the end of everything, but the start of eternity. Who am I?"', a: "E" },
+            { q: '"I exist only while you believe in me. What am I?"', a: "SILENCE" },
+            { q: '"I have no voice, but I tell the truth of your lies. What am I?"', a: "A MIRROR" }
+        ];
+
+        let currentIdx = 0;
+
+        input.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                const val = input.value.trim().toUpperCase();
+                attempts++;
+                countEl.textContent = attempts;
+
+                if (val === RIDDLES[currentIdx].a) {
+                    currentIdx++;
+                    if (currentIdx >= RIDDLES.length) {
+                        qEl.textContent = "THE VOID IS SATISFIED.";
+                        input.style.display = 'none';
+                        status.textContent = "Milestone Unlocked: The Shifting Truth.";
+                        status.style.color = "var(--accent)";
+                        hintEl.textContent = "YOU HAVE SEEN BEYOND THE SHIFT.";
+                    } else {
+                        // Success - move to next
+                        qEl.classList.add('glitch');
+                        setTimeout(() => {
+                            qEl.classList.remove('glitch');
+                            qEl.textContent = RIDDLES[currentIdx].q;
+                            input.value = '';
+                            status.textContent = "CORRECT. THE TRUTH EVOLVES.";
+                            status.style.color = "var(--accent)";
+                        }, 500);
+                    }
+                } else {
+                    // Logic shift: On certain attempt counts, we might change the riddle even if they didn't get it right
+                    if (attempts % 3 === 0) {
+                        qEl.classList.add('glitch');
+                        setTimeout(() => {
+                            qEl.classList.remove('glitch');
+                            currentIdx = (currentIdx + 1) % RIDDLES.length;
+                            qEl.textContent = RIDDLES[currentIdx].q;
+                            status.textContent = "THE QUESTION HAS SHIFTED. TRY AGAIN.";
+                        }, 300);
+                    } else {
+                        status.textContent = "INCORRECT. THE VOID REMAINS CLOSED.";
+                        status.style.color = "var(--glitch)";
+                    }
+                }
+            }
+        });
+
+        // Trigger focus
+        document.addEventListener('click', () => input.focus());
+    </script>
+</body>
+</html>
