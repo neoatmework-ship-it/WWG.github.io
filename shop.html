@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Shop | WWG Digital Goods</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #050508;
+            --accent: #ff0055;
+            --coin: #ffd700;
+            --glass: rgba(255, 255, 255, 0.05);
+            --border: rgba(255, 255, 255, 0.1);
+        }
+
+        body {
+            background: var(--bg);
+            color: #fff;
+            font-family: 'Outfit', sans-serif;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 80px 20px;
+            margin: 0;
+            background-image: radial-gradient(circle at top right, rgba(255, 0, 85, 0.1), transparent 40%);
+        }
+
+        .shop-header {
+            text-align: center;
+            margin-bottom: 60px;
+        }
+
+        h1 {
+            font-size: 3rem;
+            letter-spacing: -1px;
+            margin-bottom: 10px;
+            background: linear-gradient(to bottom, #fff, #888);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .balance-pill {
+            background: rgba(255, 215, 0, 0.1);
+            border: 1px solid var(--coin);
+            padding: 10px 25px;
+            border-radius: 50px;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 1.2rem;
+            color: var(--coin);
+            margin-bottom: 20px;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 30px;
+            width: 100%;
+            max-width: 1000px;
+        }
+
+        .bundle-card {
+            background: var(--glass);
+            border: 1px solid var(--border);
+            border-radius: 24px;
+            padding: 40px;
+            text-align: center;
+            transition: 0.3s;
+            position: relative;
+            overflow: hidden;
+            backdrop-filter: blur(10px);
+        }
+
+        .bundle-card:hover {
+            transform: translateY(-10px);
+            border-color: rgba(255, 255, 255, 0.2);
+            background: rgba(255, 255, 255, 0.08);
+        }
+
+        .coin-icon {
+            font-size: 4rem;
+            margin-bottom: 20px;
+            display: block;
+        }
+
+        .amount {
+            font-size: 2rem;
+            font-weight: 600;
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        .price {
+            color: rgba(255,255,255,0.4);
+            font-family: 'Share Tech Mono', monospace;
+        }
+
+        .buy-btn {
+            width: 100%;
+            margin-top: 30px;
+            background: #fff;
+            color: #000;
+            border: none;
+            padding: 15px;
+            border-radius: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .buy-btn:hover {
+            transform: scale(1.02);
+            box-shadow: 0 0 20px rgba(255,255,255,0.3);
+        }
+
+        /* Modal styling */
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.8);
+            backdrop-filter: blur(5px);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .modal {
+            background: #111;
+            border: 1px solid var(--border);
+            padding: 40px;
+            border-radius: 24px;
+            width: 100%;
+            max-width: 400px;
+            box-shadow: 0 40px 100px rgba(0,0,0,0.8);
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            font-size: 0.8rem;
+            color: rgba(255,255,255,0.4);
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        input {
+            width: 100%;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid var(--border);
+            padding: 12px;
+            border-radius: 8px;
+            color: #fff;
+            font-family: 'Share Tech Mono', monospace;
+        }
+
+        .payment-status {
+            text-align: center;
+            display: none;
+        }
+
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 3px solid rgba(255,255,255,0.1);
+            border-top-color: var(--accent);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+        }
+
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        .back-btn {
+            position: fixed;
+            top: 40px;
+            left: 40px;
+            text-decoration: none;
+            color: rgba(255,255,255,0.3);
+            font-size: 0.8rem;
+            letter-spacing: 2px;
+            transition: 0.2s;
+        }
+
+        .back-btn:hover { color: #fff; }
+
+    </style>
+</head>
+<body>
+
+    <a href="index.html" class="back-btn">← RETURN TO VOID</a>
+
+    <div class="shop-header">
+        <div class="balance-pill">
+            <span>🪙</span>
+            <span class="coin-balance-val">0</span>
+        </div>
+        <h1>Digital Treasury</h1>
+        <p style="color: rgba(255,255,255,0.4);">Enhance your presence in the Weird Website Gallery.</p>
+    </div>
+
+    <div class="grid">
+        <div class="bundle-card">
+            <span class="coin-icon">🪙</span>
+            <span class="amount">100 COINS</span>
+            <span class="price">$0.99 USD</span>
+            <button class="buy-btn" onclick="openPayment(100, 0.99)">ACQUIRE Bundle</button>
+        </div>
+        <div class="bundle-card" style="border-color: var(--accent);">
+            <div style="position: absolute; top: 15px; right: 15px; font-size: 0.6rem; color: var(--accent); font-weight: bold; border: 1px solid var(--accent); padding: 2px 8px; border-radius: 4px;">BEST VALUE</div>
+            <span class="coin-icon">💰</span>
+            <span class="amount">500 COINS</span>
+            <span class="price">$3.99 USD</span>
+            <button class="buy-btn" style="background: var(--accent); color: #fff;" onclick="openPayment(500, 3.99)">ACQUIRE Bundle</button>
+        </div>
+        <div class="bundle-card">
+            <span class="coin-icon">💎</span>
+            <span class="amount">2000 COINS</span>
+            <span class="price">$9.99 USD</span>
+            <button class="buy-btn" onclick="openPayment(2000, 9.99)">ACQUIRE Bundle</button>
+        </div>
+    </div>
+
+    <!-- Payment Modal -->
+    <div class="modal-overlay" id="payment-modal">
+        <div class="modal">
+            <div id="payment-form">
+                <h2 style="margin-bottom: 25px; font-size: 1.2rem;">Secure Payment Entry</h2>
+                <div class="form-group">
+                    <label>Card Identity</label>
+                    <input type="text" placeholder="XXXX XXXX XXXX XXXX" maxlength="19">
+                </div>
+                <div style="display: flex; gap: 15px;">
+                    <div class="form-group" style="flex: 2;">
+                        <label>Registry Date</label>
+                        <input type="text" placeholder="MM / YY" maxlength="5">
+                    </div>
+                    <div class="form-group" style="flex: 1;">
+                        <label>Sec-Code</label>
+                        <input type="text" placeholder="***" maxlength="3">
+                    </div>
+                </div>
+                <button class="buy-btn" style="background: var(--accent); color:#fff;" onclick="processPayment()">CONFIRM ACQUISITION</button>
+                <button class="buy-btn" style="background: transparent; color:rgba(255,255,255,0.3); border:1px solid var(--border); margin-top:10px;" onclick="closePayment()">ABORT</button>
+            </div>
+
+            <div id="payment-status" class="payment-status">
+                <div class="spinner"></div>
+                <p id="status-text">Synchronizing with Treasury...</p>
+            </div>
+        </div>
+    </div>
+
+    <script src="economy.js"></script>
+    <script>
+        let pendingAmount = 0;
+
+        function openPayment(amount, price) {
+            pendingAmount = amount;
+            document.getElementById('payment-modal').style.display = 'flex';
+        }
+
+        function closePayment() {
+            document.getElementById('payment-modal').style.display = 'none';
+        }
+
+        function processPayment() {
+            document.getElementById('payment-form').style.display = 'none';
+            document.getElementById('payment-status').style.display = 'block';
+            
+            setTimeout(() => {
+                document.getElementById('status-text').textContent = "Transferring Assets...";
+                setTimeout(() => {
+                    Economy.addCoins(pendingAmount);
+                    document.getElementById('status-text').innerHTML = "<span style='color:#4ade80;'>✅ ASSETS ACQUIRED</span>";
+                    setTimeout(() => {
+                        closePayment();
+                        // Reset form for next time
+                        document.getElementById('payment-form').style.display = 'block';
+                        document.getElementById('payment-status').style.display = 'none';
+                        document.getElementById('status-text').textContent = "Synchronizing with Treasury...";
+                    }, 1500);
+                }, 2000);
+            }, 1000);
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Identity Hub | Avatar Customization</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #050508;
+            --accent: #a78bfa;
+            --coin: #ffd700;
+            --glass: rgba(255, 255, 255, 0.05);
+            --border: rgba(255, 255, 255, 0.1);
+        }
+
+        body {
+            background: var(--bg);
+            color: #fff;
+            font-family: 'Outfit', sans-serif;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 80px 20px;
+            margin: 0;
+            background-image: 
+                radial-gradient(circle at 10% 20%, rgba(167, 139, 250, 0.05), transparent 40%),
+                radial-gradient(circle at 90% 80%, rgba(255, 0, 85, 0.05), transparent 40%);
+        }
+
+        .avatar-preview-section {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-bottom: 60px;
+        }
+
+        .avatar-container {
+            width: 180px;
+            height: 180px;
+            background: var(--glass);
+            border: 2px solid var(--border);
+            border-radius: 40px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 5rem;
+            position: relative;
+            box-shadow: 0 30px 60px rgba(0,0,0,0.5);
+            transition: 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .aura {
+            position: absolute;
+            inset: -10px;
+            border-radius: 45px;
+            filter: blur(20px);
+            opacity: 0.3;
+            z-index: -1;
+            transition: 0.3s;
+        }
+
+        .badge {
+            position: absolute;
+            bottom: -10px;
+            right: -10px;
+            background: var(--accent);
+            padding: 5px 12px;
+            border-radius: 50px;
+            font-size: 0.7rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        }
+
+        .controls {
+            max-width: 600px;
+            width: 100%;
+            background: var(--glass);
+            border: 1px solid var(--border);
+            padding: 40px;
+            border-radius: 32px;
+            backdrop-filter: blur(20px);
+        }
+
+        .option-group {
+            margin-bottom: 30px;
+        }
+
+        .option-label {
+            display: block;
+            font-size: 0.8rem;
+            color: rgba(255,255,255,0.4);
+            margin-bottom: 15px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .option-grid {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .swatch {
+            width: 40px;
+            height: 40px;
+            border-radius: 12px;
+            cursor: pointer;
+            border: 2px solid transparent;
+            transition: 0.2s;
+        }
+
+        .swatch.active {
+            border-color: #fff;
+            transform: scale(1.1);
+            box-shadow: 0 0 15px rgba(255,255,255,0.3);
+        }
+
+        .item-card {
+            padding: 10px 20px;
+            background: rgba(255,255,255,0.03);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .item-card:hover {
+            background: rgba(255,255,255,0.1);
+        }
+
+        .item-card.active {
+            border-color: var(--accent);
+            background: rgba(167, 139, 250, 0.1);
+            color: var(--accent);
+        }
+
+        .locked-item {
+            opacity: 0.5;
+            position: relative;
+        }
+
+        .price-tag {
+            font-size: 0.7rem;
+            color: var(--coin);
+            font-family: 'Share Tech Mono', monospace;
+        }
+
+        .back-btn {
+            position: fixed;
+            top: 40px;
+            left: 40px;
+            text-decoration: none;
+            color: rgba(255,255,255,0.3);
+            font-size: 0.8rem;
+            letter-spacing: 2px;
+        }
+
+        .save-banner {
+            position: fixed;
+            bottom: 40px;
+            background: #4ade80;
+            color: #000;
+            padding: 10px 30px;
+            border-radius: 50px;
+            font-weight: bold;
+            display: none;
+            animation: slideUp 0.3s ease-out;
+            z-index: 1001;
+        }
+
+        @keyframes slideUp { from { transform: translateY(100px); } to { transform: translateY(0); } }
+
+    </style>
+</head>
+<body>
+
+    <a href="index.html" class="back-btn">← RETURN</a>
+
+    <div class="avatar-preview-section">
+        <div class="avatar-container" id="avatar-view">
+            <div class="aura" id="aura-view"></div>
+            <span id="emoji-view">👾</span>
+            <div class="badge" id="badge-view">EXPLORER</div>
+        </div>
+        <h2 style="margin-top: 25px; margin-bottom: 5px;" id="nickname-view">Void_Visitor</h2>
+        <div class="price-tag" style="margin-bottom: 20px;">🪙 <span class="coin-balance-val">0</span> COINS</div>
+    </div>
+
+    <div class="controls">
+        <div class="option-group">
+            <span class="option-label">Base Identity</span>
+            <div class="option-grid">
+                <div class="item-card active" onclick="setAvatar('👾', 'Void_Visitor')">👾 Void</div>
+                <div class="item-card" onclick="setAvatar('💀', 'Ghost_Rider')">💀 Ghost</div>
+                <div class="item-card" onclick="setAvatar('🤖', 'Cyber_Link')">🤖 Mech</div>
+                <div class="item-card locked-item" id="crown-item" onclick="buyItem('crown', 50, '👑', 'Archon')">
+                    👑 Crown <span class="price-tag">50</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="option-group">
+            <span class="option-label">Aura Frequency</span>
+            <div class="option-grid">
+                <div class="swatch active" style="background: transparent; border: 1px solid #333;" onclick="setAura('transparent')"></div>
+                <div class="swatch" style="background: #a78bfa;" onclick="setAura('#a78bfa')"></div>
+                <div class="swatch" style="background: #ff0055;" onclick="setAura('#ff0055')"></div>
+                <div class="swatch locked-item" id="gold-aura" onclick="buyItem('gold-aura', 100, '#ffd700', 'status-aura')">
+                    <div class="swatch" style="background: #ffd700; width:100%; height:100%; pointer-events:none;"></div>
+                    <span class="price-tag" style="position: absolute; bottom: -20px; left: 50%; transform: translateX(-50%);">100</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="option-group">
+            <span class="option-label">System Title</span>
+            <div class="option-grid">
+                <input type="text" id="badge-input" placeholder="Title..." maxlength="10" oninput="setBadge(this.value)" style="background: rgba(255,255,255,0.05); border: 1px solid var(--border); padding: 10px; border-radius: 8px; color:#fff; font-family:'Share Tech Mono';">
+            </div>
+        </div>
+    </div>
+
+    <div class="save-banner" id="save-banner">IDENTITY SAVED</div>
+
+    <script src="economy.js"></script>
+    <script>
+        const STORAGE_KEY = 'wwg_avatar_data';
+        let avatarData = {
+            emoji: '👾',
+            aura: 'transparent',
+            badge: 'EXPLORER',
+            nickname: 'Void_Visitor',
+            unlocked: []
+        };
+
+        // Load data
+        const saved = localStorage.getItem(STORAGE_KEY);
+        if (saved) {
+            avatarData = JSON.parse(saved);
+        }
+
+        function updatePreview() {
+            document.getElementById('emoji-view').textContent = avatarData.emoji;
+            document.getElementById('aura-view').style.background = avatarData.aura;
+            document.getElementById('badge-view').textContent = avatarData.badge;
+            document.getElementById('nickname-view').textContent = avatarData.nickname;
+            document.getElementById('badge-input').value = avatarData.badge;
+            
+            // Highlight active cards
+            document.querySelectorAll('.item-card').forEach(card => {
+                if (card.textContent.includes(avatarData.emoji)) card.classList.add('active');
+                else card.classList.remove('active');
+            });
+
+            // Unlock items if owned
+            if (avatarData.unlocked.includes('crown')) document.getElementById('crown-item').classList.remove('locked-item');
+            if (avatarData.unlocked.includes('gold-aura')) document.getElementById('gold-aura').classList.remove('locked-item');
+            
+            save();
+        }
+
+        function setAvatar(emoji, nick) {
+            avatarData.emoji = emoji;
+            avatarData.nickname = nick;
+            updatePreview();
+        }
+
+        function setAura(color) {
+            avatarData.aura = color;
+            updatePreview();
+        }
+
+        function setBadge(text) {
+            avatarData.badge = (text || 'EXPLORER').toUpperCase();
+            document.getElementById('badge-view').textContent = avatarData.badge;
+            save();
+        }
+
+        function buyItem(id, price, val, type) {
+            if (avatarData.unlocked.includes(id)) {
+                if (type === 'status-aura') setAura(val);
+                else setAvatar(val, 'Archon');
+                return;
+            }
+
+            if (Economy.spendCoins(price)) {
+                avatarData.unlocked.push(id);
+                if (type === 'status-aura') setAura(val);
+                else setAvatar(val, 'Archon');
+                updatePreview();
+            } else {
+                alert('INSUFFICIENT FUNDS. VISIT THE TREASURY.');
+                window.location.href = 'shop.html';
+            }
+        }
+
+        function save() {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(avatarData));
+            const banner = document.getElementById('save-banner');
+            banner.style.display = 'block';
+            setTimeout(() => banner.style.display = 'none', 1000);
+        }
+
+        updatePreview();
+    </script>
+</body>
+</html>
