@@ -104,26 +104,55 @@
             max-width: 800px;
             height: 60%;
             border: 1px solid var(--term-green);
-            background: rgba(0, 20, 0, 0.2);
+            background: rgba(0, 20, 0, 0.4);
+            backdrop-filter: blur(10px);
             padding: 20px;
             display: none;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            box-shadow: 0 0 20px rgba(0, 255, 65, 0.2);
+            box-shadow: 0 0 40px rgba(0, 255, 65, 0.3);
+            z-index: 5;
         }
 
         .artifact-img {
-            max-width: 300px;
-            max-height: 250px;
-            filter: grayscale(1) contrast(1.5) brightness(0.8);
-            border: 2px solid var(--term-green);
+            max-width: 100%;
+            max-height: 300px;
+            filter: grayscale(1) contrast(1.2) brightness(0.9);
+            border: 1px solid var(--term-green);
             margin-bottom: 20px;
         }
 
-        .pixel-blur { filter: brightness(0.5) blur(10px) contrast(2); }
+        .pixel-blur { filter: brightness(0.4) blur(15px) contrast(3) grayscale(1); }
 
-        .hidden { display: none; }
+        #museum-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.95);
+            z-index: 100;
+            display: none;
+            flex-direction: column;
+            padding: 40px;
+            overflow-y: auto;
+        }
+
+        .museum-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 20px;
+            margin-top: 40px;
+        }
+
+        .museum-card {
+            border: 1px solid rgba(0, 255, 65, 0.3);
+            padding: 15px;
+            text-align: center;
+            background: #050505;
+        }
+
+        .museum-card img { width: 100%; height: 120px; object-fit: cover; filter: grayscale(1); border: 1px solid #333; }
+        .museum-card.locked { opacity: 0.2; }
+        .museum-card h3 { font-size: 0.9rem; margin: 10px 0; }
 
         .btn {
             background: var(--term-green);
@@ -144,6 +173,7 @@
             right: 40px;
             text-align: right;
             font-size: 0.8rem;
+            cursor: pointer;
         }
 
         .history-entry { margin-bottom: 5px; opacity: 0.7; }
@@ -156,42 +186,49 @@
             color: var(--term-green);
             text-decoration: none;
             font-size: 0.8rem;
-            z-index: 100;
+            z-index: 1000;
         }
     </style>
 </head>
 <body>
-    <a href="index.html" class="back-btn">[ ESC ] BACK TO HUB</a>
+    <a href="index.html" class="back-btn">[ ESC ] EXIT RUINS</a>
 
     <div class="crt-container">
         <div id="terminal-output">
-            <div class="glitch-text" style="font-size: 2rem;">INTERNET ARCHAEOLOGY v1.0.4</div>
+            <div class="glitch-text" style="font-size: 2rem;">INTERNET ARCHAEOLOGY v2.1.0</div>
             <div class="history-entry">> INITIALIZING BOOT SEQUENCE...</div>
             <div class="history-entry">> SCANNING SECTORS FOR LOST DATA...</div>
             <div class="history-entry">> SIGNAL DETECTED.</div>
             <br>
             <div class="prompt">SYSTEM: YOU HAVE DISCOVERED THE RUINS OF THE EARLY INTERNET.</div>
-            <div class="prompt">DO YOU WISH TO COMMENCE EXPLORATION? (Type 'Y' and Enter)</div>
+            <div class="prompt">TYPE 'Y' TO COMMENCE EXPLORATION.</div>
+            <div class="prompt">TYPE 'MUSEUM' TO VIEW COLLECTED ARTIFACTS.</div>
         </div>
 
         <div id="game-area">
             <h2 id="level-title">LEVEL 1: MEME VAULT</h2>
             <p id="level-desc">DECODE THE ANCIENT ARTIFACT</p>
-            <img id="display-img" class="artifact-img pixel-blur" src="under_construction.png" alt="Artifact">
-            <div id="puzzle-hint" style="margin-bottom: 10px;">? ? ?</div>
+            <img id="display-img" class="artifact-img" src="" alt="Artifact">
+            <div id="puzzle-hint" style="margin-bottom: 10px;"></div>
         </div>
 
         <div class="input-row">
             <span id="label">></span>
-            <input type="text" id="command-input" autofocus>
+            <input type="text" id="command-input" autofocus autocomplete="off">
         </div>
 
-        <div id="museum-shelf">
-            COLLECTED FRAGMENTS: <span id="frag-count">0</span>
+        <div id="museum-shelf" onclick="toggleMuseum()">
+            DATA FRAGMENTS: <span id="frag-count">0</span> | [ OPEN MUSEUM ]
         </div>
     </div>
 
-    <script src="discovery.js"></script>
+    <div id="museum-overlay">
+        <h1 class="glitch-text">ARTIFACT MUSEUM</h1>
+        <p>RECORDS OF THE OLD WORLD</p>
+        <div class="museum-grid" id="museum-grid"></div>
+        <button class="btn" style="width: 200px; margin-top: 40px;" onclick="toggleMuseum()">CLOSE MUSEUM</button>
+    </div>
+
     <script>
         const output = document.getElementById('terminal-output');
         const input = document.getElementById('command-input');
@@ -200,36 +237,86 @@
         const levelTitle = document.getElementById('level-title');
         const levelDesc = document.getElementById('level-desc');
         const fragCountEl = document.getElementById('frag-count');
+        const museumOverlay = document.getElementById('museum-overlay');
+        const museumGrid = document.getElementById('museum-grid');
 
         let gameState = 'START';
-        let level = 0;
+        let currentLevel = 0;
         let fragments = parseInt(localStorage.getItem('archaeology_frags') || '0');
+        let museum = JSON.parse(localStorage.getItem('archaeology_museum') || '[]');
+        
         fragCountEl.textContent = fragments;
+
+        const ASSETS = {
+            baby: "dancing_baby.png",
+            amazon: "amazon_1995.png",
+            myspace: "myspace_2005.png",
+            youtube: "youtube_2005.png",
+            under_con: "under_construction.png",
+            ie: "ie_logo.png",
+            win95: "win95_logo.png"
+        };
 
         const LEVELS = [
             {
-                title: "LEVEL 1: THE MEME VAULT",
-                desc: "TYPE THE NAME OF THIS 90s WEB STATE",
-                img: "under_construction.png",
-                answer: "UNDER CONSTRUCTION",
-                hint: "U _ _ _ _   C _ _ _ _ _ _ _ _ _ _ _",
-                blur: true
+                id: "meme_vault_1",
+                title: "STAGE 1: THE MEME VAULT",
+                desc: "TYPE THE NAME OF THIS ANCIENT RENDER",
+                img: ASSETS.baby,
+                answer: "DANCING BABY",
+                hint: "D _ _ _ _ _ _   B _ B _",
+                blur: true,
+                lore: "1996: One of the first viral 3D animations in internet history."
             },
             {
-                title: "LEVEL 2: BROWSER WARS",
-                desc: "IDENTIFY THIS ANCIENT NAVIGATOR",
-                img: "ns_logo.png",
-                answer: "NETSCAPE",
-                hint: "N _ _ _ _ _ _ _",
-                blur: true
+                id: "web_explorer_1",
+                title: "STAGE 2: WEBSITE EXPLORER",
+                desc: "WHAT COMPANY IS DISPLAYED IN THIS 1995 LAYOUT?",
+                img: ASSETS.amazon,
+                answer: "AMAZON",
+                hint: "A _ _ _ _ _",
+                blur: true,
+                lore: "1995: Amazon.com was just 'Earth's Biggest Bookstore'."
             },
             {
-                title: "LEVEL 3: LEGACY PROTOCOL",
-                desc: "IDENTIFY THE DOMINANT BROWSER OF 2001",
-                img: "ie_logo.png",
-                answer: "INTERNET EXPLORER",
-                hint: "I _ _ _ _ _ _ _   E _ _ _ _ _ _ _",
-                blur: true
+                id: "web_explorer_2",
+                title: "STAGE 2: WEBSITE EXPLORER",
+                desc: "IDENTIFY THIS SOCIAL NETWORK (2005 ERA)",
+                img: ASSETS.myspace,
+                answer: "MYSPACE",
+                hint: "M _ _ _ _ _ _",
+                blur: true,
+                lore: "2005: The king of early social media. Everyone had 'Tom' as a friend."
+            },
+            {
+                id: "web_explorer_3",
+                title: "STAGE 2: WEBSITE EXPLORER",
+                desc: "GUESS THE VIDEO PLATFORM (2005 DEBUG)",
+                img: ASSETS.youtube,
+                answer: "YOUTUBE",
+                hint: "Y _ _ _ _ _ _",
+                blur: true,
+                lore: "2005: 'Me at the zoo' was only the beginning."
+            },
+            {
+                id: "puzzle_1",
+                title: "STAGE 3: MYSTERY PUZZLE",
+                desc: "DECODE THIS ASCII MESSAGE: '(: <'",
+                img: ASSETS.ie, 
+                answer: "PACMAN",
+                hint: "OLD SCHOOL EMOTICON FOR A DOT-EATER",
+                blur: false,
+                lore: "Classic ASCII art was the primary visual language of BBS and IRC."
+            },
+            {
+                id: "puzzle_2",
+                title: "STAGE 3: MYSTERY PUZZLE",
+                desc: "GUESS THE VERSION: WINDOWS _ _?",
+                img: "win95_logo.png",
+                answer: "95",
+                hint: "THE START BUTTON WAS BORN HERE",
+                blur: true,
+                lore: "1995: The operating system that brought the internet to the masses."
             }
         ];
 
@@ -250,14 +337,24 @@
         }
 
         function handleCommand(cmd) {
+            if (cmd === 'MUSEUM') {
+                toggleMuseum();
+                return;
+            }
+            if (cmd === 'RESET') {
+                localStorage.clear();
+                location.reload();
+                return;
+            }
+
             if (gameState === 'START') {
                 if (cmd === 'Y') {
-                    print("CONNECTION ESTABLISHED.", "prompt");
+                    print("CONNECTION ESTABLISHED. SCANNING SECTOR...", "prompt");
                     gameState = 'PLAYING';
                     gameArea.style.display = 'flex';
                     loadLevel();
                 } else {
-                    print("INVALID SELECTION. RE-ATTEMPT.");
+                    print("UNRECOGNIZED INPUT. RETRY.");
                 }
             } else if (gameState === 'PLAYING') {
                 checkAnswer(cmd);
@@ -265,55 +362,85 @@
         }
 
         function loadLevel() {
-            if (level >= LEVELS.length) {
+            if (currentLevel >= LEVELS.length) {
                 winGame();
                 return;
             }
-            const data = LEVELS[level];
+            const data = LEVELS[currentLevel];
             levelTitle.textContent = data.title;
             levelDesc.textContent = data.desc;
             displayImg.src = data.img;
             displayImg.className = data.blur ? 'artifact-img pixel-blur' : 'artifact-img';
             document.getElementById('puzzle-hint').textContent = data.hint;
-            print(`CURRENT TASK: ${data.desc}`);
+            print(`TASK: ${data.desc}`);
         }
 
         function checkAnswer(cmd) {
-            const data = LEVELS[level];
+            const data = LEVELS[currentLevel];
             if (cmd === data.answer) {
-                print("SUCCESS. DATA FRAGMENT RETRIEVED.", "prompt");
+                print("ARTIFACT ACQUIRED.", "prompt");
+                unlockArtifact(data);
                 fragments++;
                 localStorage.setItem('archaeology_frags', fragments);
                 fragCountEl.textContent = fragments;
-                level++;
+                currentLevel++;
                 
                 // Flash effect
-                gameArea.style.boxShadow = "0 0 50px rgba(255, 255, 255, 0.5)";
+                gameArea.style.boxShadow = "0 0 50px rgba(0, 255, 65, 0.6)";
                 setTimeout(() => {
-                    gameArea.style.boxShadow = "0 0 20px rgba(0, 255, 65, 0.2)";
+                    gameArea.style.boxShadow = "0 0 40px rgba(0, 255, 65, 0.3)";
                     loadLevel();
-                }, 1000);
+                }, 800);
             } else {
-                print(`ERROR. INCORRECT SIGNATURE. HINT: ${data.hint}`);
+                print(`SIGNATURE MISMATCH. HINT: ${data.hint}`);
             }
+        }
+
+        function unlockArtifact(levelData) {
+            if (!museum.includes(levelData.id)) {
+                museum.push(levelData.id);
+                localStorage.setItem('archaeology_museum', JSON.stringify(museum));
+                print(`NEW ARTIFACT ADDED TO MUSEUM: ${levelData.answer}`);
+            }
+        }
+
+        function toggleMuseum() {
+            const isVisible = museumOverlay.style.display === 'flex';
+            museumOverlay.style.display = isVisible ? 'none' : 'flex';
+            if (!isVisible) renderMuseum();
+        }
+
+        function renderMuseum() {
+            museumGrid.innerHTML = '';
+            LEVELS.forEach(l => {
+                const isUnlocked = museum.includes(l.id);
+                const card = document.createElement('div');
+                card.className = `museum-card ${isUnlocked ? '' : 'locked'}`;
+                card.innerHTML = `
+                    <div style="height: 120px; overflow: hidden; background: ${isUnlocked ? '#000' : '#111'}; display: flex; align-items: center; justify-content: center;">
+                        ${isUnlocked ? `<img src="${l.img}" style="max-width: 100%; max-height: 100%; filter: grayscale(1);">` : '<span style="color: #333;">LOCKED</span>'}
+                    </div>
+                    <h3>${isUnlocked ? l.answer : '???'}</h3>
+                    <p style="font-size: 0.6rem; color: #888; text-transform: none;">${isUnlocked ? l.lore : 'UNEXPLORED SECTOR'}</p>
+                `;
+                museumGrid.appendChild(card);
+            });
         }
 
         function winGame() {
             gameState = 'WON';
-            levelTitle.textContent = "EXPLORATION COMPLETE";
-            levelDesc.textContent = "YOU ARE A CERTIFIED INTERNET HISTORIAN";
-            displayImg.src = "best_viewed.png"; // Reusing another asset
+            levelTitle.textContent = "EXPLORATION FINALIZED";
+            levelDesc.textContent = "RESULT: INTERNET HISTORIAN";
+            displayImg.src = "best_viewed.png";
             displayImg.className = 'artifact-img';
-            document.getElementById('puzzle-hint').textContent = `RANK: MASTER ARCHAEOLOGIST`;
-            print("ALL DATA SECTORS CLEAR.", "prompt");
-            print("ACCESSING THE ARCHIVE GALLERY...");
-            
-            setTimeout(() => {
-                alert("CONGRATULATIONS! You have discovered " + fragments + " artifacts in total across your career.");
-            }, 1000);
+            document.getElementById('puzzle-hint').innerHTML = `
+                RANK: GRAND ARCHAEOLOGIST<br>
+                CORE DATA: ${fragments} FRAGMENTS<br><br>
+                [ TYPE 'RESET' TO WIPE CACHE OR 'MUSEUM' TO ADMIRE ]
+            `;
+            print("MISSION ACCOMPLISHED. SHARE YOUR RANK WITH THE OLD WORLD.", "prompt");
         }
 
-        // Initial cursor focus
         window.onclick = () => input.focus();
     </script>
 </body>
