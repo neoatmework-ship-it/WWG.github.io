@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Neo // Vibe Coder</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;700&family=Share+Tech+Mono&display=swap');
+
+        :root {
+            --primary: #00f2ff;
+            --secondary: #7000ff;
+            --accent: #ff00c8;
+            --bg: #050505;
+            --card-bg: rgba(255, 255, 255, 0.03);
+            --glass: rgba(255, 255, 255, 0.05);
+            --border: rgba(255, 255, 255, 0.1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        body {
+            background-color: var(--bg);
+            color: #fff;
+            font-family: 'Outfit', sans-serif;
+            overflow-x: hidden;
+            line-height: 1.6;
+        }
+
+        /* Abstract Background */
+        .bg-glow {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            background: 
+                radial-gradient(circle at 10% 20%, rgba(0, 242, 255, 0.05) 0%, transparent 40%),
+                radial-gradient(circle at 90% 80%, rgba(112, 0, 255, 0.05) 0%, transparent 40%);
+        }
+
+        .noise {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            opacity: 0.03;
+            pointer-events: none;
+            background-image: url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyMDAiIGhlaWdodD0iMjAwIj48ZmlsdGVyIGlkPSJuIj48ZmVUdXJidWxlbmNlIHR5cGU9ImZyYWN0YWxOb2lzZSIgYmFzZUZyZXF1ZW5jeT0iMC42NSIgbnVtT2N0YXZlcz0iMyIgc3RpdGNoVGlsZXM9InN0aXRjaCIvPjwvZmlsdGVyPjxyZWN0IHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiIGZpbHRlcj0idXJsKCNuKSIvPjwvc3ZnPg==');
+        }
+
+        header {
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 0 20px;
+        }
+
+        .hero-title {
+            font-size: clamp(3rem, 10vw, 7rem);
+            font-weight: 700;
+            letter-spacing: -2px;
+            margin-bottom: 10px;
+            background: linear-gradient(to bottom, #fff 40%, rgba(255,255,255,0.4));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .vibe-badge {
+            font-family: 'Share Tech Mono', monospace;
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            padding: 5px 15px;
+            border-radius: 100px;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            font-weight: bold;
+            color: #000;
+            box-shadow: 0 0 30px rgba(0, 242, 255, 0.3);
+            margin-bottom: 20px;
+        }
+
+        .hero-desc {
+            max-width: 600px;
+            font-size: 1.2rem;
+            color: rgba(255, 255, 255, 0.6);
+            margin-bottom: 40px;
+        }
+
+        /* Container & Sections */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 40px 100px;
+        }
+
+        h2 {
+            font-size: 2.5rem;
+            margin-bottom: 60px;
+            text-align: center;
+            font-weight: 700;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 30px;
+        }
+
+        /* Glass Card */
+        .card {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 24px;
+            padding: 40px;
+            backdrop-filter: blur(10px);
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            text-decoration: none;
+            color: inherit;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .card:hover {
+            transform: translateY(-10px);
+            background: rgba(255, 255, 255, 0.05);
+            border-color: rgba(255, 255, 255, 0.2);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+        }
+
+        .card::after {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: linear-gradient(135deg, transparent, rgba(255,255,255,0.05), transparent);
+            transform: translateX(-100%);
+            transition: 0.5s;
+        }
+
+        .card:hover::after {
+            transform: translateX(100%);
+        }
+
+        .card-icon {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+
+        .card-title {
+            font-size: 1.8rem;
+            font-weight: 700;
+        }
+
+        .card-desc {
+            color: rgba(255, 255, 255, 0.6);
+            flex-grow: 1;
+        }
+
+        .card-tag {
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 0.8rem;
+            color: var(--primary);
+            text-transform: uppercase;
+        }
+
+        /* Itch.io section specific */
+        .itch-grid {
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        }
+
+        .beacon-section {
+            margin-top: 100px;
+            text-align: center;
+            background: linear-gradient(to right, transparent, rgba(0,242,255,0.05), transparent);
+            padding: 80px 40px;
+            border-radius: 40px;
+            border: 1px solid var(--border);
+        }
+
+        .beacon-title {
+            font-family: 'Share Tech Mono', monospace;
+            color: var(--primary);
+            margin-bottom: 20px;
+            font-size: 1.2rem;
+            letter-spacing: 4px;
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 15px 35px;
+            background: #fff;
+            color: #000;
+            text-decoration: none;
+            border-radius: 100px;
+            font-weight: 700;
+            transition: 0.3s;
+            margin-top: 20px;
+        }
+
+        .btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 30px rgba(255, 255, 255, 0.3);
+        }
+
+        footer {
+            text-align: center;
+            padding: 60px 20px;
+            color: rgba(255, 255, 255, 0.3);
+            font-size: 0.9rem;
+            border-top: 1px solid var(--border);
+        }
+
+        /* Animations */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .reveal {
+            animation: fadeIn 1s ease-out forwards;
+        }
+
+        @media (max-width: 768px) {
+            .container { padding: 0 20px 60px; }
+            .hero-title { font-size: 4rem; }
+        }
+    </style>
+</head>
+<body>
+    <div class="bg-glow"></div>
+    <div class="noise"></div>
+
+    <header>
+        <div class="vibe-badge reveal" style="animation-delay: 0.2s;">System Verified</div>
+        <h1 class="hero-title reveal">NEO</h1>
+        <p class="hero-desc reveal" style="animation-delay: 0.4s;">
+            I am a <strong>vibe coder</strong> crafting specialized digital experiences and anomalous software. Based in the internet ruins.
+        </p>
+        <div class="reveal" style="animation-delay: 0.6s;">
+            <a href="#work" class="btn">Explore Data</a>
+        </div>
+    </header>
+
+    <div class="container" id="work">
+        <h2 class="reveal">The Repository</h2>
+        
+        <div class="grid">
+            <!-- Weird Website Gallery -->
+            <a href="index.html" class="card reveal" style="animation-delay: 0.2s;">
+                <div class="card-tag">Anomaly // Milestone 102</div>
+                <div class="card-icon">🌀</div>
+                <div class="card-title">Weird Website Gallery</div>
+                <div class="card-desc">
+                    A massive collection of 102+ interactive experiments, mini-games, and internet oddities. The ultimate destination for digital curiosity.
+                </div>
+                <span class="btn" style="padding: 10px 20px; font-size: 0.8rem; margin-top: 0; width: fit-content;">View Gallery</span>
+            </a>
+
+            <!-- Itch.io Games -->
+            <a href="https://small-game-studios.itch.io/" target="_blank" class="card reveal" style="animation-delay: 0.4s;">
+                <div class="card-tag">Ludology // Itch.io</div>
+                <div class="card-icon">🕹️</div>
+                <div class="card-title">Indie Game Studio</div>
+                <div class="card-desc">
+                    Deep mechanical gameplay and unique aesthetics. Explore my full library of games on itch.io, spanning multiple genres and vibes.
+                </div>
+                <span class="btn" style="padding: 10px 20px; font-size: 0.8rem; margin-top: 0; width: fit-content;">Play Games</span>
+            </a>
+        </div>
+
+        <div class="beacon-section reveal" style="animation-delay: 0.6s;">
+            <div class="beacon-title">DEEP DATA LOG</div>
+            <h3>The Beacon Trackers</h3>
+            <p style="margin-top: 15px; color: rgba(255,255,255,0.6); max-width: 700px; margin-inline: auto;">
+                Beyond games and galleries, I've engineered high-precision beacon trackers and telemetry systems, monitoring signals across the digital landscape.
+            </p>
+        </div>
+    </div>
+
+    <footer>
+        &copy; 2026 NEO // VIBE CODER // HANDCRAFTED IN THE VOID
+    </footer>
+
+    <script>
+        // Simple Intersection Observer for scroll reveals
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('reveal');
+                }
+            });
+        }, { threshold: 0.1 });
+
+        document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+    </script>
+</body>
+</html>
