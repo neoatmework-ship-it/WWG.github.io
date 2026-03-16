@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Neo OS // Vibe Desktop</title>
+    <title>Neo OS // Void Explorer</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600&family=Share+Tech+Mono&display=swap');
 
@@ -11,9 +11,10 @@
             --primary: #00f2ff;
             --secondary: #7000ff;
             --bg: #050505;
-            --window-bg: rgba(15, 15, 20, 0.85);
+            --window-bg: rgba(10, 10, 15, 0.9);
             --border: rgba(255, 255, 255, 0.1);
-            --glass: rgba(255, 255, 255, 0.05);
+            --glass: rgba(255, 255, 255, 0.03);
+            --accent: #ff0055;
         }
 
         * {
@@ -26,8 +27,8 @@
         body {
             background: #000;
             background-image: 
-                radial-gradient(circle at 20% 30%, rgba(112, 0, 255, 0.1) 0%, transparent 40%),
-                radial-gradient(circle at 80% 70%, rgba(0, 242, 255, 0.1) 0%, transparent 40%);
+                radial-gradient(circle at 10% 20%, rgba(112, 0, 255, 0.08) 0%, transparent 40%),
+                radial-gradient(circle at 90% 80%, rgba(0, 242, 255, 0.08) 0%, transparent 40%);
             height: 100vh;
             width: 100vw;
             overflow: hidden;
@@ -35,20 +36,209 @@
             color: #fff;
         }
 
-        /* Desktop Grid */
+        /* Desktop Area */
         .desktop {
             height: calc(100vh - 50px);
             position: relative;
-            padding: 20px;
-            display: flex;
-            flex-direction: column;
-            flex-wrap: wrap;
-            align-content: flex-start;
-            gap: 20px;
+            padding: 30px;
+            display: grid;
+            grid-template-columns: repeat(auto-fill, 100px);
+            grid-template-rows: repeat(auto-fill, 110px);
+            grid-auto-flow: column;
+            gap: 15px;
         }
 
         .icon {
-            width: 80px;
+            width: 100px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            padding: 10px;
+            border-radius: 12px;
+            transition: 0.2s;
+        }
+
+        .icon:hover {
+            background: rgba(255, 255, 255, 0.08);
+            transform: translateY(-2px);
+        }
+
+        .icon-box {
+            width: 54px;
+            height: 54px;
+            background: var(--glass);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 1.6rem;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.4);
+            position: relative;
+        }
+
+        .icon-box::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            border-radius: 14px;
+            background: linear-gradient(135deg, transparent, rgba(255,255,255,0.05));
+        }
+
+        .icon-label {
+            font-size: 0.75rem;
+            text-align: center;
+            font-weight: 500;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.8);
+            letter-spacing: 0.5px;
+        }
+
+        /* Window System */
+        .window {
+            position: absolute;
+            min-width: 300px;
+            background: var(--window-bg);
+            border: 1px solid var(--border);
+            border-radius: 18px;
+            backdrop-filter: blur(30px);
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 30px 70px rgba(0,0,0,0.6);
+            display: none;
+            z-index: 10;
+            overflow: hidden;
+            animation: winOpen 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        @keyframes winOpen {
+            from { opacity: 0; transform: scale(0.9) translateY(20px); }
+            to { opacity: 1; transform: scale(1) translateY(0); }
+        }
+
+        .window-header {
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(255,255,255,0.02);
+            border-bottom: 1px solid var(--border);
+            cursor: move;
+        }
+
+        .window-title {
+            font-size: 0.85rem;
+            font-weight: 600;
+            letter-spacing: 1px;
+            color: rgba(255,255,255,0.8);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .window-controls {
+            display: flex;
+            gap: 10px;
+        }
+
+        .control {
+            width: 13px;
+            height: 13px;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 8px;
+            color: transparent;
+            transition: 0.2s;
+        }
+
+        .window-header:hover .control {
+            color: rgba(0,0,0,0.5);
+        }
+
+        .win-close { background: #ff5f56; }
+        .win-min { background: #ffbd2e; }
+        .win-max { background: #27c93f; }
+
+        .window-body {
+            flex-grow: 1;
+            padding: 20px;
+            overflow-y: auto;
+            max-height: 500px;
+        }
+
+        /* Taskbar */
+        .taskbar {
+            height: 60px;
+            background: rgba(5, 5, 5, 0.8);
+            border-top: 1px solid var(--border);
+            backdrop-filter: blur(20px);
+            display: flex;
+            align-items: center;
+            padding: 0 25px;
+            justify-content: space-between;
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+            z-index: 1000;
+        }
+
+        .start-btn {
+            font-family: 'Share Tech Mono', monospace;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 8px 20px;
+            border-radius: 10px;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid var(--border);
+            color: var(--primary);
+            font-weight: bold;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        .start-btn:hover {
+            background: var(--primary);
+            color: #000;
+            box-shadow: 0 0 20px rgba(0, 242, 255, 0.3);
+        }
+
+        .clock-area {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            font-family: 'Share Tech Mono', monospace;
+        }
+
+        .clock {
+            font-size: 1rem;
+            color: #fff;
+        }
+
+        .date {
+            font-size: 0.7rem;
+            color: rgba(255,255,255,0.4);
+        }
+
+        /* App Specific Styles */
+        .terminal-text {
+            font-family: 'Share Tech Mono', monospace;
+            color: #4ade80;
+            font-size: 0.9rem;
+            line-height: 1.5;
+        }
+
+        .explorer-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+            gap: 20px;
+            padding: 10px;
+        }
+
+        .file {
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -59,217 +249,197 @@
             transition: 0.2s;
         }
 
-        .icon:hover {
-            background: rgba(255, 255, 255, 0.1);
+        .file:hover {
+            background: rgba(255,255,255,0.05);
         }
 
-        .icon-box {
-            width: 48px;
-            height: 48px;
-            background: var(--glass);
-            border: 1px solid var(--border);
-            border-radius: 12px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            font-size: 1.5rem;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+        .file-icon {
+            font-size: 1.8rem;
         }
 
-        .icon-label {
+        .file-name {
             font-size: 0.75rem;
             text-align: center;
-            font-weight: 400;
-            text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+            word-break: break-all;
         }
 
-        /* Window System */
-        .window {
-            position: absolute;
-            min-width: 400px;
-            min-height: 300px;
-            background: var(--window-bg);
-            border: 1px solid var(--border);
-            border-radius: 16px;
-            backdrop-filter: blur(20px);
+        .sys-info {
             display: flex;
             flex-direction: column;
-            box-shadow: 0 20px 50px rgba(0,0,0,0.5);
-            display: none;
-            z-index: 10;
-        }
-
-        .window-header {
-            padding: 15px 20px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-bottom: 1px solid var(--border);
-            cursor: move;
-        }
-
-        .window-controls {
-            display: flex;
-            gap: 8px;
-        }
-
-        .control {
-            width: 12px;
-            height: 12px;
-            border-radius: 50%;
-        }
-
-        .window-body {
-            flex-grow: 1;
-            padding: 20px;
-            overflow-y: auto;
-        }
-
-        /* Taskbar */
-        .taskbar {
-            height: 50px;
-            background: rgba(10, 10, 10, 0.9);
-            border-top: 1px solid var(--border);
-            backdrop-filter: blur(10px);
-            display: flex;
-            align-items: center;
-            padding: 0 20px;
-            justify-content: space-between;
-            position: fixed;
-            bottom: 0;
-            width: 100%;
-            z-index: 100;
-        }
-
-        .start-btn {
-            font-family: 'Share Tech Mono', monospace;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            padding: 5px 15px;
-            border-radius: 5px;
-            background: linear-gradient(90deg, var(--primary), var(--secondary));
-            color: #000;
-            font-weight: bold;
-            cursor: pointer;
-        }
-
-        .clock {
-            font-family: 'Share Tech Mono', monospace;
-            font-size: 0.9rem;
-            color: var(--primary);
-        }
-
-        /* Content Styling */
-        .vibe-log {
-            font-family: 'Share Tech Mono', monospace;
-            color: #4ade80;
-            font-size: 0.85rem;
-        }
-
-        .folder-grid {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
             gap: 15px;
         }
 
-        .folder-item {
+        .info-row {
             display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 5px;
-            font-size: 0.8rem;
+            justify-content: space-between;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+            padding-bottom: 8px;
+            font-size: 0.9rem;
         }
+
+        .info-label { color: rgba(255,255,255,0.5); }
+        .info-val { color: var(--primary); font-family: 'Share Tech Mono', monospace; }
+
+        .progress-bar {
+            height: 6px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 3px;
+            width: 100%;
+            margin-top: 5px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: var(--secondary);
+            width: 45%;
+        }
+
     </style>
 </head>
 <body>
 
-    <div class="desktop">
-        <div class="icon" onclick="openWindow('vibe-win')">
+    <div class="desktop" id="desktop">
+        <div class="icon" onclick="openWindow('sys-log-win')">
             <div class="icon-box">📡</div>
-            <div class="icon-label">Vibe_Log</div>
+            <div class="icon-label">System_Log</div>
         </div>
-        <div class="icon" onclick="openWindow('files-win')">
+        <div class="icon" onclick="openWindow('explorer-win')">
             <div class="icon-box">📁</div>
-            <div class="icon-label">Secret_Data</div>
+            <div class="icon-label">Root_Drive</div>
         </div>
-        <div class="icon" onclick="openWindow('about-win')">
-            <div class="icon-box">👾</div>
-            <div class="icon-label">Neo_Bio</div>
+        <div class="icon" onclick="openWindow('specs-win')">
+            <div class="icon-box">⚙️</div>
+            <div class="icon-label">Void_Specs</div>
+        </div>
+        <div class="icon" onclick="window.location.href='index.html'">
+            <div class="icon-box">🏰</div>
+            <div class="icon-label">Gallery_Hub</div>
         </div>
     </div>
 
-    <!-- Windows -->
-    <div id="vibe-win" class="window" style="top: 100px; left: 300px;">
+    <!-- Window Templates -->
+    <div id="sys-log-win" class="window" style="top: 80px; left: 100px; width: 500px;">
         <div class="window-header">
-            <span>Terminal // Vibe_Log</span>
+            <div class="window-title"><span>📡</span> TERMINAL // SYSTEM_LOG</div>
             <div class="window-controls">
-                <div class="control" style="background: #ff5f56; cursor:pointer;" onclick="closeWindow('vibe-win')"></div>
-                <div class="control" style="background: #ffbd2e;"></div>
-                <div class="control" style="background: #27c93f;"></div>
+                <div class="control win-min"></div>
+                <div class="control win-max"></div>
+                <div class="control win-close" onclick="closeWindow('sys-log-win')">×</div>
             </div>
         </div>
-        <div class="window-body vibe-log">
-            > INITIALIZING NEO_OS_V2.1...<br>
-            > MOUNTING VIBE_DRIVE... DONE.<br>
-            > SCANNING FOR ANOMALIES...<br>
-            > [RESULT]: 102 WEIRD SITES DETECTED.<br>
-            > [STATUS]: VIBE_CHECK_PASS.<br><br>
-            > HANDCRAFTED IN THE VOID.
+        <div class="window-body terminal-text" id="terminal-body">
+            > [BOOT]: NEO_OS_V4.0 // VOID_EDITION<br>
+            > [CORE]: INITIALIZING KERNEL... DONE.<br>
+            > [SEC]: ENCRYPTION_STABLE.<br>
+            > [NET]: CONNECTED TO THE VOID.<br>
+            > [INFO]: 108 ANOMALIES DETECTED IN LOCAL CLUSTER.<br><br>
+            > READY.
         </div>
     </div>
 
-    <div id="files-win" class="window" style="top: 150px; left: 400px; width: 500px;">
+    <div id="explorer-win" class="window" style="top: 150px; left: 400px; width: 450px;">
         <div class="window-header">
-            <span>File Explorer // Secret_Data</span>
+            <div class="window-title"><span>📁</span> EXPLORER // ROOT_DRIVE</div>
             <div class="window-controls">
-                <div class="control" style="background: #ff5f56; cursor:pointer;" onclick="closeWindow('files-win')"></div>
-                <div class="control" style="background: #ffbd2e;"></div>
-                <div class="control" style="background: #27c93f;"></div>
+                <div class="control win-min"></div>
+                <div class="control win-max"></div>
+                <div class="control win-close" onclick="closeWindow('explorer-win')">×</div>
             </div>
         </div>
         <div class="window-body">
-            <div class="folder-grid">
-                <div class="folder-item"><span>📄</span><span>plan.txt</span></div>
-                <div class="folder-item"><span>📄</span><span>gallery.zip</span></div>
-                <div class="folder-item"><span>📄</span><span>brain.md</span></div>
-                <div class="folder-item"><span>📁</span><span>Backups</span></div>
-                <div class="folder-item"><span>📁</span><span>Assets</span></div>
-                <div class="folder-item"><span>📁</span><span>Vibes</span></div>
+            <div class="explorer-grid" id="explorer-content">
+                <!-- Dynamic Content -->
             </div>
         </div>
     </div>
 
-    <div id="about-win" class="window" style="top: 200px; left: 200px;">
+    <div id="specs-win" class="window" style="top: 250px; left: 150px; width: 350px;">
         <div class="window-header">
-            <span>Bio // Neo</span>
+            <div class="window-title"><span>⚙️</span> SYSTEM // VOID_SPECS</div>
             <div class="window-controls">
-                <div class="control" style="background: #ff5f56; cursor:pointer;" onclick="closeWindow('about-win')"></div>
-                <div class="control" style="background: #ffbd2e;"></div>
-                <div class="control" style="background: #27c93f;"></div>
+                <div class="control win-min"></div>
+                <div class="control win-max"></div>
+                <div class="control win-close" onclick="closeWindow('specs-win')">×</div>
             </div>
         </div>
-        <div class="window-body">
-            <h3 style="color: var(--primary); margin-bottom: 10px;">Neo</h3>
-            <p style="font-size: 0.9rem; color: rgba(255,255,255,0.7);">
-                Vibe coder. Digital archaeologist. Collector of internet ruins.
-            </p>
-            <hr style="border: 0; border-top: 1px solid var(--border); margin: 15px 0;">
-            <p style="font-size: 0.8rem;">Current focus: Building the Weird Website Gallery.</p>
+        <div class="window-body sys-info">
+            <div class="info-row">
+                <span class="info-label">OS VERSION</span>
+                <span class="info-val">VOID_4.0_GENISYS</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">ARCHITECTURE</span>
+                <span class="info-val">META_RECURSIVE_X64</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">MEMORY USAGE</span>
+                <div style="text-align: right; width: 150px;">
+                    <span class="info-val">4.2GB / 128TB</span>
+                    <div class="progress-bar"><div class="progress-fill" style="width: 15%;"></div></div>
+                </div>
+            </div>
+            <div class="info-row">
+                <span class="info-label">CPU LOAD</span>
+                <div style="text-align: right; width: 150px;">
+                    <span class="info-val">CORE_VOXEL: 8%</span>
+                    <div class="progress-bar"><div class="progress-fill" style="width: 8%; background: var(--primary);"></div></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Generic File Window Template -->
+    <div id="file-win" class="window" style="top: 200px; left: 500px; width: 400px; display:none;">
+        <div class="window-header">
+            <div class="window-title" id="file-win-title"><span>📄</span> FILE</div>
+            <div class="window-controls">
+                <div class="control win-min"></div>
+                <div class="control win-max"></div>
+                <div class="control win-close" onclick="closeWindow('file-win')">×</div>
+            </div>
+        </div>
+        <div class="window-body" id="file-win-body">
+            <!-- Dynamic Content -->
         </div>
     </div>
 
     <div class="taskbar">
-        <div class="start-btn">NEO_OS</div>
-        <div class="clock" id="clock">00:00:00</div>
+        <div class="start-btn">VOID_OS</div>
+        <div class="clock-area">
+            <div class="clock" id="clock">00:00:00</div>
+            <div class="date" id="date">JAN 01 2026</div>
+        </div>
     </div>
 
     <script>
+        // File System Data
+        const FILESYSTEM = [
+            { id: 'logs', name: 'logs.cluster', type: 'file', icon: '📄', content: 'Cluster Analysis: No failures detected in section 9. All 108 sites are operational.' },
+            { id: 'backups', name: 'Backups', type: 'folder', items: [
+                { id: 'b1', name: 'WWG_Phase1.zip', type: 'file', icon: '📦', content: 'Legacy gallery data. Access restricted.' },
+                { id: 'b2', name: 'Site_Mapping.map', type: 'file', icon: '🌐', content: 'Dynamic route map for the Weird Website Gallery.' }
+            ]},
+            { id: 'assets', name: 'Assets', type: 'folder', items: [
+                { id: 'a1', name: 'textures.rgba', type: 'file', icon: '🖼️', content: 'Raw pixel data for the void background.' },
+                { id: 'a2', name: 'audio_stream.null', type: 'file', icon: '🎵', content: 'The sound of a silent packet.' }
+            ]},
+            { id: 'read', name: 'readme.txt', type: 'file', icon: '📝', content: 'Welcome to Neo OS. This is a secure environment for exploring the digital architecture of the Weird Website Gallery.' }
+        ];
+
+        // Global State
+        let currentPath = [];
+
+        // UI Functions
         function updateClock() {
-            const h = new Date().getHours().toString().padStart(2, '0');
-            const m = new Date().getMinutes().toString().padStart(2, '0');
-            const s = new Date().getSeconds().toString().padStart(2, '0');
+            const now = new Date();
+            const h = now.getHours().toString().padStart(2, '0');
+            const m = now.getMinutes().toString().padStart(2, '0');
+            const s = now.getSeconds().toString().padStart(2, '0');
             document.getElementById('clock').textContent = `${h}:${m}:${s}`;
+            
+            const months = ["JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"];
+            document.getElementById('date').textContent = `${months[now.getMonth()]} ${now.getDate().toString().padStart(2, '0')} ${now.getFullYear()}`;
         }
         setInterval(updateClock, 1000);
         updateClock();
@@ -277,15 +447,75 @@
         function openWindow(id) {
             const win = document.getElementById(id);
             win.style.display = 'flex';
-            win.style.zIndex = 20;
+            win.style.zIndex = 100;
+            // Blur effect for others
+            document.querySelectorAll('.window').forEach(w => {
+                if(w.id !== id) w.style.zIndex = Math.max(10, parseInt(w.style.zIndex) - 1);
+            });
         }
 
         function closeWindow(id) {
             document.getElementById(id).style.display = 'none';
         }
 
-        // Draggable windows (simplified)
-        document.querySelectorAll('.window').forEach(win => {
+        function renderExplorer(items = FILESYSTEM) {
+            const container = document.getElementById('explorer-content');
+            container.innerHTML = '';
+            
+            // Add back button if nested
+            if (currentPath.length > 0) {
+                const back = document.createElement('div');
+                back.className = 'file';
+                back.innerHTML = `<span class="file-icon">🔙</span><span class="file-name">..back</span>`;
+                back.onclick = () => {
+                    currentPath.pop();
+                    renderExplorer(getCurrentFolderItems());
+                };
+                container.appendChild(back);
+            }
+
+            items.forEach(item => {
+                const div = document.createElement('div');
+                div.className = 'file';
+                div.innerHTML = `
+                    <span class="file-icon">${item.type === 'folder' ? '📁' : (item.icon || '📄')}</span>
+                    <span class="file-name">${item.name}</span>
+                `;
+                div.onclick = () => {
+                    if (item.type === 'folder') {
+                        currentPath.push(item);
+                        renderExplorer(item.items);
+                    } else {
+                        // Open File
+                        openFile(item);
+                    }
+                };
+                container.appendChild(div);
+            });
+        }
+
+        function getCurrentFolderItems() {
+            let current = FILESYSTEM;
+            currentPath.forEach(p => {
+                const folder = current.find(f => f.id === p.id);
+                if (folder) current = folder.items;
+            });
+            return current;
+        }
+
+        function openFile(file) {
+            const win = document.getElementById('file-win');
+            const title = document.getElementById('file-win-title');
+            const body = document.getElementById('file-win-body');
+
+            title.innerHTML = `<span>${file.icon || '📄'}</span> ${file.name}`;
+            body.innerHTML = `<div class="terminal-text" style="color:#fff;">${file.content}</div>`;
+            
+            openWindow('file-win');
+        }
+
+        // Draggable Logic
+        function makeDraggable(win) {
             const header = win.querySelector('.window-header');
             let isDragging = false;
             let offset = [0, 0];
@@ -293,9 +523,8 @@
             header.addEventListener('mousedown', (e) => {
                 isDragging = true;
                 offset = [win.offsetLeft - e.clientX, win.offsetTop - e.clientY];
-                // Bring to front
                 document.querySelectorAll('.window').forEach(w => w.style.zIndex = 10);
-                win.style.zIndex = 20;
+                win.style.zIndex = 100;
             });
 
             document.addEventListener('mouseup', () => isDragging = false);
@@ -305,7 +534,19 @@
                     win.style.top = (e.clientY + offset[1]) + 'px';
                 }
             });
-        });
+        }
+
+        // Initialize
+        document.querySelectorAll('.window').forEach(makeDraggable);
+        renderExplorer();
+
+        // Start button placeholder
+        document.querySelector('.start-btn').onclick = () => {
+            const term = document.getElementById('terminal-body');
+            term.innerHTML += `<br>> [CMD]: START_MENU_QUERY... LOCKED. ACCESS DENIED.`;
+            openWindow('sys-log-win');
+        };
+
     </script>
 </body>
 </html>
