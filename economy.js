@@ -38,6 +38,19 @@ const Economy = {
         
         // Dispatch event for components to listen to
         window.dispatchEvent(new CustomEvent('economyUpdate', { detail: { balance } }));
+    },
+
+    logTransaction: function(type, amount, priceUSD) {
+        const logs = JSON.parse(localStorage.getItem('wwg_transactions') || '[]');
+        logs.push({
+            id: 'TXN-' + Math.random().toString(36).substr(2, 9).toUpperCase(),
+            timestamp: new Date().toISOString(),
+            type: type,
+            amount: amount,
+            price: priceUSD,
+            status: 'SUCCESS'
+        });
+        localStorage.setItem('wwg_transactions', JSON.stringify(logs.slice(-50))); // Keep last 50
     }
 };
 

@@ -38,6 +38,7 @@
             margin-bottom: 10px;
             background: linear-gradient(to bottom, #fff, #888);
             -webkit-background-clip: text;
+            background-clip: text;
             -webkit-text-fill-color: transparent;
         }
 
@@ -212,49 +213,89 @@
             <span class="coin-icon">🪙</span>
             <span class="amount">100 COINS</span>
             <span class="price">$0.99 USD</span>
-            <button class="buy-btn" onclick="openPayment(100, 0.99)">ACQUIRE Bundle</button>
+            <button class="buy-btn" onclick="openPayment(100, 0.99)">SECURE CHECKOUT</button>
         </div>
         <div class="bundle-card" style="border-color: var(--accent);">
-            <div style="position: absolute; top: 15px; right: 15px; font-size: 0.6rem; color: var(--accent); font-weight: bold; border: 1px solid var(--accent); padding: 2px 8px; border-radius: 4px;">BEST VALUE</div>
+            <div style="position: absolute; top: 15px; right: 15px; font-size: 0.6rem; color: var(--accent); font-weight: bold; border: 1px solid var(--accent); padding: 2px 8px; border-radius: 4px;">MOST POPULAR</div>
             <span class="coin-icon">💰</span>
             <span class="amount">500 COINS</span>
             <span class="price">$3.99 USD</span>
-            <button class="buy-btn" style="background: var(--accent); color: #fff;" onclick="openPayment(500, 3.99)">ACQUIRE Bundle</button>
+            <button class="buy-btn" style="background: var(--accent); color: #fff;" onclick="openPayment(500, 3.99)">SECURE CHECKOUT</button>
         </div>
         <div class="bundle-card">
             <span class="coin-icon">💎</span>
             <span class="amount">2000 COINS</span>
             <span class="price">$9.99 USD</span>
-            <button class="buy-btn" onclick="openPayment(2000, 9.99)">ACQUIRE Bundle</button>
+            <button class="buy-btn" onclick="openPayment(2000, 9.99)">SECURE CHECKOUT</button>
         </div>
     </div>
 
     <!-- Payment Modal -->
     <div class="modal-overlay" id="payment-modal">
-        <div class="modal">
+        <div class="modal" style="max-width: 450px;">
             <div id="payment-form">
-                <h2 style="margin-bottom: 25px; font-size: 1.2rem;">Secure Payment Entry</h2>
+                <div style="display:flex; justify-content: space-between; align-items: center; margin-bottom: 30px;">
+                    <h2 style="margin:0; font-size: 1.1rem; letter-spacing: 1px;">VOID SECURE PAY</h2>
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/5/5e/Visa_Inc._logo.svg" height="15" style="filter: brightness(0) invert(1); opacity: 0.5;">
+                </div>
+                
+                <div style="background: rgba(255,255,255,0.03); padding: 15px; border-radius: 12px; margin-bottom: 25px; border: 1px solid var(--border);">
+                    <div style="display:flex; justify-content:space-between; font-size: 0.8rem; opacity: 0.6;">
+                        <span>ORDER SUMMARY</span>
+                        <span id="order-id">#TXN-XXXX</span>
+                    </div>
+                    <div style="display:flex; justify-content:space-between; margin-top: 5px; font-weight: 600;">
+                        <span id="order-desc">--- COINS</span>
+                        <span id="order-total" style="color: var(--accent);">$0.00</span>
+                    </div>
+                </div>
+
                 <div class="form-group">
-                    <label>Card Identity</label>
-                    <input type="text" placeholder="XXXX XXXX XXXX XXXX" maxlength="19">
+                    <label>Cardholder Name</label>
+                    <input type="text" id="card-name" placeholder="NAME ON CARD" spellcheck="false">
+                </div>
+                <div class="form-group">
+                    <label>Card Identity (Simulated)</label>
+                    <input type="text" id="card-num" placeholder="4242 4242 4242 4242" maxlength="19">
                 </div>
                 <div style="display: flex; gap: 15px;">
                     <div class="form-group" style="flex: 2;">
                         <label>Registry Date</label>
-                        <input type="text" placeholder="MM / YY" maxlength="5">
+                        <input type="text" id="card-exp" placeholder="MM / YY" maxlength="5">
                     </div>
                     <div class="form-group" style="flex: 1;">
-                        <label>Sec-Code</label>
-                        <input type="text" placeholder="***" maxlength="3">
+                        <label>CVC / CVV</label>
+                        <input type="text" id="card-cvc" placeholder="***" maxlength="3">
                     </div>
                 </div>
-                <button class="buy-btn" style="background: var(--accent); color:#fff;" onclick="processPayment()">CONFIRM ACQUISITION</button>
+                
+                <p style="font-size: 0.65rem; color: rgba(255,255,255,0.3); margin-top: -10px; margin-bottom: 25px;">
+                    By confirming, you agree to the Void Meta-Transaction Agreement. No real currency is actually processed in this reality.
+                </p>
+
+                <button class="buy-btn" style="background: var(--accent); color:#fff;" onclick="processPayment()">AUTHORIZE TRANSACTION</button>
                 <button class="buy-btn" style="background: transparent; color:rgba(255,255,255,0.3); border:1px solid var(--border); margin-top:10px;" onclick="closePayment()">ABORT</button>
             </div>
 
             <div id="payment-status" class="payment-status">
-                <div class="spinner"></div>
-                <p id="status-text">Synchronizing with Treasury...</p>
+                <div class="spinner" id="main-spinner"></div>
+                <div id="success-icon" style="display:none; font-size: 3rem; color: #4ade80; margin-bottom: 20px;">✓</div>
+                <h3 id="status-title" style="margin-bottom: 10px;">Security Verification...</h3>
+                <p id="status-text" style="font-size: 0.9rem; color: rgba(255,255,255,0.5);">Handshaking with Ghost-Bank Protocol...</p>
+                
+                <div id="receipt-area" style="display:none; margin-top: 30px; text-align: left; background: #000; padding: 20px; border-radius: 12px; font-family: 'Share Tech Mono', monospace; border: 1px dashed var(--border);">
+                    <div style="text-align:center; margin-bottom:15px; border-bottom: 1px dashed var(--border); padding-bottom:10px;">
+                        [ VOID DIGITAL RECEIPT ]
+                    </div>
+                    <div style="font-size: 0.8rem; display:grid; grid-template-columns: 1fr 1fr; gap:5px;">
+                        <span>TXN ID:</span> <span id="rec-id">#---</span>
+                        <span>DATE:</span> <span id="rec-date">---</span>
+                        <span>ITEM:</span> <span id="rec-item">---</span>
+                        <span>PRICE:</span> <span id="rec-price">---</span>
+                        <span>ACCOUNT:</span> <span>XXXX-4242</span>
+                    </div>
+                    <button class="buy-btn" style="margin-top:20px; padding: 10px;" onclick="finishCheckout()">CLOSE TRANSMISSION</button>
+                </div>
             </div>
         </div>
     </div>
@@ -262,9 +303,18 @@
     <script src="economy.js"></script>
     <script>
         let pendingAmount = 0;
+        let pendingPrice = 0;
+        let currentTxnId = "";
 
         function openPayment(amount, price) {
             pendingAmount = amount;
+            pendingPrice = price;
+            currentTxnId = 'TXN-' + Math.random().toString(36).substr(2, 7).toUpperCase();
+            
+            document.getElementById('order-id').textContent = '#' + currentTxnId;
+            document.getElementById('order-desc').textContent = amount + " COINS";
+            document.getElementById('order-total').textContent = "$" + price.toFixed(2);
+            
             document.getElementById('payment-modal').style.display = 'flex';
         }
 
@@ -273,24 +323,73 @@
         }
 
         function processPayment() {
+            // Very simple validation check
+            const card = document.getElementById('card-num').value;
+            if (!card || card.length < 10) {
+                alert("INVALID CARD IDENTITY. TRANSMISSION REJECTED.");
+                return;
+            }
+
             document.getElementById('payment-form').style.display = 'none';
             document.getElementById('payment-status').style.display = 'block';
             
-            setTimeout(() => {
-                document.getElementById('status-text').textContent = "Transferring Assets...";
-                setTimeout(() => {
-                    Economy.addCoins(pendingAmount);
-                    document.getElementById('status-text').innerHTML = "<span style='color:#4ade80;'>✅ ASSETS ACQUIRED</span>";
-                    setTimeout(() => {
-                        closePayment();
-                        // Reset form for next time
-                        document.getElementById('payment-form').style.display = 'block';
-                        document.getElementById('payment-status').style.display = 'none';
-                        document.getElementById('status-text').textContent = "Synchronizing with Treasury...";
-                    }, 1500);
-                }, 2000);
-            }, 1000);
+            const steps = [
+                { title: "Security Verification...", text: "Handshaking with Ghost-Bank Protocol..." },
+                { title: "Authorizing Funds...", text: "Bypassing Reality Filters..." },
+                { title: "Finalizing Assets...", text: "Allocating Digital Silver..." }
+            ];
+
+            let stepIdx = 0;
+            const interval = setInterval(() => {
+                if (stepIdx < steps.length) {
+                    document.getElementById('status-title').textContent = steps[stepIdx].title;
+                    document.getElementById('status-text').textContent = steps[stepIdx].text;
+                    stepIdx++;
+                } else {
+                    clearInterval(interval);
+                    completeTransaction();
+                }
+            }, 1200);
         }
+
+        function completeTransaction() {
+            Economy.addCoins(pendingAmount);
+            Economy.logTransaction('PURCHASE', pendingAmount, pendingPrice);
+            
+            document.getElementById('main-spinner').style.display = 'none';
+            document.getElementById('success-icon').style.display = 'block';
+            document.getElementById('status-title').textContent = "ACQUISITION SUCCESSFUL";
+            document.getElementById('status-text').textContent = "Virtual balance synchronized.";
+            
+            // Show Receipt
+            document.getElementById('receipt-area').style.display = 'block';
+            document.getElementById('rec-id').textContent = '#' + currentTxnId;
+            document.getElementById('rec-date').textContent = new Date().toLocaleString();
+            document.getElementById('rec-item').textContent = pendingAmount + " COINS";
+            document.getElementById('rec-price').textContent = "$" + pendingPrice.toFixed(2);
+        }
+
+        function finishCheckout() {
+            closePayment();
+            // Reset for next time
+            document.getElementById('payment-form').style.display = 'block';
+            document.getElementById('payment-status').style.display = 'none';
+            document.getElementById('main-spinner').style.display = 'block';
+            document.getElementById('success-icon').style.display = 'none';
+            document.getElementById('receipt-area').style.display = 'none';
+            document.getElementById('status-title').textContent = "Security Verification...";
+        }
+
+        // Basic formatting for card number
+        document.getElementById('card-num').addEventListener('input', (e) => {
+            let v = e.target.value.replace(/\D/g, '');
+            let out = "";
+            for (let i = 0; i < v.length; i++) {
+                if (i > 0 && i % 4 === 0) out += " ";
+                out += v[i];
+            }
+            e.target.value = out;
+        });
     </script>
 </body>
 </html>
