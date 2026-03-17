@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>👣 ILIKEFEET // The Step Observer</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;700&display=swap');
+        
+        body {
+            background: #000;
+            color: #fff;
+            font-family: 'Space Grotesk', sans-serif;
+            margin: 0;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+        }
+
+        .background-text {
+            position: fixed;
+            font-size: 15vw;
+            font-weight: 900;
+            color: rgba(255,255,255,0.03);
+            white-space: nowrap;
+            user-select: none;
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        .foot-container {
+            position: relative;
+            cursor: pointer;
+            transition: 0.1s;
+        }
+
+        .foot-container:active { transform: scale(0.95); }
+
+        #main-foot {
+            font-size: 12rem;
+            filter: drop-shadow(0 0 30px rgba(255,255,255,0.2));
+            user-select: none;
+        }
+
+        .step-counter {
+            font-size: 3rem;
+            font-weight: 700;
+            margin-top: 20px;
+            letter-spacing: 5px;
+        }
+
+        .labels {
+            margin-top: 10px;
+            color: #555;
+            font-size: 0.8rem;
+            letter-spacing: 2px;
+        }
+
+        .back-link {
+            position: fixed;
+            top: 40px;
+            left: 40px;
+            color: #444;
+            text-decoration: none;
+            font-size: 0.8rem;
+            letter-spacing: 2px;
+            transition: 0.3s;
+        }
+
+        .back-link:hover { color: #fff; }
+
+        .trail {
+            position: fixed;
+            font-size: 2rem;
+            pointer-events: none;
+            animation: fadeOut 1s forwards;
+        }
+
+        @keyframes fadeOut {
+            from { opacity: 0.5; transform: scale(1); }
+            to { opacity: 0; transform: scale(2) translateY(-50px); }
+        }
+    </style>
+</head>
+<body>
+
+    <a href="index.html" class="back-link">← DISCONNECT</a>
+
+    <div class="background-text" style="top: 10%;">STEP STEP STEP</div>
+    <div class="background-text" style="bottom: 10%;">GAIT OBSERVED</div>
+
+    <div class="foot-container" id="foot-btn">
+        <span id="main-foot">👣</span>
+    </div>
+
+    <div class="step-counter" id="counter">0000</div>
+    <div class="labels">TOTAL STEPS LOGGED</div>
+
+    <script src="tracker.js"></script>
+    <script src="discovery.js"></script>
+    <script>
+        let steps = localStorage.getItem('wwg_feet_steps') || 0;
+        const counterEl = document.getElementById('counter');
+        const footBtn = document.getElementById('foot-btn');
+
+        function updateDisplay() {
+            counterEl.textContent = String(steps).padStart(4, '0');
+        }
+
+        footBtn.onclick = (e) => {
+            steps++;
+            localStorage.setItem('wwg_feet_steps', steps);
+            updateDisplay();
+
+            // Spawn trail
+            const trail = document.createElement('div');
+            trail.className = 'trail';
+            trail.textContent = '👣';
+            trail.style.left = e.clientX + 'px';
+            trail.style.top = e.clientY + 'px';
+            document.body.appendChild(trail);
+            setTimeout(() => trail.remove(), 1000);
+
+            // Secret: if 100 steps, unlock something?
+            if (steps == 100) {
+                alert("GAIT ANALYSIS COMPLETE. ACCESS GRANTED.");
+            }
+        };
+
+        updateDisplay();
+        Discovery.unlock('ilikefeet');
+    </script>
+</body>
+</html>

@@ -29,10 +29,35 @@ const BEACON_API = `https://api.counterapi.dev/v1/${BEACON_NAMESPACE}`;
 
     // ── Unique visitor (once per browser) ────────────────────────────────────────
 
-    if (!localStorage.getItem('wwg_beacon_visited')) {
+    const now = Date.now();
+    let firstVisit = localStorage.getItem('wwg_first_visit');
+    
+    if (!firstVisit) {
+        firstVisit = now;
+        localStorage.setItem('wwg_first_visit', firstVisit);
         beaconFetch('visitors');
         localStorage.setItem('wwg_beacon_visited', 'true');
+    } else {
+        firstVisit = parseInt(firstVisit);
     }
+
+    // ── Retention Logic (D1, D3, D7) ──────────────────────────────────────────
+    const diffHours = (now - firstVisit) / (1000 * 60 * 60);
+    
+    const checkRetention = (dayNum, key) => {
+        const storageKey = `wwg_retention_d${dayNum}`;
+        const minH = dayNum * 24;
+        const maxH = (dayNum + 1) * 24;
+        
+        if (diffHours >= minH && diffHours < maxH && !localStorage.getItem(storageKey)) {
+            beaconFetch(key);
+            localStorage.setItem(storageKey, 'true');
+        }
+    };
+
+    checkRetention(1, 'retention_d1');
+    checkRetention(3, 'retention_d3');
+    checkRetention(7, 'retention_d7');
 
     // ── Click tracking ───────────────────────────────────────────────────────────
     document.addEventListener('click', (e) => {
