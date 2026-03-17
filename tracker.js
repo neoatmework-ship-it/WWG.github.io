@@ -58,7 +58,6 @@ const BEACON_API = `https://api.counterapi.dev/v1/${BEACON_NAMESPACE}`;
     checkRetention(1, 'retention_d1');
     checkRetention(3, 'retention_d3');
     checkRetention(7, 'retention_d7');
-
     // ── Click tracking ───────────────────────────────────────────────────────────
     document.addEventListener('click', (e) => {
         beaconFetch('clicks');
