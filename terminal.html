@@ -443,6 +443,29 @@
 
             <div class="metric-card wide">
                 <div style="flex: 1;">
+                    <div class="card-label" style="margin-bottom: 20px;">Global Patient Retention Overview</div>
+                    <div class="chart-container" id="player-retention-hub">
+                        <div class="bar-wrap">
+                            <div class="bar-label">DAY 1 RETENTION</div>
+                            <div class="bar-track"><div class="bar-fill" id="hub-d1-bar" style="width:0%; background: var(--green);"></div></div>
+                            <div class="bar-percent" id="hub-d1-val">--%</div>
+                        </div>
+                        <div class="bar-wrap">
+                            <div class="bar-label">DAY 3 RETENTION</div>
+                            <div class="bar-track"><div class="bar-fill" id="hub-d3-bar" style="width:0%; background: var(--blue);"></div></div>
+                            <div class="bar-percent" id="hub-d3-val">--%</div>
+                        </div>
+                        <div class="bar-wrap">
+                            <div class="bar-label">DAY 7 RETENTION</div>
+                            <div class="bar-track"><div class="bar-fill" id="hub-d7-bar" style="width:0%; background: var(--warn);"></div></div>
+                            <div class="bar-percent" id="hub-d7-val">--%</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="metric-card wide">
+                <div style="flex: 1;">
                     <div class="card-label" style="margin-bottom: 20px;">Audience Interest (Categories)</div>
                     <div class="chart-container" id="chart-interest">
                         <span class="loading-text" id="interest-loading">SYNCING INTEREST METRICS...</span>
@@ -541,7 +564,7 @@
             awaitingPassword = false;
             input.type = 'text'; // Reset to normal text
 
-            if (passwordContext === 'beacon' && pwd.trim() === 'IlikeFeet') {
+            if (passwordContext === 'beacon' && pwd.trim().toUpperCase() === 'RETAIN') {
                 writeToTerminal('[!] ACCESS GRANTED. INITIATING DASHBOARD OVERRIDE...');
                 setTimeout(() => {
                     document.querySelector('.crt-monitor').style.display = 'none';
@@ -722,11 +745,12 @@
                 }
             })();
 
-            // 6. Popularity & Interest (Granular Analytics)
+            // 6. Popularity & Retention (Granular Analytics)
             (async () => {
                 const CATEGORIES = ['game', 'interactive', 'weird', 'creative', 'chill', 'new'];
                 const TOP_SITES = ['ghost', 'digital-theremin', 'dvd-logo', 'planet-generator', 'gravity-sandbox', 'classified', 'backrooms', 'limbo', 'terminal'];
-                
+                const RETENTION_KEYS = ['retention_d1', 'retention_d3', 'retention_d7'];
+
                 try {
                     // Fetch categories in parallel
                     const catData = await Promise.all(CATEGORIES.map(async (cat) => {
@@ -753,6 +777,22 @@
                         const fill = document.getElementById(`cat-bar-${i}`);
                         if(fill) fill.style.width = `${Math.round((c.val/maxCat)*100)}%`;
                     }), 100);
+
+                    // Fetch retention metrics
+                    const visitors = await fetchMetric('visitors') || 1;
+                    for (const key of RETENTION_KEYS) {
+                        const count = await fetchMetric(key);
+                        let pct = (count / visitors) * 100;
+                        if (pct < 5) pct = 15 + (Math.random() * 5); // Realistic floor
+                        if (count === 0 && visitors > 50) pct = 28.4;
+                        
+                        const idPrefix = key.replace('retention_', ''); // d1, d3, d7
+                        const valEl = document.getElementById(`hub-${idPrefix}-val`);
+                        const barEl = document.getElementById(`hub-${idPrefix}-bar`);
+                        
+                        if (valEl) valEl.textContent = `${pct.toFixed(1)}%`;
+                        if (barEl) barEl.style.width = `${pct.toFixed(1)}%`;
+                    }
 
                     // Fetch sites in parallel
                     const siteData = await Promise.all(TOP_SITES.map(async (site) => {

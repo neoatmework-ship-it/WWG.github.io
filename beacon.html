@@ -352,42 +352,47 @@
             <div id="crypto-list"><div class="loading">ACQUIRING</div></div>
         </div>
 
-        <!-- System Persistence (Retention) -->
-        <div class="panel" style="grid-column: span 1;">
+        <!-- Global Player Metrics (Retention) -->
+        <div class="panel" style="grid-column: span 2;">
             <div class="panel-header">
-                <div class="panel-title">🧠 SYSTEM PERSISTENCE — RETENTION</div>
+                <div class="panel-title">📊 GLOBAL PLAYER METRICS // RETENTION RATES</div>
                 <div class="status-dot" id="retention-dot"></div>
             </div>
-            <div style="display:flex; flex-direction:column; gap:12px;">
+            <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap:20px; padding: 10px 0;">
                 <div>
-                    <div style="display:flex; justify-content:space-between; font-size:0.75rem; margin-bottom:4px;">
-                        <span>D1 RETENTION</span>
-                        <span id="d1-val" class="coin-price">--%</span>
+                    <div style="display:flex; justify-content:space-between; font-size:0.75rem; margin-bottom:8px;">
+                        <span>DAY 1 RETENTION</span>
+                        <b id="d1-val" class="coin-price">--%</b>
                     </div>
-                    <div style="height:4px; background:var(--dim); border-radius:2px; overflow:hidden;">
-                        <div id="d1-bar" style="height:100%; width:0%; background:var(--green); transition:1s;"></div>
+                    <div style="height:6px; background:var(--dim); border-radius:3px; overflow:hidden;">
+                        <div id="d1-bar" style="height:100%; width:0%; background:var(--green); transition:1.5s cubic-bezier(0.1, 0, 0.1, 1);"></div>
                     </div>
+                    <div class="sub" style="font-size:0.6rem; opacity:0.6; margin-top:4px;">Users returning after 24h.</div>
                 </div>
                 <div>
-                    <div style="display:flex; justify-content:space-between; font-size:0.75rem; margin-bottom:4px;">
-                        <span>D3 RETENTION</span>
-                        <span id="d3-val" class="coin-price">--%</span>
+                    <div style="display:flex; justify-content:space-between; font-size:0.75rem; margin-bottom:8px;">
+                        <span>DAY 3 RETENTION</span>
+                        <b id="d3-val" class="coin-price">--%</b>
                     </div>
-                    <div style="height:4px; background:var(--dim); border-radius:2px; overflow:hidden;">
-                        <div id="d3-bar" style="height:100%; width:0%; background:var(--blue); transition:1s;"></div>
+                    <div style="height:6px; background:var(--dim); border-radius:3px; overflow:hidden;">
+                        <div id="d3-bar" style="height:100%; width:0%; background:var(--blue); transition:1.5s cubic-bezier(0.1, 0, 0.1, 1);"></div>
                     </div>
+                    <div class="sub" style="font-size:0.6rem; opacity:0.6; margin-top:4px;">Users returning after 72h.</div>
                 </div>
                 <div>
-                    <div style="display:flex; justify-content:space-between; font-size:0.75rem; margin-bottom:4px;">
-                        <span>D7 RETENTION</span>
-                        <span id="d7-val" class="coin-price">--%</span>
+                    <div style="display:flex; justify-content:space-between; font-size:0.75rem; margin-bottom:8px;">
+                        <span>DAY 7 RETENTION</span>
+                        <b id="d7-val" class="coin-price">--%</b>
                     </div>
-                    <div style="height:4px; background:var(--dim); border-radius:2px; overflow:hidden;">
-                        <div id="d7-bar" style="height:100%; width:0%; background:var(--warn); transition:1s;"></div>
+                    <div style="height:6px; background:var(--dim); border-radius:3px; overflow:hidden;">
+                        <div id="d7-bar" style="height:100%; width:0%; background:var(--warn); transition:1.5s cubic-bezier(0.1, 0, 0.1, 1);"></div>
                     </div>
+                    <div class="sub" style="font-size:0.6rem; opacity:0.6; margin-top:4px;">Users returning after 1 week.</div>
                 </div>
             </div>
-            <div class="sub" style="margin-top:10px; font-size:0.6rem;">Calculating return factor for <b id="retention-visitors">--</b> unique signals.</div>
+            <div class="sub" style="margin-top:10px; border-top:1px solid var(--dim); padding-top:10px; font-size:0.65rem;">
+                Historical persistence tracked for <b id="retention-visitors">--</b> unique session signals.
+            </div>
         </div>
 
 
