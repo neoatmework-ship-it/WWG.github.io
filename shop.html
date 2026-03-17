@@ -7,11 +7,13 @@
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600&family=Share+Tech+Mono&display=swap" rel="stylesheet">
     <style>
         :root {
-            --bg: #050508;
-            --accent: #ff0055;
+            --bg: #000000;
+            --accent: #0075eb; /* Revolut Blue */
+            --revolut-cyan: #00d1ff;
             --coin: #ffd700;
-            --glass: rgba(255, 255, 255, 0.05);
+            --glass: rgba(255, 255, 255, 0.03);
             --border: rgba(255, 255, 255, 0.1);
+            --modal-bg: #111418;
         }
 
         body {
@@ -232,49 +234,51 @@
 
     <!-- Payment Modal -->
     <div class="modal-overlay" id="payment-modal">
-        <div class="modal" style="max-width: 450px;">
+        <div class="modal" style="max-width: 450px; background: var(--modal-bg);">
             <div id="payment-form">
                 <div style="display:flex; justify-content: space-between; align-items: center; margin-bottom: 30px;">
-                    <h2 style="margin:0; font-size: 1.1rem; letter-spacing: 1px;">VOID SECURE PAY</h2>
-                    <img src="https://upload.wikimedia.org/wikipedia/commons/5/5e/Visa_Inc._logo.svg" height="15" style="filter: brightness(0) invert(1); opacity: 0.5;">
+                    <h2 style="margin:0; font-size: 1.1rem; font-weight: 700; letter-spacing: 0.5px; color: #fff;">Revolut Business <span style="font-weight: 300; opacity: 0.5; font-size: 0.8rem; margin-left: 5px;">// Portal</span></h2>
+                    <div style="background: #fff; border-radius: 4px; padding: 2px 6px;">
+                        <span style="color: #000; font-weight: 900; font-size: 0.7rem;">R Business</span>
+                    </div>
                 </div>
                 
-                <div style="background: rgba(255,255,255,0.03); padding: 15px; border-radius: 12px; margin-bottom: 25px; border: 1px solid var(--border);">
-                    <div style="display:flex; justify-content:space-between; font-size: 0.8rem; opacity: 0.6;">
+                <div style="background: rgba(0, 117, 235, 0.05); padding: 18px; border-radius: 12px; margin-bottom: 25px; border: 1px solid rgba(0, 117, 235, 0.2);">
+                    <div style="display:flex; justify-content:space-between; font-size: 0.75rem; letter-spacing: 0.5px; color: var(--revolut-cyan);">
                         <span>ORDER SUMMARY</span>
                         <span id="order-id">#TXN-XXXX</span>
                     </div>
-                    <div style="display:flex; justify-content:space-between; margin-top: 5px; font-weight: 600;">
+                    <div style="display:flex; justify-content:space-between; margin-top: 8px; font-weight: 600; font-size: 1.1rem;">
                         <span id="order-desc">--- COINS</span>
-                        <span id="order-total" style="color: var(--accent);">$0.00</span>
+                        <span id="order-total" style="color: #fff;">$0.00</span>
                     </div>
                 </div>
 
                 <div class="form-group">
-                    <label>Cardholder Name</label>
-                    <input type="text" id="card-name" placeholder="NAME ON CARD" spellcheck="false">
+                    <label style="color: rgba(255,255,255,0.6); font-family: 'Inter', sans-serif;">Cardholder Name</label>
+                    <input type="text" id="card-name" placeholder="NAME ON CARD" style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1); border-radius: 10px;">
                 </div>
                 <div class="form-group">
-                    <label>Card Identity (Simulated)</label>
-                    <input type="text" id="card-num" placeholder="4242 4242 4242 4242" maxlength="19">
+                    <label style="color: rgba(255,255,255,0.6); font-family: 'Inter', sans-serif;">Card Identity</label>
+                    <input type="text" id="card-num" placeholder="XXXX XXXX XXXX XXXX" maxlength="19" style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1); border-radius: 10px;">
                 </div>
                 <div style="display: flex; gap: 15px;">
                     <div class="form-group" style="flex: 2;">
-                        <label>Registry Date</label>
-                        <input type="text" id="card-exp" placeholder="MM / YY" maxlength="5">
+                        <label style="color: rgba(255,255,255,0.6);">Registry Date</label>
+                        <input type="text" id="card-exp" placeholder="MM / YY" maxlength="5" style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1); border-radius: 10px;">
                     </div>
                     <div class="form-group" style="flex: 1;">
-                        <label>CVC / CVV</label>
-                        <input type="text" id="card-cvc" placeholder="***" maxlength="3">
+                        <label style="color: rgba(255,255,255,0.6);">CVC / CVV</label>
+                        <input type="text" id="card-cvc" placeholder="***" maxlength="3" style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1); border-radius: 10px;">
                     </div>
                 </div>
                 
-                <p style="font-size: 0.65rem; color: rgba(255,255,255,0.3); margin-top: -10px; margin-bottom: 25px;">
-                    By confirming, you agree to the Void Meta-Transaction Agreement. No real currency is actually processed in this reality.
+                <p style="font-size: 0.65rem; color: rgba(255,255,255,0.2); margin-top: -10px; margin-bottom: 25px; line-height: 1.4;">
+                    Secure transaction powered by Revolut Business (Void Gateway). All virtual assets are non-refundable in this simulation.
                 </p>
 
-                <button class="buy-btn" style="background: var(--accent); color:#fff;" onclick="processPayment()">AUTHORIZE TRANSACTION</button>
-                <button class="buy-btn" style="background: transparent; color:rgba(255,255,255,0.3); border:1px solid var(--border); margin-top:10px;" onclick="closePayment()">ABORT</button>
+                <button class="buy-btn" style="background: #fff; color:#000; border-radius: 50px; height: 55px; font-weight: 700; font-size: 1rem;" onclick="processPayment()">PAY WITH REVOLUT</button>
+                <button class="buy-btn" style="background: transparent; color:rgba(255,255,255,0.4); border:none; margin-top:10px; font-size: 0.8rem;" onclick="closePayment()">Cancel Order</button>
             </div>
 
             <div id="payment-status" class="payment-status">
@@ -326,7 +330,7 @@
             // Very simple validation check
             const card = document.getElementById('card-num').value;
             if (!card || card.length < 10) {
-                alert("INVALID CARD IDENTITY. TRANSMISSION REJECTED.");
+                alert("INVALID CARD IDENTITY. REVOLUT TRANSMISSION REJECTED.");
                 return;
             }
 
@@ -334,9 +338,9 @@
             document.getElementById('payment-status').style.display = 'block';
             
             const steps = [
-                { title: "Security Verification...", text: "Handshaking with Ghost-Bank Protocol..." },
-                { title: "Authorizing Funds...", text: "Bypassing Reality Filters..." },
-                { title: "Finalizing Assets...", text: "Allocating Digital Silver..." }
+                { title: "Verifying Authentication...", text: "Securing Revolut Business handshake..." },
+                { title: "Generating One-Time Card...", text: "Bypassing mainstream bank protocols..." },
+                { title: "Finalizing Assets...", text: "Allocating Digital Silver via Void-Network..." }
             ];
 
             let stepIdx = 0;
@@ -349,7 +353,7 @@
                     clearInterval(interval);
                     completeTransaction();
                 }
-            }, 1200);
+            }, 1000);
         }
 
         function completeTransaction() {
@@ -358,11 +362,12 @@
             
             document.getElementById('main-spinner').style.display = 'none';
             document.getElementById('success-icon').style.display = 'block';
-            document.getElementById('status-title').textContent = "ACQUISITION SUCCESSFUL";
-            document.getElementById('status-text').textContent = "Virtual balance synchronized.";
+            document.getElementById('status-title').textContent = "PAYMENT SUCCESSFUL";
+            document.getElementById('status-text').textContent = "Revolut assets converted to Void Coins.";
             
             // Show Receipt
             document.getElementById('receipt-area').style.display = 'block';
+            document.getElementById('receipt-area').style.borderColor = "var(--revolut-cyan)";
             document.getElementById('rec-id').textContent = '#' + currentTxnId;
             document.getElementById('rec-date').textContent = new Date().toLocaleString();
             document.getElementById('rec-item').textContent = pendingAmount + " COINS";
