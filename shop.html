@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>The Shop | WWG Digital Goods</title>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+    <script src="https://www.paypal.com/sdk/js?client-id=sb&currency=USD"></script>
     <style>
         :root {
             --bg: #000000;
@@ -236,15 +237,12 @@
     <div class="modal-overlay" id="payment-modal">
         <div class="modal" style="max-width: 450px; background: var(--modal-bg);">
             <div id="payment-form">
-                <div style="display:flex; justify-content: space-between; align-items: center; margin-bottom: 30px;">
-                    <h2 style="margin:0; font-size: 1.1rem; font-weight: 700; letter-spacing: 0.5px; color: #fff;">Revolut Business <span style="font-weight: 300; opacity: 0.5; font-size: 0.8rem; margin-left: 5px;">// Portal</span></h2>
-                    <div style="background: #fff; border-radius: 4px; padding: 2px 6px;">
-                        <span style="color: #000; font-weight: 900; font-size: 0.7rem;">R Business</span>
-                    </div>
+                <div style="display:flex; justify-content: space-between; align-items: center; margin-bottom: 25px;">
+                    <h2 style="margin:0; font-size: 1.1rem; font-weight: 700; color: #fff;">SECURE PAY <span style="font-weight: 300; opacity: 0.5; font-size: 0.8rem; margin-left: 5px;">// Global</span></h2>
                 </div>
                 
-                <div style="background: rgba(0, 117, 235, 0.05); padding: 18px; border-radius: 12px; margin-bottom: 25px; border: 1px solid rgba(0, 117, 235, 0.2);">
-                    <div style="display:flex; justify-content:space-between; font-size: 0.75rem; letter-spacing: 0.5px; color: var(--revolut-cyan);">
+                <div style="background: rgba(255, 255, 255, 0.03); padding: 18px; border-radius: 12px; margin-bottom: 25px; border: 1px solid rgba(255, 255, 255, 0.1);">
+                    <div style="display:flex; justify-content:space-between; font-size: 0.75rem; letter-spacing: 0.5px; opacity: 0.6;">
                         <span>ORDER SUMMARY</span>
                         <span id="order-id">#TXN-XXXX</span>
                     </div>
@@ -254,31 +252,13 @@
                     </div>
                 </div>
 
-                <div class="form-group">
-                    <label style="color: rgba(255,255,255,0.6); font-family: 'Inter', sans-serif;">Cardholder Name</label>
-                    <input type="text" id="card-name" placeholder="NAME ON CARD" style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1); border-radius: 10px;">
-                </div>
-                <div class="form-group">
-                    <label style="color: rgba(255,255,255,0.6); font-family: 'Inter', sans-serif;">Card Identity</label>
-                    <input type="text" id="card-num" placeholder="XXXX XXXX XXXX XXXX" maxlength="19" style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1); border-radius: 10px;">
-                </div>
-                <div style="display: flex; gap: 15px;">
-                    <div class="form-group" style="flex: 2;">
-                        <label style="color: rgba(255,255,255,0.6);">Registry Date</label>
-                        <input type="text" id="card-exp" placeholder="MM / YY" maxlength="5" style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1); border-radius: 10px;">
-                    </div>
-                    <div class="form-group" style="flex: 1;">
-                        <label style="color: rgba(255,255,255,0.6);">CVC / CVV</label>
-                        <input type="text" id="card-cvc" placeholder="***" maxlength="3" style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1); border-radius: 10px;">
-                    </div>
-                </div>
+                <div id="paypal-button-container" style="min-height: 150px;"></div>
                 
-                <p style="font-size: 0.65rem; color: rgba(255,255,255,0.2); margin-top: -10px; margin-bottom: 25px; line-height: 1.4;">
-                    Secure transaction powered by Revolut Business (Void Gateway). All virtual assets are non-refundable in this simulation.
+                <p style="font-size: 0.65rem; color: rgba(255,255,255,0.2); margin-top: 15px; margin-bottom: 20px; line-height: 1.4; text-align: center;">
+                    Real transaction system active (Sandbox Mode). All digital assets are allocated immediately upon verification.
                 </p>
 
-                <button class="buy-btn" style="background: #fff; color:#000; border-radius: 50px; height: 55px; font-weight: 700; font-size: 1rem;" onclick="processPayment()">PAY WITH REVOLUT</button>
-                <button class="buy-btn" style="background: transparent; color:rgba(255,255,255,0.4); border:none; margin-top:10px; font-size: 0.8rem;" onclick="closePayment()">Cancel Order</button>
+                <button class="buy-btn" style="background: transparent; color:rgba(255,255,255,0.4); border:none; margin-top:0px; font-size: 0.8rem;" onclick="closePayment()">Cancel Order</button>
             </div>
 
             <div id="payment-status" class="payment-status">
@@ -320,55 +300,56 @@
             document.getElementById('order-total').textContent = "$" + price.toFixed(2);
             
             document.getElementById('payment-modal').style.display = 'flex';
+            renderPayPalButtons();
         }
 
         function closePayment() {
             document.getElementById('payment-modal').style.display = 'none';
+            document.getElementById('paypal-button-container').innerHTML = ''; // Clear for next time
         }
 
-        function processPayment() {
-            // Very simple validation check
-            const card = document.getElementById('card-num').value;
-            if (!card || card.length < 10) {
-                alert("INVALID CARD IDENTITY. REVOLUT TRANSMISSION REJECTED.");
-                return;
-            }
+        function renderPayPalButtons() {
+            // Check if buttons are already rendered
+            if (document.getElementById('paypal-button-container').children.length > 0) return;
 
-            document.getElementById('payment-form').style.display = 'none';
-            document.getElementById('payment-status').style.display = 'block';
-            
-            const steps = [
-                { title: "Verifying Authentication...", text: "Securing Revolut Business handshake..." },
-                { title: "Generating One-Time Card...", text: "Bypassing mainstream bank protocols..." },
-                { title: "Finalizing Assets...", text: "Allocating Digital Silver via Void-Network..." }
-            ];
-
-            let stepIdx = 0;
-            const interval = setInterval(() => {
-                if (stepIdx < steps.length) {
-                    document.getElementById('status-title').textContent = steps[stepIdx].title;
-                    document.getElementById('status-text').textContent = steps[stepIdx].text;
-                    stepIdx++;
-                } else {
-                    clearInterval(interval);
-                    completeTransaction();
+            paypal.Buttons({
+                createOrder: function(data, actions) {
+                    return actions.order.create({
+                        purchase_units: [{
+                            description: pendingAmount + " Void Coins",
+                            amount: {
+                                value: pendingPrice.toFixed(2)
+                            }
+                        }]
+                    });
+                },
+                onApprove: function(data, actions) {
+                    document.getElementById('payment-form').style.display = 'none';
+                    document.getElementById('payment-status').style.display = 'block';
+                    
+                    return actions.order.capture().then(function(details) {
+                        completeTransaction(details);
+                    });
+                },
+                onError: function(err) {
+                    console.error('PayPal Error:', err);
+                    alert("TRANSACTION ERROR. Check console for details.");
                 }
-            }, 1000);
+            }).render('#paypal-button-container');
         }
 
-        function completeTransaction() {
+        function completeTransaction(details) {
             Economy.addCoins(pendingAmount);
             Economy.logTransaction('PURCHASE', pendingAmount, pendingPrice);
             
             document.getElementById('main-spinner').style.display = 'none';
             document.getElementById('success-icon').style.display = 'block';
             document.getElementById('status-title').textContent = "PAYMENT SUCCESSFUL";
-            document.getElementById('status-text').textContent = "Revolut assets converted to Void Coins.";
+            document.getElementById('status-text').textContent = "Assets capture complete via PayPal SDK.";
             
             // Show Receipt
             document.getElementById('receipt-area').style.display = 'block';
-            document.getElementById('receipt-area').style.borderColor = "var(--revolut-cyan)";
-            document.getElementById('rec-id').textContent = '#' + currentTxnId;
+            document.getElementById('rec-id').textContent = details.id || '#' + currentTxnId;
             document.getElementById('rec-date').textContent = new Date().toLocaleString();
             document.getElementById('rec-item').textContent = pendingAmount + " COINS";
             document.getElementById('rec-price').textContent = "$" + pendingPrice.toFixed(2);
@@ -382,19 +363,8 @@
             document.getElementById('main-spinner').style.display = 'block';
             document.getElementById('success-icon').style.display = 'none';
             document.getElementById('receipt-area').style.display = 'none';
-            document.getElementById('status-title').textContent = "Security Verification...";
+            document.getElementById('status-title').textContent = "Verifying Authentication...";
         }
-
-        // Basic formatting for card number
-        document.getElementById('card-num').addEventListener('input', (e) => {
-            let v = e.target.value.replace(/\D/g, '');
-            let out = "";
-            for (let i = 0; i < v.length; i++) {
-                if (i > 0 && i % 4 === 0) out += " ";
-                out += v[i];
-            }
-            e.target.value = out;
-        });
     </script>
 </body>
 </html>
