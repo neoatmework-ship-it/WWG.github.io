@@ -355,17 +355,35 @@
         }
 
         function processStripePayment() {
-            document.getElementById('payment-form').style.display = 'none';
-            document.getElementById('payment-status').style.display = 'block';
+            const submitBtn = document.getElementById('submit-button');
+            submitBtn.disabled = true;
+            submitBtn.textContent = "Redirecting to Stripe...";
             
-            document.getElementById('status-title').textContent = "Processing Payment...";
-            document.getElementById('status-text').textContent = "Authorizing transaction with Stripe Live-API...";
-
-            setTimeout(() => {
-                document.getElementById('status-title').textContent = "Success";
-                document.getElementById('status-text').textContent = "Transaction verified. Assets allocated.";
-                completeTransaction();
-            }, 2500);
+            // Call our local server to create a real Checkout Session
+            fetch('http://localhost:3000/create-checkout-session', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ amount: pendingAmount })
+            })
+            .then(response => response.json())
+            .then(session => {
+                if (session.error) {
+                    throw new Error(session.error);
+                }
+                // TRIGGER REAL REDIRECT TO STRIPE HOSTED PAGE
+                return stripe.redirectToCheckout({ sessionId: session.id });
+            })
+            .then(result => {
+                if (result.error) {
+                    alert(result.error.message);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                document.getElementById('card-errors').textContent = "Server Error: " + error.message;
+                submitBtn.disabled = false;
+                submitBtn.textContent = "Try Again";
+            });
         }
 
         function completeTransaction() {
