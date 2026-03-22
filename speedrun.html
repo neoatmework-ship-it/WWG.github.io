@@ -1,0 +1,655 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E🏁%3C/text%3E%3C/svg%3E">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dumb Tech Speedruns</title>
+    <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Orbitron:wght@700;900&display=swap" rel="stylesheet">
+    <style>
+        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+        :root {
+            --bg: #050a05;
+            --green: #00ff41;
+            --dim: #003a00;
+            --mid: #00cc33;
+            --red: #ff3333;
+            --yellow: #ffcc00;
+            --blue: #00aaff;
+            --purple: #cc44ff;
+        }
+
+        body {
+            background: var(--bg);
+            color: var(--green);
+            font-family: 'Share Tech Mono', monospace;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            overflow-x: hidden;
+        }
+
+        body::after {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background: repeating-linear-gradient(0deg, rgba(0,0,0,0.07) 0px, rgba(0,0,0,0.07) 1px, transparent 1px, transparent 3px);
+            pointer-events: none;
+            z-index: 9999;
+        }
+
+        .back-link {
+            position: fixed;
+            top: 14px; left: 16px;
+            color: var(--dim);
+            text-decoration: none;
+            font-size: 0.8rem;
+            z-index: 100;
+            transition: color 0.2s;
+        }
+        .back-link:hover { color: var(--green); }
+
+        /* ─── Screens ─── */
+        .screen {
+            display: none;
+            width: 100%;
+            max-width: 700px;
+            animation: fadeIn 0.3s ease;
+        }
+        .screen.active { display: flex; flex-direction: column; align-items: center; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* ─── Screen 1: Start ─── */
+        .title {
+            font-family: 'Orbitron', monospace;
+            font-size: clamp(1.8rem, 6vw, 3.2rem);
+            font-weight: 900;
+            text-align: center;
+            color: var(--green);
+            text-shadow: 0 0 30px var(--green), 0 0 60px rgba(0,255,65,0.3);
+            letter-spacing: 2px;
+            margin-bottom: 8px;
+        }
+
+        .subtitle {
+            font-size: 0.8rem;
+            color: var(--dim);
+            letter-spacing: 4px;
+            text-transform: uppercase;
+            margin-bottom: 50px;
+            text-align: center;
+        }
+
+        .cat-label {
+            font-size: 0.75rem;
+            color: var(--mid);
+            letter-spacing: 3px;
+            margin-bottom: 12px;
+            align-self: flex-start;
+        }
+
+        select {
+            width: 100%;
+            background: rgba(0,255,65,0.05);
+            border: 1px solid var(--dim);
+            color: var(--green);
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 1rem;
+            padding: 14px 18px;
+            border-radius: 4px;
+            margin-bottom: 30px;
+            cursor: pointer;
+            outline: none;
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M0 0l6 8 6-8z' fill='%2300cc33'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 16px center;
+            transition: border-color 0.2s;
+        }
+        select:hover, select:focus { border-color: var(--green); }
+        select option { background: #050a05; color: var(--green); }
+
+        optgroup { color: var(--mid); font-style: normal; }
+
+        .btn {
+            background: transparent;
+            border: 1px solid var(--green);
+            color: var(--green);
+            font-family: 'Orbitron', monospace;
+            font-size: 1rem;
+            font-weight: 700;
+            padding: 16px 50px;
+            letter-spacing: 4px;
+            cursor: pointer;
+            border-radius: 4px;
+            transition: all 0.2s;
+            position: relative;
+            overflow: hidden;
+        }
+        .btn::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: var(--green);
+            transform: translateX(-100%);
+            transition: transform 0.2s;
+            z-index: -1;
+        }
+        .btn:hover { color: #000; box-shadow: 0 0 20px var(--green); }
+        .btn:hover::before { transform: translateX(0); }
+
+        .btn.danger { border-color: var(--red); color: var(--red); }
+        .btn.danger::before { background: var(--red); }
+        .btn.danger:hover { color: #fff; box-shadow: 0 0 20px var(--red); }
+
+        /* ─── Screen 2: Run ─── */
+        .run-header {
+            text-align: center;
+            margin-bottom: 30px;
+            width: 100%;
+        }
+
+        .cat-name {
+            font-family: 'Orbitron', monospace;
+            font-size: 1.4rem;
+            font-weight: 900;
+            color: var(--yellow);
+            text-shadow: 0 0 15px var(--yellow);
+            letter-spacing: 3px;
+        }
+
+        .timer-display {
+            font-family: 'Orbitron', monospace;
+            font-size: clamp(3rem, 12vw, 6rem);
+            font-weight: 900;
+            color: var(--green);
+            text-shadow: 0 0 30px var(--green);
+            letter-spacing: 4px;
+            margin: 20px 0;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .timer-display.danger { color: var(--red); text-shadow: 0 0 30px var(--red); animation: pulse 0.5s ease-in-out infinite; }
+        @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.6} }
+
+        .log-panel {
+            width: 100%;
+            background: rgba(0,255,65,0.03);
+            border: 1px solid var(--dim);
+            border-radius: 4px;
+            height: 240px;
+            overflow: hidden;
+            padding: 16px;
+            position: relative;
+        }
+
+        .log-panel::before {
+            content: '// LIVE LOG';
+            position: absolute;
+            top: 8px; right: 12px;
+            font-size: 0.6rem;
+            color: var(--dim);
+            letter-spacing: 2px;
+        }
+
+        .log-inner {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            height: 100%;
+            overflow: hidden;
+        }
+
+        .log-line {
+            font-size: 0.82rem;
+            opacity: 0;
+            animation: logIn 0.3s ease forwards;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        @keyframes logIn { to { opacity: 1; } }
+
+        .log-line.ok    { color: var(--green); }
+        .log-line.warn  { color: var(--yellow); }
+        .log-line.err   { color: var(--red); }
+        .log-line.info  { color: var(--blue); }
+        .log-line.chaos { color: var(--purple); }
+
+        .run-btn-row {
+            display: flex;
+            gap: 16px;
+            margin-top: 24px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        /* ─── Screen 3: Result ─── */
+        .result-box {
+            width: 100%;
+            border: 1px solid var(--dim);
+            border-radius: 4px;
+            padding: 40px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+            background: rgba(0,255,65,0.02);
+        }
+
+        .result-box::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, var(--green), transparent);
+        }
+
+        .result-time {
+            font-family: 'Orbitron', monospace;
+            font-size: clamp(2.5rem, 8vw, 4.5rem);
+            font-weight: 900;
+            color: var(--green);
+            text-shadow: 0 0 20px var(--green);
+            letter-spacing: 4px;
+        }
+
+        .result-label {
+            font-size: 0.7rem;
+            color: var(--dim);
+            letter-spacing: 4px;
+            margin-bottom: 4px;
+        }
+
+        .rank-badge {
+            display: inline-block;
+            margin: 20px 0;
+            padding: 10px 30px;
+            font-family: 'Orbitron', monospace;
+            font-size: 1.2rem;
+            font-weight: 700;
+            letter-spacing: 3px;
+            border-radius: 4px;
+        }
+
+        .rank-safe     { border: 2px solid var(--blue);   color: var(--blue);   box-shadow: 0 0 20px rgba(0,170,255,0.3); }
+        .rank-risk     { border: 2px solid var(--yellow); color: var(--yellow); box-shadow: 0 0 20px rgba(255,204,0,0.3); }
+        .rank-chaos    { border: 2px solid var(--red);    color: var(--red);    box-shadow: 0 0 20px rgba(255,51,51,0.3); }
+        .rank-necro    { border: 2px solid var(--purple); color: var(--purple); box-shadow: 0 0 20px rgba(204,68,255,0.4); animation: flicker 1.5s infinite; }
+        @keyframes flicker { 0%,100%{opacity:1} 93%{opacity:1} 94%{opacity:0.4} 96%{opacity:1} 98%{opacity:0.6} }
+
+        .outcome-text {
+            font-size: 1rem;
+            color: var(--mid);
+            margin: 16px 0 30px;
+            line-height: 1.6;
+            padding: 0 20px;
+        }
+
+        .result-btn-row {
+            display: flex;
+            gap: 16px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        /* ─── Misc ─── */
+        .glitch {
+            position: relative;
+        }
+        .glitch::before, .glitch::after {
+            content: attr(data-text);
+            position: absolute;
+            left: 0; top: 0;
+            width: 100%;
+        }
+        .glitch::before {
+            color: #ff4444;
+            animation: glitch1 3s infinite;
+            clip-path: polygon(0 30%, 100% 30%, 100% 50%, 0 50%);
+        }
+        .glitch::after {
+            color: #00ffff;
+            animation: glitch2 3s infinite;
+            clip-path: polygon(0 60%, 100% 60%, 100% 80%, 0 80%);
+        }
+        @keyframes glitch1 {
+            0%,94%,96%,100% { transform: none; opacity: 0; }
+            95% { transform: translateX(-4px); opacity: 0.8; }
+        }
+        @keyframes glitch2 {
+            0%,91%,93%,100% { transform: none; opacity: 0; }
+            92% { transform: translateX(4px); opacity: 0.8; }
+        }
+
+        .divider {
+            width: 100%;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, var(--dim), transparent);
+            margin: 20px 0;
+        }
+
+        .cat-display {
+            font-size: 0.75rem;
+            color: var(--dim);
+            letter-spacing: 2px;
+            margin-top: 8px;
+        }
+
+        .progress-bar-wrap {
+            width: 100%;
+            height: 3px;
+            background: var(--dim);
+            border-radius: 2px;
+            margin: 16px 0;
+            overflow: hidden;
+        }
+        .progress-bar {
+            height: 100%;
+            background: var(--green);
+            width: 0%;
+            transition: width 0.5s linear;
+        }
+    </style>
+</head>
+<body>
+    <a href="index.html" class="back-link">← BACK</a>
+
+    <!-- ═══════════════════════════════════════ SCREEN 1: START -->
+    <div class="screen active" id="screen-start">
+        <div class="title glitch" data-text="DUMB TECH">DUMB TECH</div>
+        <div class="title glitch" style="margin-top:-12px;" data-text="SPEEDRUNS">SPEEDRUNS</div>
+        <div class="subtitle">any% · chaos · reckless edition</div>
+
+        <div class="cat-label">SELECT CATEGORY</div>
+        <select id="cat-select">
+            <optgroup label="── 💀 CORE CHAOS ──">
+                <option value="Delete OS Any%">Delete OS Any%</option>
+                <option value="Chaos%">Chaos%</option>
+                <option value="Overconfidence%">Overconfidence%</option>
+                <option value="Click Everything%">Click Everything%</option>
+                <option value="Speedrun Regret%">Speedrun Regret%</option>
+            </optgroup>
+            <optgroup label="── 🧠 SKILL BASED ──">
+                <option value="No-Brick%">No-Brick%</option>
+                <option value="Recovery%">Recovery%</option>
+                <option value="Dual Boot%">Dual Boot%</option>
+                <option value="Fix Boot Loop%">Fix Boot Loop%</option>
+                <option value="Safe Install%">Safe Install%</option>
+            </optgroup>
+            <optgroup label="── 🧪 EXPERIMENTAL ──">
+                <option value="Cursed Install%">Cursed Install%</option>
+                <option value="Unsupported Device%">Unsupported Device%</option>
+                <option value="Random Settings%">Random Settings%</option>
+                <option value="Config Roulette%">Config Roulette%</option>
+                <option value="Blindfold%">Blindfold%</option>
+            </optgroup>
+            <optgroup label="── 😂 MEME / PERSONALITY ──">
+                <option value="YOLO%">YOLO%</option>
+                <option value="Trust Me Bro%">Trust Me Bro%</option>
+                <option value="It Looked Right%">It Looked Right%</option>
+                <option value="I Got This%">I Got This%</option>
+                <option value="Past Me Setup%">Past Me Setup%</option>
+            </optgroup>
+        </select>
+
+        <button class="btn" onclick="startRun()">🏁 START RUN</button>
+    </div>
+
+    <!-- ═══════════════════════════════════════ SCREEN 2: RUN -->
+    <div class="screen" id="screen-run">
+        <div class="run-header">
+            <div class="cat-name" id="run-cat-name">DELETE OS ANY%</div>
+            <div class="timer-display" id="timer">00:00.00</div>
+            <div class="progress-bar-wrap">
+                <div class="progress-bar" id="progress-bar"></div>
+            </div>
+        </div>
+
+        <div class="log-panel">
+            <div class="log-inner" id="log-inner"></div>
+        </div>
+
+        <div class="run-btn-row">
+            <button class="btn danger" onclick="finishRun()">🏁 FINISH RUN</button>
+            <button class="btn" style="border-color:var(--dim);color:var(--dim);" onclick="resetToStart()">✕ RESET</button>
+        </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════ SCREEN 3: RESULT -->
+    <div class="screen" id="screen-result">
+        <div class="result-box">
+            <div class="result-label">FINAL TIME</div>
+            <div class="result-time" id="result-time">00:00.00</div>
+
+            <div class="divider"></div>
+
+            <div class="result-label">CATEGORY</div>
+            <div class="cat-name" id="result-cat" style="font-size:1rem; letter-spacing:2px; margin-bottom:6px;"></div>
+
+            <div class="divider"></div>
+
+            <div class="result-label">RANK ACHIEVED</div>
+            <div class="rank-badge" id="rank-badge">SAFE USER</div>
+
+            <div class="outcome-text" id="outcome-text"></div>
+
+            <div class="result-btn-row">
+                <button class="btn" onclick="retry()">🔁 RETRY</button>
+                <button class="btn" onclick="resetToStart()">🏠 MENU</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ─── DATA ────────────────────────────────────────────────────────────
+        const LOGS = {
+            generic: [
+                { t: 'ok',   m: 'Mounting disk… OK' },
+                { t: 'ok',   m: 'Reading partition table…' },
+                { t: 'ok',   m: 'Initializing kernel modules…' },
+                { t: 'warn', m: 'User ignored warning [0x000041]' },
+                { t: 'ok',   m: 'Confidence increasing… +43%' },
+                { t: 'info', m: 'Fetching update manifest from cursed repo…' },
+                { t: 'ok',   m: 'Bypassing checksum validation… done' },
+                { t: 'warn', m: 'SMART error detected. Continuing anyway.' },
+                { t: 'ok',   m: 'Compiling trust…' },
+                { t: 'ok',   m: 'Writing 0s to sectors 1-48601…' },
+                { t: 'warn', m: 'Unknown device found. Plugging in anyway.' },
+                { t: 'ok',   m: 'Agreeing to terms without reading…' },
+                { t: 'err',  m: 'ERR: stack overflow in /dev/confidence' },
+                { t: 'ok',   m: 'Rebooting expectations…' },
+                { t: 'info', m: 'Sending prayer packet to 0.0.0.0…' },
+                { t: 'ok',   m: 'Loading vibes.dll… SUCCESS' },
+                { t: 'warn', m: 'BIOS version: 2004. Updating optional. Ignoring.' },
+                { t: 'ok',   m: 'Driver signed by: "Trust Me Bro LLC"' },
+                { t: 'chaos','m': 'Reality fragmentation detected. Proceeding.' },
+                { t: 'ok',   m: 'Overriding common sense override…' },
+                { t: 'err',  m: 'FATAL: /boot is looking at you funny' },
+                { t: 'ok',   m: 'Selecting "Install alongside everything" option' },
+                { t: 'warn', m: 'Previous OS whimpering from background' },
+                { t: 'info', m: 'Consulting Stack Overflow (2009 post)…' },
+                { t: 'ok',   m: 'It is working. Do not look at it.' },
+                { t: 'chaos','m': 'KERNEL PANIC: user too smug' },
+                { t: 'ok',   m: 'Suppressing doubt…' },
+                { t: 'warn', m: 'RAM usage: 100%. Fan: screaming.' },
+                { t: 'ok',   m: 'Closing 47 Chrome tabs. Freeing 4KB.' },
+                { t: 'chaos','m': 'void detected in bootloader. vibes: immaculate.' },
+                { t: 'info', m: 'Writing config blindfolded…' },
+                { t: 'ok',   m: 'Asking ChatGPT for script. Running it raw.' },
+                { t: 'err',  m: 'ERR: GPT said sorry. Continuing anyway.' },
+                { t: 'ok',   m: 'Thermal paste omitted. Running hot. Building character.' },
+                { t: 'warn', m: 'USB inserted wrong side first. Forced it in.' },
+            ],
+        };
+
+        const OUTCOMES = [
+            "Your system survived. Barely. It is now afraid of you.",
+            "You deleted a folder you did not recognize. It was important.",
+            "Everything works. You have no idea why. Do not touch it.",
+            "The BIOS learned your name. It is not happy about it.",
+            "You achieved dual boot. One OS refuses to speak to the other.",
+            "Miraculously, nothing broke. The machine is now suspicious of you.",
+            "You formatted the wrong drive. You are now a minimalist.",
+            "The recovery partition is gone. So is your confidence.",
+            "System runs fine. Windows is still updating from 2018.",
+            "You skipped the EULA. The EULA does not forgive.",
+            "Your overclock worked. Your warranty did not survive.",
+            "The terminal said goodbye. You typed 'y'. You should not have.",
+            "You Googled the error. The results were in German.",
+            "Stack Overflow said you were doing it wrong. You were not.",
+            "You installed Linux. You will Google the same Wi-Fi fix forever.",
+            "The bootloader has feelings now. You hurt them.",
+            "It compiled. You do not know why. You do not deserve to know.",
+            "rm -rf completed with no output. That is not a good sign.",
+            "You changed one setting. Three things stopped working.",
+            "System is stable. You are not.",
+        ];
+
+        const RANKS = [
+            { name: 'SAFE USER',      cls: 'rank-safe',  maxSec: 20  },
+            { name: 'RISK TAKER',     cls: 'rank-risk',  maxSec: 60  },
+            { name: 'CHAOS AGENT',    cls: 'rank-chaos', maxSec: 180 },
+            { name: 'TECH NECROMANCER', cls: 'rank-necro', maxSec: Infinity },
+        ];
+
+        // ─── STATE ────────────────────────────────────────────────────────────
+        let startTime = 0;
+        let timerInterval = null;
+        let logInterval = null;
+        let progressInterval = null;
+        let elapsed = 0;
+        let lastElapsed = 0;
+        let logPool = [];
+        let logCount = 0;
+
+        // ─── UTILS ───────────────────────────────────────────────────────────
+        function formatTime(ms) {
+            const totalMs  = Math.floor(ms);
+            const mins     = Math.floor(totalMs / 60000);
+            const secs     = Math.floor((totalMs % 60000) / 1000);
+            const centis   = Math.floor((totalMs % 1000) / 10);
+            return `${String(mins).padStart(2,'0')}:${String(secs).padStart(2,'0')}.${String(centis).padStart(2,'0')}`;
+        }
+
+        function showScreen(id) {
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            document.getElementById(id).classList.add('active');
+        }
+
+        function getRank(seconds) {
+            return RANKS.find(r => seconds <= r.maxSec);
+        }
+
+        function shuffle(arr) {
+            const a = [...arr];
+            for (let i = a.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [a[i], a[j]] = [a[j], a[i]];
+            }
+            return a;
+        }
+
+        // ─── LOGGING ─────────────────────────────────────────────────────────
+        function addLog() {
+            if (logPool.length === 0) logPool = shuffle(LOGS.generic);
+            const entry = logPool.shift();
+            const container = document.getElementById('log-inner');
+            const line = document.createElement('div');
+            line.className = `log-line ${entry.t}`;
+            const ts = formatTime(Date.now() - startTime);
+            line.textContent = `[${ts}] ${entry.m}`;
+            container.appendChild(line);
+            logCount++;
+
+            // Keep only last 12 lines visible
+            while (container.children.length > 12) {
+                container.removeChild(container.firstChild);
+            }
+
+            // Escalate urgency over time
+            const secElapsed = (Date.now() - startTime) / 1000;
+            const timerEl = document.getElementById('timer');
+            if (secElapsed > 60) timerEl.classList.add('danger');
+        }
+
+        // ─── START ───────────────────────────────────────────────────────────
+        function startRun() {
+            const cat = document.getElementById('cat-select').value;
+            document.getElementById('run-cat-name').textContent = cat.toUpperCase();
+            document.getElementById('log-inner').innerHTML = '';
+            document.getElementById('timer').classList.remove('danger');
+            document.getElementById('progress-bar').style.width = '0%';
+
+            logPool = shuffle(LOGS.generic);
+            logCount = 0;
+            startTime = Date.now();
+
+            showScreen('screen-run');
+
+            // Timer
+            timerInterval = setInterval(() => {
+                elapsed = Date.now() - startTime;
+                document.getElementById('timer').textContent = formatTime(elapsed);
+            }, 50);
+
+            // Logs — start fast, slow down over time
+            logInterval = setInterval(() => {
+                addLog();
+            }, 1200);
+
+            // Progress bar — oscillates randomly
+            let progress = 0;
+            let direction = 1;
+            progressInterval = setInterval(() => {
+                progress += direction * (Math.random() * 3 + 0.5);
+                if (progress >= 95) direction = -1;
+                if (progress <= 5) direction = 1;
+                document.getElementById('progress-bar').style.width = Math.min(98, Math.max(2, progress)) + '%';
+            }, 400);
+        }
+
+        // ─── FINISH ──────────────────────────────────────────────────────────
+        function finishRun() {
+            clearInterval(timerInterval);
+            clearInterval(logInterval);
+            clearInterval(progressInterval);
+
+            lastElapsed = Date.now() - startTime;
+            const seconds = lastElapsed / 1000;
+            const cat = document.getElementById('run-cat-name').textContent;
+            const rank = getRank(seconds);
+            const outcome = OUTCOMES[Math.floor(Math.random() * OUTCOMES.length)];
+
+            document.getElementById('result-time').textContent = formatTime(lastElapsed);
+            document.getElementById('result-cat').textContent = cat;
+
+            const badge = document.getElementById('rank-badge');
+            badge.textContent = rank.name;
+            badge.className = 'rank-badge ' + rank.cls;
+
+            document.getElementById('outcome-text').textContent = '"' + outcome + '"';
+
+            showScreen('screen-result');
+        }
+
+        // ─── RETRY / RESET ───────────────────────────────────────────────────
+        function retry() {
+            clearInterval(timerInterval);
+            clearInterval(logInterval);
+            clearInterval(progressInterval);
+            startRun();
+        }
+
+        function resetToStart() {
+            clearInterval(timerInterval);
+            clearInterval(logInterval);
+            clearInterval(progressInterval);
+            showScreen('screen-start');
+        }
+    </script>
+</body>
+</html>
