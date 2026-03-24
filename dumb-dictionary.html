@@ -364,7 +364,9 @@
         </div>
 
         <div class="word-grid" id="wordGrid">
-            <!-- Words will be injected here -->
+            <div class="loading-words" style="text-align: center; padding: 40px; color: var(--muted); font-style: italic;">
+                🔍 Summoning community words from the void...
+            </div>
         </div>
 
         <div id="emptyState" class="empty-state" style="display: none;">
@@ -427,11 +429,61 @@
         ];
 
         let words = [...BAKED_WORDS];
+        let communityWords = [];
         
-        // Load from Local Storage
+        // KVDB.io Config (Universal Keyless DB)
+        const BUCKET_ID = "vv_dumbionary_882a1"; 
+        const DB_URL = `https://kvdb.io/${BUCKET_ID}/words`;
+
+        // Fetch Global Words from KVDB
+        const fetchGlobalWords = async () => {
+            try {
+                const response = await fetch(DB_URL);
+                if (response.ok) {
+                    const data = await response.json();
+                    if (Array.isArray(data)) {
+                        communityWords = data;
+                    }
+                }
+                updateDisplay();
+            } catch (err) {
+                console.warn("Global Fetch Failed (Bucket might be empty):", err);
+                updateDisplay();
+            }
+        };
+
+        // Save Word to Global DB
+        const saveGlobalWord = async (newWord) => {
+            try {
+                // 1. Fetch current (to avoid overwriting others if possible)
+                let current = [];
+                const res = await fetch(DB_URL);
+                if (res.ok) {
+                    current = await res.json();
+                }
+                
+                // 2. Append (Limit to last 100 to keep it from exploding)
+                const updated = [newWord, ...current].slice(0, 100);
+                
+                // 3. Store
+                await fetch(DB_URL, {
+                    method: 'PUT',
+                    body: JSON.stringify(updated),
+                    headers: { 'Content-Type': 'application/json' }
+                });
+                
+                communityWords = updated;
+                updateDisplay();
+            } catch (err) {
+                console.error("Global Save Error:", err);
+            }
+        };
+
+        // Load from Local Storage (for instant preview/offline)
         const loadLocalWords = () => {
             const localWords = JSON.parse(localStorage.getItem('dumbWords') || '[]');
             words = [...BAKED_WORDS, ...localWords];
+            updateDisplay();
         };
 
         const saveLocalWord = (newWord) => {
@@ -440,8 +492,26 @@
             localStorage.setItem('dumbWords', JSON.stringify(localWords));
         };
 
-        const renderWords = (searchQuery = '') => {
-            const filteredWords = words.filter(w => 
+        const updateDisplay = (searchQuery = '') => {
+            // Priority: Local Storage (Yours) > Global DB (Community) > Baked (Static)
+            const allWords = [...words, ...communityWords]; 
+            
+            // Remove duplicates (by word name, case insensitive)
+            const uniqueWords = [];
+            const seen = new Set();
+            for (const w of allWords) {
+                const key = w.word.toLowerCase();
+                if (!seen.has(key)) {
+                    seen.add(key);
+                    uniqueWords.push(w);
+                }
+            }
+
+            renderWords(uniqueWords, searchQuery || document.getElementById('searchInput').value);
+        };
+
+        const renderWords = (wordList, searchQuery = '') => {
+            const filteredWords = wordList.filter(w => 
                 w.word.toLowerCase().includes(searchQuery.toLowerCase()) || 
                 w.definition.toLowerCase().includes(searchQuery.toLowerCase())
             );
@@ -458,12 +528,16 @@
                 filteredWords.forEach((w, index) => {
                     const card = document.createElement('div');
                     card.className = 'word-card';
-                    card.style.animationDelay = `${index * 0.1}s`;
+                    card.style.animationDelay = `${index * 0.05}s`;
+                    
+                    const isGlobal = communityWords.some(cw => cw.word === w.word);
                     
                     card.innerHTML = `
                         <div class="word-header">
                             <div class="word-title">${w.word}</div>
-                            <div class="word-tag">${w.tag || 'New'}</div>
+                            <div class="word-tag" style="background: ${isGlobal ? '#ffe66d' : '#82ccdd'}">
+                                ${isGlobal ? '🌍 Global' : '👤 Local'}
+                            </div>
                         </div>
                         <div class="word-def">${w.definition}</div>
                         <div class="word-footer">
@@ -497,34 +571,44 @@
 
         // Form Submission
         const form = document.getElementById('addWordForm');
-        form.onsubmit = (e) => {
+        form.onsubmit = async (e) => {
             e.preventDefault();
             
+            const btn = document.getElementById('submitBtn');
+            btn.innerHTML = "Publishing to the Universe...";
+            btn.disabled = true;
+
+            const word = document.getElementById('wordInput').value;
+            const definition = document.getElementById('defInput').value;
+            const author = document.getElementById('authorInput').value;
+
             const newWord = {
-                word: document.getElementById('wordInput').value,
-                definition: document.getElementById('defInput').value,
-                author: document.getElementById('authorInput').value,
-                tag: 'Community'
+                word: word,
+                definition: definition,
+                author: author,
+                tag: 'Global'
             };
 
+            // 1. Save Locally
             saveLocalWord(newWord);
-            loadLocalWords();
-            renderWords();
+            
+            // 2. Publish Globally
+            await saveGlobalWord(newWord);
+
             closeModal();
             form.reset();
-
-            // Notify user about "Baking In"
-            alert("Word added! Note: For now, this is only visible to you. To save it for EVERYONE forever, copy the word and definition and send it to the assistant!");
+            btn.innerHTML = "Slightly Submit";
+            btn.disabled = false;
         };
 
         // Search
         document.getElementById('searchInput').oninput = (e) => {
-            renderWords(e.target.value);
+            updateDisplay(e.target.value);
         };
 
         // Init
         loadLocalWords();
-        renderWords();
+        fetchGlobalWords();
     </script>
 </body>
 </html>
