@@ -1,0 +1,530 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Dumbionary | Dictionary of Dumb Words</title>
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E🤪%3C/text%3E%3C/svg%3E">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&family=Fredoka:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #fffcf0;
+            --primary: #ff6b6b;
+            --secondary: #4ecdc4;
+            --accent: #ffe66d;
+            --text: #2d3436;
+            --muted: #636e72;
+            --card-bg: #ffffff;
+            --shadow: 0 10px 30px rgba(0,0,0,0.05);
+            --border-radius: 20px;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+            overflow-x: hidden;
+            padding: 40px 20px;
+        }
+
+        h1, h2, h3 {
+            font-family: 'Fredoka', sans-serif;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 60px;
+            animation: fadeInDown 0.8s ease-out;
+        }
+
+        .logo {
+            font-size: 3rem;
+            font-weight: 800;
+            color: var(--primary);
+            display: inline-block;
+            position: relative;
+            transform: rotate(-2deg);
+        }
+
+        .logo span {
+            color: var(--secondary);
+        }
+
+        .subtitle {
+            font-size: 1.1rem;
+            color: var(--muted);
+            margin-top: 10px;
+        }
+
+        /* Search Bar */
+        .search-container {
+            position: relative;
+            margin-bottom: 40px;
+            animation: fadeInUp 0.8s ease-out 0.2s both;
+        }
+
+        .search-bar {
+            width: 100%;
+            padding: 20px 30px;
+            padding-right: 60px;
+            border: 3px solid var(--text);
+            border-radius: 40px;
+            font-size: 1.2rem;
+            font-family: inherit;
+            box-shadow: 8px 8px 0 var(--text);
+            outline: none;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .search-bar:focus {
+            transform: translate(-2px, -2px);
+            box-shadow: 10px 10px 0 var(--text);
+        }
+
+        .search-icon {
+            position: absolute;
+            right: 25px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 1.5rem;
+            pointer-events: none;
+        }
+
+        /* Dictionary List */
+        .word-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 25px;
+            animation: fadeInUp 0.8s ease-out 0.4s both;
+        }
+
+        .word-card {
+            background: var(--card-bg);
+            border: 3px solid var(--text);
+            border-radius: var(--border-radius);
+            padding: 30px;
+            position: relative;
+            box-shadow: 8px 8px 0 rgba(0,0,0,0.1);
+            transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            cursor: pointer;
+        }
+
+        .word-card:hover {
+            transform: scale(1.02) rotate(1deg);
+            box-shadow: 12px 12px 0 var(--accent);
+        }
+
+        .word-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 15px;
+        }
+
+        .word-title {
+            font-size: 2rem;
+            font-weight: 800;
+            color: var(--text);
+            letter-spacing: -1px;
+        }
+
+        .word-tag {
+            background: var(--accent);
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            border: 2px solid var(--text);
+        }
+
+        .word-def {
+            font-size: 1.1rem;
+            color: var(--muted);
+            margin-bottom: 20px;
+        }
+
+        .word-footer {
+            font-size: 0.9rem;
+            color: var(--muted);
+            border-top: 1px dashed #eee;
+            padding-top: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .author {
+            font-weight: 600;
+            color: var(--secondary);
+        }
+
+        /* Add Word Button */
+        .add-btn {
+            position: fixed;
+            bottom: 40px;
+            right: 40px;
+            background: var(--primary);
+            color: white;
+            border: 3px solid var(--text);
+            border-radius: 50px;
+            padding: 15px 30px;
+            font-size: 1.2rem;
+            font-weight: 800;
+            font-family: 'Fredoka', sans-serif;
+            cursor: pointer;
+            box-shadow: 6px 6px 0 var(--text);
+            transition: all 0.2s;
+            z-index: 100;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .add-btn:hover {
+            transform: translate(-3px, -3px);
+            box-shadow: 9px 9px 0 var(--text);
+        }
+
+        .add-btn:active {
+            transform: translate(2px, 2px);
+            box-shadow: 2px 2px 0 var(--text);
+        }
+
+        /* Modal */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 252, 240, 0.9);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            backdrop-filter: blur(5px);
+        }
+
+        .modal {
+            background: white;
+            border: 4px solid var(--text);
+            border-radius: 30px;
+            width: 90%;
+            max-width: 500px;
+            padding: 40px;
+            box-shadow: 15px 15px 0 var(--text);
+            position: relative;
+            transform: scale(0.9);
+            transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .modal.active {
+            transform: scale(1);
+        }
+
+        .modal h2 {
+            font-size: 2rem;
+            margin-bottom: 25px;
+            color: var(--text);
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            font-weight: 700;
+            margin-bottom: 8px;
+            font-size: 0.9rem;
+        }
+
+        .form-group input, .form-group textarea {
+            width: 100%;
+            padding: 15px;
+            border: 3px solid var(--text);
+            border-radius: 15px;
+            font-family: inherit;
+            font-size: 1rem;
+            outline: none;
+        }
+
+        .form-group textarea {
+            height: 100px;
+            resize: none;
+        }
+
+        .submit-btn {
+            width: 100%;
+            background: var(--secondary);
+            color: white;
+            border: 3px solid var(--text);
+            border-radius: 15px;
+            padding: 15px;
+            font-size: 1.1rem;
+            font-weight: 800;
+            font-family: 'Fredoka', sans-serif;
+            cursor: pointer;
+            box-shadow: 5px 5px 0 var(--text);
+            transition: all 0.2s;
+            margin-top: 10px;
+        }
+
+        .submit-btn:hover {
+            transform: translate(-2px, -2px);
+            box-shadow: 7px 7px 0 var(--text);
+        }
+
+        .close-modal {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            font-size: 1.5rem;
+            cursor: pointer;
+            font-weight: 800;
+        }
+
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 50px;
+            color: var(--muted);
+            font-style: italic;
+        }
+
+        /* Animations */
+        @keyframes fadeInDown {
+            from { opacity: 0; transform: translateY(-30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Back Button */
+        .back-btn {
+            position: absolute;
+            top: 40px;
+            left: 40px;
+            text-decoration: none;
+            color: var(--text);
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            transition: transform 0.2s;
+        }
+
+        .back-btn:hover {
+            transform: translateX(-5px);
+        }
+
+        footer {
+            margin-top: 80px;
+            text-align: center;
+            color: var(--muted);
+            font-size: 0.9rem;
+        }
+
+        @media (max-width: 600px) {
+            .back-btn { position: relative; top: 0; left: 0; margin-bottom: 20px; }
+            .logo { font-size: 2.2rem; }
+            .add-btn { bottom: 20px; right: 20px; padding: 12px 20px; font-size: 1rem; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="index.html" class="back-btn">← Back to Gallery</a>
+        
+        <header>
+            <div class="logo">The <span>Dumbionary</span></div>
+            <p class="subtitle">Where "oitama" means angry and everything else is just plain dumb.</p>
+        </header>
+
+        <div class="search-container">
+            <input type="text" class="search-bar" id="searchInput" placeholder="Search for a dumb word...">
+            <span class="search-icon">🔍</span>
+        </div>
+
+        <div class="word-grid" id="wordGrid">
+            <!-- Words will be injected here -->
+        </div>
+
+        <div id="emptyState" class="empty-state" style="display: none;">
+            No dumb words found. Maybe you should add one?
+        </div>
+
+        <footer>
+            <p>© 2026 The Council of Dumbness. All words are definitively dumb.</p>
+        </footer>
+    </div>
+
+    <button class="add-btn" id="addBtn">
+        <span>+</span> Add Dumb Word
+    </button>
+
+    <!-- Modal -->
+    <div class="modal-overlay" id="modalOverlay">
+        <div class="modal" id="modal">
+            <span class="close-modal" id="closeModal">✕</span>
+            <h2>New Dumb Word</h2>
+            <form id="addWordForm">
+                <div class="form-group">
+                    <label for="word">WORD</label>
+                    <input type="text" id="wordInput" placeholder="e.g. Oitama" required maxlength="30">
+                </div>
+                <div class="form-group">
+                    <label for="definition">MEANING</label>
+                    <textarea id="defInput" placeholder="e.g. To be extremely angry at a computer" required maxlength="150"></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="author">WHO SAID THIS?</label>
+                    <input type="text" id="authorInput" placeholder="Your name (or a fake one)" required maxlength="20">
+                </div>
+                <button type="submit" class="submit-btn" id="submitBtn">Slightly Submit</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // Core Words (Baked In)
+        const BAKED_WORDS = [
+            {
+                word: "Oitama",
+                definition: "To be extremely angry, specifically at a piece of technology that isn't doing what it's supposed to.",
+                author: "The Council",
+                tag: "Classic"
+            },
+            {
+                word: "Glip-Glap",
+                definition: "The sound a brain makes when it hits a brilliant idea but then immediately forgets it.",
+                author: "Brainy McBrain",
+                tag: "Science"
+            },
+            {
+                word: "Flumbuz",
+                definition: "The state of being so confused that you start looking for your phone while you are literally talking on it.",
+                author: "Anonymous",
+                tag: "Relatable"
+            }
+        ];
+
+        let words = [...BAKED_WORDS];
+        
+        // Load from Local Storage
+        const loadLocalWords = () => {
+            const localWords = JSON.parse(localStorage.getItem('dumbWords') || '[]');
+            words = [...BAKED_WORDS, ...localWords];
+        };
+
+        const saveLocalWord = (newWord) => {
+            const localWords = JSON.parse(localStorage.getItem('dumbWords') || '[]');
+            localWords.push(newWord);
+            localStorage.setItem('dumbWords', JSON.stringify(localWords));
+        };
+
+        const renderWords = (searchQuery = '') => {
+            const filteredWords = words.filter(w => 
+                w.word.toLowerCase().includes(searchQuery.toLowerCase()) || 
+                w.definition.toLowerCase().includes(searchQuery.toLowerCase())
+            );
+
+            const grid = document.getElementById('wordGrid');
+            const empty = document.getElementById('emptyState');
+            
+            grid.innerHTML = '';
+            
+            if (filteredWords.length === 0) {
+                empty.style.display = 'block';
+            } else {
+                empty.style.display = 'none';
+                filteredWords.forEach((w, index) => {
+                    const card = document.createElement('div');
+                    card.className = 'word-card';
+                    card.style.animationDelay = `${index * 0.1}s`;
+                    
+                    card.innerHTML = `
+                        <div class="word-header">
+                            <div class="word-title">${w.word}</div>
+                            <div class="word-tag">${w.tag || 'New'}</div>
+                        </div>
+                        <div class="word-def">${w.definition}</div>
+                        <div class="word-footer">
+                            <div class="by">by <span class="author">${w.author}</span></div>
+                            <div class="date">${new Date().toLocaleDateString()}</div>
+                        </div>
+                    `;
+                    grid.appendChild(card);
+                });
+            }
+        };
+
+        // Modal Controls
+        const addBtn = document.getElementById('addBtn');
+        const overlay = document.getElementById('modalOverlay');
+        const closeBtn = document.getElementById('closeModal');
+        const modal = document.getElementById('modal');
+
+        addBtn.onclick = () => {
+            overlay.style.display = 'flex';
+            setTimeout(() => modal.classList.add('active'), 10);
+        };
+
+        const closeModal = () => {
+            modal.classList.remove('active');
+            setTimeout(() => overlay.style.display = 'none', 300);
+        };
+
+        closeBtn.onclick = closeModal;
+        overlay.onclick = (e) => { if(e.target === overlay) closeModal(); };
+
+        // Form Submission
+        const form = document.getElementById('addWordForm');
+        form.onsubmit = (e) => {
+            e.preventDefault();
+            
+            const newWord = {
+                word: document.getElementById('wordInput').value,
+                definition: document.getElementById('defInput').value,
+                author: document.getElementById('authorInput').value,
+                tag: 'Community'
+            };
+
+            saveLocalWord(newWord);
+            loadLocalWords();
+            renderWords();
+            closeModal();
+            form.reset();
+
+            // Notify user about "Baking In"
+            alert("Word added! Note: For now, this is only visible to you. To save it for EVERYONE forever, copy the word and definition and send it to the assistant!");
+        };
+
+        // Search
+        document.getElementById('searchInput').oninput = (e) => {
+            renderWords(e.target.value);
+        };
+
+        // Init
+        loadLocalWords();
+        renderWords();
+    </script>
+</body>
+</html>
