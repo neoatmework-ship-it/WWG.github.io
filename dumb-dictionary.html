@@ -575,12 +575,13 @@
             e.preventDefault();
             
             const btn = document.getElementById('submitBtn');
-            btn.innerHTML = "Publishing to the Universe...";
+            const originalText = btn.innerHTML;
+            btn.innerHTML = "✨ Publishing to Everyone...";
             btn.disabled = true;
 
             const word = document.getElementById('wordInput').value;
             const definition = document.getElementById('defInput').value;
-            const author = document.getElementById('authorInput').value;
+            const author = document.getElementById('authorInput').value || "Anonymous";
 
             const newWord = {
                 word: word,
@@ -589,17 +590,54 @@
                 tag: 'Global'
             };
 
-            // 1. Save Locally
+            // 1. Save Locally (Instant UI feedback)
             saveLocalWord(newWord);
             
-            // 2. Publish Globally
+            // 2. Publish Globally (KVDB)
             await saveGlobalWord(newWord);
 
             closeModal();
             form.reset();
-            btn.innerHTML = "Slightly Submit";
+            btn.innerHTML = originalText;
             btn.disabled = false;
+            
+            // Optional: Small notification toast
+            showToast(`"${word}" has joined the global dictionary!`);
         };
+
+        const showToast = (msg) => {
+            const toast = document.createElement('div');
+            toast.style.cssText = `
+                position: fixed;
+                bottom: 30px;
+                left: 50%;
+                transform: translateX(-50%);
+                background: #ff7eb3;
+                color: white;
+                padding: 12px 24px;
+                border-radius: 50px;
+                font-weight: bold;
+                box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+                z-index: 10000;
+                animation: bounceUp 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            `;
+            toast.innerHTML = msg;
+            document.body.appendChild(toast);
+            setTimeout(() => {
+                toast.style.opacity = '0';
+                toast.style.transition = '0.5s';
+                setTimeout(() => toast.remove(), 500);
+            }, 3000);
+        };
+
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes bounceUp {
+                from { bottom: -50px; opacity: 0; }
+                to { bottom: 30px; opacity: 1; }
+            }
+        `;
+        document.head.appendChild(style);
 
         // Search
         document.getElementById('searchInput').oninput = (e) => {
