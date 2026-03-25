@@ -1,0 +1,663 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Scandinavian Suffering Simulator | Chaos God v6</title>
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E💀%3C/text%3E%3C/svg%3E">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;700;800&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #050505;
+            --accent: #ff4d00;
+            --text: #ffffff;
+            --muted: rgba(255,255,255,0.4);
+            --card-bg: rgba(255,255,255,0.03);
+            --vibe-timer: 3s;
+            --ui-flicker: none;
+            --ui-jitter: none;
+            --wait-display: none;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; cursor: crosshair; }
+
+        body {
+            background: var(--bg);
+            color: var(--text);
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            perspective: 1000px;
+            transition: background 0.5s;
+        }
+
+        /* --- Noise/Fog --- */
+        body::before {
+            content: "";
+            position: fixed;
+            inset: 0;
+            background: 
+                radial-gradient(circle at 50% 50%, rgba(255,255,255,0.02) 0%, transparent 70%),
+                url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.05'/%3E%3C/svg%3E");
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        /* --- UI Layers --- */
+        .layer-halloween { --ui-flicker: flicker 0.1s infinite !important; --accent: #ff9000; --ui-jitter: jitter 0.05s infinite; }
+        .layer-february { --bg: #0a0c10; --accent: #00d2ff; --vibe-timer: 1.5s; }
+        .layer-finland { --accent: #ffffff; letter-spacing: 0.11em; }
+
+        @keyframes flicker {
+            0% { opacity: 1; transform: scale(1) translate(0,0); }
+            50% { opacity: 0.7; transform: scale(1.002) translate(1px, -1px); }
+            100% { opacity: 1; transform: scale(1) translate(0,0); }
+        }
+
+        @keyframes jitter {
+            0% { transform: translate(0, 0); }
+            20% { transform: translate(-2px, 2px); }
+            40% { transform: translate(-2px, -2px); }
+            60% { transform: translate(2px, 2px); }
+            80% { transform: translate(2px, -2px); }
+            100% { transform: translate(0, 0); }
+        }
+
+        /* --- Core Number --- */
+        #number-container {
+            position: relative;
+            text-align: center;
+            margin-bottom: 40px;
+            animation: var(--ui-flicker), var(--ui-jitter);
+            user-select: none;
+            z-index: 2;
+        }
+
+        #main-number {
+            font-size: 16vw;
+            font-weight: 800;
+            letter-spacing: -12px;
+            line-height: 0.7;
+            transition: transform 0.05s, color 0.3s;
+            display: inline-block;
+            text-shadow: 0 0 50px rgba(255,255,255,0.05);
+        }
+
+        #number-whisper {
+            position: absolute;
+            top: -60px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 0.7rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 12px;
+            color: var(--accent);
+            white-space: nowrap;
+            opacity: 0.6;
+            transition: 0.3s;
+        }
+
+        /* --- Main Button --- */
+        #main-button {
+            width: 280px;
+            height: 280px;
+            border-radius: 50%;
+            background: var(--accent);
+            border: 12px solid rgba(255,255,255,0.05);
+            color: white;
+            font-size: 1.8rem;
+            font-weight: 800;
+            cursor: pointer;
+            box-shadow: 0 0 80px rgba(255,77,0,0.2), inset 0 0 40px rgba(0,0,0,0.3);
+            transition: transform 0.05s, box-shadow 0.1s, background 0.5s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            z-index: 10;
+        }
+
+        #main-button:active {
+            transform: scale(0.88);
+            box-shadow: 0 0 60px rgba(255,77,0,0.5);
+        }
+
+        #main-button:disabled {
+            background: #111;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+            opacity: 0.5;
+        }
+
+        /* --- Bureaucracy System --- */
+        #bureau-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.95);
+            z-index: 6000;
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(50px);
+        }
+
+        .bureau-card {
+            background: #f0f0f0;
+            color: #333;
+            width: 500px;
+            padding: 50px;
+            border-radius: 2px;
+            font-family: serif;
+            box-shadow: 0 50px 100px rgba(0,0,0,0.8);
+            position: relative;
+        }
+
+        .bureau-card h2 { font-size: 1.2rem; margin-bottom: 20px; border-bottom: 1px solid #ccc; padding-bottom: 10px; }
+        .bureau-field { margin-bottom: 15px; text-align: left; }
+        .bureau-field label { display: block; font-size: 0.7rem; color: #666; font-weight: bold; margin-bottom: 5px; }
+        .bureau-field input { width: 100%; border: 1px solid #ccc; padding: 10px; font-family: serif; outline: none; background: white; }
+
+        /* --- IKEA Assembly Modal --- */
+        #ikea-modal {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.99);
+            z-index: 5000;
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(60px);
+        }
+
+        .ikea-card {
+            background: white;
+            color: black;
+            padding: 60px;
+            border-radius: 4px;
+            width: 600px;
+            text-align: center;
+            box-shadow: 0 40px 80px rgba(0,0,0,0.6);
+        }
+
+        .ikea-diagram {
+            width: 100%;
+            height: 350px;
+            background: #fafafa;
+            border: 1px solid #ddd;
+            margin: 30px 0;
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .ikea-part {
+            position: absolute;
+            background: #0058a3;
+            cursor: grab;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 800;
+            font-size: 0.6rem;
+            transition: transform 0.2s;
+            border: 2px solid rgba(255,255,255,0.2);
+        }
+
+        .ikea-part:active { cursor: grabbing; transform: scale(1.1); }
+
+        /* --- Touch Grass UI --- */
+        #grass-overlay {
+            position: fixed;
+            top: 0; left: -100vw;
+            width: 100vw; height: 100vh;
+            background: rgba(0,0,0,0.9);
+            z-index: 7000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: left 0.8s cubic-bezier(0.85, 0, 0.15, 1);
+        }
+
+        #grass-hand {
+            font-size: 15rem;
+            cursor: grab;
+            position: absolute;
+            left: 5vw;
+        }
+
+        .grass-target {
+            position: absolute;
+            right: 10vw;
+            width: 250px; height: 250px;
+            background: radial-gradient(circle, #2ecc71 0%, #1a1a1a 80%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 800;
+            color: #000;
+            filter: blur(2px);
+        }
+
+        /* --- Gambling Panel --- */
+        .gamble-panel {
+            position: fixed;
+            bottom: 60px;
+            display: flex;
+            gap: 20px;
+            z-index: 100;
+        }
+
+        .gamble-btn {
+            background: rgba(255,255,255,0.02);
+            border: 1px solid rgba(255,255,255,0.1);
+            color: white;
+            padding: 16px 32px;
+            border-radius: 4px;
+            font-size: 0.7rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 4px;
+            cursor: pointer;
+            transition: all 0.3s;
+            backdrop-filter: blur(20px);
+        }
+
+        .gamble-btn:hover { background: rgba(255,255,255,0.1); border-color: var(--accent); }
+        .danger { color: #ff3e00; border-color: #ff3e00; }
+
+        /* --- False Ending --- */
+        #end-screen {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: #fff;
+            color: #000;
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 99999;
+            text-align: center;
+        }
+
+        #end-screen h1 { font-size: 6rem; font-weight: 900; letter-spacing: -4px; line-height: 0.9; }
+
+        /* --- Chaos Toasts --- */
+        .toast {
+            position: fixed;
+            top: 80px;
+            padding: 15px 40px;
+            background: white;
+            color: black;
+            font-weight: 900;
+            border-radius: 2px;
+            pointer-events: none;
+            z-index: 8000;
+            opacity: 0;
+            text-transform: uppercase;
+            letter-spacing: 5px;
+            transform: translateY(-20px);
+            transition: all 0.3s;
+        }
+
+        .toast.active { opacity: 1; transform: translateY(0); }
+
+        #debt-counter {
+            position: fixed;
+            right: 60px;
+            bottom: 60px;
+            text-align: right;
+            font-family: 'Share Tech Mono', monospace;
+            opacity: 0.4;
+            font-size: 0.8rem;
+        }
+
+        /* --- Stats row --- */
+        .stats-row {
+            position: fixed;
+            top: 40px;
+            display: flex;
+            gap: 40px;
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 4px;
+            color: var(--muted);
+            z-index: 100;
+        }
+        .stat span { color: var(--accent); font-weight: 800; }
+
+        /* --- Animations --- */
+        @keyframes drift { 0% { opacity: 0.4; } 50% { opacity: 1; } 100% { opacity: 0.4; } }
+        .drifting { animation: drift 2s infinite; }
+    </style>
+</head>
+<body class="layer-finland">
+
+    <div class="stats-row">
+        <div class="stat">MODE: <span id="vibe-lvl" class="drifting">QUIET</span></div>
+        <div class="stat">CITIZENSHIP: <span id="rank-lvl">VOID</span></div>
+        <div class="stat">TOP: <span id="top-pct">100%</span></div>
+    </div>
+
+    <div id="number-container">
+        <div id="number-whisper">START CLICKING</div>
+        <div id="main-number">1</div>
+    </div>
+
+    <button id="main-button">
+        <div id="queue-display" style="position: absolute; font-size: 0.7rem; font-weight: 800; letter-spacing: 2px; display: none;">WAIT: 00s</div>
+    </button>
+
+    <div class="gamble-panel">
+        <button class="gamble-btn" onclick="gamble('double')">Double</button>
+        <button class="gamble-btn danger" onclick="gamble('wipe')">All In</button>
+        <button class="gamble-btn" onclick="gamble('risk')">Warp Count</button>
+    </div>
+
+    <div id="debt-counter">
+        <div>GLOBAL DEBT ESCALATION</div>
+        <div id="debt-val" style="color: #ff3e00; font-weight: bold;">$34,502,124,502,124</div>
+    </div>
+
+    <!-- Bureaucracy Overlay -->
+    <div id="bureau-overlay">
+        <div class="bureau-card" id="bureau-form">
+            <h2>Helsinki Residency Registration</h2>
+            <div class="bureau-field">
+                <label>Family Name</label>
+                <input type="text" placeholder="e.g. Nieminen" id="b-name">
+            </div>
+            <div class="bureau-field">
+                <label>Vibe Reference Code</label>
+                <input type="text" placeholder="[HIDDEN]" disabled>
+            </div>
+            <div class="bureau-field">
+                <label>Are you patient?</label>
+                <input type="checkbox" id="b-patience" style="width: 20px;">
+            </div>
+            <button class="gamble-btn" style="color: black; border-color: #333; width: 100%;" onclick="submitBureau()">Wait in Queue</button>
+        </div>
+    </div>
+
+    <!-- IKEA Modal -->
+    <div id="ikea-modal">
+        <div class="ikea-card">
+            <div style="font-size: 0.6rem; letter-spacing: 10px; opacity: 0.5;">SCANDINAVIAN SUFFERING</div>
+            <div style="font-size: 2rem; font-weight: 900; margin: 10px 0;">ASSEMBLY REQUIRED</div>
+            <div style="font-style: italic; opacity: 0.6;">Model: Står-Vïd v.6</div>
+            <div class="ikea-diagram" id="ikea-zone">
+                <svg width="100%" height="100%" viewBox="0 0 1000 1000" style="opacity: 0.08; position: absolute; pointer-events: none;">
+                    <path d="M100,200 L900,200 L900,800 L100,800 Z" fill="none" stroke="black" stroke-width="2"/>
+                    <line x1="100" y1="100" x2="900" y2="900" stroke="black" stroke-width="2" stroke-dasharray="10,10"/>
+                    <circle cx="500" cy="500" r="100" fill="none" stroke="black" stroke-width="2"/>
+                </svg>
+                <div class="ikea-part" id="p-1" style="width: 80px; height: 180px; left: 10%; top: 10%;">A-12</div>
+                <div class="ikea-part" id="p-2" style="width: 140px; height: 40px; right: 10%; top: 20%; background: #ffdb00; color: #0058a3;">BRÄCK</div>
+                <div class="ikea-part" id="p-3" style="width: 60px; height: 60px; left: 20%; bottom: 10%; border-radius: 50%;">NUT</div>
+            </div>
+            <div style="font-size: 0.7rem; font-weight: 800; text-transform: uppercase;">Guess the structural integrity.</div>
+            <button class="gamble-btn" id="ikea-done" style="margin-top: 30px; color: black; border-color: #333; visibility: hidden;">Finish Build</button>
+        </div>
+    </div>
+
+    <!-- Touch Grass UI -->
+    <div id="grass-overlay">
+        <div id="grass-hand">✋</div>
+        <div class="grass-target">GRASS</div>
+    </div>
+
+    <!-- End Screen -->
+    <div id="end-screen">
+        <div style="font-size: 0.7rem; letter-spacing: 15px; opacity: 0.4;">ABSOLUTE FINALITY</div>
+        <h1>YOU ARE FREE</h1>
+        <div style="font-size: 1.5rem; margin-top: 20px; opacity: 0.7;">Enlightenment achieved. Count reset to 1.</div>
+        <button class="gamble-btn" style="color: black; margin-top: 50px;" onclick="location.reload()">AGAIN</button>
+    </div>
+
+    <div id="toast" class="toast">CHAOS SPIKE</div>
+
+    <script>
+        // --- Audio Context for Premium Beeps ---
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        function beep(freq = 440, type = 'sine', duration = 0.1) {
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.type = type;
+            osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+            gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + duration);
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            osc.start();
+            osc.stop(audioCtx.currentTime + duration);
+        }
+
+        const state = {
+            count: 1,
+            debt: 34502124502124,
+            mode: 'NORMAL', // NORMAL, IKEA, BUREAU, GRASS, HALLOWEEN, FEB
+            lastClick: Date.now(),
+            clickRate: 0,
+            hasReset: false,
+            whispers: ["AGAIN", "FASTER", "YOU STOPPED", "JUDGING", "SISU", "ENOUGH"],
+            scandinavia: true
+        };
+
+        const numEl = document.getElementById('main-number');
+        const whisperEl = document.getElementById('number-whisper');
+        const debtEl = document.getElementById('debt-val');
+        const btn = document.getElementById('main-button');
+        const vibeEl = document.getElementById('vibe-lvl');
+        const rankEl = document.getElementById('rank-lvl');
+        const topEl = document.getElementById('top-pct');
+
+        // --- Core Click ---
+        btn.onclick = () => {
+            if (state.mode !== 'NORMAL') return;
+            
+            beep(200 + state.count/10, 'square', 0.05);
+
+            const now = Date.now();
+            state.clickRate = 1000 / (now - state.lastClick);
+            state.lastClick = now;
+
+            // Rare Event: Number Splitting
+            if (Math.random() < 0.005) {
+                splitNumber();
+                beep(880, 'sawtooth', 0.2);
+            }
+
+            state.count++;
+            updateUI();
+            
+            if (Math.random() < 0.05) triggerSuffering();
+            if (state.count > 1000000) showEnd();
+        };
+
+        function updateUI() {
+            numEl.textContent = Math.floor(state.count).toLocaleString();
+            
+            // Dynamic Whispers
+            if (state.clickRate > 10) setWhisper("I SEE YOU");
+            else if (state.clickRate > 5) setWhisper("PATIENCE");
+            else if (state.clickRate < 0.5) setWhisper("ABANDONED");
+
+            // Ranks
+            if (state.count > 1000) rankEl.textContent = "RESIDENT";
+            if (state.count > 10000) rankEl.textContent = "ASSEMBLER";
+            if (state.count > 50000) rankEl.textContent = "BUREAUCRAT";
+            
+            topEl.textContent = (100 / (1 + state.count/1000)).toFixed(4) + "%";
+        }
+
+        function setWhisper(msg) {
+            whisperEl.textContent = msg;
+            whisperEl.style.opacity = '1';
+        }
+
+        // --- Debt Clock ---
+        setInterval(() => {
+            state.debt += 1245 * (1 + Math.random());
+            debtEl.textContent = "$" + Math.floor(state.debt).toLocaleString();
+        }, 100);
+
+        // --- Suffering Logic ---
+        function triggerSuffering() {
+            const roll = Math.random();
+            if (roll < 0.2) startIkea();
+            else if (roll < 0.4) startBureau();
+            else if (roll < 0.55) startGrass();
+            else if (roll < 0.75) triggerSeason();
+            else showToast("CHAOS SPIKE", "#ff4d00");
+        }
+
+        // 🪑 IKEA System
+        function startIkea() {
+            state.mode = 'IKEA';
+            beep(150, 'sawtooth', 0.3);
+            const modal = document.getElementById('ikea-modal');
+            modal.style.display = 'flex';
+            
+            const parts = [document.getElementById('p-1'), document.getElementById('p-2'), document.getElementById('p-3')];
+            const done = document.getElementById('ikea-done');
+
+            parts.forEach(p => {
+                p.onmousedown = (e) => {
+                    const move = (ev) => {
+                        const rect = document.getElementById('ikea-zone').getBoundingClientRect();
+                        p.style.left = (ev.clientX - rect.left - (p.clientWidth/2)) + 'px';
+                        p.style.top = (ev.clientY - rect.top - (p.clientHeight/2)) + 'px';
+                        
+                        const dist = Math.hypot(ev.clientX - (rect.left + rect.width/2), ev.clientY - (rect.top + rect.height/2));
+                        if (dist < 100) {
+                            p.style.boxShadow = "0 0 20px #00ff88";
+                            done.style.visibility = "visible";
+                        }
+                    };
+                    window.onmousemove = move;
+                    window.onmouseup = () => window.onmousemove = null;
+                };
+            });
+
+            done.onclick = () => {
+                beep(440, 'sine', 0.2);
+                modal.style.display = 'none';
+                state.mode = 'NORMAL';
+                showToast("ASSEMBLY LOGGED", "#0058a3");
+            };
+        }
+
+        // 🇫🇮 Finland Bureaucracy
+        function startBureau() {
+            state.mode = 'BUREAU';
+            beep(100, 'square', 0.5);
+            document.getElementById('bureau-overlay').style.display = 'flex';
+        }
+        function submitBureau() {
+            if (!document.getElementById('b-name').value || !document.getElementById('b-patience').checked) {
+                showToast("FORM INCOMPLETE", "red");
+                beep(80, 'sawtooth', 0.1);
+                return;
+            }
+            document.getElementById('bureau-overlay').style.display = 'none';
+            state.mode = 'NORMAL';
+            
+            btn.disabled = true;
+            const qDisp = document.getElementById('queue-display');
+            qDisp.style.display = 'block';
+            let s = 10;
+            const t = setInterval(() => {
+                s--;
+                beep(600, 'sine', 0.05);
+                qDisp.textContent = `WAIT: ${s}s`;
+                if (s <= 0) {
+                    clearInterval(t);
+                    btn.disabled = false;
+                    qDisp.style.display = 'none';
+                    showToast("NEXT IN LINE", "white");
+                }
+            }, 1000);
+        }
+
+        // 🌱 Touch Grass
+        function startGrass() {
+            state.mode = 'GRASS';
+            const overlay = document.getElementById('grass-overlay');
+            const hand = document.getElementById('grass-hand');
+            overlay.style.left = '0';
+
+            hand.onmousedown = (e) => {
+                const move = (ev) => {
+                    hand.style.left = (ev.clientX - 100) + 'px';
+                    if (ev.clientX > window.innerWidth - 300) {
+                        overlay.style.left = '-100vw';
+                        state.mode = 'NORMAL';
+                        hand.style.left = '5vw';
+                        window.onmousemove = null;
+                        beep(300, 'sine', 0.1);
+                    }
+                };
+                window.onmousemove = move;
+                window.onmouseup = () => window.onmousemove = null;
+            };
+        }
+
+        // ❄️ Seasons
+        function triggerSeason() {
+            const isFeb = Math.random() < 0.5;
+            document.body.className = isFeb ? 'layer-february' : 'layer-halloween';
+            showToast(isFeb ? "FEBRUARY FREEZE" : "HALLOWEEN DECEPTION", isFeb ? "#00d2ff" : "#ff9000");
+            beep(isFeb ? 1000 : 50, 'sawtooth', 0.5);
+            setTimeout(() => document.body.className = 'layer-finland', 8000);
+        }
+
+        // --- Gambling ---
+        function gamble(type) {
+            const roll = Math.random();
+            if (roll < 0.4) {
+                state.count = 1;
+                beep(40, 'square', 1);
+                showToast("WIPEOUT", "red");
+            } else {
+                state.count *= (type === 'risk' ? 5 : 2);
+                beep(880, 'sine', 0.5);
+                showToast("JACKPOT", "#00ff88");
+            }
+            updateUI();
+        }
+
+        function showToast(txt, color) {
+            const t = document.getElementById('toast');
+            t.textContent = txt;
+            t.style.background = color;
+            t.classList.add('active');
+            setTimeout(() => t.classList.remove('active'), 2000);
+        }
+
+        function splitNumber() {
+            numEl.style.transform = "translateX(50px)";
+            const clone = numEl.cloneNode(true);
+            clone.style.position = "absolute";
+            clone.style.left = "0";
+            clone.style.top = "0";
+            clone.style.transform = "translateX(-150px)";
+            clone.style.opacity = "0.3";
+            numEl.parentNode.appendChild(clone);
+            setTimeout(() => clone.remove(), 2000);
+        }
+
+        function showEnd() { document.getElementById('end-screen').style.display = 'flex'; beep(1000, 'sine', 2); }
+    </script>
+</body>
+</html>
