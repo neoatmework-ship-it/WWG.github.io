@@ -48,6 +48,23 @@
             z-index: 1;
         }
 
+        /* --- Admin Abuse Layer --- */
+        #admin-bar {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 40px;
+            background: #ff3e00;
+            color: black;
+            font-weight: 800;
+            font-size: 0.7rem;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            text-transform: uppercase;
+            letter-spacing: 5px;
+            z-index: 9000;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+
         /* --- UI Layers --- */
         .layer-halloween { --ui-flicker: flicker 0.1s infinite !important; --accent: #ff9000; --ui-jitter: jitter 0.05s infinite; }
         .layer-february { --bg: #0a0c10; --accent: #00d2ff; --vibe-timer: 1.5s; }
@@ -123,18 +140,8 @@
             z-index: 10;
         }
 
-        #main-button:active {
-            transform: scale(0.88);
-            box-shadow: 0 0 60px rgba(255,77,0,0.5);
-        }
-
-        #main-button:disabled {
-            background: #111;
-            cursor: not-allowed;
-            transform: none;
-            box-shadow: none;
-            opacity: 0.5;
-        }
+        #main-button:active { transform: scale(0.88); box-shadow: 0 0 60px rgba(255,77,0,0.5); }
+        #main-button:disabled { background: #111; cursor: not-allowed; transform: none; box-shadow: none; opacity: 0.5; }
 
         /* --- Bureaucracy System --- */
         #bureau-overlay {
@@ -149,251 +156,94 @@
             backdrop-filter: blur(50px);
         }
 
-        .bureau-card {
-            background: #f0f0f0;
-            color: #333;
-            width: 500px;
-            padding: 50px;
-            border-radius: 2px;
-            font-family: serif;
-            box-shadow: 0 50px 100px rgba(0,0,0,0.8);
-            position: relative;
-        }
-
+        .bureau-card { background: #f0f0f0; color: #333; width: 500px; padding: 50px; border-radius: 2px; font-family: serif; box-shadow: 0 50px 100px rgba(0,0,0,0.8); position: relative; }
         .bureau-card h2 { font-size: 1.2rem; margin-bottom: 20px; border-bottom: 1px solid #ccc; padding-bottom: 10px; }
         .bureau-field { margin-bottom: 15px; text-align: left; }
         .bureau-field label { display: block; font-size: 0.7rem; color: #666; font-weight: bold; margin-bottom: 5px; }
         .bureau-field input { width: 100%; border: 1px solid #ccc; padding: 10px; font-family: serif; outline: none; background: white; }
 
         /* --- Mess System --- */
-        #mess-container {
-            position: fixed;
-            inset: 0;
-            pointer-events: none;
-            z-index: 5;
-        }
-
-        .mess-item {
-            position: absolute;
-            font-size: 3rem;
-            pointer-events: all;
-            user-select: none;
-            transition: opacity 0.3s, transform 0.1s;
-            filter: drop-shadow(0 10px 10px rgba(0,0,0,0.5));
-        }
-
+        #mess-container { position: fixed; inset: 0; pointer-events: none; z-index: 5; }
+        .mess-item { position: absolute; font-size: 3rem; pointer-events: all; user-select: none; transition: opacity 0.3s, transform 0.1s; filter: drop-shadow(0 10px 10px rgba(0,0,0,0.5)); }
         .mess-dust { font-size: 6rem; opacity: 0.3; filter: blur(5px); }
-        .mess-trash { cursor: grab; }
-        .mess-socks { cursor: copy; }
-
-        #trash-bin {
-            position: fixed;
-            bottom: 40px;
-            right: 40px;
-            font-size: 4rem;
-            background: rgba(255,255,255,0.05);
-            border: 2px dashed rgba(255,255,255,0.2);
-            width: 140px; height: 140px;
-            display: none;
-            align-items: center;
-            justify-content: center;
-            border-radius: 50%;
-            z-index: 1000;
-            transition: transform 0.2s, background 0.2s;
-        }
-
+        #trash-bin { position: fixed; bottom: 40px; right: 40px; font-size: 4rem; background: rgba(255,255,255,0.05); border: 2px dashed rgba(255,255,255,0.2); width: 140px; height: 140px; display: none; align-items: center; justify-content: center; border-radius: 50%; z-index: 1000; transition: transform 0.2s; }
         #trash-bin.active { background: rgba(255,77,0,0.2); transform: scale(1.1); border-color: var(--accent); }
 
         /* --- IKEA Assembly Modal --- */
-        #ikea-modal {
+        #ikea-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.99); z-index: 5000; display: none; flex-direction: column; align-items: center; justify-content: center; backdrop-filter: blur(60px); }
+        .ikea-card { background: white; color: black; padding: 60px; border-radius: 4px; width: 600px; text-align: center; box-shadow: 0 40px 80px rgba(0,0,0,0.6); }
+        .ikea-diagram { width: 100%; height: 350px; background: #fafafa; border: 1px solid #ddd; margin: 30px 0; position: relative; overflow: hidden; display: flex; align-items: center; justify-content: center; }
+        .ikea-part { position: absolute; background: #0058a3; cursor: grab; display: flex; align-items: center; justify-content: center; color: white; font-weight: 800; font-size: 0.6rem; border: 2px solid rgba(255,255,255,0.2); }
+
+        /* --- Homework Modal --- */
+        #homework-modal {
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.99);
-            z-index: 5000;
+            background: #222;
+            z-index: 8000;
             display: none;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            backdrop-filter: blur(60px);
+            color: #fff;
         }
 
-        .ikea-card {
-            background: white;
-            color: black;
-            padding: 60px;
-            border-radius: 4px;
-            width: 600px;
-            text-align: center;
-            box-shadow: 0 40px 80px rgba(0,0,0,0.6);
-        }
-
-        .ikea-diagram {
-            width: 100%;
-            height: 350px;
-            background: #fafafa;
-            border: 1px solid #ddd;
-            margin: 30px 0;
-            position: relative;
-            overflow: hidden;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .ikea-part {
-            position: absolute;
-            background: #0058a3;
-            cursor: grab;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-weight: 800;
-            font-size: 0.6rem;
-            transition: transform 0.2s;
-            border: 2px solid rgba(255,255,255,0.2);
-        }
-
-        .ikea-part:active { cursor: grabbing; transform: scale(1.1); }
+        .homework-card { background: #333; border: 10px solid #222; border-radius: 5px; width: 600px; padding: 60px; text-align: center; box-shadow: 0 0 50px rgba(0,0,0,1); }
+        .homework-card h1 { font-family: 'Share Tech Mono', monospace; font-size: 3rem; margin-bottom: 20px; color: #ffeb3b; }
+        .homework-card input { width: 100%; background: #111; border: 2px solid #555; color: #00ff88; font-size: 2rem; padding: 20px; text-align: center; margin-top: 20px; outline: none; }
 
         /* --- Touch Grass UI --- */
-        #grass-overlay {
+        #grass-overlay { position: fixed; top: 0; left: -100vw; width: 100vw; height: 100vh; background: rgba(0,0,0,0.95); z-index: 7000; display: flex; align-items: center; justify-content: center; transition: left 0.8s cubic-bezier(0.85, 0, 0.15, 1); }
+        #grass-hand { font-size: 15rem; cursor: grab; position: absolute; left: 5vw; z-index: 7001; }
+        .grass-target { position: absolute; right: 10vw; width: 300px; height: 300px; background: radial-gradient(circle, #2ecc71 0%, #1a1a1a 80%); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 900; color: #000; filter: blur(2px); border: 5px solid rgba(46, 204, 113, 0.5); }
+
+        /* --- Appeal Button --- */
+        #appeal-btn {
             position: fixed;
-            top: 0; left: -100vw;
-            width: 100vw; height: 100vh;
-            background: rgba(0,0,0,0.95);
-            z-index: 7000;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: left 0.8s cubic-bezier(0.85, 0, 0.15, 1);
-        }
-
-        #grass-hand {
-            font-size: 15rem;
-            cursor: grab;
-            position: absolute;
-            left: 5vw;
-            z-index: 7001;
-        }
-
-        .grass-target {
-            position: absolute;
-            right: 10vw;
-            width: 300px; height: 300px;
-            background: radial-gradient(circle, #2ecc71 0%, #1a1a1a 80%);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: 900;
-            color: #000;
-            filter: blur(2px);
-            border: 5px solid rgba(46, 204, 113, 0.5);
+            top: 50px;
+            right: 40px;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.2);
+            color: white;
+            padding: 5px 15px;
+            font-size: 0.5rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            border-radius: 20px;
+            cursor: pointer;
+            z-index: 9500;
+            display: none;
         }
 
         /* --- Gambling Panel --- */
-        .gamble-panel {
-            position: fixed;
-            bottom: 60px;
-            display: flex;
-            gap: 20px;
-            z-index: 100;
-        }
-
-        .gamble-btn {
-            background: rgba(255,255,255,0.02);
-            border: 1px solid rgba(255,255,255,0.1);
-            color: white;
-            padding: 16px 32px;
-            border-radius: 4px;
-            font-size: 0.7rem;
-            font-weight: 800;
-            text-transform: uppercase;
-            letter-spacing: 4px;
-            cursor: pointer;
-            transition: all 0.3s;
-            backdrop-filter: blur(20px);
-        }
-
+        .gamble-panel { position: fixed; bottom: 60px; display: flex; gap: 20px; z-index: 100; }
+        .gamble-btn { background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.1); color: white; padding: 16px 32px; border-radius: 4px; font-size: 0.7rem; font-weight: 800; text-transform: uppercase; letter-spacing: 4px; cursor: pointer; transition: all 0.3s; backdrop-filter: blur(20px); }
         .gamble-btn:hover { background: rgba(255,255,255,0.1); border-color: var(--accent); }
+        .gamble-btn:disabled { opacity: 0.2; cursor: not-allowed; }
         .danger { color: #ff3e00; border-color: #ff3e00; }
 
-        /* --- False Ending --- */
-        #end-screen {
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: #fff;
-            color: #000;
-            display: none;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            z-index: 99999;
-            text-align: center;
-        }
-
-        #end-screen h1 { font-size: 6rem; font-weight: 900; letter-spacing: -4px; line-height: 0.9; }
-
-        /* --- Chaos Toasts --- */
-        .toast {
-            position: fixed;
-            top: 80px;
-            padding: 15px 40px;
-            background: white;
-            color: black;
-            font-weight: 900;
-            border-radius: 2px;
-            pointer-events: none;
-            z-index: 8000;
-            opacity: 0;
-            text-transform: uppercase;
-            letter-spacing: 5px;
-            transform: translateY(-20px);
-            transition: all 0.3s;
-        }
-
-        .toast.active { opacity: 1; transform: translateY(0); }
-
-        #debt-counter {
-            position: fixed;
-            right: 60px;
-            bottom: 60px;
-            text-align: right;
-            font-family: 'Share Tech Mono', monospace;
-            opacity: 0.4;
-            font-size: 0.8rem;
-        }
-
-        /* --- Stats row --- */
-        .stats-row {
-            position: fixed;
-            top: 40px;
-            display: flex;
-            gap: 40px;
-            font-size: 0.7rem;
-            text-transform: uppercase;
-            letter-spacing: 4px;
-            color: var(--muted);
-            z-index: 100;
-        }
+        #debt-counter { position: fixed; right: 60px; bottom: 60px; text-align: right; font-family: 'Share Tech Mono', monospace; opacity: 0.4; font-size: 0.8rem; }
+        .stats-row { position: fixed; top: 60px; width: 100%; display: flex; justify-content: center; gap: 40px; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 4px; color: var(--muted); z-index: 100; }
         .stat span { color: var(--accent); font-weight: 800; }
-
-        /* --- Animations --- */
+        .toast { position: fixed; top: 80px; padding: 15px 40px; background: white; color: black; font-weight: 900; border-radius: 2px; pointer-events: none; z-index: 8500; opacity: 0; text-transform: uppercase; letter-spacing: 5px; transform: translateY(-20px); transition: all 0.3s; }
+        .toast.active { opacity: 1; transform: translateY(0); }
         @keyframes drift { 0% { opacity: 0.4; } 50% { opacity: 1; } 100% { opacity: 0.4; } }
         .drifting { animation: drift 2s infinite; }
     </style>
 </head>
 <body class="layer-finland">
 
+    <div id="admin-bar">AUTHORIZED ACCESS ONLY</div>
+    <button id="appeal-btn" onclick="submitAppeal()">Submit Appeal</button>
+
     <div class="stats-row">
-        <div class="stat">MODE: <span id="vibe-lvl" class="drifting">CLEANING</span></div>
+        <div class="stat">MODE: <span id="vibe-lvl" class="drifting">MANAGED</span></div>
         <div class="stat">CITIZENSHIP: <span id="rank-lvl">VOID</span></div>
-        <div class="stat">ROOM STATE: <span id="mess-lvl">IMMACULATE</span></div>
+        <div class="stat">HEALTH: <span id="mess-lvl">IMMACULATE</span></div>
     </div>
 
     <div id="number-container">
-        <div id="number-whisper">START CLICKING</div>
+        <div id="number-whisper">YOU ARE BEING MANAGED</div>
         <div id="main-number">1</div>
     </div>
 
@@ -402,85 +252,66 @@
     </button>
 
     <div class="gamble-panel">
-        <button class="gamble-btn" onclick="gamble('double')">Double</button>
-        <button class="gamble-btn danger" onclick="gamble('wipe')">All In</button>
-        <button class="gamble-btn" onclick="gamble('risk')">Warp Count</button>
+        <button id="btn-double" class="gamble-btn" onclick="gamble('double')">Double</button>
+        <button id="btn-wipe" class="gamble-btn danger" onclick="gamble('wipe')">All In</button>
+        <button id="btn-risk" class="gamble-btn" onclick="gamble('risk')">Warp Count</button>
     </div>
 
     <div id="debt-counter">
-        <div>GLOBAL DEBT ESCALATION</div>
+        <div id="debt-label">GLOBAL DEBT ESCALATION</div>
         <div id="debt-val" style="color: #ff3e00; font-weight: bold;">$34,502,124,502,124</div>
     </div>
 
     <div id="mess-container"></div>
     <div id="trash-bin">🗑️</div>
 
-    <!-- Bureaucracy Overlay -->
     <div id="bureau-overlay">
         <div class="bureau-card" id="bureau-form">
             <h2>Helsinki Residency Registration</h2>
-            <div class="bureau-field">
-                <label>Family Name</label>
-                <input type="text" placeholder="e.g. Nieminen" id="b-name">
-            </div>
-            <div class="bureau-field">
-                <label>Vibe Reference Code</label>
-                <input type="text" placeholder="[HIDDEN]" disabled>
-            </div>
-            <div class="bureau-field">
-                <label>Are you patient?</label>
-                <input type="checkbox" id="b-patience" style="width: 20px;">
-            </div>
+            <div class="bureau-field"><label>Family Name</label><input type="text" placeholder="e.g. Nieminen" id="b-name"></div>
+            <div class="bureau-field"><label>Are you patient?</label><input type="checkbox" id="b-patience" style="width: 20px;"></div>
             <button class="gamble-btn" style="color: black; border-color: #333; width: 100%;" onclick="submitBureau()">Wait in Queue</button>
         </div>
     </div>
 
-    <!-- IKEA Modal -->
     <div id="ikea-modal">
         <div class="ikea-card">
             <div style="font-size: 0.6rem; letter-spacing: 10px; opacity: 0.5;">NUMBER GO UP</div>
             <div style="font-size: 2rem; font-weight: 900; margin: 10px 0;">ASSEMBLY REQUIRED</div>
-            <div style="font-style: italic; opacity: 0.6;">Model: Står-Vïd v.6</div>
-            <div class="ikea-diagram" id="ikea-zone">
-                <svg width="100%" height="100%" viewBox="0 0 1000 1000" style="opacity: 0.08; position: absolute; pointer-events: none;">
-                    <path d="M100,200 L900,200 L900,800 L100,800 Z" fill="none" stroke="black" stroke-width="2"/>
-                    <line x1="100" y1="100" x2="900" y2="900" stroke="black" stroke-width="2" stroke-dasharray="10,10"/>
-                    <circle cx="500" cy="500" r="100" fill="none" stroke="black" stroke-width="2"/>
-                </svg>
-                <div class="ikea-part" id="p-1" style="width: 80px; height: 180px; left: 10%; top: 10%;">A-12</div>
-                <div class="ikea-part" id="p-2" style="width: 140px; height: 40px; right: 10%; top: 20%; background: #ffdb00; color: #0058a3;">BRÄCK</div>
-                <div class="ikea-part" id="p-3" style="width: 60px; height: 60px; left: 20%; bottom: 10%; border-radius: 50%;">NUT</div>
-            </div>
-            <div style="font-size: 0.7rem; font-weight: 800; text-transform: uppercase;">Guess the structural integrity.</div>
+            <div class="ikea-diagram" id="ikea-zone"></div>
             <button class="gamble-btn" id="ikea-done" style="margin-top: 30px; color: black; border-color: #333; visibility: hidden;">Finish Build</button>
         </div>
     </div>
 
-    <!-- Touch Grass UI -->
+    <div id="homework-modal">
+        <div class="homework-card">
+            <h1>HOMEWORK</h1>
+            <div style="font-size: 1.5rem;" id="homework-q">7 x 8 = ?</div>
+            <input type="number" id="homework-a" placeholder="ANSWER">
+            <div style="margin-top: 20px; font-size: 0.7rem; opacity: 0.4;">SOLVE TO RESUME PROJECT</div>
+        </div>
+    </div>
+
     <div id="grass-overlay">
         <div id="grass-hand">✋</div>
         <div class="grass-target" id="grass-zone">GRASS</div>
     </div>
 
-    <!-- End Screen -->
-    <div id="end-screen">
-        <div style="font-size: 0.7rem; letter-spacing: 15px; opacity: 0.4;">ABSOLUTE FINALITY</div>
+    <div id="end-screen" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #fff; color: #000; display: none; flex-direction: column; align-items: center; justify-content: center; z-index: 99999;">
         <h1>YOU ARE FREE</h1>
-        <div style="font-size: 1.5rem; margin-top: 20px; opacity: 0.7;">Enlightenment achieved. Count reset to 1.</div>
         <button class="gamble-btn" style="color: black; margin-top: 50px;" onclick="location.reload()">AGAIN</button>
     </div>
 
     <div id="toast" class="toast">CHAOS SPIKE</div>
 
     <script>
-        // --- Audio Context for Premium Beeps ---
         const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
         function beep(freq = 440, type = 'sine', duration = 0.1) {
             const osc = audioCtx.createOscillator();
             const gain = audioCtx.createGain();
             osc.type = type;
             osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
-            gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+            gain.gain.setValueAtTime(0.05, audioCtx.currentTime);
             gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + duration);
             osc.connect(gain);
             gain.connect(audioCtx.destination);
@@ -491,14 +322,16 @@
         const state = {
             count: 1,
             debt: 34502124502124,
-            mode: 'NORMAL', // NORMAL, IKEA, BUREAU, GRASS, HALLOWEEN, FEB
+            mode: 'NORMAL',
             lastClick: Date.now(),
             clickRate: 0,
-            hasReset: false,
             messCount: 0,
-            messFreq: 2500, // Frequent spawns
-            whispers: ["AGAIN", "FASTER", "YOU STOPPED", "JUDGING", "SISU", "ENOUGH", "CLEAN YOUR ROOM"],
-            scandinavia: true
+            messFreq: 3000,
+            multiplier: 1,
+            shadowNerf: false,
+            canGamble: true,
+            clicksThisSec: 0,
+            lastCpsCheck: Date.now()
         };
 
         const numEl = document.getElementById('main-number');
@@ -506,216 +339,218 @@
         const debtEl = document.getElementById('debt-val');
         const btn = document.getElementById('main-button');
         const vibeEl = document.getElementById('vibe-lvl');
-        const rankEl = document.getElementById('rank-lvl');
+        const rankingEl = document.getElementById('rank-lvl');
         const messLvlEl = document.getElementById('mess-lvl');
         const messContainer = document.getElementById('mess-container');
         const trashBin = document.getElementById('trash-bin');
+        const adminBar = document.getElementById('admin-bar');
+        const appealBtn = document.getElementById('appeal-btn');
 
-        // --- Core Click ---
         btn.onclick = () => {
             if (state.mode !== 'NORMAL') return;
             
+            state.clicksThisSec++;
             beep(200 + state.count/10, 'square', 0.05);
 
             const now = Date.now();
             state.clickRate = 1000 / (now - state.lastClick);
             state.lastClick = now;
 
-            // Neglect Penalty (Real Life Responsibility)
-            const penalty = Math.max(0.1, 1 - (state.messCount / 40));
-            state.count += 1 * penalty;
-            
-            if (Math.random() < 0.005) {
-                splitNumber();
-                beep(880, 'sawtooth', 0.2);
+            // CPS Punish (Personal Targeting)
+            if (state.clicksThisSec > 15) {
+                triggerAdmin('TOO_FAST');
+                state.clicksThisSec = 0;
+                return;
             }
 
+            // Normal Gain with Multiplier & Mess Penalty
+            const penalty = Math.max(0.1, 1 - (state.messCount / 40));
+            state.count += (1 * state.multiplier * penalty);
+            
             updateUI();
             
-            // Increased Frequency (15%)
             if (Math.random() < 0.15) triggerSuffering();
+            if (Math.random() < 0.02) triggerAdmin();
             if (state.count > 1000000) showEnd();
         };
+
+        setInterval(() => {
+            state.clicksThisSec = 0;
+        }, 1000);
 
         function updateUI() {
             numEl.textContent = Math.floor(state.count).toLocaleString();
             
-            // Dynamic Whispers
             if (state.messCount > 15) setWhisper("DISGUSTING");
-            else if (state.messCount > 5) setWhisper("CLEAN IT UP");
-            else if (state.clickRate > 10) setWhisper("I SEE YOU");
-            
-            // Ranks
-            if (state.count > 1000) rankEl.textContent = "RESIDENT";
-            if (state.count > 10000) rankEl.textContent = "ASSEMBLER";
-            if (state.count > 50000) rankEl.textContent = "BUREAUCRAT";
-            
-            // Mess State
-            if (state.messCount === 0) messLvlEl.textContent = "IMMACULATE";
-            else if (state.messCount < 10) messLvlEl.textContent = "MESSY";
-            else if (state.messCount < 20) messLvlEl.textContent = "NEGLECTED";
-            else messLvlEl.textContent = "HOARDER";
+            else if (state.shadowNerf) setWhisper("NORMAL BEHAVIOR");
+            else if (state.multiplier < 1) setWhisper("BALANCE UPDATED");
             
             document.documentElement.style.setProperty('--mess-jitter', (state.messCount * 1.5) + 'px');
+            
+            const gBtns = document.querySelectorAll('.gamble-panel .gamble-btn');
+            gBtns.forEach(b => b.disabled = !state.canGamble);
         }
 
-        function setWhisper(msg) {
-            whisperEl.textContent = msg;
-            whisperEl.style.opacity = '1';
-        }
+        function setWhisper(msg) { whisperEl.textContent = msg; whisperEl.style.opacity = '1'; }
 
-        // --- Clean Your Room System ---
-        setInterval(() => {
-            if (Math.random() < 0.6) spawnMess(); // High spawn rate
-        }, state.messFreq);
-
-        function spawnMess() {
-            const types = ['💩', '🌫️', '🧦', '📦'];
-            const type = types[Math.floor(Math.random() * types.length)];
-            const div = document.createElement('div');
-            div.className = 'mess-item';
-            if (type === '🌫️') div.classList.add('mess-dust');
-            if (type === '💩') div.classList.add('mess-trash');
-            if (type === '🧦') div.classList.add('mess-socks');
+        // --- Admin Abuse Engine ---
+        function triggerAdmin(specific) {
+            const actions = ['SHADOW_NERF', 'MAINTENANCE', 'FAKE_WIN', 'ACCESS_REVOKED', 'GASLIGHT', 'RESTRICT_GAMBLE'];
+            const type = specific || actions[Math.floor(Math.random() * actions.length)];
             
-            div.textContent = type;
-            div.style.left = Math.random() * 90 + 'vw';
-            div.style.top = Math.random() * 90 + 'vh';
-            
-            // Interactivity
-            if (type === '🌫️') {
-                // Dust: Swipe mouse over it multiple times or just over it
-                div.onmouseover = () => { 
-                    div.style.opacity = parseFloat(getComputedStyle(div).opacity) - 0.1;
-                    if (parseFloat(div.style.opacity) <= 0) clearMess(div);
-                    beep(1500, 'sine', 0.005);
-                };
-            } else if (type === '🧦') {
-                // Socks: Double click to pair
-                div.ondblclick = () => { clearMess(div); beep(600, 'sine', 0.1); };
-            } else {
-                // Drag trash or packages to bin
-                div.onmousedown = (e) => {
-                    trashBin.style.display = 'flex';
-                    const move = (ev) => {
-                        div.style.left = ev.clientX - 25 + 'px';
-                        div.style.top = ev.clientY - 25 + 'px';
-                        const binRect = trashBin.getBoundingClientRect();
-                        if (ev.clientX > binRect.left && ev.clientX < binRect.right &&
-                            ev.clientY > binRect.top && ev.clientY < binRect.bottom) {
-                            trashBin.classList.add('active');
-                        } else {
-                            trashBin.classList.remove('active');
-                        }
-                    };
-                    window.onmousemove = move;
-                    window.onmouseup = (ev) => {
-                        window.onmousemove = null;
-                        const binRect = trashBin.getBoundingClientRect();
-                        if (ev.clientX > binRect.left && ev.clientX < binRect.right &&
-                            ev.clientY > binRect.top && ev.clientY < binRect.bottom) {
-                            clearMess(div);
-                            beep(200, 'sine', 0.2);
-                        }
-                        trashBin.style.display = 'none';
-                    };
-                };
+            switch(type) {
+                case 'SHADOW_NERF':
+                    state.multiplier = 0.5;
+                    state.shadowNerf = true;
+                    showAdminBar("STABILITY UPDATE: VALUES ADJUSTED");
+                    setTimeout(() => { state.multiplier = 1; state.shadowNerf = false; hideAdminBar(); }, 20000);
+                    break;
+                case 'MAINTENANCE':
+                    state.mode = 'MAINTENANCE';
+                    showAdminBar("MAINTENANCE ONGOING. PROGRESS FROZEN.");
+                    setTimeout(() => { state.mode = 'NORMAL'; hideAdminBar(); }, 5000);
+                    break;
+                case 'TOO_FAST':
+                    state.count /= 2;
+                    showAdminBar("UNAUTHORIZED CLICK SPEED. PENALTY APPLIED.");
+                    beep(50, 'sawtooth', 1);
+                    setTimeout(hideAdminBar, 3000);
+                    break;
+                case 'FAKE_WIN':
+                    showToast("PLAYER 'CHAOS_KING' RECEIVED +1,000,000", "#ffeb3b");
+                    break;
+                case 'ACCESS_REVOKED':
+                    state.multiplier = 0.1;
+                    showAdminBar("ACCESS REVOKED: LOW TRUST DETECTED");
+                    appealBtn.style.display = 'block';
+                    setTimeout(() => { state.multiplier = 1; hideAdminBar(); }, 15000);
+                    break;
+                case 'GASLIGHT':
+                    showToast("WORKING AS INTENDED", "white");
+                    setWhisper("THIS IS NORMAL");
+                    break;
+                case 'RESTRICT_GAMBLE':
+                    state.canGamble = false;
+                    showAdminBar("GAMBLING DISABLED FOR YOUR REGION");
+                    setTimeout(() => { state.canGamble = true; hideAdminBar(); }, 30000);
+                    break;
             }
-
-            messContainer.appendChild(div);
-            state.messCount++;
-            updateUI();
         }
 
-        function clearMess(el) {
-            el.style.opacity = '0';
-            setTimeout(() => el.remove(), 300);
-            state.messCount--;
-            updateUI();
+        function showAdminBar(msg) {
+            adminBar.textContent = msg;
+            adminBar.style.display = 'flex';
+            beep(100, 'square', 0.2);
+        }
+        function hideAdminBar() { adminBar.style.display = 'none'; }
+
+        function submitAppeal() {
+            appealBtn.textContent = "Processing...";
+            setTimeout(() => {
+                showToast("APPEAL DENIED: AUTO-REJECTED", "red");
+                appealBtn.style.display = 'none';
+                appealBtn.textContent = "Submit Appeal";
+                beep(80, 'sawtooth', 0.5);
+            }, 3000);
         }
 
-        // --- Debt Clock ---
-        setInterval(() => {
-            state.debt += 1245 * (1 + Math.random());
-            debtEl.textContent = "$" + Math.floor(state.debt).toLocaleString();
-        }, 100);
-
-        // --- Suffering Logic ---
+        // --- Sufffering / Random Layers ---
         function triggerSuffering() {
             const roll = Math.random();
-            if (roll < 0.2) startIkea();
+            if (roll < 0.2) randomizeIkea();
             else if (roll < 0.4) startBureau();
             else if (roll < 0.55) startGrass();
-            else if (roll < 0.75) triggerSeason();
-            else showToast("CHAOS SPIKE", "#ff4d00");
+            else if (roll < 0.75) startHomework();
+            else if (roll < 0.9) triggerSeason();
         }
 
-        // 🪑 IKEA System
-        function startIkea() {
+        // 🪑 Randomized IKEA Fix
+        function randomizeIkea() {
             state.mode = 'IKEA';
-            beep(150, 'sawtooth', 0.3);
             const modal = document.getElementById('ikea-modal');
+            const zone = document.getElementById('ikea-zone');
+            zone.innerHTML = '';
             modal.style.display = 'flex';
             
-            const parts = [document.getElementById('p-1'), document.getElementById('p-2'), document.getElementById('p-3')];
-            const done = document.getElementById('ikea-done');
+            const partTypes = [
+                { id: 'BRÄCK', w: 140, h: 40, c: '#ffdb00' },
+                { id: 'NUT', w: 60, h: 60, c: '#777', r: '50%' },
+                { id: 'A-12', w: 80, h: 180, c: '#0058a3' },
+                { id: 'GLÜK', w: 100, h: 100, c: '#ff3e00' }
+            ];
 
-            parts.forEach(p => {
+            const count = 3 + Math.floor(Math.random() * 3);
+            const activeParts = [];
+            
+            for(let i=0; i<count; i++) {
+                const t = partTypes[Math.floor(Math.random() * partTypes.length)];
+                const p = document.createElement('div');
+                p.className = 'ikea-part';
+                p.textContent = t.id + "-" + Math.floor(Math.random()*99);
+                p.style.width = t.w + 'px';
+                p.style.height = t.h + 'px';
+                p.style.background = t.c;
+                if (t.r) p.style.borderRadius = t.r;
+                p.style.left = Math.random() * 80 + '%';
+                p.style.top = Math.random() * 80 + '%';
+                
                 p.onmousedown = (e) => {
                     const move = (ev) => {
-                        const rect = document.getElementById('ikea-zone').getBoundingClientRect();
+                        const rect = zone.getBoundingClientRect();
                         p.style.left = (ev.clientX - rect.left - (p.clientWidth/2)) + 'px';
                         p.style.top = (ev.clientY - rect.top - (p.clientHeight/2)) + 'px';
                         
                         const dist = Math.hypot(ev.clientX - (rect.left + rect.width/2), ev.clientY - (rect.top + rect.height/2));
-                        if (dist < 100) {
+                        if (dist < 80) {
                             p.style.boxShadow = "0 0 20px #00ff88";
-                            done.style.visibility = "visible";
+                            p.dataset.locked = "true";
+                            checkIkeaComplete();
                         }
                     };
                     window.onmousemove = move;
                     window.onmouseup = () => window.onmousemove = null;
                 };
-            });
-
-            done.onclick = () => {
-                beep(440, 'sine', 0.2);
-                modal.style.display = 'none';
-                state.mode = 'NORMAL';
-                showToast("ASSEMBLY LOGGED", "#0058a3");
-            };
-        }
-
-        // 🇫🇮 Finland Bureaucracy
-        function startBureau() {
-            state.mode = 'BUREAU';
-            beep(100, 'square', 0.5);
-            document.getElementById('bureau-overlay').style.display = 'flex';
-        }
-        function submitBureau() {
-            if (!document.getElementById('b-name').value || !document.getElementById('b-patience').checked) {
-                showToast("FORM INCOMPLETE", "red");
-                beep(80, 'sawtooth', 0.1);
-                return;
+                zone.appendChild(p);
+                activeParts.push(p);
             }
-            document.getElementById('bureau-overlay').style.display = 'none';
-            state.mode = 'NORMAL';
-            
-            btn.disabled = true;
-            const qDisp = document.getElementById('queue-display');
-            qDisp.style.display = 'block';
-            let s = 10;
-            const t = setInterval(() => {
-                s--;
-                beep(600, 'sine', 0.05);
-                qDisp.textContent = `WAIT: ${s}s`;
-                if (s <= 0) {
-                    clearInterval(t);
-                    btn.disabled = false;
-                    qDisp.style.display = 'none';
-                    showToast("NEXT IN LINE", "white");
+
+            function checkIkeaComplete() {
+                if (activeParts.every(p => p.dataset.locked === "true")) {
+                    document.getElementById('ikea-done').style.visibility = 'visible';
                 }
-            }, 1000);
+            }
+        }
+
+        document.getElementById('ikea-done').onclick = () => {
+            document.getElementById('ikea-modal').style.display = 'none';
+            state.mode = 'NORMAL';
+            showToast("STRUCTURAL FAILURE IMMINENT", "white");
+        };
+
+        // 📚 Missing Homework Fix
+        function startHomework() {
+            state.mode = 'HOMEWORK';
+            const modal = document.getElementById('homework-modal');
+            const qEl = document.getElementById('homework-q');
+            const aEl = document.getElementById('homework-a');
+            
+            const n1 = 4 + Math.floor(Math.random() * 12);
+            const n2 = 3 + Math.floor(Math.random() * 12);
+            const result = n1 * n2;
+            
+            qEl.textContent = `${n1} x ${n2} = ?`;
+            aEl.value = '';
+            modal.style.display = 'flex';
+            aEl.focus();
+
+            aEl.oninput = () => {
+                if (parseInt(aEl.value) === result) {
+                    beep(880, 'sine', 0.2);
+                    modal.style.display = 'none';
+                    state.mode = 'NORMAL';
+                    showToast("GRADE: ACCEPTABLE", "#00ff88");
+                }
+            };
         }
 
         // 🌱 Touch Grass (FIXED COLLISION)
@@ -725,39 +560,23 @@
             const hand = document.getElementById('grass-hand');
             const zone = document.getElementById('grass-zone');
             overlay.style.left = '0';
-
             hand.onmousedown = (e) => {
                 const move = (ev) => {
                     hand.style.left = (ev.clientX - (hand.clientWidth/2)) + 'px';
                     hand.style.top = (ev.clientY - (hand.clientHeight/2)) + 'px';
-                    
                     const hRect = hand.getBoundingClientRect();
                     const zRect = zone.getBoundingClientRect();
-                    
-                    // Precise Intersection Check
-                    const isTouching = (
-                        hRect.right > zRect.left && 
-                        hRect.left < zRect.right &&
-                        hRect.bottom > zRect.top && 
-                        hRect.top < zRect.bottom
-                    );
-
-                    if (isTouching) {
+                    if (hRect.right > zRect.left && hRect.left < zRect.right && hRect.bottom > zRect.top && hRect.top < zRect.bottom) {
                         zone.style.background = "#2ecc71";
                         zone.textContent = "DONE";
                         setTimeout(() => {
-                            if (!isTouching && state.mode === 'GRASS') return;
                             overlay.style.left = '-100vw';
                             state.mode = 'NORMAL';
                             hand.style.left = '5vw';
                             hand.style.top = '50vh';
                             window.onmousemove = null;
-                            beep(300, 'sine', 0.1);
                             zone.textContent = "GRASS";
                         }, 500);
-                    } else {
-                        zone.style.background = "radial-gradient(circle, #2ecc71 0%, #1a1a1a 80%)";
-                        zone.textContent = "GRASS";
                     }
                 };
                 window.onmousemove = move;
@@ -765,58 +584,82 @@
             };
         }
 
-        // ❄️ Seasons
+        // 🇫🇮 Bureaucracy
+        function startBureau() { state.mode = 'BUREAU'; document.getElementById('bureau-overlay').style.display = 'flex'; }
+        function submitBureau() {
+            if (!document.getElementById('b-name').value || !document.getElementById('b-patience').checked) return;
+            document.getElementById('bureau-overlay').style.display = 'none';
+            state.mode = 'NORMAL';
+            btn.disabled = true;
+            const qDisp = document.getElementById('queue-display');
+            qDisp.style.display = 'block';
+            let s = 10;
+            const t = setInterval(() => {
+                s--;
+                qDisp.textContent = `WAIT: ${s}s`;
+                if (s <= 0) { clearInterval(t); btn.disabled = false; qDisp.style.display = 'none'; }
+            }, 1000);
+        }
+
+        // --- Clean Your Room System ---
+        setInterval(() => { if (Math.random() < 0.5) spawnMess(); }, state.messFreq);
+        function spawnMess() {
+            const types = ['💩', '🌫️', '🧦', '📦'];
+            const type = types[Math.floor(Math.random() * types.length)];
+            const div = document.createElement('div');
+            div.className = 'mess-item';
+            if (type === '🌫️') div.classList.add('mess-dust');
+            div.textContent = type;
+            div.style.left = Math.random() * 90 + 'vw';
+            div.style.top = Math.random() * 90 + 'vh';
+            if (type === '🌫️') div.onmouseover = () => { div.style.opacity = parseFloat(getComputedStyle(div).opacity) - 0.1; if (parseFloat(div.style.opacity) <= 0) clearMess(div); };
+            else if (type === '🧦') div.ondblclick = () => clearMess(div);
+            else {
+                div.onmousedown = (e) => {
+                    trashBin.style.display = 'flex';
+                    const move = (ev) => {
+                        div.style.left = ev.clientX - 25 + 'px'; div.style.top = ev.clientY - 25 + 'px';
+                        const binRect = trashBin.getBoundingClientRect();
+                        if (ev.clientX > binRect.left && ev.clientX < binRect.right && ev.clientY > binRect.top && ev.clientY < binRect.bottom) trashBin.classList.add('active');
+                        else trashBin.classList.remove('active');
+                    };
+                    window.onmousemove = move;
+                    window.onmouseup = (ev) => {
+                        window.onmousemove = null;
+                        const binRect = trashBin.getBoundingClientRect();
+                        if (ev.clientX > binRect.left && ev.clientX < binRect.right && ev.clientY > binRect.top && ev.clientY < binRect.bottom) clearMess(div);
+                        trashBin.style.display = 'none';
+                    };
+                };
+            }
+            messContainer.appendChild(div);
+            state.messCount++;
+            updateUI();
+        }
+        function clearMess(el) { el.style.opacity = '0'; setTimeout(() => el.remove(), 300); state.messCount--; updateUI(); }
+
         function triggerSeason() {
             const isFeb = Math.random() < 0.5;
             document.body.className = isFeb ? 'layer-february' : 'layer-halloween';
-            showToast(isFeb ? "FEBRUARY FREEZE" : "HALLOWEEN DECEPTION", isFeb ? "#00d2ff" : "#ff9000");
-            beep(isFeb ? 1000 : 50, 'sawtooth', 0.5);
-            
-            // Season Modifiers
-            state.messFreq = isFeb ? 800 : 2500;
-            
-            setTimeout(() => {
-                document.body.className = 'layer-finland';
-                state.messFreq = 2500;
-            }, 8000);
+            showToast(isFeb ? "SHORT MONTH: FASTER DECAY" : "HALLOWEEN: FAKE PROGRESS", isFeb ? "#00d2ff" : "#ff9000");
+            setTimeout(() => { document.body.className = 'layer-finland'; }, 8000);
         }
 
-        // --- Gambling ---
         function gamble(type) {
-            const roll = Math.random();
-            if (roll < 0.4) {
-                state.count = 1;
-                beep(40, 'square', 1);
-                showToast("WIPEOUT", "red");
-            } else {
-                state.count *= (type === 'risk' ? 5 : 2);
-                beep(880, 'sine', 0.5);
-                showToast("JACKPOT", "#00ff88");
-            }
+            if (!state.canGamble) return;
+            if (Math.random() < 0.4) { state.count = 1; showToast("WIPEOUT", "red"); }
+            else { state.count *= (type === 'risk' ? 5 : 2); showToast("JACKPOT", "#00ff88"); }
             updateUI();
         }
 
         function showToast(txt, color) {
             const t = document.getElementById('toast');
-            t.textContent = txt;
-            t.style.background = color;
-            t.classList.add('active');
+            t.textContent = txt; t.style.background = color; t.classList.add('active');
             setTimeout(() => t.classList.remove('active'), 2000);
         }
 
-        function splitNumber() {
-            numEl.style.transform = "translateX(50px)";
-            const clone = numEl.cloneNode(true);
-            clone.style.position = "absolute";
-            clone.style.left = "0";
-            clone.style.top = "0";
-            clone.style.transform = "translateX(-150px)";
-            clone.style.opacity = "0.3";
-            numEl.parentNode.appendChild(clone);
-            setTimeout(() => clone.remove(), 2000);
-        }
-
-        function showEnd() { document.getElementById('end-screen').style.display = 'flex'; beep(1000, 'sine', 2); }
+        function showEnd() { document.getElementById('end-screen').style.display = 'flex'; }
+        setInterval(() => { state.debt += 1245; debtEl.textContent = "$" + Math.floor(state.debt).toLocaleString(); }, 100);
     </script>
 </body>
 </html>
