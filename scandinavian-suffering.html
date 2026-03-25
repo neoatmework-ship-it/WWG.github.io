@@ -17,6 +17,7 @@
             --ui-flicker: none;
             --ui-jitter: none;
             --wait-display: none;
+            --mess-jitter: 0px;
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; cursor: crosshair; }
@@ -60,10 +61,10 @@
 
         @keyframes jitter {
             0% { transform: translate(0, 0); }
-            20% { transform: translate(-2px, 2px); }
-            40% { transform: translate(-2px, -2px); }
-            60% { transform: translate(2px, 2px); }
-            80% { transform: translate(2px, -2px); }
+            20% { transform: translate(calc(-2px - var(--mess-jitter)), calc(2px + var(--mess-jitter))); }
+            40% { transform: translate(calc(-2px - var(--mess-jitter)), calc(-2px - var(--mess-jitter))); }
+            60% { transform: translate(calc(2px + var(--mess-jitter)), calc(2px + var(--mess-jitter))); }
+            80% { transform: translate(calc(2px + var(--mess-jitter)), calc(-2px - var(--mess-jitter))); }
             100% { transform: translate(0, 0); }
         }
 
@@ -72,7 +73,7 @@
             position: relative;
             text-align: center;
             margin-bottom: 40px;
-            animation: var(--ui-flicker), var(--ui-jitter);
+            animation: var(--ui-flicker), jitter 0.1s infinite;
             user-select: none;
             z-index: 2;
         }
@@ -164,6 +165,45 @@
         .bureau-field label { display: block; font-size: 0.7rem; color: #666; font-weight: bold; margin-bottom: 5px; }
         .bureau-field input { width: 100%; border: 1px solid #ccc; padding: 10px; font-family: serif; outline: none; background: white; }
 
+        /* --- Mess System --- */
+        #mess-container {
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            z-index: 5;
+        }
+
+        .mess-item {
+            position: absolute;
+            font-size: 3rem;
+            pointer-events: all;
+            user-select: none;
+            transition: opacity 0.3s, transform 0.1s;
+            filter: drop-shadow(0 10px 10px rgba(0,0,0,0.5));
+        }
+
+        .mess-dust { font-size: 6rem; opacity: 0.3; filter: blur(5px); }
+        .mess-trash { cursor: grab; }
+        .mess-socks { cursor: copy; }
+
+        #trash-bin {
+            position: fixed;
+            bottom: 40px;
+            right: 40px;
+            font-size: 4rem;
+            background: rgba(255,255,255,0.05);
+            border: 2px dashed rgba(255,255,255,0.2);
+            width: 140px; height: 140px;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            z-index: 1000;
+            transition: transform 0.2s, background 0.2s;
+        }
+
+        #trash-bin.active { background: rgba(255,77,0,0.2); transform: scale(1.1); border-color: var(--accent); }
+
         /* --- IKEA Assembly Modal --- */
         #ikea-modal {
             position: fixed;
@@ -221,7 +261,7 @@
             position: fixed;
             top: 0; left: -100vw;
             width: 100vw; height: 100vh;
-            background: rgba(0,0,0,0.9);
+            background: rgba(0,0,0,0.95);
             z-index: 7000;
             display: flex;
             align-items: center;
@@ -234,20 +274,22 @@
             cursor: grab;
             position: absolute;
             left: 5vw;
+            z-index: 7001;
         }
 
         .grass-target {
             position: absolute;
             right: 10vw;
-            width: 250px; height: 250px;
+            width: 300px; height: 300px;
             background: radial-gradient(circle, #2ecc71 0%, #1a1a1a 80%);
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-weight: 800;
+            font-weight: 900;
             color: #000;
             filter: blur(2px);
+            border: 5px solid rgba(46, 204, 113, 0.5);
         }
 
         /* --- Gambling Panel --- */
@@ -345,9 +387,9 @@
 <body class="layer-finland">
 
     <div class="stats-row">
-        <div class="stat">MODE: <span id="vibe-lvl" class="drifting">QUIET</span></div>
+        <div class="stat">MODE: <span id="vibe-lvl" class="drifting">CLEANING</span></div>
         <div class="stat">CITIZENSHIP: <span id="rank-lvl">VOID</span></div>
-        <div class="stat">TOP: <span id="top-pct">100%</span></div>
+        <div class="stat">ROOM STATE: <span id="mess-lvl">IMMACULATE</span></div>
     </div>
 
     <div id="number-container">
@@ -369,6 +411,9 @@
         <div>GLOBAL DEBT ESCALATION</div>
         <div id="debt-val" style="color: #ff3e00; font-weight: bold;">$34,502,124,502,124</div>
     </div>
+
+    <div id="mess-container"></div>
+    <div id="trash-bin">🗑️</div>
 
     <!-- Bureaucracy Overlay -->
     <div id="bureau-overlay">
@@ -414,7 +459,7 @@
     <!-- Touch Grass UI -->
     <div id="grass-overlay">
         <div id="grass-hand">✋</div>
-        <div class="grass-target">GRASS</div>
+        <div class="grass-target" id="grass-zone">GRASS</div>
     </div>
 
     <!-- End Screen -->
@@ -450,7 +495,9 @@
             lastClick: Date.now(),
             clickRate: 0,
             hasReset: false,
-            whispers: ["AGAIN", "FASTER", "YOU STOPPED", "JUDGING", "SISU", "ENOUGH"],
+            messCount: 0,
+            messFreq: 2500, // Frequent spawns
+            whispers: ["AGAIN", "FASTER", "YOU STOPPED", "JUDGING", "SISU", "ENOUGH", "CLEAN YOUR ROOM"],
             scandinavia: true
         };
 
@@ -460,7 +507,9 @@
         const btn = document.getElementById('main-button');
         const vibeEl = document.getElementById('vibe-lvl');
         const rankEl = document.getElementById('rank-lvl');
-        const topEl = document.getElementById('top-pct');
+        const messLvlEl = document.getElementById('mess-lvl');
+        const messContainer = document.getElementById('mess-container');
+        const trashBin = document.getElementById('trash-bin');
 
         // --- Core Click ---
         btn.onclick = () => {
@@ -472,16 +521,19 @@
             state.clickRate = 1000 / (now - state.lastClick);
             state.lastClick = now;
 
-            // Rare Event: Number Splitting
+            // Neglect Penalty (Real Life Responsibility)
+            const penalty = Math.max(0.1, 1 - (state.messCount / 40));
+            state.count += 1 * penalty;
+            
             if (Math.random() < 0.005) {
                 splitNumber();
                 beep(880, 'sawtooth', 0.2);
             }
 
-            state.count++;
             updateUI();
             
-            if (Math.random() < 0.05) triggerSuffering();
+            // Increased Frequency (15%)
+            if (Math.random() < 0.15) triggerSuffering();
             if (state.count > 1000000) showEnd();
         };
 
@@ -489,21 +541,97 @@
             numEl.textContent = Math.floor(state.count).toLocaleString();
             
             // Dynamic Whispers
-            if (state.clickRate > 10) setWhisper("I SEE YOU");
-            else if (state.clickRate > 5) setWhisper("PATIENCE");
-            else if (state.clickRate < 0.5) setWhisper("ABANDONED");
-
+            if (state.messCount > 15) setWhisper("DISGUSTING");
+            else if (state.messCount > 5) setWhisper("CLEAN IT UP");
+            else if (state.clickRate > 10) setWhisper("I SEE YOU");
+            
             // Ranks
             if (state.count > 1000) rankEl.textContent = "RESIDENT";
             if (state.count > 10000) rankEl.textContent = "ASSEMBLER";
             if (state.count > 50000) rankEl.textContent = "BUREAUCRAT";
             
-            topEl.textContent = (100 / (1 + state.count/1000)).toFixed(4) + "%";
+            // Mess State
+            if (state.messCount === 0) messLvlEl.textContent = "IMMACULATE";
+            else if (state.messCount < 10) messLvlEl.textContent = "MESSY";
+            else if (state.messCount < 20) messLvlEl.textContent = "NEGLECTED";
+            else messLvlEl.textContent = "HOARDER";
+            
+            document.documentElement.style.setProperty('--mess-jitter', (state.messCount * 1.5) + 'px');
         }
 
         function setWhisper(msg) {
             whisperEl.textContent = msg;
             whisperEl.style.opacity = '1';
+        }
+
+        // --- Clean Your Room System ---
+        setInterval(() => {
+            if (Math.random() < 0.6) spawnMess(); // High spawn rate
+        }, state.messFreq);
+
+        function spawnMess() {
+            const types = ['💩', '🌫️', '🧦', '📦'];
+            const type = types[Math.floor(Math.random() * types.length)];
+            const div = document.createElement('div');
+            div.className = 'mess-item';
+            if (type === '🌫️') div.classList.add('mess-dust');
+            if (type === '💩') div.classList.add('mess-trash');
+            if (type === '🧦') div.classList.add('mess-socks');
+            
+            div.textContent = type;
+            div.style.left = Math.random() * 90 + 'vw';
+            div.style.top = Math.random() * 90 + 'vh';
+            
+            // Interactivity
+            if (type === '🌫️') {
+                // Dust: Swipe mouse over it multiple times or just over it
+                div.onmouseover = () => { 
+                    div.style.opacity = parseFloat(getComputedStyle(div).opacity) - 0.1;
+                    if (parseFloat(div.style.opacity) <= 0) clearMess(div);
+                    beep(1500, 'sine', 0.005);
+                };
+            } else if (type === '🧦') {
+                // Socks: Double click to pair
+                div.ondblclick = () => { clearMess(div); beep(600, 'sine', 0.1); };
+            } else {
+                // Drag trash or packages to bin
+                div.onmousedown = (e) => {
+                    trashBin.style.display = 'flex';
+                    const move = (ev) => {
+                        div.style.left = ev.clientX - 25 + 'px';
+                        div.style.top = ev.clientY - 25 + 'px';
+                        const binRect = trashBin.getBoundingClientRect();
+                        if (ev.clientX > binRect.left && ev.clientX < binRect.right &&
+                            ev.clientY > binRect.top && ev.clientY < binRect.bottom) {
+                            trashBin.classList.add('active');
+                        } else {
+                            trashBin.classList.remove('active');
+                        }
+                    };
+                    window.onmousemove = move;
+                    window.onmouseup = (ev) => {
+                        window.onmousemove = null;
+                        const binRect = trashBin.getBoundingClientRect();
+                        if (ev.clientX > binRect.left && ev.clientX < binRect.right &&
+                            ev.clientY > binRect.top && ev.clientY < binRect.bottom) {
+                            clearMess(div);
+                            beep(200, 'sine', 0.2);
+                        }
+                        trashBin.style.display = 'none';
+                    };
+                };
+            }
+
+            messContainer.appendChild(div);
+            state.messCount++;
+            updateUI();
+        }
+
+        function clearMess(el) {
+            el.style.opacity = '0';
+            setTimeout(() => el.remove(), 300);
+            state.messCount--;
+            updateUI();
         }
 
         // --- Debt Clock ---
@@ -590,22 +718,46 @@
             }, 1000);
         }
 
-        // 🌱 Touch Grass
+        // 🌱 Touch Grass (FIXED COLLISION)
         function startGrass() {
             state.mode = 'GRASS';
             const overlay = document.getElementById('grass-overlay');
             const hand = document.getElementById('grass-hand');
+            const zone = document.getElementById('grass-zone');
             overlay.style.left = '0';
 
             hand.onmousedown = (e) => {
                 const move = (ev) => {
-                    hand.style.left = (ev.clientX - 100) + 'px';
-                    if (ev.clientX > window.innerWidth - 300) {
-                        overlay.style.left = '-100vw';
-                        state.mode = 'NORMAL';
-                        hand.style.left = '5vw';
-                        window.onmousemove = null;
-                        beep(300, 'sine', 0.1);
+                    hand.style.left = (ev.clientX - (hand.clientWidth/2)) + 'px';
+                    hand.style.top = (ev.clientY - (hand.clientHeight/2)) + 'px';
+                    
+                    const hRect = hand.getBoundingClientRect();
+                    const zRect = zone.getBoundingClientRect();
+                    
+                    // Precise Intersection Check
+                    const isTouching = (
+                        hRect.right > zRect.left && 
+                        hRect.left < zRect.right &&
+                        hRect.bottom > zRect.top && 
+                        hRect.top < zRect.bottom
+                    );
+
+                    if (isTouching) {
+                        zone.style.background = "#2ecc71";
+                        zone.textContent = "DONE";
+                        setTimeout(() => {
+                            if (!isTouching && state.mode === 'GRASS') return;
+                            overlay.style.left = '-100vw';
+                            state.mode = 'NORMAL';
+                            hand.style.left = '5vw';
+                            hand.style.top = '50vh';
+                            window.onmousemove = null;
+                            beep(300, 'sine', 0.1);
+                            zone.textContent = "GRASS";
+                        }, 500);
+                    } else {
+                        zone.style.background = "radial-gradient(circle, #2ecc71 0%, #1a1a1a 80%)";
+                        zone.textContent = "GRASS";
                     }
                 };
                 window.onmousemove = move;
@@ -619,7 +771,14 @@
             document.body.className = isFeb ? 'layer-february' : 'layer-halloween';
             showToast(isFeb ? "FEBRUARY FREEZE" : "HALLOWEEN DECEPTION", isFeb ? "#00d2ff" : "#ff9000");
             beep(isFeb ? 1000 : 50, 'sawtooth', 0.5);
-            setTimeout(() => document.body.className = 'layer-finland', 8000);
+            
+            // Season Modifiers
+            state.messFreq = isFeb ? 800 : 2500;
+            
+            setTimeout(() => {
+                document.body.className = 'layer-finland';
+                state.messFreq = 2500;
+            }, 8000);
         }
 
         // --- Gambling ---
