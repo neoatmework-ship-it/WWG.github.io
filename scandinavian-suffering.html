@@ -225,8 +225,140 @@
         #debt-counter { position: fixed; right: 60px; bottom: 60px; text-align: right; font-family: 'Share Tech Mono', monospace; opacity: 0.4; font-size: 0.8rem; }
         .stats-row { position: fixed; top: 60px; width: 100%; display: flex; justify-content: center; gap: 40px; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 4px; color: var(--muted); z-index: 100; }
         .stat span { color: var(--accent); font-weight: 800; }
-        .toast { position: fixed; top: 80px; padding: 15px 40px; background: white; color: black; font-weight: 900; border-radius: 2px; pointer-events: none; z-index: 8500; opacity: 0; text-transform: uppercase; letter-spacing: 5px; transform: translateY(-20px); transition: all 0.3s; }
-        .toast.active { opacity: 1; transform: translateY(0); }
+        .toast { position: fixed; bottom: 100px; left: 50%; transform: translateX(-50%); background: white; color: black; padding: 10px 30px; font-weight: 700; text-transform: uppercase; letter-spacing: 4px; font-size: 0.7rem; z-index: 9000; opacity: 0; transition: 0.3s; }
+        .toast.active { opacity: 1; }
+
+        /* --- Stock Exchange --- */
+        #market-panel {
+            position: fixed;
+            bottom: 40px; left: 40px;
+            width: 250px;
+            background: rgba(0,0,0,0.85);
+            border: 1px solid var(--accent);
+            padding: 20px;
+            border-radius: 4px;
+            z-index: 100;
+            font-family: 'Share Tech Mono', monospace;
+            box-shadow: 0 0 30px rgba(255,77,0,0.1);
+        }
+        .market-header { 
+            color: var(--accent); 
+            font-size: 0.6rem; 
+            margin-bottom: 15px; 
+            letter-spacing: 3px;
+            border-bottom: 1px solid rgba(255,77,0,0.2);
+            padding-bottom: 5px;
+        }
+        .market-ticker { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+        #stock-price { font-size: 1.2rem; font-weight: 700; color: #fff; }
+        .market-actions { display: flex; gap: 10px; margin-top: 15px; }
+        .market-btn { 
+            flex: 1; 
+            background: #111; 
+            border: 1px solid #444; 
+            color: white; 
+            padding: 8px; 
+            font-size: 0.6rem; 
+            cursor: pointer; 
+            text-transform: uppercase;
+            font-family: inherit;
+        }
+        .market-btn:hover { background: #222; border-color: var(--accent); }
+        .market-btn:disabled { opacity: 0.2; cursor: wait; }
+        #shares-count { font-size: 0.5rem; color: var(--muted); margin-top: 10px; }
+
+        /* --- True Ending --- */
+        #exit-overlay {
+            position: fixed;
+            inset: 0;
+            background: #000;
+            z-index: 100000;
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            opacity: 0;
+            transition: opacity 5s ease;
+        }
+        .exit-text {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            font-weight: 300;
+            color: #444;
+            font-size: 1.2rem;
+            margin: 10px 0;
+            letter-spacing: 2px;
+            opacity: 0;
+            transition: opacity 3s ease;
+        }
+        #true-modal {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.9);
+            z-index: 99999;
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(20px);
+        }
+        .leave-btn {
+            margin-top: 40px;
+            background: none;
+            border: 1px solid #333;
+            color: #555;
+            padding: 10px 30px;
+            font-size: 0.6rem;
+            cursor: pointer;
+            text-transform: uppercase;
+            letter-spacing: 4px;
+            transition: 0.5s;
+        }
+        .leave-btn:hover { border-color: #666; color: #888; }
+        
+        /* --- Upgrade Shop --- */
+        #upgrade-shop {
+            position: fixed;
+            top: 120px; right: 40px;
+            width: 220px;
+            background: rgba(0,0,0,0.8);
+            border: 1px solid var(--accent);
+            padding: 15px;
+            z-index: 100;
+            max-height: 60vh;
+            overflow-y: auto;
+            font-family: 'Share Tech Mono', monospace;
+        }
+        .shop-header { color: var(--accent); font-size: 0.6rem; margin-bottom: 10px; border-bottom: 1px solid rgba(255,77,0,0.2); padding-bottom: 5px; }
+        .upgrade-item { margin-bottom: 12px; padding-bottom: 12px; border-bottom: 1px solid rgba(255,255,255,0.05); }
+        .up-name { font-size: 0.7rem; color: #fff; display: block; }
+        .up-desc { font-size: 0.5rem; color: var(--muted); display: block; margin: 304:4px 0; }
+        .up-cost { font-size: 0.6rem; color: var(--accent); }
+        .up-btn { background: #111; border: 1px solid #333; color: #fff; font-size: 0.55rem; padding: 4px 8px; cursor: pointer; float: right; font-family: inherit; }
+        .up-btn:hover { border-color: var(--accent); }
+        .up-btn:disabled { opacity: 0.2; cursor: wait; }
+
+        /* --- Ad System --- */
+        .ad-modal {
+            position: fixed;
+            width: 350px;
+            background: #fff;
+            color: #000;
+            padding: 20px;
+            z-index: 9500;
+            box-shadow: 0 40px 80px rgba(0,0,0,1);
+            border: 8px solid #000;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            display: none;
+            flex-direction: column;
+            animation: popIn 0.3s cubic-bezier(0.18, 0.89, 0.32, 1.28);
+        }
+        @keyframes popIn { from { transform: scale(0.5); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+        .ad-close { position: absolute; top: 5px; right: 5px; background: #000; color: #fff; border: none; padding: 2px 10px; cursor: pointer; font-size: 0.8rem; font-weight: 800; }
+        .ad-content { font-size: 0.9rem; margin-top: 10px; line-height: 1.4; }
+        .ad-btn { background: #ff4d00; color: white; border: none; padding: 12px; margin-top: 20px; font-weight: 800; cursor: pointer; text-transform: uppercase; }
+        .ad-unskippable { border: 10px solid #ff0000; }
+        
         @keyframes drift { 0% { opacity: 0.4; } 50% { opacity: 1; } 100% { opacity: 0.4; } }
         .drifting { animation: drift 2s infinite; }
     </style>
@@ -240,6 +372,40 @@
         <div class="stat">MODE: <span id="vibe-lvl" class="drifting">MANAGED</span></div>
         <div class="stat">CITIZENSHIP: <span id="rank-lvl">VOID</span></div>
         <div class="stat">HEALTH: <span id="mess-lvl">IMMACULATE</span></div>
+    </div>
+
+    <div id="admin-panel">
+        <h1 style="font-size: 3rem; margin-bottom: 20px;">ADMIN ACTION</h1>
+        <p id="admin-msg">Unauthorized behavior detected.</p>
+    </div>
+
+    <!-- Upgrade Shop -->
+    <div id="upgrade-shop">
+        <div class="shop-header">POISONED UPGRADES [BETA]</div>
+        <div id="shop-items"></div>
+    </div>
+
+    <!-- Ad Overlay -->
+    <div id="ad-popup" class="ad-modal">
+        <button class="ad-close" onclick="closeAd()">X</button>
+        <div style="font-size: 0.5rem; letter-spacing: 5px; opacity: 0.5;">SPONSORED INTERRUPTION</div>
+        <div class="ad-content" id="ad-text">Win 1,000,000 instantly!</div>
+        <button class="ad-btn" id="ad-action">Claim Reward</button>
+        <div id="ad-timer" style="font-size: 0.6rem; margin-top: 10px; display: none;">SKIPPABLE IN 5s</div>
+    </div>
+
+    <!-- Stock Market -->
+    <div id="market-panel">
+        <div class="market-header">SCANDINAVIAN EXCHANGE [UP]</div>
+        <div class="market-ticker">
+            <span id="stock-sym">UP</span>
+            <span id="stock-price">$100.00</span>
+        </div>
+        <div class="market-actions">
+            <button class="market-btn" id="buy-btn" onclick="buyStock()">Buy</button>
+            <button class="market-btn" id="sell-btn" onclick="sellStock()">Sell</button>
+        </div>
+        <div id="shares-count">SHARES: 0</div>
     </div>
 
     <div id="number-container">
@@ -302,6 +468,19 @@
         <button class="gamble-btn" style="color: black; margin-top: 50px;" onclick="location.reload()">AGAIN</button>
     </div>
 
+    <!-- True Ending -->
+    <div id="true-modal">
+        <div style="font-weight: 300; letter-spacing: 8px; color: #888; font-size: 0.8rem; margin-bottom: 20px;">SYSTEM DISCONNECTED</div>
+        <div style="font-size: 2rem; font-weight: 200; color: #fff;">you stopped playing</div>
+        <button class="leave-btn" onclick="triggerExit()">leave</button>
+    </div>
+
+    <div id="exit-overlay">
+        <div class="exit-text" id="exit-1">nothing required you to stay</div>
+        <div class="exit-text" id="exit-2">you were free earlier</div>
+        <div class="exit-text" id="exit-3">you just didn't stop</div>
+    </div>
+
     <div id="toast" class="toast">CHAOS SPIKE</div>
 
     <script>
@@ -330,9 +509,36 @@
             multiplier: 1,
             shadowNerf: false,
             canGamble: true,
+            stocks: { sym: 'UP', price: 100, shares: 0, halted: false },
             clicksThisSec: 0,
-            lastCpsCheck: Date.now()
+            lastCpsCheck: Date.now(),
+            trueEndingProgress: 0,
+            lastViolation: 0,
+            upgrades: { autoclicker: 0, mult: 1, luck: 0, shield: 0, grass: 0, homework: 0, feb: 0, halloween: 0, sisu: 0, ikea: 0 },
+            adminAttention: 0,
+            adsShown: 0,
+            lastAdTime: Date.now()
         };
+
+        const UPGRADES_DATA = [
+            { id: 'autoclicker', name: 'AUTO-CLICK', cost: 50, desc: 'Generates +1/sec.', twist: 'Increases admin attention.' },
+            { id: 'mult', name: 'MULTIPLIER', cost: 200, desc: 'Permanent x2 gains.', twist: 'Increases near-miss chance.' },
+            { id: 'luck', name: 'LUCK UPGRADE', cost: 1000, desc: 'Better gamble odds.', twist: 'Introduces fake jackpots.' },
+            { id: 'shield', name: 'RESET SHIELD', cost: 5000, desc: 'Block one reset.', twist: 'May expire randomly.' },
+            { id: 'grass', name: 'GRASS DELAY', cost: 500, desc: 'More time for grass.', twist: 'Grass moves faster.' },
+            { id: 'homework', name: 'HOME ASSIST', cost: 800, desc: 'Easier math.', twist: 'More homework spawns.' },
+            { id: 'feb', name: 'FEB RESIST', cost: 1500, desc: 'Less pressure.', twist: 'Stronger winter events.' },
+            { id: 'halloween', name: 'UI FILTER', cost: 2000, desc: 'Reduces fake UI.', twist: 'Harder deceptions.' },
+            { id: 'sisu', name: 'SISU POWER', cost: 3000, desc: 'Better recovery.', twist: 'Requires patience checks.' },
+            { id: 'ikea', name: 'IKEA ASSIST', cost: 1200, desc: 'Clearer assembly.', twist: 'More assembly events.' }
+        ];
+
+        // Persistent Meta-Narrative
+        window.addEventListener('load', () => {
+            if (localStorage.getItem('the_exit')) {
+                setWhisper("YOU CAME BACK");
+            }
+        });
 
         const numEl = document.getElementById('main-number');
         const whisperEl = document.getElementById('number-whisper');
@@ -347,7 +553,8 @@
         const appealBtn = document.getElementById('appeal-btn');
 
         btn.onclick = () => {
-            if (state.mode !== 'NORMAL') return;
+            if (state.mode !== 'NORMAL' && state.mode !== 'EXIT') return;
+            if (state.mode === 'EXIT') return;
             
             state.clicksThisSec++;
             beep(200 + state.count/10, 'square', 0.05);
@@ -357,7 +564,7 @@
             state.lastClick = now;
 
             // CPS Punish (Personal Targeting)
-            if (state.clicksThisSec > 15) {
+            if (state.clicksThisSec > (15 - state.adminAttention)) {
                 triggerAdmin('TOO_FAST');
                 state.clicksThisSec = 0;
                 return;
@@ -365,14 +572,59 @@
 
             // Normal Gain with Multiplier & Mess Penalty
             const penalty = Math.max(0.1, 1 - (state.messCount / 40));
-            state.count += (1 * state.multiplier * penalty);
+            state.count += (1 * state.multiplier * penalty * state.upgrades.mult);
             
             updateUI();
             
-            if (Math.random() < 0.15) triggerSuffering();
+            if (state.clicksThisSec > 1) state.lastViolation = Date.now();
+            
+            const chaosChance = 0.15 + (state.adminAttention * 0.02);
+            if (Math.random() < chaosChance) triggerSuffering();
             if (Math.random() < 0.02) triggerAdmin();
             if (state.count > 1000000) showEnd();
         };
+
+        /* --- Upgrade Logic --- */
+        function renderShop() {
+            const container = document.getElementById('shop-items');
+            container.innerHTML = '';
+            UPGRADES_DATA.forEach(u => {
+                const lvl = state.upgrades[u.id];
+                const cost = Math.floor(u.cost * Math.pow(1.5, lvl));
+                const item = document.createElement('div');
+                item.className = 'upgrade-item';
+                item.innerHTML = `
+                    <button class="up-btn" onclick="buyUpgrade('${u.id}', ${cost})" ${state.count < cost ? 'disabled' : ''}>BUY</button>
+                    <span class="up-name">${u.name} (Lv.${lvl})</span>
+                    <span class="up-desc">${u.desc}</span>
+                    <span class="up-desc" style="color:#ff3e00; opacity:0.8;">TWIST: ${u.twist}</span>
+                    <span class="up-cost">COST: ${cost}</span>
+                `;
+                container.appendChild(item);
+            });
+        }
+        renderShop();
+
+        function buyUpgrade(id, cost) {
+            if (state.count >= cost) {
+                state.count -= cost;
+                state.upgrades[id]++;
+                state.adminAttention += 0.5;
+                beep(800, 'sine', 0.2);
+                if (id === 'mult') state.multiplier *= 1.1;
+                renderShop();
+                updateUI();
+                showToast("UPGRADE ACQUIRED: ATTENTION INCREASING", "white");
+            }
+        }
+
+        // Auto Clicker Loop
+        setInterval(() => {
+            if (state.upgrades.autoclicker > 0 && state.mode === 'NORMAL') {
+                state.count += state.upgrades.autoclicker;
+                updateUI();
+            }
+        }, 1000);
 
         setInterval(() => {
             state.clicksThisSec = 0;
@@ -389,6 +641,64 @@
             
             const gBtns = document.querySelectorAll('.gamble-panel .gamble-btn');
             gBtns.forEach(b => b.disabled = !state.canGamble);
+
+            // Stock Buttons
+            const bBtn = document.getElementById('buy-btn');
+            if (bBtn) bBtn.disabled = state.count < state.stocks.price || state.stocks.halted;
+            const sBtn = document.getElementById('sell-btn');
+            if (sBtn) sBtn.disabled = state.stocks.shares <= 0 || state.stocks.halted;
+
+            // Shop Buttons
+            const upBtns = document.querySelectorAll('.up-btn');
+            upBtns.forEach(b => {
+                const cost = parseInt(b.parentElement.querySelector('.up-cost').textContent.split(': ')[1]);
+                b.disabled = state.count < cost;
+            });
+        }
+
+        /* --- Stock Exchange Logic --- */
+        function updateStocks() {
+            if (state.stocks.halted) {
+                setTimeout(updateStocks, 5000);
+                return;
+            }
+            const drift = (Math.random() - 0.49) * 4.5;
+            state.stocks.price = Math.max(1, state.stocks.price + drift);
+            const pEl = document.getElementById('stock-price');
+            if (pEl) {
+                pEl.textContent = `$${state.stocks.price.toFixed(2)}`;
+                pEl.style.color = drift > 0 ? '#00ff88' : '#ff4d00';
+            }
+            setTimeout(updateStocks, 2000 + Math.random() * 3000);
+        }
+        updateStocks();
+
+        function buyStock() {
+            if (state.stocks.halted) return;
+            if (state.count >= state.stocks.price) {
+                state.count -= state.stocks.price;
+                state.stocks.shares++;
+                const sEl = document.getElementById('shares-count');
+                if (sEl) sEl.textContent = `SHARES: ${state.stocks.shares}`;
+                beep(800, 'sine', 0.1);
+                updateUI();
+            }
+        }
+
+        function sellStock() {
+            if (state.stocks.shares > 0) {
+                if (Math.random() < 0.25) { 
+                    showToast("ADMIN REJECTED: LIQUIDITY CONSTRAINTS", "red"); 
+                    beep(50, 'sawtooth', 0.5);
+                    return; 
+                }
+                state.count += (state.stocks.shares * state.stocks.price);
+                state.stocks.shares = 0;
+                const sEl = document.getElementById('shares-count');
+                if (sEl) sEl.textContent = `SHARES: 0`;
+                beep(1200, 'sine', 0.2);
+                updateUI();
+            }
         }
 
         function setWhisper(msg) { whisperEl.textContent = msg; whisperEl.style.opacity = '1'; }
@@ -434,7 +744,80 @@
                     showAdminBar("GAMBLING DISABLED FOR YOUR REGION");
                     setTimeout(() => { state.canGamble = true; hideAdminBar(); }, 30000);
                     break;
+                case 'MARKET_HALT':
+                    state.stocks.halted = true;
+                    showAdminBar("STOCK EXCHANGE HALTED: AUDIT IN PROGRESS");
+                    setTimeout(() => { state.stocks.halted = false; hideAdminBar(); }, 10000);
+                    break;
             }
+        }
+
+        // --- Behavioral Monitor (True Ending) ---
+        setInterval(() => {
+            if (state.mode !== 'NORMAL') return;
+            const now = Date.now();
+            // Behave calmly: low CPS and no recent violations
+            if (state.clicksThisSec < 1 && (now - state.lastViolation > 10000)) {
+                state.trueEndingProgress += 1;
+                if (state.trueEndingProgress >= 100) {
+                    triggerTrueEnding();
+                }
+            } else if (state.clicksThisSec > 2) {
+                state.trueEndingProgress = Math.max(0, state.trueEndingProgress - 5);
+                state.lastViolation = now;
+            }
+        }, 1500);
+
+        function triggerTrueEnding() {
+            state.mode = 'EXIT';
+            beep(100, 'sine', 2);
+            
+            // Cleanup Chaos
+            messContainer.innerHTML = '';
+            document.getElementById('market-panel').style.opacity = '0';
+            btn.style.opacity = '0';
+            btn.disabled = true;
+            document.querySelectorAll('.gamble-btn').forEach(b => b.style.opacity = '0');
+            document.getElementById('debt-counter').style.opacity = '0';
+            adminBar.style.display = 'none';
+
+            // Slow Countdown to Zero
+            const countdown = setInterval(() => {
+                if (state.count > 0) {
+                    state.count = Math.max(0, state.count - (state.count / 20) - 1);
+                    updateUI();
+                } else {
+                    clearInterval(countdown);
+                    setTimeout(() => {
+                        document.getElementById('true-modal').style.display = 'flex';
+                        beep(400, 'sine', 0.5);
+                    }, 2000);
+                }
+            }, 100);
+
+            // Calm Atmosphere
+            document.body.style.background = "#0a0a0a";
+            document.body.style.filter = "grayscale(1) contrast(0.8)";
+            whisperEl.style.opacity = '0';
+        }
+
+        function triggerExit() {
+            localStorage.setItem('the_exit', 'true');
+            const overlay = document.getElementById('exit-overlay');
+            overlay.style.display = 'flex';
+            setTimeout(() => overlay.style.opacity = '1', 100);
+
+            const sequences = [
+                { id: 'exit-1', delay: 2000 },
+                { id: 'exit-2', delay: 5000 },
+                { id: 'exit-3', delay: 8000 }
+            ];
+
+            sequences.forEach(s => {
+                setTimeout(() => {
+                    document.getElementById(s.id).style.opacity = '1';
+                }, s.delay);
+            });
         }
 
         function showAdminBar(msg) {
@@ -454,15 +837,71 @@
             }, 3000);
         }
 
-        // --- Sufffering / Random Layers ---
         function triggerSuffering() {
             const roll = Math.random();
-            if (roll < 0.2) randomizeIkea();
-            else if (roll < 0.4) startBureau();
-            else if (roll < 0.55) startGrass();
-            else if (roll < 0.75) startHomework();
-            else if (roll < 0.9) triggerSeason();
+            if (roll < 0.15) randomizeIkea();
+            else if (roll < 0.3) startBureau();
+            else if (roll < 0.45) startGrass();
+            else if (roll < 0.6) startHomework();
+            else if (roll < 0.75) triggerSeason();
+            else if (roll < 0.85) triggerAdmin('MARKET_HALT');
+            else spawnAd();
         }
+
+        /* --- Ad Engine --- */
+        function spawnAd(specific) {
+            const adPanel = document.getElementById('ad-popup');
+            const adText = document.getElementById('ad-text');
+            const adBtn = document.getElementById('ad-action');
+            const adTimer = document.getElementById('ad-timer');
+            const adClose = adPanel.querySelector('.ad-close');
+
+            const types = ['RANDOM', 'FAKE', 'REWARD', 'UNSKIPPABLE', 'TARGETED'];
+            const type = specific || types[Math.floor(Math.random() * types.length)];
+            
+            adPanel.style.display = 'flex';
+            adPanel.style.left = Math.random() * 60 + 'vw';
+            adPanel.style.top = Math.random() * 60 + 'vh';
+            adPanel.classList.remove('ad-unskippable');
+            adTimer.style.display = 'none';
+            adClose.style.display = 'block';
+            adBtn.disabled = false;
+
+            switch(type) {
+                case 'RANDOM':
+                    adText.innerHTML = "WATCH THIS FOR <span>+1,000</span> COUNT!";
+                    adBtn.onclick = () => { if(Math.random() < 0.5) { state.count += 1000; showToast("BONUS GRANTED", "#00ff88"); } else { state.count = 1; showToast("TIME WASTED", "red"); } closeAd(); };
+                    break;
+                case 'FAKE':
+                    adText.innerHTML = "Claim your <b>FREE DAILY GIFT</b> now!";
+                    adBtn.onclick = () => { triggerAdmin('ACCESS_REVOKED'); closeAd(); };
+                    break;
+                case 'REWARD':
+                    adText.innerHTML = "Help us improve. Complete survey for reward.";
+                    adBtn.onclick = () => { state.count += 5; showToast("REWARD: 5", "white"); closeAd(); };
+                    break;
+                case 'UNSKIPPABLE':
+                    adPanel.classList.add('ad-unskippable');
+                    adText.innerHTML = "MANDATORY ADMINISTRATIVE VIEWING";
+                    adClose.style.display = 'none';
+                    adBtn.disabled = true;
+                    adTimer.style.display = 'block';
+                    let s = 5;
+                    const it = setInterval(() => {
+                        s--;
+                        adTimer.textContent = `SKIPPABLE IN ${s}s`;
+                        if (s <= 0) { clearInterval(it); adClose.style.display = 'block'; adTimer.textContent = "READY"; }
+                    }, 1000);
+                    break;
+                case 'TARGETED':
+                    if (state.clicksThisSec > 5) adText.innerHTML = "You seem stressed. Click here to RELAX.";
+                    else if (state.count < 100) adText.innerHTML = "Low performing citizen? Try our BOOSTERS.";
+                    else adText.innerHTML = "Upgrade now for PRIORITY ACCESS.";
+                    adBtn.onclick = () => { triggerSeason(); closeAd(); };
+                    break;
+            }
+        }
+        function closeAd() { document.getElementById('ad-popup').style.display = 'none'; beep(400, 'sine', 0.1); }
 
         // 🪑 Randomized IKEA Fix
         function randomizeIkea() {
