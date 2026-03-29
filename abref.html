@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ABREF | The Backronym Engine</title>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;500;700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #0a0a0a;
+            --text: #ffffff;
+            --accent: #00f3ff;
+            --gray: #222;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            cursor: crosshair;
+        }
+
+        body {
+            background-color: var(--bg);
+            color: var(--text);
+            font-family: 'Space Grotesk', sans-serif;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            overflow-x: hidden;
+            padding: 20px;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 800px;
+            text-align: center;
+        }
+
+        h1 {
+            font-size: 1rem;
+            letter-spacing: 0.5rem;
+            text-transform: uppercase;
+            opacity: 0.5;
+            margin-bottom: 40px;
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .input-wrapper {
+            position: relative;
+            margin-bottom: 60px;
+        }
+
+        input {
+            width: 100%;
+            background: transparent;
+            border: none;
+            border-bottom: 2px solid var(--gray);
+            color: var(--accent);
+            font-size: 4rem;
+            font-family: 'Space Grotesk', sans-serif;
+            font-weight: 700;
+            text-align: center;
+            text-transform: uppercase;
+            outline: none;
+            padding: 10px;
+            transition: border-color 0.3s;
+        }
+
+        input:focus {
+            border-bottom-color: var(--accent);
+        }
+
+        input::placeholder {
+            opacity: 0.1;
+            color: var(--text);
+        }
+
+        .results {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            min-height: 200px;
+        }
+
+        .word-row {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 20px;
+            font-size: 2rem;
+            font-weight: 500;
+            opacity: 0;
+            transform: translateY(10px);
+            animation: fadeIn 0.3s forwards;
+        }
+
+        @keyframes fadeIn {
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .letter {
+            color: var(--accent);
+            font-family: 'JetBrains Mono', monospace;
+            font-weight: 700;
+            width: 50px;
+            text-align: right;
+            border-right: 2px solid var(--gray);
+            padding-right: 15px;
+        }
+
+        .word {
+            text-align: left;
+            flex: 1;
+            font-family: 'Space Grotesk', sans-serif;
+            font-weight: 300;
+            color: var(--text);
+        }
+
+        .word.shuffling {
+            opacity: 0.5;
+            filter: blur(1px);
+        }
+
+        /* Controls */
+        .controls {
+            margin-top: 60px;
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            opacity: 0.3;
+            transition: opacity 0.3s;
+        }
+
+        .container:hover .controls {
+            opacity: 1;
+        }
+
+        button {
+            background: transparent;
+            border: 1px solid var(--gray);
+            color: var(--text);
+            padding: 10px 20px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1rem;
+            transition: all 0.2s;
+        }
+
+        button:hover {
+            background: var(--text);
+            color: var(--bg);
+            border-color: var(--text);
+        }
+
+        /* Glitch Effect */
+        .glitch-text {
+            position: relative;
+        }
+
+        .glitch-text::before, .glitch-text::after {
+            content: attr(data-text);
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0.8;
+        }
+
+        .glitch-text::before {
+            color: #ff00c1;
+            z-index: -1;
+            animation: glitch-anim 0.4s infinite linear alternate-reverse;
+        }
+
+        .glitch-text::after {
+            color: #00fff9;
+            z-index: -2;
+            animation: glitch-anim2 0.4s infinite linear alternate-reverse;
+        }
+
+        @keyframes glitch-anim {
+            0% { clip: rect(20px, 9999px, 40px, 0); transform: translate(-2px, -2px); }
+            100% { clip: rect(60px, 9999px, 80px, 0); transform: translate(2px, 2px); }
+        }
+
+        @keyframes glitch-anim2 {
+            0% { clip: rect(10px, 9999px, 30px, 0); transform: translate(2px, 2px); }
+            100% { clip: rect(50px, 9999px, 70px, 0); transform: translate(-2px, -2px); }
+        }
+
+        /* Utility */
+        .copy-toast {
+            position: fixed;
+            bottom: 40px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--accent);
+            color: var(--bg);
+            padding: 8px 16px;
+            font-weight: 700;
+            font-size: 0.8rem;
+            display: none;
+            z-index: 1000;
+        }
+
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>ABREF_V1.0</h1>
+        
+        <div class="input-wrapper">
+            <input type="text" id="main-input" maxlength="15" placeholder="TYPE_INIT_HERE" spellcheck="false" autocomplete="off">
+        </div>
+
+        <div id="results" class="results">
+            <!-- Dynamic Content -->
+        </div>
+
+        <div class="controls">
+            <button onclick="shuffleResult()">REROLL</button>
+            <button onclick="copyToClipboard()">COPY</button>
+        </div>
+    </div>
+
+    <div id="toast" class="copy-toast">COPIED_TO_CLIPBOARD</div>
+
+    <script>
+        const dictionary = {
+            A: ["Always", "Atomic", "Angry", "Alpha", "Active", "Apex", "Automated"],
+            B: ["Broken", "Binary", "Brave", "Bitter", "Basic", "Beyond", "Brutal"],
+            C: ["Chaos", "Cyber", "Cloud", "Custom", "Cold", "Chrome", "Complex"],
+            D: ["Dark", "Digital", "Data", "Deep", "Dirty", "Direct", "Dynamic"],
+            E: ["Echo", "Empty", "Elite", "Extra", "Epic", "Error", "Ether"],
+            F: ["Fake", "Final", "Flash", "Free", "Fixed", "Frost", "Fluid"],
+            G: ["Ghost", "Global", "Great", "Green", "Grave", "Grid", "Golden"],
+            H: ["Hard", "Hidden", "Heavy", "High", "Hollow", "Human", "Hybrid"],
+            I: ["Inner", "Instant", "Ionic", "Ideal", "Index", "Input", "Iron"],
+            J: ["Just", "Joint", "Jointly", "Juicy", "Junior", "Jungle", "Jitter"],
+            K: ["Key", "Kind", "King", "Kinetic", "Killer", "Knock", "Knight"],
+            L: ["Last", "Light", "Local", "Logic", "Lunar", "Liquid", "Loud"],
+            M: ["Main", "Mega", "Minor", "Matrix", "Metal", "Mirror", "Modern"],
+            N: ["New", "Next", "Null", "Neon", "Night", "Noble", "Normal"],
+            O: ["Open", "Outer", "Only", "Orbital", "Odd", "Old", "Omega"],
+            P: ["Pure", "Prime", "Pilot", "Pixel", "Public", "Point", "Power"],
+            Q: ["Quick", "Quantum", "Quiet", "Quarry", "Quart", "Queen", "Quake"],
+            R: ["Real", "Rare", "Rapid", "Radio", "Retro", "Rough", "Royal"],
+            S: ["Safe", "Solid", "Super", "Seven", "Sharp", "Silent", "Soft"],
+            T: ["True", "Total", "Toxic", "Turbo", "Third", "Twin", "Techno"],
+            U: ["Ultra", "Under", "Unity", "Unit", "Urban", "User", "Unique"],
+            V: ["Vague", "Vapor", "Vivid", "Void", "Voice", "Volt", "Vault"],
+            W: ["White", "Wired", "Wide", "Wild", "Word", "World", "Wave"],
+            X: ["Xeric", "Xenon", "Xray", "Xylyl", "Xeric", "Xylem", "Xyloid"],
+            Y: ["Yellow", "Young", "Yearly", "Yield", "Yesterday", "Yonder", "Yoga"],
+            Z: ["Zero", "Zonal", "Zinc", "Zesty", "Zebra", "Zenith", "Zing"]
+        };
+
+        const input = document.getElementById('main-input');
+        const resultsArea = document.getElementById('results');
+        const toast = document.getElementById('toast');
+
+        input.addEventListener('input', () => {
+            generateBackronym();
+        });
+
+        function generateBackronym() {
+            const val = input.value.toUpperCase().replace(/[^A-Z]/g, '');
+            input.value = val;
+            
+            resultsArea.innerHTML = '';
+            
+            val.split('').forEach((char, index) => {
+                const row = document.createElement('div');
+                row.className = 'word-row';
+                row.style.animationDelay = `${index * 0.1}s`;
+                
+                const lSpan = document.createElement('span');
+                lSpan.className = 'letter';
+                lSpan.innerText = char;
+                
+                const wSpan = document.createElement('span');
+                wSpan.className = 'word';
+                wSpan.innerText = "...";
+                
+                row.appendChild(lSpan);
+                row.appendChild(wSpan);
+                resultsArea.appendChild(row);
+                
+                shuffleWord(wSpan, char);
+            });
+        }
+
+        async function shuffleWord(el, letter) {
+            const list = dictionary[letter] || ["???"];
+            el.classList.add('shuffling');
+            
+            // Artificial delay + random cycling
+            for(let i = 0; i < 10; i++) {
+                el.innerText = list[Math.floor(Math.random() * list.length)];
+                await new Promise(r => setTimeout(r, 40));
+            }
+            
+            el.classList.remove('shuffling');
+            el.innerText = list[Math.floor(Math.random() * list.length)];
+        }
+
+        function shuffleResult() {
+            const rows = document.querySelectorAll('.word');
+            const letters = input.value.toUpperCase().split('');
+            rows.forEach((row, i) => shuffleWord(row, letters[i]));
+        }
+
+        function copyToClipboard() {
+            const words = Array.from(document.querySelectorAll('.word')).map(el => el.innerText);
+            if(words.length === 0) return;
+            
+            const text = words.join(' ');
+            navigator.clipboard.writeText(text).then(() => {
+                toast.style.display = 'block';
+                setTimeout(() => toast.style.display = 'none', 2000);
+            });
+        }
+
+        // Focus on start
+        window.onload = () => input.focus();
+
+    </script>
+</body>
+</html>
