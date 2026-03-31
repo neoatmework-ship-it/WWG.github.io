@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SKILL ISSUE | Chaos God v7</title>
+    <title>SKILL ISSUE | Scandinavian Suffering 2.0</title>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;700;800&family=JetBrains+Mono:wght@700&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -39,6 +39,32 @@
             height: 100vh;
             border: 10px solid var(--orange);
             overflow: hidden;
+        }
+
+        /* CRT EFFECT */
+        #crt-overlay {
+            position: fixed;
+            inset: 0;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+            background-size: 100% 4px, 3px 100%;
+            pointer-events: none;
+            z-index: 1000;
+            opacity: 0.3;
+        }
+
+        #crt-overlay::after {
+            content: " ";
+            display: block;
+            position: absolute;
+            top: 0;
+            left: 0;
+            bottom: 0;
+            right: 0;
+            background: rgba(18, 16, 16, 0.1);
+            opacity: 0;
+            z-index: 2;
+            pointer-events: none;
+            animation: flicker 0.15s infinite;
         }
 
         /* Dashboard */
@@ -132,21 +158,58 @@
             transform: scale(1.1);
         }
 
+        /* Captcha Popup */
+        #captcha-popup {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: var(--black);
+            border: 8px solid var(--red);
+            padding: 40px;
+            z-index: 500;
+            display: none;
+            text-align: center;
+            box-shadow: 0 0 50px rgba(255,0,0,0.5);
+        }
+
+        .captcha-title {
+            color: var(--red);
+            font-weight: 900;
+            font-size: 2rem;
+            margin-bottom: 20px;
+            letter-spacing: -1px;
+        }
+
+        .captcha-code {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 4rem;
+            background: var(--gray);
+            padding: 10px 40px;
+            margin-bottom: 20px;
+            color: var(--white);
+            letter-spacing: 10px;
+        }
+
+        #captcha-input {
+            width: 100%;
+            background: transparent;
+            border: 4px solid var(--white);
+            color: var(--orange);
+            font-size: 2rem;
+            font-family: 'JetBrains Mono', monospace;
+            text-align: center;
+            outline: none;
+            text-transform: uppercase;
+        }
+
         .jitter { animation: jitter 0.1s infinite; }
         @keyframes jitter {
             0% { transform: translate(0,0); }
-            50% { transform: translate(2px, -2px); }
-            100% { transform: translate(-2px, 2px); }
+            100% { transform: translate(2px, -2px); }
         }
 
         /* Touch Grass System */
-        #chaos-overlay {
-            position: absolute;
-            inset: 0;
-            pointer-events: none;
-            z-index: 200;
-        }
-
         #grass-target {
             position: absolute;
             width: 120px;
@@ -212,9 +275,11 @@
             text-transform: uppercase;
         }
 
-        .reset-sub {
-            font-size: 1.5rem;
-            opacity: 0.7;
+        canvas {
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+            z-index: 40;
         }
 
         /* UTILS */
@@ -226,9 +291,18 @@
             100% { transform: rotate(0deg); }
         }
 
+        .flash { animation: flash-white 0.1s linear; }
+        @keyframes flash-white {
+            0% { background: white; }
+            100% { background: inherit; }
+        }
+
     </style>
 </head>
 <body>
+
+    <div id="crt-overlay"></div>
+    <canvas id="particle-canvas"></canvas>
 
     <div id="game-container">
         <!-- Stats -->
@@ -245,11 +319,16 @@
             </div>
         </div>
 
-        <!-- Timer -->
         <div id="chaos-timer" class="jitter">GRASS NEEDED: 5.00s</div>
-
-        <!-- The Target -->
         <div id="dot">CATCH</div>
+
+        <!-- Captcha -->
+        <div id="captcha-popup">
+            <div class="captcha-title jitter">SYSTEM VERIFICATION</div>
+            <div id="captcha-code" class="captcha-code">A1B2</div>
+            <input type="text" id="captcha-input" maxlength="4" placeholder="TYPE_CODE">
+            <div class="stat-label" style="margin-top: 20px; color: var(--white);">PROVE YOU AREN'T A BOT</div>
+        </div>
 
         <!-- Gambling Tray -->
         <div id="gamble-tray">
@@ -258,11 +337,8 @@
             <button class="gamble-btn danger jitter" onclick="gambleOutcome('ALLIN')">ALL IN (x10 OR RESET)</button>
         </div>
 
-        <!-- Chaos Overlay -->
-        <div id="chaos-overlay">
-            <div id="grass-target">🌱<br>GRASS</div>
-            <div id="hand">🖐️</div>
-        </div>
+        <div id="grass-target">🌱<br>GRASS</div>
+        <div id="hand">🖐️</div>
     </div>
 
     <!-- Failure -->
@@ -283,11 +359,14 @@
             dotVel: { x: 1, y: 1 },
             isGambling: false,
             chaosActive: false,
+            captchaActive: false,
+            captchaCode: '',
             chaosTimer: 0,
             lastTick: performance.now(),
             beatTimer: 0,
             beatRate: 1.0,
-            difficulty: 'EARLY'
+            difficulty: 'EARLY',
+            particles: []
         };
 
         const elements = {
@@ -299,11 +378,19 @@
             grass: document.getElementById('grass-target'),
             timer: document.getElementById('chaos-timer'),
             overlay: document.getElementById('reset-overlay'),
-            level: document.getElementById('multiplier-label')
+            level: document.getElementById('multiplier-label'),
+            captcha: document.getElementById('captcha-popup'),
+            capCode: document.getElementById('captcha-code'),
+            capInput: document.getElementById('captcha-input'),
+            canvas: document.getElementById('particle-canvas'),
+            ctx: document.getElementById('particle-canvas').getContext('2d')
         };
 
         // AUDIO
         const audio = new (window.AudioContext || window.webkitAudioContext)();
+        let droneOsc = null;
+        let droneGain = null;
+
         function playTone(freq, dur, type = 'square', vol = 0.1) {
             const osc = audio.createOscillator();
             const gain = audio.createGain();
@@ -317,17 +404,32 @@
             osc.stop(audio.currentTime + dur);
         }
 
+        function updateDrone() {
+            if (!droneOsc) {
+                droneOsc = audio.createOscillator();
+                droneGain = audio.createGain();
+                droneOsc.type = 'sawtooth';
+                droneGain.gain.setValueAtTime(0.02, audio.currentTime);
+                droneOsc.connect(droneGain);
+                droneGain.connect(audio.destination);
+                droneOsc.start();
+            }
+            const baseFreq = 40 + (state.score / 1000);
+            droneOsc.frequency.setTargetAtTime(baseFreq, audio.currentTime, 0.5);
+            droneGain.gain.setTargetAtTime(0.02 + (state.score / 50000), audio.currentTime, 0.5);
+        }
+
         // INIT
         function init() {
+            elements.canvas.width = window.innerWidth;
+            elements.canvas.height = window.innerHeight;
             updateScore();
             spawnDot();
             requestAnimationFrame(gameLoop);
             
-            elements.dot.onclick = (e) => {
-                e.stopPropagation();
-                catchDot();
-            };
+            elements.dot.onclick = () => catchDot();
 
+            // Hand drag
             let isDragging = false;
             let dragOffset = { x: 0, y: 0 };
             elements.hand.onmousedown = (e) => {
@@ -343,20 +445,20 @@
                 elements.hand.style.top = (e.clientY - dragOffset.y) + 'px';
                 checkGrassContact();
             };
+
+            // Captcha input
+            elements.capInput.oninput = (e) => {
+                if (e.target.value.toUpperCase() === state.captchaCode) {
+                    successCaptcha();
+                }
+            };
         }
 
         function spawnDot() {
             const roll = Math.random();
-            if (roll < 0.6) {
-                state.dotType = 'safe';
-                state.speed = state.baseSpeed;
-            } else if (roll < 0.9) {
-                state.dotType = 'risky';
-                state.speed = state.baseSpeed * 1.5;
-            } else {
-                state.dotType = 'danger';
-                state.speed = state.baseSpeed * 2.5;
-            }
+            if (roll < 0.6) { state.dotType = 'safe'; state.speed = state.baseSpeed; }
+            else if (roll < 0.9) { state.dotType = 'risky'; state.speed = state.baseSpeed * 1.5; }
+            else { state.dotType = 'danger'; state.speed = state.baseSpeed * 2.5; }
             
             elements.dot.className = state.dotType;
             const angle = Math.random() * Math.PI * 2;
@@ -365,18 +467,57 @@
         }
 
         function catchDot() {
-            const rewards = { safe: 10, risky: 50, danger: 200 };
+            if (state.captchaActive) return;
+            const rewards = { safe: 10, risky: 50, danger: 250 };
             const reward = rewards[state.dotType];
             
-            playTone(440 + reward, 0.1, 'sine', 0.2);
             state.pending += reward;
             updateScore();
+            createParticles(state.dotPos.x + 30, state.dotPos.y + 30, state.dotType);
             
+            playTone(440 + reward, 0.1, 'sine', 0.2);
+            document.body.classList.add('flash');
+            setTimeout(() => document.body.classList.remove('flash'), 50);
+
             spawnDot();
             showGambling();
             
-            state.baseSpeed = Math.min(1000, state.baseSpeed + 25);
-            state.beatRate = Math.max(0.05, 1.0 - (state.score / 10000));
+            state.baseSpeed = Math.min(1200, state.baseSpeed + 30);
+            state.beatRate = Math.max(0.04, 1.0 - (state.score / 15000));
+            updateDrone();
+
+            // Random Captcha trigger
+            if (Math.random() < 0.05 + (state.score / 20000)) triggerCaptcha();
+        }
+
+        function createParticles(x, y, type) {
+            const color = type === 'safe' ? '#fff' : (type === 'risky' ? '#f60' : '#f00');
+            for(let i=0; i<15; i++) {
+                state.particles.push({
+                    x, y,
+                    vx: (Math.random()-0.5)*15,
+                    vy: (Math.random()-0.5)*15,
+                    life: 1.0,
+                    color
+                });
+            }
+        }
+
+        function triggerCaptcha() {
+            if (state.captchaActive) return;
+            state.captchaActive = true;
+            state.captchaCode = Math.random().toString(36).substring(2, 6).toUpperCase();
+            elements.capCode.innerText = state.captchaCode;
+            elements.capInput.value = '';
+            elements.captcha.style.display = 'block';
+            elements.capInput.focus();
+            playTone(200, 0.5, 'square', 0.1);
+        }
+
+        function successCaptcha() {
+            state.captchaActive = false;
+            elements.captcha.style.display = 'none';
+            playTone(880, 0.1, 'sine');
         }
 
         function showGambling() {
@@ -385,31 +526,21 @@
             clearTimeout(state.gambleTimeout);
             state.gambleTimeout = setTimeout(() => {
                 if (state.isGambling) gambleOutcome('KEEP');
-            }, 2500); // Shorter window
+            }, 2000);
         }
 
         function gambleOutcome(type) {
             state.isGambling = false;
             elements.tray.classList.remove('active');
-            
             if (type === 'KEEP') {
                 state.score += state.pending;
-                playTone(220, 0.2, 'sine');
             } else if (type === 'GAMBLE') {
-                if (Math.random() > 0.5) {
-                    state.score += state.pending * 2;
-                    playTone(880, 0.3);
-                } else playTone(110, 0.5, 'sawtooth');
+                if (Math.random() > 0.5) state.score += state.pending * 2;
+                else playTone(110, 0.5, 'sawtooth');
             } else if (type === 'ALLIN') {
-                if (Math.random() > 0.9) {
-                    state.score += state.pending * 10;
-                    playTone(1760, 0.5);
-                } else {
-                    fail('GREED IS A SKILL ISSUE');
-                    return;
-                }
+                if (Math.random() > 0.85) state.score += state.pending * 10;
+                else { fail('GREED = SKILL ISSUE'); return; }
             }
-            
             state.pending = 0;
             updateScore();
         }
@@ -418,28 +549,20 @@
             elements.score.innerText = state.score.toLocaleString();
             elements.pending.innerText = state.pending.toLocaleString();
             localStorage.setItem('skill_issue_score', state.score);
-            
-            // ESCALATION LABELS
-            if (state.score < 1000) state.difficulty = 'EARLY';
-            else if (state.score < 5000) state.difficulty = 'MID';
-            else state.difficulty = 'LATE';
+            state.difficulty = state.score < 1500 ? 'EARLY' : (state.score < 6000 ? 'MID' : 'SYSTEM CRITICAL');
             elements.level.innerText = state.difficulty;
         }
 
         function triggerChaos() {
             if (state.chaosActive) return;
             state.chaosActive = true;
-            // Brutal scaling
-            state.chaosTimer = Math.max(1.5, 5.0 - (state.score / 2000));
-            
+            state.chaosTimer = Math.max(1.2, 5.0 - (state.score / 2500));
             elements.grass.style.display = 'flex';
             elements.grass.style.left = (Math.random() * 60 + 20) + '%';
             elements.grass.style.top = (Math.random() * 60 + 20) + '%';
-            
             elements.hand.style.display = 'flex';
             elements.hand.style.left = (Math.random() * 60 + 20) + '%';
             elements.hand.style.top = (Math.random() * 60 + 20) + '%';
-            
             elements.timer.style.display = 'block';
             playTone(60, 0.5, 'sawtooth', 0.2);
         }
@@ -449,22 +572,16 @@
             const gRect = elements.grass.getBoundingClientRect();
             if (hRect.left < gRect.right && hRect.right > gRect.left &&
                 hRect.top < gRect.bottom && hRect.bottom > gRect.top) {
-                successChaos();
+                state.chaosActive = false;
+                elements.grass.style.display = 'none';
+                elements.hand.style.display = 'none';
+                elements.timer.style.display = 'none';
+                playTone(660, 0.1, 'sine');
             }
         }
 
-        function successChaos() {
-            state.chaosActive = false;
-            elements.grass.style.display = 'none';
-            elements.hand.style.display = 'none';
-            elements.timer.style.display = 'none';
-            playTone(660, 0.1, 'sine');
-        }
-
         function fail(reason) {
-            state.score = 0;
-            state.pending = 0;
-            state.baseSpeed = 200; // Reset speed too for true brutality
+            state.score = 0; state.pending = 0; state.baseSpeed = 200;
             updateScore();
             elements.overlay.style.display = 'flex';
             elements.overlay.querySelector('.reset-msg').innerText = reason || 'SKILL ISSUE';
@@ -476,39 +593,38 @@
             const dt = (time - state.lastTick) / 1000;
             state.lastTick = time;
 
-            // AUTONOMOUS DOT
-            state.dotPos.x += state.dotVel.x * state.speed * dt;
-            state.dotPos.y += state.dotVel.y * state.speed * dt;
+            // PARTICLES
+            elements.ctx.clearRect(0, 0, elements.canvas.width, elements.canvas.height);
+            state.particles.forEach((p, i) => {
+                p.x += p.vx; p.y += p.vy; p.life -= 0.02;
+                if (p.life <= 0) state.particles.splice(i, 1);
+                elements.ctx.fillStyle = p.color;
+                elements.ctx.globalAlpha = p.life;
+                elements.ctx.fillRect(p.x, p.y, 4, 4);
+            });
 
-            // Bounce with extra juice
-            const pad = 40;
-            if (state.dotPos.x < pad || state.dotPos.x > window.innerWidth - 60 - pad) {
-                state.dotVel.x *= -1;
-                playTone(100, 0.05, 'sine', 0.02);
+            if (!state.captchaActive) {
+                state.dotPos.x += state.dotVel.x * state.speed * dt;
+                state.dotPos.y += state.dotVel.y * state.speed * dt;
+                const pad = 40;
+                if (state.dotPos.x < pad || state.dotPos.x > window.innerWidth - 100) state.dotVel.x *= -1;
+                if (state.dotPos.y < pad || state.dotPos.y > window.innerHeight - 100) state.dotVel.y *= -1;
+                elements.dot.style.left = state.dotPos.x + 'px';
+                elements.dot.style.top = state.dotPos.y + 'px';
             }
-            if (state.dotPos.y < pad || state.dotPos.y > window.innerHeight - 60 - pad) {
-                state.dotVel.y *= -1;
-                playTone(100, 0.05, 'sine', 0.02);
-            }
 
-            elements.dot.style.left = state.dotPos.x + 'px';
-            elements.dot.style.top = state.dotPos.y + 'px';
-
-            // TENSION BEAT
             state.beatTimer += dt;
             if (state.beatTimer >= state.beatRate) {
                 state.beatTimer = 0;
                 playTone(50 + (state.score/100), 0.1, 'square', 0.05);
             }
 
-            // CHAOS ESCALATION
             if (state.chaosActive) {
                 state.chaosTimer -= dt;
                 elements.timer.innerText = `GRASS NEEDED: ${state.chaosTimer.toFixed(2)}s`;
                 if (state.chaosTimer <= 0) fail('TOUCH GRASS');
             } else {
-                const triggerChance = 0.002 + (state.score / 50000);
-                if (Math.random() < triggerChance) triggerChaos();
+                if (Math.random() < 0.003 + (state.score / 40000)) triggerChaos();
             }
 
             requestAnimationFrame(gameLoop);
