@@ -1,0 +1,519 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SKILL ISSUE | Chaos God v7</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;700;800&family=JetBrains+Mono:wght@700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --orange: #ff6600;
+            --black: #0a0a0a;
+            --white: #ffffff;
+            --gray: #1a1a1a;
+            --red: #ff0000;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            user-select: none;
+        }
+
+        body {
+            background-color: var(--black);
+            color: var(--white);
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            overflow: hidden;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        #game-container {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+            border: 10px solid var(--orange);
+            overflow: hidden;
+        }
+
+        /* Dashboard */
+        #dashboard {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            z-index: 100;
+            background: var(--black);
+            border: 4px solid var(--orange);
+            padding: 20px;
+            min-width: 300px;
+        }
+
+        .stat-label {
+            font-size: 0.8rem;
+            font-weight: 800;
+            color: var(--orange);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .stat-value {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 3rem;
+            line-height: 1;
+        }
+
+        /* The Dot */
+        #dot {
+            position: absolute;
+            width: 60px;
+            height: 60px;
+            background: var(--orange);
+            border: 6px solid var(--white);
+            cursor: crosshair;
+            transition: border-color 0.1s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 900;
+            color: var(--black);
+            z-index: 50;
+        }
+
+        #dot.safe { background: var(--white); border-color: var(--gray); }
+        #dot.risky { background: var(--orange); border-color: var(--white); }
+        #dot.danger { background: var(--red); border-color: var(--white); animation: flicker 0.1s infinite; }
+
+        @keyframes flicker {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+
+        /* Gambling Tray */
+        #gamble-tray {
+            position: absolute;
+            bottom: 40px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 15px;
+            z-index: 150;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.2s, transform 0.2s;
+        }
+
+        #gamble-tray.active {
+            opacity: 1;
+            pointer-events: all;
+            transform: translateX(-50%) translateY(-10px);
+        }
+
+        .gamble-btn {
+            background: var(--black);
+            border: 3px solid var(--orange);
+            color: var(--white);
+            padding: 15px 30px;
+            font-weight: 800;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: all 0.1s;
+            position: relative;
+        }
+
+        .gamble-btn:hover {
+            background: var(--orange);
+            color: var(--black);
+            transform: scale(1.1);
+        }
+
+        .jitter { animation: jitter 0.1s infinite; }
+        @keyframes jitter {
+            0% { transform: translate(0,0); }
+            50% { transform: translate(2px, -2px); }
+            100% { transform: translate(-2px, 2px); }
+        }
+
+        /* Touch Grass System */
+        #chaos-overlay {
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+            z-index: 200;
+        }
+
+        #grass-target {
+            position: absolute;
+            width: 120px;
+            height: 120px;
+            background: #2ecc71;
+            border: 5px solid #27ae60;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            color: var(--black);
+            font-weight: 800;
+            font-size: 0.9rem;
+            text-align: center;
+            pointer-events: all;
+        }
+
+        #hand {
+            position: absolute;
+            width: 80px;
+            height: 80px;
+            background: #ffdbac;
+            border: 3px solid var(--black);
+            display: none;
+            cursor: grab;
+            z-index: 210;
+            pointer-events: all;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+        }
+
+        #chaos-timer {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: var(--red);
+            padding: 10px 20px;
+            font-weight: 800;
+            color: white;
+            display: none;
+            font-size: 1.5rem;
+            border: 4px solid white;
+        }
+
+        /* Failure Message */
+        #reset-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.95);
+            z-index: 1000;
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+        }
+
+        .reset-msg {
+            font-size: 5rem;
+            font-weight: 900;
+            color: var(--orange);
+            margin-bottom: 20px;
+            text-transform: uppercase;
+        }
+
+        .reset-sub {
+            font-size: 1.5rem;
+            opacity: 0.7;
+        }
+
+        /* UTILS */
+        .shake { animation: shake 0.2s infinite; }
+        @keyframes shake {
+            0% { transform: rotate(0deg); }
+            25% { transform: rotate(2deg) translateX(5px); }
+            75% { transform: rotate(-2deg) translateX(-5px); }
+            100% { transform: rotate(0deg); }
+        }
+
+    </style>
+</head>
+<body>
+
+    <div id="game-container">
+        <!-- Stats -->
+        <div id="dashboard">
+            <div class="stat-label">Total Points</div>
+            <div id="score" class="stat-value">0</div>
+            <div style="margin-top: 10px;">
+                <div class="stat-label">Multitasking Level</div>
+                <div id="multiplier-label" class="stat-value" style="font-size: 1.5rem; color: var(--orange);">EARLY</div>
+            </div>
+            <div style="margin-top: 10px;">
+                <div class="stat-label">Pending Gamble</div>
+                <div id="pending" class="stat-value" style="font-size: 1.5rem; color: var(--white);">0</div>
+            </div>
+        </div>
+
+        <!-- Timer -->
+        <div id="chaos-timer" class="jitter">GRASS NEEDED: 5.00s</div>
+
+        <!-- The Target -->
+        <div id="dot">CATCH</div>
+
+        <!-- Gambling Tray -->
+        <div id="gamble-tray">
+            <button class="gamble-btn" onclick="gambleOutcome('KEEP')">KEEP</button>
+            <button class="gamble-btn jitter" onclick="gambleOutcome('GAMBLE')">GAMBLE (x2 OR 0)</button>
+            <button class="gamble-btn danger jitter" onclick="gambleOutcome('ALLIN')">ALL IN (x10 OR RESET)</button>
+        </div>
+
+        <!-- Chaos Overlay -->
+        <div id="chaos-overlay">
+            <div id="grass-target">🌱<br>GRASS</div>
+            <div id="hand">🖐️</div>
+        </div>
+    </div>
+
+    <!-- Failure -->
+    <div id="reset-overlay">
+        <div class="reset-msg">SKILL ISSUE</div>
+        <div class="reset-sub">"you needed that"</div>
+        <button class="gamble-btn" style="margin-top: 40px; border-width: 8px;" onclick="location.reload()">AGAIN</button>
+    </div>
+
+    <script>
+        const state = {
+            score: parseInt(localStorage.getItem('skill_issue_score')) || 0,
+            pending: 0,
+            baseSpeed: 200,
+            speed: 200,
+            dotType: 'safe',
+            dotPos: { x: window.innerWidth / 2, y: window.innerHeight / 2 },
+            dotVel: { x: 1, y: 1 },
+            isGambling: false,
+            chaosActive: false,
+            chaosTimer: 0,
+            lastTick: performance.now(),
+            beatTimer: 0,
+            beatRate: 1.0,
+            difficulty: 'EARLY'
+        };
+
+        const elements = {
+            dot: document.getElementById('dot'),
+            score: document.getElementById('score'),
+            pending: document.getElementById('pending'),
+            tray: document.getElementById('gamble-tray'),
+            hand: document.getElementById('hand'),
+            grass: document.getElementById('grass-target'),
+            timer: document.getElementById('chaos-timer'),
+            overlay: document.getElementById('reset-overlay'),
+            level: document.getElementById('multiplier-label')
+        };
+
+        // AUDIO
+        const audio = new (window.AudioContext || window.webkitAudioContext)();
+        function playTone(freq, dur, type = 'square', vol = 0.1) {
+            const osc = audio.createOscillator();
+            const gain = audio.createGain();
+            osc.type = type;
+            osc.frequency.setValueAtTime(freq, audio.currentTime);
+            gain.gain.setValueAtTime(vol, audio.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.01, audio.currentTime + dur);
+            osc.connect(gain);
+            gain.connect(audio.destination);
+            osc.start();
+            osc.stop(audio.currentTime + dur);
+        }
+
+        // INIT
+        function init() {
+            updateScore();
+            spawnDot();
+            requestAnimationFrame(gameLoop);
+            
+            elements.dot.onclick = (e) => {
+                e.stopPropagation();
+                catchDot();
+            };
+
+            let isDragging = false;
+            let dragOffset = { x: 0, y: 0 };
+            elements.hand.onmousedown = (e) => {
+                isDragging = true;
+                const rect = elements.hand.getBoundingClientRect();
+                dragOffset.x = e.clientX - rect.left;
+                dragOffset.y = e.clientY - rect.top;
+            };
+            window.onmouseup = () => isDragging = false;
+            window.onmousemove = (e) => {
+                if (!isDragging) return;
+                elements.hand.style.left = (e.clientX - dragOffset.x) + 'px';
+                elements.hand.style.top = (e.clientY - dragOffset.y) + 'px';
+                checkGrassContact();
+            };
+        }
+
+        function spawnDot() {
+            const roll = Math.random();
+            if (roll < 0.6) {
+                state.dotType = 'safe';
+                state.speed = state.baseSpeed;
+            } else if (roll < 0.9) {
+                state.dotType = 'risky';
+                state.speed = state.baseSpeed * 1.5;
+            } else {
+                state.dotType = 'danger';
+                state.speed = state.baseSpeed * 2.5;
+            }
+            
+            elements.dot.className = state.dotType;
+            const angle = Math.random() * Math.PI * 2;
+            state.dotVel.x = Math.cos(angle);
+            state.dotVel.y = Math.sin(angle);
+        }
+
+        function catchDot() {
+            const rewards = { safe: 10, risky: 50, danger: 200 };
+            const reward = rewards[state.dotType];
+            
+            playTone(440 + reward, 0.1, 'sine', 0.2);
+            state.pending += reward;
+            updateScore();
+            
+            spawnDot();
+            showGambling();
+            
+            state.baseSpeed = Math.min(1000, state.baseSpeed + 25);
+            state.beatRate = Math.max(0.05, 1.0 - (state.score / 10000));
+        }
+
+        function showGambling() {
+            state.isGambling = true;
+            elements.tray.classList.add('active');
+            clearTimeout(state.gambleTimeout);
+            state.gambleTimeout = setTimeout(() => {
+                if (state.isGambling) gambleOutcome('KEEP');
+            }, 2500); // Shorter window
+        }
+
+        function gambleOutcome(type) {
+            state.isGambling = false;
+            elements.tray.classList.remove('active');
+            
+            if (type === 'KEEP') {
+                state.score += state.pending;
+                playTone(220, 0.2, 'sine');
+            } else if (type === 'GAMBLE') {
+                if (Math.random() > 0.5) {
+                    state.score += state.pending * 2;
+                    playTone(880, 0.3);
+                } else playTone(110, 0.5, 'sawtooth');
+            } else if (type === 'ALLIN') {
+                if (Math.random() > 0.9) {
+                    state.score += state.pending * 10;
+                    playTone(1760, 0.5);
+                } else {
+                    fail('GREED IS A SKILL ISSUE');
+                    return;
+                }
+            }
+            
+            state.pending = 0;
+            updateScore();
+        }
+
+        function updateScore() {
+            elements.score.innerText = state.score.toLocaleString();
+            elements.pending.innerText = state.pending.toLocaleString();
+            localStorage.setItem('skill_issue_score', state.score);
+            
+            // ESCALATION LABELS
+            if (state.score < 1000) state.difficulty = 'EARLY';
+            else if (state.score < 5000) state.difficulty = 'MID';
+            else state.difficulty = 'LATE';
+            elements.level.innerText = state.difficulty;
+        }
+
+        function triggerChaos() {
+            if (state.chaosActive) return;
+            state.chaosActive = true;
+            // Brutal scaling
+            state.chaosTimer = Math.max(1.5, 5.0 - (state.score / 2000));
+            
+            elements.grass.style.display = 'flex';
+            elements.grass.style.left = (Math.random() * 60 + 20) + '%';
+            elements.grass.style.top = (Math.random() * 60 + 20) + '%';
+            
+            elements.hand.style.display = 'flex';
+            elements.hand.style.left = (Math.random() * 60 + 20) + '%';
+            elements.hand.style.top = (Math.random() * 60 + 20) + '%';
+            
+            elements.timer.style.display = 'block';
+            playTone(60, 0.5, 'sawtooth', 0.2);
+        }
+
+        function checkGrassContact() {
+            const hRect = elements.hand.getBoundingClientRect();
+            const gRect = elements.grass.getBoundingClientRect();
+            if (hRect.left < gRect.right && hRect.right > gRect.left &&
+                hRect.top < gRect.bottom && hRect.bottom > gRect.top) {
+                successChaos();
+            }
+        }
+
+        function successChaos() {
+            state.chaosActive = false;
+            elements.grass.style.display = 'none';
+            elements.hand.style.display = 'none';
+            elements.timer.style.display = 'none';
+            playTone(660, 0.1, 'sine');
+        }
+
+        function fail(reason) {
+            state.score = 0;
+            state.pending = 0;
+            state.baseSpeed = 200; // Reset speed too for true brutality
+            updateScore();
+            elements.overlay.style.display = 'flex';
+            elements.overlay.querySelector('.reset-msg').innerText = reason || 'SKILL ISSUE';
+            playTone(30, 2, 'sawtooth', 0.4);
+            document.body.classList.add('shake');
+        }
+
+        function gameLoop(time) {
+            const dt = (time - state.lastTick) / 1000;
+            state.lastTick = time;
+
+            // AUTONOMOUS DOT
+            state.dotPos.x += state.dotVel.x * state.speed * dt;
+            state.dotPos.y += state.dotVel.y * state.speed * dt;
+
+            // Bounce with extra juice
+            const pad = 40;
+            if (state.dotPos.x < pad || state.dotPos.x > window.innerWidth - 60 - pad) {
+                state.dotVel.x *= -1;
+                playTone(100, 0.05, 'sine', 0.02);
+            }
+            if (state.dotPos.y < pad || state.dotPos.y > window.innerHeight - 60 - pad) {
+                state.dotVel.y *= -1;
+                playTone(100, 0.05, 'sine', 0.02);
+            }
+
+            elements.dot.style.left = state.dotPos.x + 'px';
+            elements.dot.style.top = state.dotPos.y + 'px';
+
+            // TENSION BEAT
+            state.beatTimer += dt;
+            if (state.beatTimer >= state.beatRate) {
+                state.beatTimer = 0;
+                playTone(50 + (state.score/100), 0.1, 'square', 0.05);
+            }
+
+            // CHAOS ESCALATION
+            if (state.chaosActive) {
+                state.chaosTimer -= dt;
+                elements.timer.innerText = `GRASS NEEDED: ${state.chaosTimer.toFixed(2)}s`;
+                if (state.chaosTimer <= 0) fail('TOUCH GRASS');
+            } else {
+                const triggerChance = 0.002 + (state.score / 50000);
+                if (Math.random() < triggerChance) triggerChaos();
+            }
+
+            requestAnimationFrame(gameLoop);
+        }
+        window.onload = init;
+    </script>
+</body>
+</html>
