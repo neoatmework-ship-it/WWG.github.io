@@ -203,6 +203,72 @@
             text-transform: uppercase;
         }
 
+        /* IKEA EVENT */
+        #ikea-popup {
+            position: absolute;
+            top: 20%;
+            right: 10%;
+            width: 300px;
+            background: var(--white);
+            color: #003399; /* IKEA Blueish */
+            border: 8px solid #003399;
+            padding: 20px;
+            display: none;
+            z-index: 210;
+        }
+
+        .ikea-part-img {
+            width: 60px;
+            height: 60px;
+            background: #ccc;
+            border: 2px dashed #003399;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: grab;
+            position: absolute;
+            z-index: 220;
+            color: #003399;
+            font-weight: 900;
+        }
+
+        #ikea-socket {
+            width: 70px;
+            height: 70px;
+            background: rgba(0, 51, 153, 0.1);
+            border: 4px dashed #003399;
+            margin: 20px auto;
+            position: relative;
+        }
+
+        /* COOKING EVENT */
+        #cooking-pot {
+            position: absolute;
+            bottom: 20%;
+            right: 5%;
+            width: 180px;
+            height: 180px;
+            background: #333;
+            border-radius: 20px 20px 50px 50px;
+            border: 8px solid var(--gray);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 210;
+            overflow: hidden;
+        }
+
+        #heat-bar {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            background: var(--red);
+            transition: height 0.1s;
+        }
+
+        .pot-label { font-size: 3rem; position: relative; z-index: 10; cursor: progress; }
+
         .jitter { animation: jitter 0.1s infinite; }
         @keyframes jitter {
             0% { transform: translate(0,0); }
@@ -319,7 +385,7 @@
             </div>
         </div>
 
-        <div id="chaos-timer" class="jitter">GRASS NEEDED: 5.00s</div>
+        <div id="chaos-timer" class="jitter">SYSTEM DEMAND: 5.00s</div>
         <div id="dot">CATCH</div>
 
         <!-- Captcha -->
@@ -328,6 +394,21 @@
             <div id="captcha-code" class="captcha-code">A1B2</div>
             <input type="text" id="captcha-input" maxlength="4" placeholder="TYPE_CODE">
             <div class="stat-label" style="margin-top: 20px; color: var(--white);">PROVE YOU AREN'T A BOT</div>
+        </div>
+
+        <!-- IKEA POPUP -->
+        <div id="ikea-popup" class="jitter">
+            <h3 style="font-weight: 900; margin-bottom: 5px;">IKEA - FLÜRP</h3>
+            <p style="font-size: 0.7rem;">ASSEMBLY REQUIRED: DRAG THE BOLT</p>
+            <div id="ikea-socket"></div>
+            <div id="ikea-timer" style="font-weight: 900; color: var(--red);">3.0s</div>
+        </div>
+        <div id="ikea-part" class="ikea-part-img" style="display: none;">🔩</div>
+
+        <!-- COOKING POT -->
+        <div id="cooking-pot" class="jitter">
+            <div id="heat-bar" style="height: 100%;"></div>
+            <div class="pot-label">🍲</div>
         </div>
 
         <!-- Gambling Tray -->
@@ -360,6 +441,10 @@
             isGambling: false,
             chaosActive: false,
             captchaActive: false,
+            ikeaActive: false,
+            cookingActive: false,
+            ikeaTimer: 0,
+            heatLevel: 1.0,
             captchaCode: '',
             chaosTimer: 0,
             lastTick: performance.now(),
@@ -383,7 +468,13 @@
             capCode: document.getElementById('captcha-code'),
             capInput: document.getElementById('captcha-input'),
             canvas: document.getElementById('particle-canvas'),
-            ctx: document.getElementById('particle-canvas').getContext('2d')
+            ctx: document.getElementById('particle-canvas').getContext('2d'),
+            ikea: document.getElementById('ikea-popup'),
+            ikeaPart: document.getElementById('ikea-part'),
+            ikeaSock: document.getElementById('ikea-socket'),
+            ikeaTime: document.getElementById('ikea-timer'),
+            pot: document.getElementById('cooking-pot'),
+            heat: document.getElementById('heat-bar')
         };
 
         // AUDIO
@@ -429,28 +520,39 @@
             
             elements.dot.onclick = () => catchDot();
 
-            // Hand drag
-            let isDragging = false;
+            // Interventions
+            let dragTarget = null;
             let dragOffset = { x: 0, y: 0 };
-            elements.hand.onmousedown = (e) => {
-                isDragging = true;
-                const rect = elements.hand.getBoundingClientRect();
-                dragOffset.x = e.clientX - rect.left;
-                dragOffset.y = e.clientY - rect.top;
+
+            document.onmousedown = (e) => {
+                if(e.target === elements.hand) dragTarget = elements.hand;
+                if(e.target === elements.ikeaPart) dragTarget = elements.ikeaPart;
+                if(dragTarget) {
+                    const rect = dragTarget.getBoundingClientRect();
+                    dragOffset.x = e.clientX - rect.left;
+                    dragOffset.y = e.clientY - rect.top;
+                }
             };
-            window.onmouseup = () => isDragging = false;
+            window.onmouseup = () => dragTarget = null;
             window.onmousemove = (e) => {
-                if (!isDragging) return;
-                elements.hand.style.left = (e.clientX - dragOffset.x) + 'px';
-                elements.hand.style.top = (e.clientY - dragOffset.y) + 'px';
-                checkGrassContact();
+                if (dragTarget) {
+                    dragTarget.style.left = (e.clientX - dragOffset.x) + 'px';
+                    dragTarget.style.top = (e.clientY - dragOffset.y) + 'px';
+                    if(dragTarget === elements.hand) checkGrassContact();
+                    if(dragTarget === elements.ikeaPart) checkIkeaContact();
+                }
+                // Stir detection
+                if(state.cookingActive) {
+                    const rect = elements.pot.getBoundingClientRect();
+                    if(e.clientX > rect.left && e.clientX < rect.right && e.clientY > rect.top && e.clientY < rect.bottom) {
+                        state.heatLevel = Math.min(1.0, state.heatLevel + 0.05);
+                        playTone(100 + Math.random()*10, 0.05, 'sine', 0.01);
+                    }
+                }
             };
 
-            // Captcha input
             elements.capInput.oninput = (e) => {
-                if (e.target.value.toUpperCase() === state.captchaCode) {
-                    successCaptcha();
-                }
+                if (e.target.value.toUpperCase() === state.captchaCode) successCaptcha();
             };
         }
 
@@ -486,8 +588,10 @@
             state.beatRate = Math.max(0.04, 1.0 - (state.score / 15000));
             updateDrone();
 
-            // Random Captcha trigger
+            // Random triggers
             if (Math.random() < 0.05 + (state.score / 20000)) triggerCaptcha();
+            if (Math.random() < 0.04 + (state.score / 25000)) triggerIkea();
+            if (Math.random() < 0.04 + (state.score / 25000)) triggerCooking();
         }
 
         function createParticles(x, y, type) {
@@ -501,6 +605,38 @@
                     color
                 });
             }
+        }
+
+        // IKEA
+        function triggerIkea() {
+            if(state.ikeaActive) return;
+            state.ikeaActive = true;
+            state.ikeaTimer = 3.5;
+            elements.ikea.style.display = 'block';
+            elements.ikeaPart.style.display = 'flex';
+            elements.ikeaPart.style.left = (Math.random()*20 + 70) + '%';
+            elements.ikeaPart.style.top = (Math.random()*60 + 20) + '%';
+            playTone(300, 0.5, 'square', 0.1);
+        }
+
+        function checkIkeaContact() {
+            const pRect = elements.ikeaPart.getBoundingClientRect();
+            const sRect = elements.ikeaSock.getBoundingClientRect();
+            if(pRect.left < sRect.right && pRect.right > sRect.left && pRect.top < sRect.bottom && pRect.bottom > sRect.top) {
+                state.ikeaActive = false;
+                elements.ikea.style.display = 'none';
+                elements.ikeaPart.style.display = 'none';
+                playTone(900, 0.1, 'sine');
+            }
+        }
+
+        // COOKING
+        function triggerCooking() {
+            if(state.cookingActive) return;
+            state.cookingActive = true;
+            state.heatLevel = 1.0;
+            elements.pot.style.display = 'flex';
+            playTone(150, 1.0, 'sawtooth', 0.1);
         }
 
         function triggerCaptcha() {
@@ -613,6 +749,25 @@
                 elements.dot.style.top = state.dotPos.y + 'px';
             }
 
+            // IKEA Timer
+            if(state.ikeaActive) {
+                state.ikeaTimer -= dt;
+                elements.ikeaTime.innerText = `${state.ikeaTimer.toFixed(1)}s`;
+                if(state.ikeaTimer <= 0) fail('INSTRUCTION ERROR');
+            }
+
+            // Cooking Timer
+            if(state.cookingActive) {
+                state.heatLevel -= 0.15 * dt * (1 + state.score/10000);
+                elements.heat.style.height = (state.heatLevel * 100) + '%';
+                if(state.heatLevel <= 0) fail('KITCHEN FIRE');
+                if(state.heatLevel >= 1.0) {
+                    state.cookingActive = false;
+                    elements.pot.style.display = 'none';
+                    playTone(600, 0.1, 'sine');
+                }
+            }
+
             state.beatTimer += dt;
             if (state.beatTimer >= state.beatRate) {
                 state.beatTimer = 0;
@@ -621,8 +776,8 @@
 
             if (state.chaosActive) {
                 state.chaosTimer -= dt;
-                elements.timer.innerText = `GRASS NEEDED: ${state.chaosTimer.toFixed(2)}s`;
-                if (state.chaosTimer <= 0) fail('TOUCH GRASS');
+                elements.timer.innerText = `SYSTEM DEMAND: ${state.chaosTimer.toFixed(2)}s`;
+                if (state.chaosTimer <= 0) fail('SYSTEM FAILURE');
             } else {
                 if (Math.random() < 0.003 + (state.score / 40000)) triggerChaos();
             }
