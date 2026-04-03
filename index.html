@@ -765,17 +765,14 @@
         <a href="../neo-portfolio/index.html" style="text-decoration: none; color: var(--accent); font-weight: 700; font-size: 0.7rem; letter-spacing: 2px; margin-bottom: 20px; display: block; opacity: 0.6; transition: 0.3s; text-transform: uppercase;" onmouseover="this.style.opacity=1" onmouseout="this.style.opacity=0.6">BY NEO</a>
         <h1><span class="gradient-text" id="wwg-title" style="cursor:pointer;user-select:none;" title="WWG">WWG</span>
         </h1>
-        <p
-            style="font-size: 0.9rem; opacity: 0.5; margin-top: -10px; margin-bottom: 20px; font-weight: 600; text-transform: uppercase; letter-spacing: 3px;">
-            Find my secrets</p>
         <p>Weird Website Gallery — a hand-picked collection of strange, wonderful, and interactive web experiences</p>
         <div class="hero-count"><strong>111</strong> sites and counting</div>
         <div class="search-wrap">
             <span class="search-icon">🔍</span>
             <input class="search-input" id="search" type="text"
                 placeholder="Search 108+ sites by name, description, or tag...">
-            <a href="archive.html" class="vault-btn" title="View Fragment Vault">
-                <span class="vault-icon">📁</span>
+            <a href="underground.html" class="vault-btn" title="View The Underground">
+                <span class="vault-icon">🦴</span>
             </a>
         </div>
         <div class="filter-bar">
@@ -3287,8 +3284,7 @@
         <p><span id="footer-text" style="cursor:help">WWG — Weird Website Gallery</span> · Made with <span
                 id="footer-logic" style="cursor:help">✦</span> and curiosity
             <br><br>
-            <span class="find-secrets" style="font-size: 0.9rem; opacity: 0.5; margin-top: -10px; margin-bottom: 20px; font-weight: 600; text-transform: uppercase; letter-spacing: 3px; cursor: help;">Find my secrets</span><br>
-            <span id="footer-version" style="font-size: 0.6rem; opacity: 0.3; cursor: pointer;">v3.2.2-ARTIFACT</span><br>
+            <span id="footer-version" style="font-size: 0.6rem; opacity: 0.3; cursor: pointer;">v4.0.0-UNDERGROUND</span><br>
         <div id="guide-link-container" style="display:none;">
             <a href="cheatsheet.html"
                 style="color:rgba(255,255,255,0.2);text-decoration:none;font-size:0.7rem;transition:0.3s;"
@@ -3373,108 +3369,25 @@
             });
 
             // ════════════════════════════════════
-            // HARDENED SECRETS TRIGGER SYSTEM
+            // THE BARRIER: SANS TRIGGER (v5.0)
             // ════════════════════════════════════
-
-            // 1. PHANTOM SIGNAL — Click the "WWG" title exactly 7 times
-            let titleClicks = 0, titleTimer;
+            let logoClicks = 0;
             document.getElementById('wwg-title')?.addEventListener('click', () => {
-                titleClicks++;
-                clearTimeout(titleTimer);
-                titleTimer = setTimeout(() => titleClicks = 0, 1500);
-                if (titleClicks === 7) {
-                    titleClicks = 0;
-                    Discovery.unlock('phantom-signal');
+                logoClicks++;
+                if (logoClicks >= 3) {
+                    document.body.style.transition = '1s';
+                    document.body.style.filter = 'invert(1) grayscale(1) contrast(500%)';
+                    setTimeout(() => window.location.href = 'sans-fight.html', 1000);
                 }
+                setTimeout(() => logoClicks = 0, 2500);
             });
 
-            // 2. VOID FRAGMENT — Stay on page 60 seconds without clicking
-            let voidSeconds = 0;
-            const voidInterval = setInterval(() => {
-                voidSeconds++;
-                if (voidSeconds >= 60) {
-                    clearInterval(voidInterval);
-                    Discovery.unlock('void-fragment');
-                }
-            }, 1000);
-            document.addEventListener('click', () => voidSeconds = 0);
+            // Redirect Vault Button if unlocked
+            if (window.Discovery && Discovery.isUnlocked()) {
+                const vaultBtn = document.querySelector('.vault-btn');
+                if (vaultBtn) vaultBtn.href = 'underground.html';
+            }
 
-            // 3. ORACLE MACHINE — Hover "Find my secrets" while holding 'V' and 'I' keys
-            let keyMap = {};
-            window.addEventListener('keydown', e => { keyMap[e.key.toUpperCase()] = true; });
-            window.addEventListener('keyup', e => { keyMap[e.key.toUpperCase()] = false; });
-            
-            document.querySelector('.find-secrets')?.addEventListener('mouseenter', () => {
-                if (keyMap['V'] && keyMap['I']) {
-                    Discovery.unlock('oracle-machine');
-                }
-            });
-
-            // 4. WHISPERER — Type any name (3+ chars) into search and press Enter
-            //    Detected if value doesn't match any cards (personal name = no results)
-            search.addEventListener('keydown', (e) => {
-                if (e.key === 'Enter') {
-                    const val = search.value.trim();
-                    if (val.length >= 3) {
-                        const visibleCards = document.querySelectorAll('.card:not([style*="display: none"])').length;
-                        if (visibleCards === 0) Discovery.unlock('whisperer');
-                    }
-                }
-            });
-
-            // 5. PATTERN BREAKER — Click 4 corners of the screen in order: TL→TR→BR→BL
-            let cornerSeq = [];
-            const CORNER_ORDER = ['TL','TR','BR','BL'];
-            document.addEventListener('click', (e) => {
-                const W = window.innerWidth, H = window.innerHeight;
-                const x = e.clientX, y = e.clientY;
-                const margin = 100;
-                let corner = '';
-                if (x < margin && y < margin) corner = 'TL';
-                else if (x > W - margin && y < margin) corner = 'TR';
-                else if (x > W - margin && y > H - margin) corner = 'BR';
-                else if (x < margin && y > H - margin) corner = 'BL';
-                if (corner) {
-                    if (corner === CORNER_ORDER[cornerSeq.length]) {
-                        cornerSeq.push(corner);
-                        if (cornerSeq.length === 4) { cornerSeq = []; Discovery.unlock('pattern-breaker'); }
-                    } else {
-                        cornerSeq = corner === 'TL' ? ['TL'] : [];
-                    }
-                }
-            });
-
-            // 8. CHAOS ENGINE — Hold Ctrl+Alt+C while clicking the "Chaos" pill tag
-            document.querySelectorAll('.filter-pill').forEach(pill => {
-                if (pill.innerText.includes('Chaos')) {
-                    pill.addEventListener('click', (e) => {
-                        if (e.ctrlKey && e.altKey && e.shiftKey === false) { // Specificity
-                            Discovery.unlock('chaos-engine');
-                        }
-                    });
-                }
-            });
-
-            // 7. FORGOTTEN — Search something with 0 results and wait 15 seconds
-            let forgottenTimer;
-            setInterval(() => {
-                const noRes = document.querySelector('.no-results.visible');
-                if (noRes) {
-                    if (!forgottenTimer) {
-                        forgottenTimer = setTimeout(() => {
-                            Discovery.unlock('forgotten');
-                            forgottenTimer = null;
-                        }, 15000);
-                    }
-                } else {
-                    clearTimeout(forgottenTimer);
-                    forgottenTimer = null;
-                }
-            }, 500);
-
-            // Scattered Hints (Console)
-            console.log("%c[VAULT_SYSTEM] %cPhantom Signal handshake requires 7-pulse sequence on the master title.", "color:#a78bfa; font-weight:bold", "color:#888");
-            
             // ─── SEARCH still filters cards ───
             search.addEventListener('input', () => {
                 filterCards();
@@ -3484,17 +3397,6 @@
             window.addEventListener('scroll', () => {
                 scrollBtn.classList.toggle('visible', window.scrollY > 400);
             });
-
-            // Show guide link if unlocked
-            if (Discovery.isCheatsheetUnlocked()) {
-                const guideCont = document.getElementById('guide-link-container');
-                if (guideCont) guideCont.style.display = 'block';
-            }
-            // Apply Persistent Theme
-            if (window.Discovery) {
-                const active = Discovery.getActiveTheme();
-                if (active !== 'default') document.body.classList.add(active);
-            }
         })();
 
         // Suggest Idea Logic
