@@ -5,42 +5,111 @@
 const Discovery = {
     STORAGE_KEY: 'wwg_discovered_secrets',
 
-    // 10 secrets — each earned through a unique action
+    // 10 fragments — each with unique rewards
     SITES: [
-        'phantom-signal',   // Click the page title 7 times
-        'void-fragment',    // Stay for 60 seconds without clicking anything
-        'oracle-machine',   // Type "FUTURE" anywhere on index
-        'whisperer',        // Type your name (3+ chars) into search and press Enter
-        'pattern-breaker',  // Click 4 screen corners in order (TL→TR→BR→BL)
-        'night-mode',       // Visit between midnight and 01:00
-        'forgotten',        // Search for something with 0 results, then wait 15s
-        'chaos-engine',     // Type "CHAOS" anywhere on index
-        'liar',             // Let Liar's Clicker count reach a displayed 100
-        'grand-finale',     // Unlock all 9 other secrets
+        { id: 'phantom-signal', name: 'Phantom Signal', theme: 'phantom-mode' },
+        { id: 'void-fragment', name: 'Void Fragment', theme: 'void-mode' },
+        { id: 'oracle-machine', name: 'The Oracle Machine', theme: 'oracle-effect' },
+        { id: 'whisperer', name: 'The Whisperer', theme: 'echo-mode' },
+        { id: 'pattern-breaker', name: 'Pattern Breaker', theme: 'grid-glitch' },
+        { id: 'night-mode', name: 'Night Mode', theme: 'starlight' },
+        { id: 'forgotten', name: 'The Forgotten', theme: 'ghost-mode' },
+        { id: 'chaos-engine', name: 'Chaos Engine', theme: 'chaos-mode' },
+        { id: 'liar', name: 'The Liar', theme: 'deception-filter' },
+        { id: 'grand-finale', name: '★ THE GRAND FINALE ★', theme: 'universal-god' },
     ],
 
     unlock: function (siteId) {
-        if (!this.SITES.includes(siteId)) return;
+        const site = this.SITES.find(s => s.id === siteId);
+        if (!site) return;
 
         const discovered = this.getDiscovered();
         if (!discovered.includes(siteId)) {
             discovered.push(siteId);
             localStorage.setItem(this.STORAGE_KEY, JSON.stringify(discovered));
-            this.notify(siteId);
+            
+            // SUPER COOL FEEDBACK
+            this.playRewardSound();
+            this.triggerGlitch();
+            
+            if (siteId === 'grand-finale') {
+                this.triggerFinale();
+            } else {
+                this.notify(siteId);
+            }
 
-            // Auto-unlock grand finale when all 9 others are found
-            const others = this.SITES.filter(s => s !== 'grand-finale');
-            const allOthers = others.every(s => discovered.includes(s) || s === siteId);
-            if (allOthers && !discovered.includes('grand-finale')) {
-                setTimeout(() => this.unlock('grand-finale'), 2000);
+            // Auto-unlock grand finale
+            const others = this.SITES.filter(s => s.id !== 'grand-finale');
+            const allFound = others.every(s => discovered.includes(s.id));
+            if (allFound && !discovered.includes('grand-finale')) {
+                setTimeout(() => this.unlock('grand-finale'), 3000);
             }
         }
+    },
+
+    triggerFinale: function() {
+        const overlay = document.createElement('div');
+        overlay.style.cssText = `
+            position: fixed; inset: 0; background: #000; z-index: 1000000;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            color: gold; font-family: 'Space Grotesk', sans-serif; opacity: 0; transition: 2s;
+        `;
+        overlay.innerHTML = `
+            <div style="font-size: 5rem; text-shadow: 0 0 50px gold; animation: pulse 2s infinite;">💎</div>
+            <div style="font-size: 2rem; font-weight: 700; letter-spacing: 15px; margin-top: 30px;">SINGULARITY_STABILIZED</div>
+            <div style="font-size: 0.8rem; margin-top: 20px; color: #fff; letter-spacing: 5px; opacity: 0.5;">THE CORE HAS BEN SALVAGED.</div>
+            <button onclick="this.parentElement.remove()" style="margin-top: 50px; background: none; border: 1px solid gold; color: gold; padding: 10px 40px; cursor: pointer; font-family: inherit; text-transform: uppercase;">Acknowledge</button>
+        `;
+        document.body.appendChild(overlay);
+        setTimeout(() => overlay.style.opacity = '1', 100);
+    },
+
+    playRewardSound: function() {
+        try {
+            const ctx = new (window.AudioContext || window.webkitAudioContext)();
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+            
+            osc.connect(gain);
+            gain.connect(ctx.destination);
+            
+            osc.type = 'sawtooth';
+            osc.frequency.setValueAtTime(40, ctx.currentTime);
+            osc.frequency.exponentialRampToValueAtTime(800, ctx.currentTime + 0.1);
+            osc.frequency.exponentialRampToValueAtTime(100, ctx.currentTime + 0.5);
+            
+            gain.gain.setValueAtTime(0.3, ctx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.8);
+            
+            osc.start();
+            osc.stop(ctx.currentTime + 0.8);
+        } catch(e) {}
+    },
+
+    triggerGlitch: function() {
+        const body = document.body;
+        body.style.filter = 'contrast(200%) brightness(150%) hue-rotate(90deg)';
+        body.style.transform = 'translate(10px, -5px) scale(1.02)';
+        
+        let i = 0;
+        const interval = setInterval(() => {
+            body.style.transform = `translate(${Math.random()*20-10}px, ${Math.random()*20-10}px)`;
+            body.style.filter = `hue-rotate(${Math.random()*360}deg) brightness(${100 + Math.random()*100}%)`;
+            if (++i > 10) {
+                clearInterval(interval);
+                body.style.filter = '';
+                body.style.transform = '';
+                body.style.transition = '0.5s';
+                setTimeout(() => body.style.transition = '', 500);
+            }
+        }, 40);
     },
 
     getDiscovered: function () {
         const data = localStorage.getItem(this.STORAGE_KEY);
         const discovered = data ? JSON.parse(data) : [];
-        return discovered.filter(id => this.SITES.includes(id));
+        const validIds = this.SITES.map(s => s.id);
+        return discovered.filter(id => validIds.includes(id));
     },
 
     notify: function (id) {
@@ -84,14 +153,23 @@ const Discovery = {
             toast.style.opacity = '0';
             toast.style.transition = '0.5s';
             setTimeout(() => toast.remove(), 500);
-        }, 5000);
+        }, id === 'grand-finale' ? 6000 : 3500);
 
         console.log(`%c[SYSTEM_LOG] %cFragment sequence detected. Stabilizing...`, "color:#a78bfa; font-weight:bold", "color:#888");
-    }, isFinal ? 6000 : 3500);
+    },
+
+    getActiveTheme: function() {
+        return localStorage.getItem('wwg_active_theme') || 'default';
+    },
+
+    setActiveTheme: function(theme) {
+        localStorage.setItem('wwg_active_theme', theme);
+        document.body.className = theme;
     },
 
     cheat_unlock_all: function () {
-        localStorage.setItem(this.STORAGE_KEY, JSON.stringify(this.SITES));
+        const ids = this.SITES.map(s => s.id);
+        localStorage.setItem(this.STORAGE_KEY, JSON.stringify(ids));
     },
 
     CHEATSHEET_KEY: 'wwg_cheatsheet_unlocked',

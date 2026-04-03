@@ -679,18 +679,52 @@
             }
         }
 
-        ::-webkit-scrollbar {
-            width: 6px;
+        /* ── Universal Themes (Unlocked by Fragments) ── */
+        body.void-mode {
+            background: #000;
+            --bg: #000;
+            --bg-card: #050505;
+            overflow-x: hidden;
+        }
+        body.void-mode::before {
+            content: ''; position: fixed; inset: 0;
+            background: radial-gradient(circle at center, transparent 0%, #000 80%),
+                        url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='f'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.01' numOctaves='3'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23f)' opacity='0.2'/%3E%3C/svg%3E");
+            animation: void-drift 20s infinite linear;
+            z-index: -1; pointer-events: none;
+        }
+        @keyframes void-drift {
+            0% { transform: scale(1) rotate(0deg); }
+            50% { transform: scale(1.2) rotate(5deg); }
+            100% { transform: scale(1) rotate(0deg); }
         }
 
-        ::-webkit-scrollbar-track {
-            background: transparent;
+        body.chaos-mode {
+            --accent: #ff0055;
+            --bg: #0a0005;
+        }
+        body.chaos-mode .card {
+            animation: chaos-jitter 0.1s infinite alternate;
+        }
+        @keyframes chaos-jitter {
+            to { transform: translate(1px, -1px); }
         }
 
-        ::-webkit-scrollbar-thumb {
-            background: rgba(255, 255, 255, 0.08);
-            border-radius: 3px;
+        body.phantom-mode {
+            filter: grayscale(1) contrast(1.2) invert(0.05);
         }
+        body.phantom-mode h1 {
+            animation: phantom-flicker 2s infinite;
+        }
+        @keyframes phantom-flicker {
+            0%, 90%, 100% { opacity: 1; }
+            92% { opacity: 0.5; }
+            95% { opacity: 0.8; }
+        }
+        /* ── Scrollbar ── */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.08); border-radius: 3px; }
     </style>
     <script src="economy.js"></script>
     <script src="discovery.js"></script>
@@ -3253,7 +3287,8 @@
         <p><span id="footer-text" style="cursor:help">WWG — Weird Website Gallery</span> · Made with <span
                 id="footer-logic" style="cursor:help">✦</span> and curiosity
             <br><br>
-            <span id="footer-version" style="font-size: 0.6rem; opacity: 0.3; cursor: pointer;">v3.2.1-STABLE</span><br>
+            <span class="find-secrets" style="font-size: 0.9rem; opacity: 0.5; margin-top: -10px; margin-bottom: 20px; font-weight: 600; text-transform: uppercase; letter-spacing: 3px; cursor: help;">Find my secrets</span><br>
+            <span id="footer-version" style="font-size: 0.6rem; opacity: 0.3; cursor: pointer;">v3.2.2-ARTIFACT</span><br>
         <div id="guide-link-container" style="display:none;">
             <a href="cheatsheet.html"
                 style="color:rgba(255,255,255,0.2);text-decoration:none;font-size:0.7rem;transition:0.3s;"
@@ -3454,6 +3489,11 @@
             if (Discovery.isCheatsheetUnlocked()) {
                 const guideCont = document.getElementById('guide-link-container');
                 if (guideCont) guideCont.style.display = 'block';
+            }
+            // Apply Persistent Theme
+            if (window.Discovery) {
+                const active = Discovery.getActiveTheme();
+                if (active !== 'default') document.body.classList.add(active);
             }
         })();
 

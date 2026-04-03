@@ -5,14 +5,12 @@
     <meta charset="UTF-8">
     <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E🏛️%3C/text%3E%3C/svg%3E">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>THE VAULT | Fragment Archive</title>
+    <title>THE VAULT | Artifact Archive</title>
     <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
     <style>
         :root {
             --bg: #030308;
             --accent: #a78bfa;
-            --locked: #0f172a;
-            --unlocked: rgba(167, 139, 250, 0.15);
             --border: rgba(167, 139, 250, 0.2);
             --glow: rgba(167, 139, 250, 0.4);
         }
@@ -23,250 +21,175 @@
             color: #fff;
             font-family: 'Space Grotesk', sans-serif;
             min-height: 100vh;
-            overflow-x: hidden;
+            padding: 60px 20px;
             display: flex;
             flex-direction: column;
             align-items: center;
-            padding: 60px 20px;
         }
 
-        .scanlines {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.1) 50%),
-                        linear-gradient(90deg, rgba(255, 0, 0, 0.05), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.05));
-            background-size: 100% 4px, 3px 100%;
-            pointer-events: none;
-            z-index: 100;
-            opacity: 0.3;
+        .header { text-align: center; margin-bottom: 60px; }
+        h1 { 
+            font-size: 3rem; 
+            background: linear-gradient(to bottom, #fff, var(--accent)); 
+            -webkit-background-clip: text; 
+            background-clip: text;
+            -webkit-text-fill-color: transparent; 
         }
-
-        .header { text-align: center; margin-bottom: 80px; position: relative; }
-        h1 {
-            font-size: 3.5rem; letter-spacing: -2px;
-            text-transform: uppercase; margin-bottom: 10px;
-            background: linear-gradient(to bottom, #fff, #a78bfa);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            text-shadow: 0 0 40px rgba(167, 139, 250, 0.4);
-        }
-        .stats {
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 0.9rem; color: #6366f1; letter-spacing: 4px;
-            text-transform: uppercase;
-        }
+        .stats { font-family: 'JetBrains Mono', monospace; font-size: 0.8rem; color: #6366f1; letter-spacing: 4px; }
 
         .chamber-grid {
             display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 40px;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 30px;
             width: 100%;
-            max-width: 1000px;
-            perspective: 1000px;
+            max-width: 1200px;
         }
 
         .chamber {
-            position: relative;
-            background: rgba(15, 23, 42, 0.5);
+            background: rgba(15, 23, 42, 0.4);
             border: 1px solid var(--border);
-            border-radius: 24px;
-            height: 220px;
-            display: flex;
-            align-items: center;
+            border-radius: 20px;
             padding: 30px;
-            transition: 0.5s cubic-bezier(0.23, 1, 0.32, 1);
-            text-decoration: none;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            transition: 0.4s;
             overflow: hidden;
         }
+        .chamber.found { border-color: var(--accent); box-shadow: 0 0 30px rgba(167, 139, 250, 0.1); }
+        .chamber.locked { opacity: 0.4; filter: grayscale(1); }
 
-        .chamber::before {
-            content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            background: radial-gradient(circle at center, rgba(167, 139, 250, 0.1), transparent 70%);
-            opacity: 0; transition: 0.5s;
-        }
-
-        .chamber.unlocked {
-            border-color: var(--accent);
-            box-shadow: 0 0 40px rgba(167, 139, 250, 0.1);
-        }
-        .chamber.unlocked:hover {
-            transform: scale(1.02) translateZ(20px);
-            box-shadow: 0 0 60px rgba(167, 139, 250, 0.2);
-            background: rgba(167, 139, 250, 0.05);
-        }
-        .chamber.unlocked:hover::before { opacity: 1; }
-
-        .chamber.locked {
-            filter: grayscale(1) brightness(0.6);
-            cursor: help;
-        }
-        .chamber.locked .orb {
-            animation: glitch-orb 4s infinite linear;
-        }
-
-        .orb {
-            width: 80px; height: 80px; border-radius: 50%;
-            background: var(--unlocked);
-            border: 2px solid var(--accent);
+        .artifact-box {
+            width: 120px; height: 120px;
+            margin-bottom: 20px;
             display: flex; align-items: center; justify-content: center;
-            font-size: 2.5rem; margin-right: 30px;
-            box-shadow: 0 0 30px var(--glow);
-            flex-shrink: 0;
             position: relative;
-            z-index: 2;
-        }
-        .locked .orb {
-            background: #1e293b;
-            border-color: #334155;
-            box-shadow: none;
-            font-size: 2rem;
-            color: #475569;
         }
 
-        .info { z-index: 2; }
-        .chamber-id {
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 0.7rem; color: #475569; margin-bottom: 5px;
-            letter-spacing: 2px;
-        }
-        .unlocked .chamber-id { color: var(--accent); }
-        .chamber-name {
-            font-size: 1.6rem; font-weight: 700; color: #fff;
-            letter-spacing: -0.5px;
-        }
-        .locked .chamber-name { color: #64748b; font-size: 1.2rem; }
+        /* Artifact Visuals */
+        .art-phantom { width: 50px; height: 50px; border: 2px solid var(--accent); animation: rotate 4s infinite linear; }
+        .art-void { width: 60px; height: 60px; background: radial-gradient(circle, var(--accent), transparent); border-radius: 50%; animation: pulse 2s infinite; }
+        .art-oracle { font-size: 3rem; text-shadow: 0 0 20px var(--accent); animation: float 3s infinite ease-in-out; }
+        .art-final { font-size: 3.5rem; filter: drop-shadow(0 0 30px gold); animation: spin-y 5s infinite linear; }
 
-        /* Terminal Section */
+        @keyframes rotate { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+        @keyframes spin-y { from { transform: rotateY(0deg); } to { transform: rotateY(360deg); } }
+        @keyframes pulse { 0%, 100% { transform: scale(1); opacity: 0.5; } 50% { transform: scale(1.3); opacity: 1; } }
+        @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-15px); } }
+
+        .chamber-info { text-align: center; }
+        .chamber-id { font-family: 'JetBrains Mono', monospace; font-size: 0.6rem; color: var(--accent); margin-bottom: 5px; opacity: 0.6; }
+        .chamber-name { font-size: 1.2rem; font-weight: 700; margin-bottom: 15px; }
+
+        .theme-btn {
+            background: rgba(167, 139, 250, 0.1);
+            border: 1px solid var(--accent);
+            color: var(--accent);
+            padding: 8px 16px;
+            border-radius: 50px;
+            font-size: 0.7rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: 0.3s;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .theme-btn:hover { background: var(--accent); color: #fff; box-shadow: 0 0 20px var(--accent); }
+
         .terminal-panel {
-            width: 100%; max-width: 1000px;
-            background: #000;
-            border: 1px solid #1e293b;
-            border-radius: 12px;
-            margin-top: 60px;
-            padding: 20px;
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 0.85rem;
-            color: #4ade80;
-            box-shadow: 0 20px 50px rgba(0,0,0,0.5);
-        }
-        .term-header {
-            border-bottom: 1px solid #1e293b;
-            padding-bottom: 10px; margin-bottom: 15px;
-            display: flex; justify-content: space-between; color: #475569;
-        }
-        #term-output { min-height: 100px; color: #4ade80; line-height: 1.6; }
-        .term-line { margin-bottom: 4px; }
-        .term-cursor { display: inline-block; width: 8px; height: 1.2em; background: #4ade80; vertical-align: middle; animation: blink 1s infinite; }
-
-        @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
-        @keyframes glitch-orb {
-            0%, 100% { transform: scale(1) translate(0); }
-            10% { transform: scale(1.1) translate(2px, -2px); }
-            20% { transform: scale(0.9) translate(-1px, 2px); }
+            width: 100%; max-width: 1200px;
+            background: #000; border: 1px solid #1e293b;
+            border-radius: 12px; margin-top: 40px; padding: 20px;
+            font-family: 'JetBrains Mono', monospace; font-size: 0.8rem; color: #4ade80;
         }
 
-        .back-btn {
-            position: fixed; top: 40px; left: 40px;
-            color: #64748b; text-decoration: none;
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 0.8rem; letter-spacing: 2px;
-            z-index: 1000;
-        }
-        .back-btn:hover { color: #fff; }
-
-        @media (max-width: 900px) {
-            .chamber-grid { grid-template-columns: 1fr; }
-            h1 { font-size: 2.5rem; }
-        }
+        .back-btn { position: fixed; top: 40px; left: 40px; color: #475569; text-decoration: none; font-size: 0.8rem; }
     </style>
 </head>
 
 <body>
-    <div class="scanlines"></div>
-    <a href="index.html" class="back-btn">_ROOT_RETURN</a>
+    <a href="index.html" class="back-btn">← RETURN</a>
 
     <div class="header">
-        <h1 id="vault-title">Vault Reconstruction</h1>
+        <h1>THE ARTIFACT VAULT</h1>
         <div class="stats" id="vault-stats">SYNCHRONIZED // 0 OF 10</div>
     </div>
 
-    <div class="chamber-grid" id="chamber-grid">
-        <!-- Rendered by JS -->
-    </div>
+    <div class="chamber-grid" id="chamber-grid"></div>
 
     <div class="terminal-panel">
-        <div class="term-header">
-            <span>VAULT_HINT_TERMINAL V.4.0</span>
-            <span>STATUS: [SCANNING_FOR_LEAKS]</span>
-        </div>
-        <div id="term-output">
-            <div class="term-line">System initialized...</div>
-            <div class="term-line">Fetching cryptographic riddles for localized fragments...</div>
-            <div class="term-line">Type 'help' in the console or just explore the abyss.</div>
-        </div>
+        <div id="term-output">> SYSTEM READY. SELECT CHAMBER FOR GUIDANCE.</div>
     </div>
 
     <script src="discovery.js"></script>
     <script>
-        const CHAMBERS = [
-            { id: 'phantom-signal', name: 'Phantom Signal', icon: '📡', hint: 'The broadcast is embedded in the logo. Six clicks were a warning. Seven is the handshake.' },
-            { id: 'void-fragment', name: 'Void Fragment', icon: '🌫️', hint: 'Pure silence is required. Observe the zero-point on the home page for 60 seconds without interaction.' },
-            { id: 'oracle-machine', name: 'Oracle Machine', icon: '🔮', hint: 'Vision is earned through focus. Hover over the Digital Treasury while whispering the word "VISION" into the key-space.' },
-            { id: 'whisperer', name: 'The Whisperer', icon: '🗣️', hint: 'Search is for the literal. Whispering is for the identity. Type your name into the void and find nothing.' },
-            { id: 'pattern-breaker', name: 'Pattern Breaker', icon: '🧩', hint: 'Structure is a cage. Touch the four corners of existence in the proper order (TL -> TR -> BR -> BL).' },
-            { id: 'night-mode', name: 'Night Mode', icon: '🌙', hint: 'Some fragments only exist when the sun is absent. Seek the archive between midnight and one.' },
-            { id: 'forgotten', name: 'The Forgotten', icon: '🥀', hint: 'Solitude in failure. Search for that which does not exist, then wait 15 seconds for the ghost to appear.' },
-            { id: 'chaos-engine', name: 'Chaos Engine', icon: '⚙️', hint: 'Entropy requires modifiers. Hold the stabilizers [Ctrl+Alt+C] while clicking the "Chaos" tag.' },
-            { id: 'liar', name: 'The Liar', icon: '🎭', hint: 'Deception takes time to digest. Stay in the halls of the Liar for 30 seconds to earn the Truth.' },
-            { id: 'grand-finale', name: 'THE SUPREME', icon: '💎', hint: 'The sum of all parts.Salvage all 9 fragments to stabilize the core.' }
-        ];
+        const vaultGrid = document.getElementById('chamber-grid');
+        const term = document.getElementById('term-output');
 
-        const grid = document.getElementById('chamber-grid');
-        const stats = document.getElementById('vault-stats');
-        const termOutput = document.getElementById('term-output');
-
-        function updateTerminal(chamberId) {
-            const chamber = CHAMBERS.find(c => c.id === chamberId);
-            const lines = termOutput.querySelectorAll('.term-line');
-            if (lines.length > 5) lines[0].remove();
-            
-            const line = document.createElement('div');
-            line.className = 'term-line';
-            line.innerHTML = `> DECODED_RITUAL_FOR [${chamberId.toUpperCase()}]: ${chamber.hint}`;
-            termOutput.appendChild(line);
-        }
+        const HINTS = {
+            'phantom-signal': 'HANDSHAKE DETECTED IN MAIN LOGO. 7 PULSES REQUIRED.',
+            'void-fragment': 'ZERO-POINT OBSERVATION: 60 SECONDS OF STILLNESS ON LANDING ZONE.',
+            'oracle-machine': 'ORACLE REQUIRES SIGHT (HOVER) AND VOICE (V+I KEYS) IN THE FOOTER.',
+            'whisperer': 'IDENTITY QUERY: SEARCH THE VOID FOR YOUR NAME AND FIND NOTHING.',
+            'pattern-breaker': 'GEOMETRIC SYNC: CONNECT THE FOUR CORNERS (TL->TR->BR->BL).',
+            'night-mode': 'TEMPORAL ANOMALY: SEEK ACCESS BETWEEN 00:00 AND 01:00.',
+            'forgotten': 'SPECTRAL DELAY: WAIT 15 SECONDS IN THE ROOM OF NO RESULTS.',
+            'chaos-engine': 'ENTROPY MODIFIER: HOLD [CTRL+ALT+C] WHILE TAPPING THE CHAOS PILL.',
+            'liar': 'DECEPTION SATURATION: STAY IN THE HALLS OF THE LIAR FOR 30 SECONDS.',
+            'grand-finale': 'THE SINGULARITY: COLLECT ALL 9 FRAGMENTS TO STABILIZE.'
+        };
 
         function render() {
             const discovered = Discovery.getDiscovered();
-            stats.innerText = `SYNCHRONIZED // ${discovered.length} OF 10`;
-            grid.innerHTML = '';
+            document.getElementById('vault-stats').innerText = `SYNCHRONIZED // ${discovered.length} OF 10`;
+            vaultGrid.innerHTML = '';
 
-            CHAMBERS.forEach((c, index) => {
-                const isFound = discovered.includes(c.id);
-                const slot = document.createElement(isFound ? 'a' : 'div');
-                slot.className = `chamber ${isFound ? 'unlocked' : 'locked'}`;
-                if (isFound) slot.href = c.id === 'liar' ? 'liars-clicker.html' : '#'; // Map as needed
-
-                slot.innerHTML = `
-                    <div class="orb">${isFound ? c.icon : '●'}</div>
-                    <div class="info">
-                        <div class="chamber-id">BLOCK_0${index + 1}</div>
-                        <div class="chamber-name">${isFound ? c.name : 'ENCRYPTED_DATA'}</div>
-                    </div>
-                `;
-
-                if (!isFound) {
-                    slot.addEventListener('click', () => {
-                        updateTerminal(c.id);
-                    });
+            Discovery.SITES.forEach((site, index) => {
+                const isFound = discovered.includes(site.id);
+                const chamber = document.createElement('div');
+                chamber.className = `chamber ${isFound ? 'found' : 'locked'}`;
+                
+                let artifact = '';
+                if (isFound) {
+                    if (site.id === 'phantom-signal') artifact = '<div class="art-phantom"></div>';
+                    else if (site.id === 'void-fragment') artifact = '<div class="art-void"></div>';
+                    else if (site.id === 'oracle-machine') artifact = '<div class="art-oracle">👁️</div>';
+                    else if (site.id === 'grand-finale') artifact = '<div class="art-final">💎</div>';
+                    else artifact = '<div class="art-oracle" style="animation: none">✨</div>';
+                } else {
+                    artifact = '<div style="font-size: 2rem; opacity: 0.2">🔒</div>';
                 }
 
-                grid.appendChild(slot);
+                chamber.innerHTML = `
+                    <div class="chamber-id">BLOCK_${(index+1).toString().padStart(2,'0')}</div>
+                    <div class="artifact-box">${artifact}</div>
+                    <div class="chamber-name">${isFound ? site.name : 'ENCRYPTED'}</div>
+                `;
+
+                if (isFound && site.theme) {
+                    const btn = document.createElement('button');
+                    btn.className = 'theme-btn';
+                    btn.innerText = 'UPLINK THEME';
+                    btn.onclick = () => {
+                        Discovery.setActiveTheme(site.theme);
+                        term.innerText = `> THEME [${site.theme.toUpperCase()}] UPLINKED TO MAIN GALLERY.`;
+                    };
+                    chamber.appendChild(btn);
+                }
+
+                if (!isFound) {
+                    chamber.style.cursor = 'help';
+                    chamber.onclick = () => {
+                        term.innerText = `> DECODED RITUAL: ${HINTS[site.id]}`;
+                    };
+                }
+
+                vaultGrid.appendChild(chamber);
             });
         }
 
         render();
-        // Auto-check on hash change or localstorage update could be added here
-        window.addEventListener('storage', render);
     </script>
 </body>
 </html>
