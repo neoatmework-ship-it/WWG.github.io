@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>THE BARRIER | SANS</title>
+    <title>THE BARRIER | TRUE GENOCIDE</title>
     <link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -11,6 +11,8 @@
             --heart: #ff0000;
             --bone: #fff;
             --box: #fff;
+            --blue: #3498db;
+            --spear: #00f2ff;
         }
 
         body {
@@ -25,110 +27,105 @@
             justify-content: center;
             height: 100vh;
             user-select: none;
+            transition: transform 0.1s;
         }
 
-        /* ── Sans Sprite area ── */
-        .sans-container {
-            margin-bottom: 40px;
-            text-align: center;
-            position: relative;
+        .sans-container { margin-bottom: 20px; text-align: center; position: relative; }
+        .sans-body { font-size: 6rem; animation: jitter 0.05s infinite alternate; }
+        .sans-eye { 
+            position: absolute; top: 35%; left: 50%; transform: translateX(-50%);
+            width: 10px; height: 10px; background: #0cf; border-radius: 50%;
+            display: none; box-shadow: 0 0 15px #0cf;
         }
-        .sans-body {
-            font-size: 5rem;
-            animation: jitter 0.1s infinite alternate;
-        }
-        @keyframes jitter {
-            to { transform: translate(1px, 1px); }
-        }
+        @keyframes jitter { to { transform: translate(2px, 2px); } }
 
-        /* ── Battle UI ── */
         #battle-box {
-            width: 400px;
-            height: 200px;
+            width: 400px; height: 160px;
             border: 5px solid var(--box);
-            position: relative;
-            background: #000;
-            overflow: hidden;
+            position: relative; background: #000;
+            overflow: hidden; transition: 0.3s;
         }
 
         #soul {
-            width: 16px;
-            height: 16px;
+            width: 16px; height: 16px;
             background: var(--heart);
             position: absolute;
             clip-path: polygon(50% 0%, 100% 35%, 80% 100%, 50% 80%, 20% 100%, 0% 35%);
-            z-index: 100;
+            z-index: 100; transition: background 0.2s, filter 0.1s;
+        }
+        #soul.blue { background: var(--blue); }
+
+        .attack { position: absolute; background: var(--bone); z-index: 50; }
+        .spear { 
+            position: absolute; width: 4px; height: 30px; 
+            background: var(--spear); z-index: 51;
+            box-shadow: 0 0 10px var(--spear);
+        }
+        
+        .blaster {
+            position: absolute; width: 60px; height: 40px;
+            background: #fff; border: 2px solid #0cf; border-radius: 10px;
+            z-index: 60; opacity: 0; transform: scale(0.5);
+            transition: 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        .blaster.charging { opacity: 1; transform: scale(1); }
+        .beam {
+            position: absolute; background: #fff;
+            box-shadow: 0 0 20px #0cf, 0 0 40px #fff, 0 0 60px #0cf;
+            z-index: 55; opacity: 0;
         }
 
-        .attack {
-            position: absolute;
-            background: var(--bone);
-        }
-
-        /* ── Dialogue ── */
         #dialogue-box {
-            width: 500px;
-            height: 120px;
-            border: 5px solid #fff;
-            margin-top: 30px;
-            padding: 20px;
-            font-size: 1.8rem;
-            box-sizing: border-box;
-            position: relative;
+            width: 500px; height: 100px; border: 5px solid #fff;
+            margin-top: 20px; padding: 15px; font-size: 1.6rem;
+            box-sizing: border-box; position: relative;
         }
-        #text { display: inline; }
-        .cursor { border-left: 2px solid #fff; animation: blink 0.8s infinite; }
-        @keyframes blink { 50% { opacity: 0; } }
+        .stats { margin-top: 15px; font-size: 1.4rem; display: flex; gap: 30px; align-items: center; }
+        .hp-bar { width: 120px; height: 18px; background: #f00; display: inline-block; position: relative; }
+        .hp-fill { height: 100%; background: #ff0; width: 100%; }
 
-        /* ── Stats ── */
-        .stats {
-            margin-top: 20px;
-            font-size: 1.5rem;
-            display: flex;
-            gap: 40px;
-        }
-        .hp-bar {
-            width: 100px;
-            height: 20px;
-            background: #f00;
-            margin-left: 10px;
-            display: inline-block;
-            vertical-align: middle;
-            position: relative;
-        }
-        .hp-fill { height: 100%; background: #ff0; width: 100%; transition: width 0.3s; }
-
-        /* ── Victory Overlay ── */
         #overlay {
             position: fixed; inset: 0; background: #000;
             display: none; flex-direction: column; align-items: center; justify-content: center;
-            z-index: 1000; text-align: center;
+            z-index: 1000;
         }
+
+        /* ── Gaster Effects ── */
+        .glitch { filter: invert(1) grayscale(1) contrast(500%); }
     </style>
 </head>
 <body>
 
+    <div id="music-container" style="position: absolute; visibility: hidden; pointer-events: none;">
+        <audio id="bgm" loop src="megalovania but its a metal cover.mp3"></audio>
+    </div>
+
     <div class="sans-container">
         <div class="sans-body">💀</div>
+        <div id="sans-eye" class="sans-eye"></div>
     </div>
 
     <div id="battle-box">
         <div id="soul"></div>
     </div>
 
-    <div id="dialogue-box">
-        <span id="text"></span><span class="cursor"></span>
+    <div id="dialogue-box"><span id="text"></span></div>
+
+    <div id="start-overlay" style="position: fixed; inset: 0; background: #000; z-index: 2000; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer;">
+        <h1 style="font-size: 5rem; color: #fff; margin: 0;">BE READY.</h1>
+        <p style="font-size: 2rem; color: #f00;">CLICK TO FACE JUDGEMENT</p>
     </div>
 
     <div class="stats">
         <span>FRISK LV 19</span>
-        <span>HP <div class="hp-bar"><div id="hp-val" class="hp-fill"></div></div> 92/92</span>
+        <span>HP <div class="hp-bar"><div id="hp-fill" class="hp-fill"></div></div></span>
+        <span id="hp-text">92 / 92</span>
     </div>
 
     <div id="overlay">
         <h1 style="font-size: 4rem; color: #ff0;">DETERMINATION</h1>
-        <p style="font-size: 1.5rem;">THE BARRIER HAS BEEN SHATTERED.</p>
-        <button onclick="window.location.href='underground.html'" style="margin-top: 30px; background: #000; border: 2px solid #fff; color: #fff; padding: 10px 40px; font-family: inherit; font-size: 1.5rem; cursor: pointer;">ENTER THE UNDERGROUND</button>
+        <p>YOU ARE THE ARCHIVE NOW.</p>
+        <button onclick="window.location.href='underground.html'" style="margin-top: 20px; background: #000; border: 2px solid #fff; color: #fff; padding: 10px 30px; font-family: inherit; font-size: 1.2rem; cursor: pointer;">ENTER THE VOID</button>
     </div>
 
     <script src="discovery.js"></script>
@@ -136,127 +133,219 @@
         const box = document.getElementById('battle-box');
         const soul = document.getElementById('soul');
         const textEl = document.getElementById('text');
-        const hpFill = document.getElementById('hp-val');
-        const overlay = document.getElementById('overlay');
+        const hpFill = document.getElementById('hp-fill');
+        const hpText = document.getElementById('hp-text');
+        const eye = document.getElementById('sans-eye');
+        const bgm = document.getElementById('bgm');
 
-        let soulPos = { x: 192, y: 92 };
+        let soulPos = { x: 192, y: 72 };
         let hp = 92;
         let isInvincible = false;
         let keys = {};
-        let phase = 0;
-        let attackInterval;
+        let isBlue = false;
+        let gravityDir = 'down'; // 'down', 'up', 'left', 'right'
+        let velocity = 0;
+        let accel = 0.35;
+        let jumpPower = -6;
+        let isGameOver = false;
 
-        const DIALOGUES = [
-            "it's a beautiful day outside.",
-            "birds are singing, flowers are blooming...",
-            "on days like these, kids like you...",
-            "S h o u l d  b e  b u r n i n g  i n  h e l l ."
-        ];
-
-        // ── Input ──
         window.addEventListener('keydown', e => keys[e.code] = true);
         window.addEventListener('keyup', e => keys[e.code] = false);
 
-        function moveSoul() {
+        function updateSoul() {
+            if (isGameOver) return;
             const speed = 3;
-            if (keys['ArrowUp'] || keys['KeyW']) soulPos.y -= speed;
-            if (keys['ArrowDown'] || keys['KeyS']) soulPos.y += speed;
-            if (keys['ArrowLeft'] || keys['KeyA']) soulPos.x -= speed;
-            if (keys['ArrowRight'] || keys['KeyD']) soulPos.x += speed;
 
-            // Constrain
+            if (isBlue) {
+                // Multi-directional Gravity
+                if (gravityDir === 'down' || gravityDir === 'up') {
+                    if (keys['ArrowLeft'] || keys['KeyA']) soulPos.x -= speed;
+                    if (keys['ArrowRight'] || keys['KeyD']) soulPos.x += speed;
+                    velocity += (gravityDir === 'down' ? accel : -accel);
+                    soulPos.y += velocity;
+                } else {
+                    if (keys['ArrowUp'] || keys['KeyW']) soulPos.y -= speed;
+                    if (keys['ArrowDown'] || keys['KeyS']) soulPos.y += speed;
+                    velocity += (gravityDir === 'right' ? accel : -accel);
+                    soulPos.x += velocity;
+                }
+
+                // Bounds & Jumping
+                if (gravityDir === 'down' && soulPos.y >= 144) { soulPos.y = 144; velocity = 0; if (keys['ArrowUp'] || keys['KeyW']) velocity = jumpPower; }
+                if (gravityDir === 'up' && soulPos.y <= 0) { soulPos.y = 0; velocity = 0; if (keys['ArrowDown'] || keys['KeyS']) velocity = -jumpPower; }
+                if (gravityDir === 'right' && soulPos.x >= 384) { soulPos.x = 384; velocity = 0; if (keys['ArrowLeft'] || keys['KeyA']) velocity = jumpPower; }
+                if (gravityDir === 'left' && soulPos.x <= 0) { soulPos.x = 0; velocity = 0; if (keys['ArrowRight'] || keys['KeyD']) velocity = -jumpPower; }
+            } else {
+                if (keys['ArrowUp'] || keys['KeyW']) soulPos.y -= speed;
+                if (keys['ArrowDown'] || keys['KeyS']) soulPos.y += speed;
+                if (keys['ArrowLeft'] || keys['KeyA']) soulPos.x -= speed;
+                if (keys['ArrowRight'] || keys['KeyD']) soulPos.x += speed;
+            }
+
             soulPos.x = Math.max(0, Math.min(384, soulPos.x));
-            soulPos.y = Math.max(0, Math.min(184, soulPos.y));
-
+            soulPos.y = Math.max(0, Math.min(144, soulPos.y));
             soul.style.left = soulPos.x + 'px';
             soul.style.top = soulPos.y + 'px';
         }
 
-        // ── Attacks ──
-        function spawnBone() {
-            const bone = document.createElement('div');
-            bone.className = 'attack';
-            const height = 40 + Math.random() * 60;
-            bone.style.width = '10px';
-            bone.style.height = height + 'px';
-            bone.style.left = '400px';
-            bone.style.bottom = Math.random() > 0.5 ? '0' : 'auto';
-            if (bone.style.bottom === 'auto') bone.style.top = '0';
-            
-            box.appendChild(bone);
-
-            let bPos = 400;
-            const bAnim = setInterval(() => {
-                bPos -= 4;
-                bone.style.left = bPos + 'px';
-                
-                // Collision
-                if (checkCollision(soul, bone)) {
-                    takeDamage();
-                }
-
-                if (bPos < -20) {
-                    clearInterval(bAnim);
-                    bone.remove();
-                }
-            }, 16);
-        }
-
-        function checkCollision(a, b) {
-            const r1 = a.getBoundingClientRect();
-            const r2 = b.getBoundingClientRect();
-            return !(r1.right < r2.left || r1.left > r2.right || r1.bottom < r2.top || r1.top > r2.bottom);
+        function shake() {
+            document.body.style.transform = `translate(${Math.random()*10-5}px, ${Math.random()*10-5}px)`;
+            setTimeout(() => document.body.style.transform = '', 50);
         }
 
         function takeDamage() {
-            if (isInvincible) return;
-            hp -= 10;
-            hpFill.style.width = Math.max(0, hp / 92 * 100) + '%';
+            if (isInvincible || isGameOver) return;
+            hp = Math.max(0, hp - 6);
+            hpFill.style.width = (hp / 92 * 100) + '%';
+            hpText.innerText = `${hp} / 92`;
+            shake();
             isInvincible = true;
-            soul.style.opacity = '0.5';
-            setTimeout(() => {
-                isInvincible = false;
-                soul.style.opacity = '1';
-            }, 500);
-
+            soul.style.filter = 'invert(1)';
+            setTimeout(() => { isInvincible = false; soul.style.filter = 'none'; }, 100);
             if (hp <= 0) {
-                location.reload(); // Quick game over
+                 isGameOver = true;
+                 textEl.innerText = "Y O U  A R E  D E A D .";
+                 if (bgm) bgm.pause();
+                 setTimeout(() => location.reload(), 2000);
             }
         }
 
-        // ── Dialogue Engine ──
+        function spawnSpear() {
+            const spear = document.createElement('div');
+            spear.className = 'spear';
+            const startX = Math.random() * 380;
+            const startY = Math.random() * 140;
+            spear.style.left = startX + 'px';
+            spear.style.top = startY + 'px';
+            spear.style.transform = `rotate(${Math.random()*360}deg) scale(0)`;
+            box.appendChild(spear);
+
+            setTimeout(() => {
+                spear.style.transform += ' scale(1)';
+                setTimeout(() => {
+                    const targetX = soulPos.x;
+                    const targetY = soulPos.y;
+                    const angle = Math.atan2(targetY - startY, targetX - startX);
+                    spear.style.transform = `rotate(${angle * 180 / Math.PI + 90}deg)`;
+                    
+                    let curX = startX, curY = startY;
+                    const anim = setInterval(() => {
+                        curX += Math.cos(angle) * 10;
+                        curY += Math.sin(angle) * 10;
+                        spear.style.left = curX + 'px';
+                        spear.style.top = curY + 'px';
+                        if (checkHit(spear)) takeDamage();
+                        if (curX < -50 || curX > 450 || curY < -50 || curY > 200) { clearInterval(anim); spear.remove(); }
+                    }, 16);
+                }, 400);
+            }, 100);
+        }
+
+        function spawnBone(dir = 'right', speed = 5, size = 70, offset = 0) {
+            const bone = document.createElement('div');
+            bone.className = 'attack';
+            bone.style.width = '14px';
+            bone.style.height = size + 'px';
+            if (dir === 'right') { bone.style.left = '400px'; bone.style.bottom = offset + 'px'; }
+            else { bone.style.left = '-20px'; bone.style.top = offset + 'px'; }
+            box.appendChild(bone);
+
+            let pos = dir === 'right' ? 400 : -20;
+            const anim = setInterval(() => {
+                pos += (dir === 'right' ? -speed : speed);
+                bone.style.left = pos + 'px';
+                if (checkHit(bone)) takeDamage();
+                if (pos < -50 || pos > 450) { clearInterval(anim); bone.remove(); }
+            }, 16);
+        }
+
+        function checkHit(el) {
+            const s = soul.getBoundingClientRect();
+            const e = el.getBoundingClientRect();
+            return !(s.right < e.left || s.left > e.right || s.bottom < e.top || s.top > e.bottom);
+        }
+
+        async function fireBlaster(y = 50) {
+            eye.style.display = 'block';
+            const b = document.createElement('div');
+            b.className = 'blaster';
+            b.style.left = '320px'; b.style.top = y + 'px';
+            box.appendChild(b);
+            await new Promise(r => setTimeout(r, 400));
+            b.classList.add('charging');
+            await new Promise(r => setTimeout(r, 400));
+            const beam = document.createElement('div');
+            beam.className = 'beam';
+            beam.style.left = '0px'; beam.style.top = (y+10)+'px';
+            beam.style.width = '400px'; beam.style.height = '25px'; beam.style.opacity = '1';
+            box.appendChild(beam);
+            let ticks = 0;
+            const check = setInterval(() => { if (checkHit(beam)) takeDamage(); if (++ticks > 15) clearInterval(check); }, 16);
+            await new Promise(r => setTimeout(r, 200));
+            beam.style.opacity = '0'; b.style.opacity = '0';
+            setTimeout(() => { beam.remove(); b.remove(); eye.style.display='none'; }, 200);
+        }
+
         async function typeText(str) {
             textEl.innerText = '';
             for (let char of str) {
                 textEl.innerText += char;
-                await new Promise(r => setTimeout(r, 50));
+                await new Promise(r => setTimeout(r, 30));
             }
         }
 
-        // ── Game Loop ──
-        async function startBattle() {
-            for (let d of DIALOGUES) {
-                await typeText(d);
+        async function runGame() {
+            await typeText("so... you finally arrived.");
+            await new Promise(r => setTimeout(r, 1000));
+            await typeText("ready for the end?");
+            await new Promise(r => setTimeout(r, 1000));
+            await typeText("l e t ' s  g o .");
+            await new Promise(r => setTimeout(r, 1000));
+
+            const itv1 = setInterval(() => spawnBone('right', 7, 80, 0), 300);
+            await new Promise(r => setTimeout(r, 4000));
+            clearInterval(itv1);
+
+            await typeText("try and dodge this.");
+            const itv2 = setInterval(spawnSpear, 400);
+            await new Promise(r => setTimeout(r, 5000));
+            clearInterval(itv2);
+
+            isBlue = true; soul.classList.add('blue');
+            const slams = ['down', 'right', 'up', 'left'];
+            for(let s of slams) {
+                gravityDir = s; velocity = 0;
+                shake();
                 await new Promise(r => setTimeout(r, 1000));
+                fireBlaster(Math.random()*100);
             }
-            
-            textEl.innerText = "SANS IS ATTACKING!";
-            attackInterval = setInterval(spawnBone, 800);
-            
+
+            await typeText("T R U E  G E N O C I D E");
+            const finalBones = setInterval(() => { spawnBone('right', 10, 60, 0); spawnBone('left', 10, 60, 0); }, 250);
+            const finalSpears = setInterval(spawnSpear, 600);
+            const finalBlasters = setInterval(() => fireBlaster(soulPos.y - 10), 1500);
+
             setTimeout(() => {
-                clearInterval(attackInterval);
+                clearInterval(finalBones);
+                clearInterval(finalSpears);
+                clearInterval(finalBlasters);
                 win();
-            }, 15000); // Survive 15 seconds
+            }, 12000);
         }
 
         function win() {
+            if (isGameOver) return;
             Discovery.unlock('the-underground');
-            overlay.style.display = 'flex';
+            document.getElementById('overlay').style.display = 'flex';
         }
 
-        startBattle();
-        setInterval(moveSoul, 16);
-
+        setInterval(updateSoul, 16);
+        
+        document.getElementById('start-overlay').onclick = function() {
+            this.style.display = 'none';
+            if (bgm) bgm.play();
+            runGame();
+        };
     </script>
 </body>
 </html>
