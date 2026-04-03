@@ -43,59 +43,51 @@ const Discovery = {
         return discovered.filter(id => this.SITES.includes(id));
     },
 
-    notify: function (siteId) {
-        const names = {
-            'phantom-signal': 'Phantom Signal',
-            'void-fragment': 'Void Fragment',
-            'oracle-machine': 'The Oracle Machine',
-            'whisperer': 'The Whisperer',
-            'pattern-breaker': 'Pattern Breaker',
-            'night-mode': 'Night Mode',
-            'forgotten': 'The Forgotten',
-            'chaos-engine': 'Chaos Engine',
-            'liar': 'The Liar',
-            'grand-finale': '★ THE GRAND FINALE ★',
-        };
-        const name = names[siteId] || siteId;
-        const isFinal = siteId === 'grand-finale';
-
+    notify: function (id) {
+        // Glitch Toast Implementation
         const toast = document.createElement('div');
         toast.style.cssText = `
-            position: fixed;
-            bottom: 40px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: ${isFinal ? 'linear-gradient(135deg,#ff6600,#a78bfa)' : '#a78bfa'};
-            color: #fff;
-            padding: ${isFinal ? '20px 48px' : '15px 30px'};
-            border-radius: 50px;
-            font-family: sans-serif;
-            font-weight: bold;
-            letter-spacing: 2px;
-            z-index: 999999;
-            box-shadow: 0 10px 30px rgba(167, 139, 250, 0.5);
-            backdrop-filter: blur(10px);
-            animation: slideUp 0.5s cubic-bezier(0.23, 1, 0.32, 1);
-            text-transform: uppercase;
-            font-size: ${isFinal ? '1.1rem' : '0.9rem'};
+            position: fixed; bottom: 40px; right: 40px;
+            background: #000; color: #a78bfa;
+            border: 1px solid #a78bfa; padding: 20px 30px;
+            font-family: 'JetBrains Mono', monospace;
+            border-radius: 8px; z-index: 10000;
+            box-shadow: 0 0 30px rgba(167, 139, 250, 0.4);
+            animation: toast-glitch 0.3s cubic-bezier(.25,.46,.45,.94) both;
+            cursor: pointer; text-transform: uppercase; letter-spacing: 2px;
         `;
-        toast.innerHTML = `✨ SECRET FOUND: ${name}`;
+        
+        toast.innerHTML = `
+            <div style="font-size: 0.6rem; opacity: 0.5; margin-bottom: 5px;">[FRAGMENT_SALVAGED]</div>
+            <div style="font-weight: bold;">FRAGMENT_STABILIZED</div>
+        `;
+
+        toast.addEventListener('click', () => window.location.href = 'archive.html');
         document.body.appendChild(toast);
 
-        const style = document.createElement('style');
-        style.textContent = `
-            @keyframes slideUp {
-                from { bottom: -100px; opacity: 0; }
-                to { bottom: 40px; opacity: 1; }
-            }
-        `;
-        document.head.appendChild(style);
+        if (!document.getElementById('discovery-glitch-style')) {
+            const style = document.createElement('style');
+            style.id = 'discovery-glitch-style';
+            style.innerHTML = `
+                @keyframes toast-glitch {
+                    0% { transform: translate(0); clip-path: inset(0 0 0 0); }
+                    20% { transform: translate(-5px, 5px); clip-path: inset(10% 0 50% 0); }
+                    40% { transform: translate(5px, -5px); clip-path: inset(40% 0 20% 0); }
+                    60% { transform: translate(-2px, 2px); clip-path: inset(80% 0 5% 0); }
+                    100% { transform: translate(0); clip-path: inset(0 0 0 0); }
+                }
+            `;
+            document.head.appendChild(style);
+        }
 
         setTimeout(() => {
             toast.style.opacity = '0';
             toast.style.transition = '0.5s';
             setTimeout(() => toast.remove(), 500);
-        }, isFinal ? 6000 : 3500);
+        }, 5000);
+
+        console.log(`%c[SYSTEM_LOG] %cFragment sequence detected. Stabilizing...`, "color:#a78bfa; font-weight:bold", "color:#888");
+    }, isFinal ? 6000 : 3500);
     },
 
     cheat_unlock_all: function () {

@@ -3,331 +3,90 @@
 
 <head>
     <meta charset="UTF-8">
-    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E📋%3C/text%3E%3C/svg%3E">
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E📑%3C/text%3E%3C/svg%3E">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>WWG Discovery Guide | The 45 Fragments</title>
-    <link
-        href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;700&family=Inter:wght@400;600&display=swap"
-        rel="stylesheet">
+    <title>Protocol: Salvage Status | [REDACTED]</title>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
     <style>
         :root {
-            --bg: #050510;
-            --accent: #a78bfa;
-            --zinc: #18181b;
-            --glass: rgba(255, 255, 255, 0.03);
-            --border: rgba(255, 255, 255, 0.1);
+            --bg: #050505;
+            --accent: #f87171;
+            --border: #1f2937;
         }
 
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+        * { margin:0; padding:0; box-sizing:border-box; }
+        body { background: var(--bg); color: #9ca3af; font-family: 'Space Grotesk', sans-serif; padding: 60px 40px; }
+        .header { margin-bottom: 40px; border-bottom: 2px solid var(--accent); padding-bottom: 20px; }
+        h1 { font-family: 'JetBrains Mono', monospace; font-size: 1.5rem; color: var(--accent); letter-spacing: 2px; }
+        .protocol-id { font-size: 0.8rem; opacity: 0.5; margin-top: 5px; }
 
-        body {
-            background: var(--bg);
-            color: #fff;
-            font-family: 'Inter', sans-serif;
-            min-height: 100vh;
-            padding: 80px 40px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
+        .table-container { width: 100%; overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; font-family: 'JetBrains Mono', monospace; font-size: 0.85rem; }
+        th { text-align: left; padding: 15px; border-bottom: 1px solid var(--border); color: #ef4444; text-transform: uppercase; letter-spacing: 1px; }
+        td { padding: 15px; border-bottom: 1px solid var(--border); }
+        
+        .status-badge { padding: 4px 8px; border-radius: 4px; font-size: 0.7rem; font-weight: bold; }
+        .status-salvaged { background: rgba(52, 211, 153, 0.1); color: #34d399; }
+        .status-redacted { background: rgba(239, 68, 68, 0.1); color: #ef4444; }
 
-        .header {
-            text-align: center;
-            margin-bottom: 80px;
-            max-width: 800px;
-        }
+        .redacted-text { background: #111; color: #111; position: relative; display: inline-block; padding: 0 4px; }
+        .redacted-text::selection { background: #111; color: #111; }
 
-        h1 {
-            font-family: 'Space Grotesk', sans-serif;
-            font-size: 3rem;
-            letter-spacing: -2px;
-            margin-bottom: 20px;
-            color: var(--accent);
-        }
-
-        .desc {
-            color: #a1a1aa;
-            line-height: 1.6;
-            font-size: 1.1rem;
-        }
-
-        .grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-            gap: 30px;
-            width: 100%;
-            max-width: 1400px;
-        }
-
-        .card {
-            background: var(--glass);
-            border: 1px solid var(--border);
-            border-radius: 20px;
-            padding: 30px;
-            transition: 0.4s;
-            position: relative;
-            opacity: 0.6;
-        }
-
-        .card.found {
-            opacity: 1;
-            border-color: var(--accent);
-            background: rgba(167, 139, 250, 0.05);
-        }
-
-        .tag {
-            font-size: 0.7rem;
-            text-transform: uppercase;
-            letter-spacing: 2px;
-            color: #444;
-            margin-bottom: 10px;
-        }
-
-        .found .tag {
-            color: var(--accent);
-        }
-
-        .name {
-            font-family: 'Space Grotesk', sans-serif;
-            font-size: 1.5rem;
-            font-weight: 700;
-            margin-bottom: 15px;
-            color: #444;
-        }
-
-        .found .name {
-            color: #fff;
-        }
-
-        .hint {
-            background: rgba(255, 255, 255, 0.02);
-            padding: 15px;
-            border-radius: 12px;
-            font-size: 0.85rem;
-            line-height: 1.5;
-            color: #666;
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-        }
-
-        .found .hint {
-            color: #aaa;
-            background: rgba(0, 0, 0, 0.2);
-        }
-
-        .hint b {
-            color: var(--accent);
-            font-family: 'Space Grotesk', sans-serif;
-            text-transform: uppercase;
-            font-size: 0.65rem;
-            letter-spacing: 1px;
-            display: block;
-            margin-bottom: 2px;
-        }
-
-        .hint-block {
-            background: rgba(255, 255, 255, 0.03);
-            padding: 10px;
-            border-radius: 8px;
-            border: 1px solid rgba(255, 255, 255, 0.05);
-        }
-
-        .status {
-            margin-top: 20px;
-            font-size: 0.7rem;
-            font-weight: bold;
-            letter-spacing: 1px;
-        }
-
-        .status.unfound {
-            color: #444;
-        }
-
-        .status.found-text {
-            color: var(--accent);
-        }
-
-        .back-link {
-            position: fixed;
-            top: 40px;
-            left: 40px;
-            color: #666;
-            text-decoration: none;
-            font-size: 0.8rem;
-            letter-spacing: 2px;
-        }
-
-        .back-link:hover {
-            color: #fff;
-        }
+        .back-link { display: inline-block; margin-top: 40px; color: #6b7280; text-decoration: none; font-size: 0.8rem; }
+        .back-link:hover { color: #fff; }
     </style>
-
-    <!-- wwg-mobile-patch-start -->
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <style>
-        canvas {
-            max-width: 100vw;
-            max-height: 100vh;
-            touch-action: none;
-        }
-    </style>
-    <!-- wwg-mobile-patch-end -->
-
 </head>
-
 <body>
-    <a href="index.html" class="back-link">← RETURN</a>
-
     <div class="header">
-        <h1>DISCOVERY GUIDE</h1>
-        <p class="desc">There are 45 core fragments hidden within this gallery. Use the hints below to salvage them for
-            your Vault.</p>
+        <h1>PROTOCOL_SALVAGE_STATUS</h1>
+        <div class="protocol-id">REF_ID: WWG_SEC_2026 // ACCESS_LEVEL: RESTRICTED</div>
     </div>
 
-    <div class="grid" id="guide-grid">
-        <!-- Generated by JS -->
+    <div class="table-container">
+        <table>
+            <thead>
+                <tr>
+                    <th>Fragment_ID</th>
+                    <th>Status</th>
+                    <th>Observation_Logs</th>
+                </tr>
+            </thead>
+            <tbody id="protocol-body">
+                <!-- JS generated -->
+            </tbody>
+        </table>
     </div>
+
+    <a href="archive.html" class="back-link">← RETURN_TO_VAULT</a>
 
     <script src="discovery.js"></script>
     <script>
-        if (!Discovery.isCheatsheetUnlocked()) {
-            window.location.href = 'index.html';
-        }
-
-        const secrets = [
-            {
-                id: 'phantom-signal',
-                name: 'Phantom Signal',
-                keyword: '—',
-                action: 'Click the "WWG" title at the top of the home page 7 times in quick succession.'
-            },
-            {
-                id: 'void-fragment',
-                name: 'Void Fragment',
-                keyword: '—',
-                action: 'Stay on the home page for 60 seconds straight without clicking anything.'
-            },
-            {
-                id: 'oracle-machine',
-                name: 'The Oracle Machine',
-                keyword: 'FUTURE',
-                action: 'Type the word "FUTURE" anywhere on the home page (not in the search box).'
-            },
-            {
-                id: 'whisperer',
-                name: 'The Whisperer',
-                keyword: '—',
-                action: 'Type your own name into the search bar (3+ chars), then press Enter. Must return 0 results.'
-            },
-            {
-                id: 'pattern-breaker',
-                name: 'Pattern Breaker',
-                keyword: '—',
-                action: 'Click the 4 screen corners in order: Top-Left → Top-Right → Bottom-Right → Bottom-Left.'
-            },
-            {
-                id: 'night-mode',
-                name: 'Night Mode',
-                keyword: '—',
-                action: 'Visit the gallery between midnight (00:00) and 01:00 AM in your local timezone.'
-            },
-            {
-                id: 'forgotten',
-                name: 'The Forgotten',
-                keyword: '—',
-                action: 'Search for anything that returns 0 results. Then wait 15 seconds on the empty screen.'
-            },
-            {
-                id: 'chaos-engine',
-                name: 'Chaos Engine',
-                keyword: 'CHAOS',
-                action: 'Type the word "CHAOS" anywhere on the home page (not in the search box).'
-            },
-            {
-                id: 'liar',
-                name: 'The Liar',
-                keyword: '—',
-                action: 'Visit the "Liar\'s Clicker" game and stay on the page for 30 seconds.'
-            },
-            {
-                id: 'grand-finale',
-                name: '★ The Grand Finale',
-                keyword: '—',
-                action: 'Discover all 9 other secrets. This one unlocks automatically as your reward.'
-            },
+        const fragments = [
+            { id: 'phantom-signal', hint: ' handshaking sequence detected in primary title identification.' },
+            { id: 'void-fragment', hint: ' sixty seconds of observational silence required in home quadrant.' },
+            { id: 'oracle-machine', hint: ' tactile input required during treasure visualization (Keys V+I).' },
+            { id: 'whisperer', hint: ' finding identity of the self within the empty void of results.' },
+            { id: 'pattern-breaker', hint: ' corner-point connection sequence initiated.' },
+            { id: 'night-mode', hint: ' temporal window restriction [00:00 - 01:00].' },
+            { id: 'forgotten', hint: ' ghost presence detected after 15s of search-failure.' },
+            { id: 'chaos-engine', hint: ' entropy modifiers required during category selection (C-A-C).' },
+            { id: 'liar', hint: ' prolonged exposure to deception (30s) yields fragment.' },
+            { id: 'grand-finale', hint: ' total synchronization achieved.' }
         ];
 
-        function render() {
-            const discovered = Discovery.getDiscovered();
-            const grid = document.getElementById('guide-grid');
-            grid.innerHTML = '';
+        const body = document.getElementById('protocol-body');
+        const discovered = Discovery.getDiscovered();
 
-            secrets.forEach(s => {
-                const isFound = discovered.includes(s.id);
-                const card = document.createElement('div');
-                card.className = `card ${isFound ? 'found' : ''}`;
-
-                card.innerHTML = `
-                    <div class="tag">Fragment ID: ${s.id.toUpperCase()}</div>
-                    <div class="name">${isFound ? s.name : 'HIDDEN_FRAGMENT'}</div>
-                    <div class="hint">
-                        <div class="hint-block"><b>Approach</b> Keyword: "${s.keyword}" or Action: ${s.action}</div>
-                    </div>
-                    <div class="status ${isFound ? 'found-text' : 'unfound'}">
-                        STATUS: ${isFound ? 'SALVAGED' : 'HIDDEN'}
-                    </div>
-                `;
-                grid.appendChild(card);
-            });
-        }
-
-        render();
+        fragments.forEach(f => {
+            const isFound = discovered.includes(f.id);
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td>${f.id.toUpperCase()}</td>
+                <td><span class="status-badge ${isFound ? 'status-salvaged' : 'status-redacted'}">${isFound ? 'SALVAGED' : 'REDACTED'}</span></td>
+                <td>${isFound ? f.hint : '<span class="redacted-text">█████████████████████████████████</span>'}</td>
+            `;
+            body.appendChild(row);
+        });
     </script>
-
-    <!-- wwg-mobile-patch-js-start -->
-    <script>
-        // Touch-to-Mouse Polyfill for legacy canvas interactives
-        document.addEventListener('touchstart', function(e) {
-            if(e.touches.length > 0) {
-                const touch = e.touches[0];
-                const mouseEvent = new MouseEvent('mousedown', {
-                    clientX: touch.clientX,
-                    clientY: touch.clientY,
-                    bubbles: true,
-                    cancelable: true
-                });
-                e.target.dispatchEvent(mouseEvent);
-            }
-        }, {passive: false});
-
-        document.addEventListener('touchmove', function(e) {
-            if(e.touches.length > 0) {
-                const touch = e.touches[0];
-                const mouseEvent = new MouseEvent('mousemove', {
-                    clientX: touch.clientX,
-                    clientY: touch.clientY,
-                    bubbles: true,
-                    cancelable: true
-                });
-                e.target.dispatchEvent(mouseEvent);
-            }
-        }, {passive: false});
-
-        document.addEventListener('touchend', function(e) {
-            const mouseEvent = new MouseEvent('mouseup', {
-                bubbles: true,
-                cancelable: true
-            });
-            e.target.dispatchEvent(mouseEvent);
-        }, {passive: false});
-    </script>
-    <!-- wwg-mobile-patch-js-end -->
-
 </body>
-
 </html>

@@ -3338,16 +3338,16 @@
             });
 
             // ════════════════════════════════════
-            // 10 NEW SECRETS TRIGGER SYSTEM
+            // HARDENED SECRETS TRIGGER SYSTEM
             // ════════════════════════════════════
 
-            // 1. PHANTOM SIGNAL — Click the "WWG" title 7 times
+            // 1. PHANTOM SIGNAL — Click the "WWG" title exactly 7 times
             let titleClicks = 0, titleTimer;
             document.getElementById('wwg-title')?.addEventListener('click', () => {
                 titleClicks++;
                 clearTimeout(titleTimer);
                 titleTimer = setTimeout(() => titleClicks = 0, 1500);
-                if (titleClicks >= 7) {
+                if (titleClicks === 7) {
                     titleClicks = 0;
                     Discovery.unlock('phantom-signal');
                 }
@@ -3364,16 +3364,14 @@
             }, 1000);
             document.addEventListener('click', () => voidSeconds = 0);
 
-            // 3. ORACLE MACHINE — Type "FUTURE" anywhere (not in search)
-            // 8. CHAOS ENGINE — Type "CHAOS" anywhere (not in search)
-            let globalKeyBuf = '';
-            window.addEventListener('keydown', (e) => {
-                const isInput = document.activeElement.tagName === 'INPUT' || document.activeElement.tagName === 'TEXTAREA';
-                if (!isInput) {
-                    globalKeyBuf += e.key.toUpperCase();
-                    if (globalKeyBuf.length > 20) globalKeyBuf = globalKeyBuf.slice(-20);
-                    if (globalKeyBuf.endsWith('FUTURE')) { globalKeyBuf = ''; Discovery.unlock('oracle-machine'); }
-                    if (globalKeyBuf.endsWith('CHAOS'))  { globalKeyBuf = ''; Discovery.unlock('chaos-engine'); }
+            // 3. ORACLE MACHINE — Hover "Find my secrets" while holding 'V' and 'I' keys
+            let keyMap = {};
+            window.addEventListener('keydown', e => { keyMap[e.key.toUpperCase()] = true; });
+            window.addEventListener('keyup', e => { keyMap[e.key.toUpperCase()] = false; });
+            
+            document.querySelector('.find-secrets')?.addEventListener('mouseenter', () => {
+                if (keyMap['V'] && keyMap['I']) {
+                    Discovery.unlock('oracle-machine');
                 }
             });
 
@@ -3395,7 +3393,7 @@
             document.addEventListener('click', (e) => {
                 const W = window.innerWidth, H = window.innerHeight;
                 const x = e.clientX, y = e.clientY;
-                const margin = 120;
+                const margin = 100;
                 let corner = '';
                 if (x < margin && y < margin) corner = 'TL';
                 else if (x > W - margin && y < margin) corner = 'TR';
@@ -3411,9 +3409,16 @@
                 }
             });
 
-            // 6. NIGHT MODE — Detected on page load in discovery.js (hour === 0)
-            //    Also check in real-time during the session
-            if (new Date().getHours() === 0) Discovery.unlock('night-mode');
+            // 8. CHAOS ENGINE — Hold Ctrl+Alt+C while clicking the "Chaos" pill tag
+            document.querySelectorAll('.filter-pill').forEach(pill => {
+                if (pill.innerText.includes('Chaos')) {
+                    pill.addEventListener('click', (e) => {
+                        if (e.ctrlKey && e.altKey && e.shiftKey === false) { // Specificity
+                            Discovery.unlock('chaos-engine');
+                        }
+                    });
+                }
+            });
 
             // 7. FORGOTTEN — Search something with 0 results and wait 15 seconds
             let forgottenTimer;
@@ -3432,11 +3437,9 @@
                 }
             }, 500);
 
-            // 9. LIAR — Handled by liars-clicker.html auto-unlock via discovery.js filename map
-            //    Also support after 30 sec on Liar's Clicker page (handled in that page itself)
-
-            // 10. GRAND FINALE — Auto-unlocks in Discovery.unlock() when all 9 others found
-
+            // Scattered Hints (Console)
+            console.log("%c[VAULT_SYSTEM] %cPhantom Signal handshake requires 7-pulse sequence on the master title.", "color:#a78bfa; font-weight:bold", "color:#888");
+            
             // ─── SEARCH still filters cards ───
             search.addEventListener('input', () => {
                 filterCards();
@@ -3527,6 +3530,7 @@
         });
     </script>
     <script src="tracker.js" defer></script>
+<!-- HINT: The Pattern Breaker connects the four corners of existence in the proper order... -->
 </body>
 
 </html>
