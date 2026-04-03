@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Bad News Machine</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;700;800&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { background:#080808; color:#fff; font-family:'Space Grotesk',sans-serif; min-height:100vh; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:40px 20px; }
+  #back { position:fixed; top:20px; left:20px; text-decoration:none; color:#333; font-size:0.8rem; letter-spacing:2px; }
+  #back:hover { color:#fff; }
+  .machine-header { text-align:center; margin-bottom:50px; }
+  .machine-header h1 { font-size:clamp(1.8rem,5vw,3rem); font-weight:800; letter-spacing:-2px; }
+  .machine-header p { color:#444; font-size:0.85rem; margin-top:8px; letter-spacing:2px; }
+  #news-display {
+    width:100%; max-width:650px; min-height:180px;
+    background:#0f0f0f; border:2px solid #1e1e1e;
+    padding:36px; text-align:center; position:relative;
+    margin-bottom:32px;
+  }
+  #news-display::before {
+    content:'INCOMING REPORT';
+    position:absolute; top:-12px; left:50%; transform:translateX(-50%);
+    background:#080808; padding:0 12px;
+    font-size:0.6rem; letter-spacing:4px; color:#333;
+  }
+  #severity { font-size:0.6rem; letter-spacing:4px; text-transform:uppercase; margin-bottom:16px; }
+  #news-text {
+    font-family:'JetBrains Mono', monospace;
+    font-size:clamp(0.9rem,2vw,1.15rem);
+    line-height:1.7; color:#ddd; min-height:3em;
+  }
+  #news-text.typing::after { content:'▋'; animation:blink 0.6s infinite; }
+  @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0} }
+  #severity-bar { height:3px; background:#1e1e1e; margin-top:24px; border-radius:2px; overflow:hidden; }
+  #severity-fill { height:100%; width:0; transition:width 1.5s ease, background 1.5s; }
+  #get-news-btn {
+    background:transparent; border:2px solid #333; color:#888;
+    padding:18px 52px; font-family:'Space Grotesk',sans-serif;
+    font-weight:800; font-size:0.9rem; letter-spacing:3px;
+    cursor:pointer; text-transform:uppercase; transition:all 0.2s;
+  }
+  #get-news-btn:hover { border-color:#fff; color:#fff; }
+  #count-wrap { margin-top:24px; font-size:0.7rem; color:#333; letter-spacing:2px; font-family:'JetBrains Mono',monospace; }
+  #history { width:100%; max-width:650px; margin-top:40px; border-top:1px solid #111; padding-top:24px; }
+  .hist-item { font-size:0.75rem; color:#2a2a2a; padding:8px 0; border-bottom:1px solid #111; font-family:'JetBrains Mono',monospace; line-height:1.5; transition:color 0.3s; }
+  .hist-item:hover { color:#555; }
+</style>
+</head>
+<body>
+<a href="index.html" id="back">← BACK</a>
+<div class="machine-header">
+  <h1>The Bad News Machine</h1>
+  <p>delivering personalised misfortune since always</p>
+</div>
+
+<div id="news-display">
+  <div id="severity" style="color:#444">AWAITING REPORT</div>
+  <div id="news-text" style="color:#333">press the button to receive your news.</div>
+  <div id="severity-bar"><div id="severity-fill"></div></div>
+</div>
+
+<button id="get-news-btn">Receive News</button>
+<div id="count-wrap">reports received: <span id="count">0</span></div>
+
+<div id="history"></div>
+
+<script>
+  const levels = [
+    { label:'TRIVIAL', color:'#556', fill:'#446' },
+    { label:'MINOR', color:'#887744', fill:'#aa9933' },
+    { label:'MODERATE', color:'#aa5533', fill:'#ff6600' },
+    { label:'SIGNIFICANT', color:'#993333', fill:'#ff3333' },
+    { label:'CRITICAL', color:'#cc1111', fill:'#ff0000' },
+  ];
+
+  const newsBanks = [
+    // Trivial
+    [
+      "Your left sock is marginally more worn than your right. The gap widens daily.",
+      "The pen you lost in 2019 has been found. It is not retrievable.",
+      "You blinked 14,000 times today. Three were unnecessary.",
+      "The chair you are sitting in has been sat in 2,847 times. It is tired.",
+      "You have not watered a plant today. The plants know.",
+      "Your most-used emoji this month: 😭. Make of that what you will.",
+      "The last song you heard is now stuck in your head. You cannot remove it.",
+      "You are running 23% lower on shampoo than you realize.",
+    ],
+    // Minor
+    [
+      "Based on current trajectory, you will say 'I'll do it later' 4 more times today.",
+      "A friend from 2016 thought of you briefly this morning. They moved on.",
+      "The optimal time to have started this was three hours ago.",
+      "You have read the same paragraph four times today without comprehending it.",
+      "Your phone battery is fine. You will check it again in 4 minutes.",
+      "Three people have had an easier day than you for no discernible reason.",
+    ],
+    // Moderate
+    [
+      "The amount of unread emails in your inbox is, statistically, psychologically damaging.",
+      "An algorithm somewhere decided something about you today. You agreed.",
+      "You are slightly behind on everything. The list is aware.",
+      "Your future self has sent no warnings. This may be because there were none to send.",
+      "The thing you keep meaning to do has now been pending for 47 days.",
+    ],
+    // Significant
+    [
+      "You have misplaced 11 hours this week. They cannot be recovered.",
+      "Every action you have taken today has been logged, rated, and archived. The rating is withheld.",
+      "The optimism you had at 9am has been fully depleted. Prognosis: bleak.",
+      "The coffee did not help. It has never helped. You will have another one.",
+    ],
+    // Critical
+    [
+      "CRITICAL: The vibes are, objectively, off.",
+      "CRITICAL: You have made peace with things you shouldn't have made peace with.",
+      "CRITICAL: The machine has assessed your week. It declines to share the full report.",
+      "ESCALATION PROTOCOL: The news is worse than this. The worse news is suppressed for your safety.",
+    ]
+  ];
+
+  let count = 0;
+  let escalation = 0;
+  const history = [];
+
+  const btn = document.getElementById('get-news-btn');
+  const newsText = document.getElementById('news-text');
+  const sevEl = document.getElementById('severity');
+  const fill = document.getElementById('severity-fill');
+  const countEl = document.getElementById('count');
+  const histEl = document.getElementById('history');
+
+  function pickNews() {
+    // Gradually escalate
+    const lvlIdx = Math.min(Math.floor(escalation / 3 + Math.random()*1.5), 4);
+    const bank = newsBanks[lvlIdx];
+    const text = bank[Math.floor(Math.random()*bank.length)];
+    const lvl = levels[lvlIdx];
+    escalation += 0.7;
+    return { text, lvl, pct: (lvlIdx+1)*20 + Math.random()*15 };
+  }
+
+  function typeText(el, text, cb) {
+    el.textContent = '';
+    el.classList.add('typing');
+    let i=0;
+    const iv = setInterval(() => {
+      el.textContent += text[i++];
+      if (i >= text.length) { clearInterval(iv); el.classList.remove('typing'); if(cb) cb(); }
+    }, 22);
+  }
+
+  btn.addEventListener('click', () => {
+    btn.disabled = true;
+    const { text, lvl, pct } = pickNews();
+    count++;
+    countEl.textContent = count;
+
+    sevEl.style.color = lvl.color;
+    sevEl.textContent = lvl.label + ' REPORT';
+    fill.style.width = '0%';
+    fill.style.background = lvl.fill;
+
+    typeText(newsText, text, () => {
+      fill.style.width = Math.min(pct, 100) + '%';
+      btn.disabled = false;
+
+      // Add to history
+      history.unshift({ text, label: lvl.label });
+      if (history.length > 6) history.pop();
+      histEl.innerHTML = history.map(h => `<div class="hist-item">[${h.label}] ${h.text}</div>`).join('');
+    });
+  });
+</script>
+</body>
+</html>

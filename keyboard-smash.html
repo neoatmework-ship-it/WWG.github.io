@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Keyboard Smash Analyzer</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;700;800&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: #0d0d0d; color: #fff; font-family: 'Space Grotesk', sans-serif; min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 40px 20px; overflow-x: hidden; }
+  #back { position: fixed; top: 20px; left: 20px; text-decoration: none; color: #444; font-size: 0.8rem; letter-spacing: 2px; }
+  #back:hover { color: #fff; }
+  h1 { font-size: clamp(1.5rem, 4vw, 2.5rem); font-weight: 800; letter-spacing: -1px; margin-bottom: 8px; }
+  .sub { color: #555; font-size: 0.9rem; margin-bottom: 40px; }
+  #smash-zone {
+    width: 100%; max-width: 700px;
+    min-height: 120px;
+    border: 3px solid #222;
+    background: #111;
+    padding: 24px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 1.2rem;
+    color: #fff;
+    outline: none;
+    resize: none;
+    border-radius: 4px;
+    transition: border-color 0.2s;
+    caret-color: #ff6600;
+  }
+  #smash-zone:focus { border-color: #ff6600; }
+  #smash-zone::placeholder { color: #333; }
+  #analyze-btn {
+    margin-top: 20px;
+    background: #ff6600; border: none; color: #fff;
+    padding: 16px 48px; font-family: 'Space Grotesk', sans-serif;
+    font-size: 1rem; font-weight: 800; cursor: pointer;
+    letter-spacing: 2px; text-transform: uppercase;
+    transition: transform 0.1s, background 0.2s;
+  }
+  #analyze-btn:hover { background: #ff4400; transform: scale(1.03); }
+  #results { width: 100%; max-width: 700px; margin-top: 40px; }
+  .result-card {
+    background: #111; border-left: 4px solid #ff6600;
+    padding: 20px 24px; margin-bottom: 16px;
+    opacity: 0; transform: translateY(20px);
+    transition: all 0.4s ease;
+  }
+  .result-card.visible { opacity: 1; transform: translateY(0); }
+  .result-card .label { font-size: 0.65rem; letter-spacing: 3px; color: #ff6600; text-transform: uppercase; margin-bottom: 6px; }
+  .result-card .value { font-size: 1.3rem; font-weight: 700; }
+  .result-card.verdict { border-color: #fff; background: #181818; }
+  .result-card.verdict .value { font-size: 1.1rem; font-style: italic; color: #ccc; line-height: 1.6; }
+  .chaos-bar-wrap { margin-top: 8px; background: #222; height: 8px; border-radius: 4px; overflow: hidden; }
+  .chaos-bar { height: 100%; background: linear-gradient(90deg, #ff6600, #ff0055); border-radius: 4px; width: 0; transition: width 1s ease; }
+</style>
+</head>
+<body>
+<a href="index.html" id="back">← BACK</a>
+<h1>Keyboard Smash Analyzer</h1>
+<p class="sub">Smash your keyboard. We'll analyze what's wrong with you.</p>
+<textarea id="smash-zone" rows="5" placeholder="just... smash it"></textarea>
+<button id="analyze-btn">ANALYZE MY DAMAGE</button>
+<div id="results"></div>
+<script>
+  const verdicts = [
+    t => `You type like someone falling down stairs in slow motion.`,
+    t => `This has ${(t.match(/a/gi)||[]).length} A's. Suspicious.`,
+    t => t.length < 10 ? `That's it? That's all you've got? Pathetic.` : `${t.length} characters of pure chaos. We respect it.`,
+    t => `Detected ${new Set(t.toLowerCase()).size} unique characters. Personality index: ${Math.min(100, new Set(t.toLowerCase()).size * 4)}%`,
+    t => t.includes('f') ? `The F key got hit. We know what you meant.` : `No F key. Zero Fs given. Accurate.`,
+    t => `Consonant density suggests you peaked intellectually sometime around 2014.`,
+    t => t.length > 50 ? `You held nothing back. This is beautiful in a broken way.` : `You could've gone harder. But you didn't. That says a lot.`,
+    t => `Based on key distribution, your spirit animal is a malfunctioning printer.`,
+  ];
+
+  const emotions = ['Existential Dread','Mild Frustration','Pure Chaos Energy','Bored Violence','Digital Despair','Caffeinated Panic','Repressed Opinion','Unknowable Grief'];
+  const states = ['CRITICAL','UNSTABLE','CHAOTIC','ELEVATED','NOMINAL (Concerning)'];
+
+  function chaosScore(t) {
+    const unique = new Set(t.toLowerCase().replace(/\s/g,'')).size;
+    const len = t.length;
+    const consec = (t.match(/(.)\1{2,}/g)||[]).length;
+    return Math.min(100, Math.round((unique * 3 + len * 0.5 - consec * 5 + Math.random()*10)));
+  }
+
+  document.getElementById('analyze-btn').addEventListener('click', () => {
+    const t = document.getElementById('smash-zone').value.trim();
+    if (!t) return;
+    const res = document.getElementById('results');
+    res.innerHTML = '';
+
+    const score = chaosScore(t);
+    const emotion = emotions[Math.floor(Math.random()*emotions.length)];
+    const verdict = verdicts[Math.floor(Math.random()*verdicts.length)](t);
+    const sysState = states[Math.floor(score/25)];
+
+    const cards = [
+      { label: 'Chaos Score', value: `${score} / 100`, extra: `<div class="chaos-bar-wrap"><div class="chaos-bar" id="cbar"></div></div>` },
+      { label: 'Emotional State Detected', value: emotion },
+      { label: 'System Status', value: sysState },
+      { label: 'Verdict', value: verdict, cls: 'verdict' },
+    ];
+
+    cards.forEach((c, i) => {
+      const div = document.createElement('div');
+      div.className = 'result-card ' + (c.cls || '');
+      div.innerHTML = `<div class="label">${c.label}</div><div class="value">${c.value}</div>${c.extra||''}`;
+      res.appendChild(div);
+      setTimeout(() => { div.classList.add('visible'); if (c.extra) setTimeout(()=>{ document.getElementById('cbar').style.width = score + '%'; }, 100); }, i * 180);
+    });
+  });
+
+  document.getElementById('smash-zone').addEventListener('keydown', e => {
+    if (e.key === 'Enter' && e.ctrlKey) document.getElementById('analyze-btn').click();
+  });
+</script>
+</body>
+</html>

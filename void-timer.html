@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Void Timer</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Plus+Jakarta+Sans:wght@800&display=swap" rel="stylesheet">
+<style>
+  :root { --bg: #04040a; --accent: #5533ff; --dim: #1a1a2e; --muted: #444466; }
+  * { margin: 0; padding: 0; box-sizing: border-box; user-select: none; }
+  body { background: var(--bg); color: #fff; font-family: 'JetBrains Mono', monospace; height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; overflow: hidden; }
+  body::before {
+    content: ''; position: fixed; inset: 0;
+    background: radial-gradient(ellipse at 50% 50%, rgba(85,51,255,0.08) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  #back { position: fixed; top: 20px; left: 20px; text-decoration: none; color: var(--muted); font-size: 0.8rem; letter-spacing: 2px; transition: color 0.2s; }
+  #back:hover { color: #fff; }
+  .label { font-size: 0.7rem; letter-spacing: 4px; color: var(--muted); text-transform: uppercase; margin-bottom: 20px; }
+  #display {
+    font-size: clamp(4rem, 14vw, 11rem);
+    font-weight: 700;
+    letter-spacing: -3px;
+    color: #fff;
+    text-shadow: 0 0 40px rgba(85,51,255,0.6);
+    transition: color 0.3s;
+    line-height: 1;
+    text-align: center;
+  }
+  #display.punished { animation: flash-red 0.4s ease; }
+  @keyframes flash-red { 0%,100%{color:#fff} 50%{color:#ff3355;text-shadow:0 0 60px #ff3355;} }
+  .sub { margin-top: 24px; font-size: 0.8rem; color: var(--muted); letter-spacing: 2px; min-height: 1.2em; transition: color 0.5s; }
+  .sub.warning { color: #ff884d; }
+  .sub.critical { color: #ff3355; }
+  .buttons { margin-top: 48px; display: flex; gap: 16px; }
+  .btn {
+    background: transparent;
+    border: 2px solid var(--muted);
+    color: var(--muted);
+    padding: 14px 32px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.8rem;
+    letter-spacing: 2px;
+    cursor: pointer;
+    text-transform: uppercase;
+    transition: all 0.2s;
+  }
+  .btn:hover { border-color: var(--accent); color: var(--accent); }
+  .btn#reset-btn { border-color: #ff3355; color: #ff3355; }
+  .btn#reset-btn:hover { background: #ff3355; color: #fff; }
+  #punishment {
+    position: fixed; top: 50%; left: 50%; transform: translate(-50%,-50%) scale(0);
+    background: #ff3355; color: #fff; padding: 20px 48px;
+    font-size: 1.2rem; letter-spacing: 3px; font-weight: 700;
+    pointer-events: none; transition: transform 0.15s cubic-bezier(0.34,1.56,0.64,1);
+    white-space: nowrap; z-index: 100;
+  }
+  #punishment.show { transform: translate(-50%,-50%) scale(1); }
+  .millis { font-size: 0.4em; opacity: 0.4; vertical-align: super; }
+  #whisper { position: fixed; bottom: 30px; font-size: 0.65rem; color: var(--muted); letter-spacing: 2px; opacity: 0; transition: opacity 2s; }
+</style>
+</head>
+<body>
+<a href="index.html" id="back">← BACK</a>
+<div class="label">TIME ELAPSED</div>
+<div id="display">00:00:00<span class="millis">.000</span></div>
+<div class="sub" id="sub-text">counting. quietly.</div>
+<div class="buttons">
+  <button class="btn" id="pause-btn">PAUSE</button>
+  <button class="btn" id="reset-btn">RESET (+10s)</button>
+</div>
+<div id="punishment">+10 SECONDS ADDED</div>
+<div id="whisper" id="whisper-text">it doesn't matter</div>
+<script>
+  let elapsed = 0, running = true, interval;
+  const display = document.getElementById('display');
+  const sub = document.getElementById('sub-text');
+  const pauseBtn = document.getElementById('pause-btn');
+  const punishment = document.getElementById('punishment');
+  const whisper = document.getElementById('whisper');
+
+  const subs = [
+    [10,  "still counting."],
+    [30,  "you're waiting for nothing."],
+    [60,  "one minute. gone."],
+    [120, "two minutes. also gone."],
+    [300, "five minutes in the void."],
+    [600, "ten minutes. impressive."],
+    [1800,"half an hour. what are you doing."],
+    [3600,"one hour. are you okay?"],
+  ];
+
+  const whispers = [
+    "it doesn't matter", "the clock wins", "you can't pause nothing",
+    "time is not on your side", "reset will only make it worse",
+  ];
+
+  function fmt(s) {
+    const h = Math.floor(s/3600), m = Math.floor((s%3600)/60), sec = Math.floor(s%60);
+    const ms = Math.floor((s % 1) * 1000);
+    return `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(sec).padStart(2,'0')}<span class="millis">.${String(ms).padStart(3,'0')}</span>`;
+  }
+
+  function tick() {
+    elapsed += 0.05;
+    display.innerHTML = fmt(elapsed);
+    const match = [...subs].reverse().find(([t]) => elapsed >= t);
+    if (match) {
+      sub.textContent = match[1];
+      sub.className = 'sub ' + (elapsed > 600 ? 'critical' : elapsed > 120 ? 'warning' : '');
+    }
+  }
+
+  interval = setInterval(tick, 50);
+
+  pauseBtn.addEventListener('click', () => {
+    running = !running;
+    if (running) { interval = setInterval(tick, 50); pauseBtn.textContent = 'PAUSE'; }
+    else { clearInterval(interval); pauseBtn.textContent = 'RESUME'; }
+  });
+
+  document.getElementById('reset-btn').addEventListener('click', () => {
+    elapsed += 10;
+    display.classList.add('punished');
+    punishment.classList.add('show');
+    setTimeout(() => { display.classList.remove('punished'); punishment.classList.remove('show'); }, 800);
+  });
+
+  // Whisper cycle
+  let wi = 0;
+  setInterval(() => {
+    whisper.style.opacity = 0;
+    setTimeout(() => {
+      whisper.textContent = whispers[wi++ % whispers.length];
+      whisper.style.opacity = 1;
+      setTimeout(() => whisper.style.opacity = 0, 4000);
+    }, 2000);
+  }, 15000);
+</script>
+</body>
+</html>

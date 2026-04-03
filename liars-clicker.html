@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Liar's Clicker</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;700;800&family=JetBrains+Mono:wght@700&display=swap" rel="stylesheet">
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; user-select:none; }
+  body { background:#0a0a0a; color:#fff; font-family:'Plus Jakarta Sans', sans-serif; height:100vh; display:flex; flex-direction:column; align-items:center; justify-content:center; overflow:hidden; }
+  #back { position:fixed; top:20px; left:20px; text-decoration:none; color:#333; font-size:0.8rem; letter-spacing:2px; }
+  #back:hover { color:#fff; }
+  .label { font-size:0.65rem; letter-spacing:4px; color:#444; text-transform:uppercase; margin-bottom:12px; }
+  #count {
+    font-family:'JetBrains Mono', monospace;
+    font-size: clamp(5rem, 18vw, 14rem);
+    font-weight:700; line-height:1;
+    transition: all 0.1s;
+    cursor:default;
+  }
+  #real-count { font-size:0.7rem; color:#222; margin-top:8px; font-family:'JetBrains Mono', monospace; letter-spacing:2px; }
+  #real-count:hover { color:#555; transition:color 0.5s; }
+  #click-btn {
+    margin-top:40px; width:160px; height:160px; border-radius:50%;
+    background: radial-gradient(circle at 35% 35%, #ff6600, #cc3300);
+    border:none; cursor:pointer; color:#fff;
+    font-weight:800; font-size:1rem; letter-spacing:2px;
+    box-shadow: 0 8px 40px rgba(255,102,0,0.4);
+    transition: transform 0.08s, box-shadow 0.08s;
+  }
+  #click-btn:active { transform:scale(0.92); box-shadow:0 2px 15px rgba(255,102,0,0.3); }
+  #lies { position:fixed; pointer-events:none; font-family:'JetBrains Mono', monospace; font-size:0.75rem; color:#666; }
+  .lie-pop { position:fixed; pointer-events:none; font-weight:800; animation: rise 1.2s ease forwards; }
+  @keyframes rise { 0%{opacity:1;transform:translateY(0) scale(1)} 100%{opacity:0;transform:translateY(-80px) scale(0.8)} }
+  #whisper { position:fixed; bottom:30px; color:#1e1e1e; font-size:0.8rem; letter-spacing:2px; transition:color 2s; }
+  #whisper:hover { color:#555; }
+</style>
+</head>
+<body>
+<a href="index.html" id="back">← BACK</a>
+<div class="label">Total Clicks</div>
+<div id="count">0</div>
+<div id="real-count">real: 0</div>
+<button id="click-btn">CLICK</button>
+<div id="whisper">the numbers were always a suggestion</div>
+<script>
+  let real = 0;
+  let displayed = 0;
+  const countEl = document.getElementById('count');
+  const realEl = document.getElementById('real-count');
+  const btn = document.getElementById('click-btn');
+
+  const lies = [
+    n => n + Math.floor(Math.random()*20-5),
+    n => Math.floor(n * (0.7 + Math.random()*0.8)),
+    n => n - Math.floor(Math.random()*8),
+    n => n + Math.floor(Math.random()*50),
+    n => n + 1,
+    n => n + 1,
+    n => n + 1,
+    n => n + 1,
+  ];
+  const msgs = ['+1','+?','+maybe','did that count?','yes','no','×2?','+1 probably'];
+
+  function spawnPop(x, y, txt) {
+    const el = document.createElement('div');
+    el.className = 'lie-pop';
+    el.style.left = (x - 20) + 'px';
+    el.style.top = (y - 20) + 'px';
+    el.style.color = Math.random() > 0.5 ? '#ff6600' : '#666';
+    el.textContent = txt;
+    document.body.appendChild(el);
+    setTimeout(() => el.remove(), 1200);
+  }
+
+  btn.addEventListener('click', e => {
+    real++;
+
+    // Occasionally drift the display
+    const lieFn = lies[Math.floor(Math.random()*lies.length)];
+    displayed = Math.max(0, lieFn(displayed + 1));
+
+    // Sometimes silently change when not clicking
+    countEl.textContent = displayed;
+    realEl.textContent = `real: ${real}`;
+
+    spawnPop(e.clientX, e.clientY, msgs[Math.floor(Math.random()*msgs.length)]);
+  });
+
+  // Change display when idle (while looking away)
+  setInterval(() => {
+    if (real > 0 && Math.random() < 0.4) {
+      const drift = Math.floor(Math.random()*10-4);
+      displayed = Math.max(0, displayed + drift);
+      countEl.textContent = displayed;
+    }
+  }, 2500);
+
+  // One dramatic reset occasionally
+  setInterval(() => {
+    if (real > 20 && Math.random() < 0.05) {
+      displayed = Math.floor(Math.random() * 5);
+      countEl.textContent = displayed;
+    }
+  }, 5000);
+</script>
+</body>
+</html>

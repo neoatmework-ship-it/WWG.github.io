@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Neon Fluid</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@700&display=swap" rel="stylesheet">
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { background:#000; overflow:hidden; height:100vh; cursor:crosshair; }
+  canvas { display:block; }
+  #ui { position:fixed; top:20px; left:20px; z-index:10; }
+  #back { text-decoration:none; color:rgba(255,255,255,0.3); font-family:'Plus Jakarta Sans', sans-serif; font-size:0.75rem; letter-spacing:2px; transition:color 0.2s; }
+  #back:hover { color:rgba(255,255,255,0.8); }
+  #hint { position:fixed; bottom:30px; left:50%; transform:translateX(-50%); color:rgba(255,255,255,0.2); font-family:'Plus Jakarta Sans',sans-serif; font-size:0.7rem; letter-spacing:3px; pointer-events:none; transition:opacity 1s; }
+  #controls { position:fixed; top:20px; right:20px; display:flex; gap:10px; }
+  .ctrl-btn {
+    background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.15);
+    color:rgba(255,255,255,0.5); padding:8px 16px;
+    font-family:'Plus Jakarta Sans',sans-serif; font-size:0.7rem;
+    letter-spacing:2px; cursor:pointer; transition:all 0.2s;
+  }
+  .ctrl-btn:hover { background:rgba(255,255,255,0.15); color:#fff; }
+</style>
+</head>
+<body>
+<div id="ui"><a href="index.html" id="back">← BACK</a></div>
+<div id="controls">
+  <button class="ctrl-btn" id="clear-btn">CLEAR</button>
+  <button class="ctrl-btn" id="hue-btn">SHIFT COLOR</button>
+</div>
+<canvas id="c"></canvas>
+<div id="hint">MOVE YOUR MOUSE TO PAINT</div>
+<script>
+  const canvas = document.getElementById('c');
+  const ctx = canvas.getContext('2d');
+  const hint = document.getElementById('hint');
+
+  let W, H, particles = [], hueBase = 180, mouse = {x:-999, y:-999, px:-999, py:-999, down:false};
+  let hintFaded = false;
+
+  function resize() {
+    W = canvas.width = window.innerWidth;
+    H = canvas.height = window.innerHeight;
+  }
+  resize();
+  window.addEventListener('resize', resize);
+
+  // Particle system
+  function spawnParticles(x, y, px, py, count = 6) {
+    const dx = x - px, dy = y - py;
+    const speed = Math.sqrt(dx*dx+dy*dy);
+    for (let i = 0; i < count; i++) {
+      const hue = (hueBase + Math.random()*80) % 360;
+      const angle = Math.atan2(dy, dx) + (Math.random()-0.5)*0.8;
+      const v = speed * (0.3 + Math.random()*0.7);
+      particles.push({
+        x, y,
+        vx: Math.cos(angle)*v*0.3,
+        vy: Math.sin(angle)*v*0.3,
+        life: 1, decay: 0.012 + Math.random()*0.02,
+        size: 2 + Math.random()*6,
+        hue, sat: 90 + Math.random()*10, lit: 55 + Math.random()*20,
+        trail: [{x,y}]
+      });
+    }
+  }
+
+  // Fluid trail drawing
+  let trails = [];
+  function addTrail(x,y,px,py) {
+    trails.push({ x,y,px,py, hue:(hueBase+Math.random()*60)%360, life:1, width:3+Math.random()*8 });
+  }
+
+  canvas.addEventListener('mousemove', e => {
+    mouse.px = mouse.x; mouse.py = mouse.y;
+    mouse.x = e.clientX; mouse.y = e.clientY;
+    const dx = mouse.x-mouse.px, dy=mouse.y-mouse.py;
+    const moved = Math.sqrt(dx*dx+dy*dy);
+    if (moved > 2) {
+      addTrail(mouse.x,mouse.y,mouse.px,mouse.py);
+      if (Math.random()<0.4) spawnParticles(mouse.x,mouse.y,mouse.px,mouse.py);
+      if (!hintFaded) { hint.style.opacity='0'; hintFaded=true; }
+    }
+  });
+  canvas.addEventListener('touchmove', e => {
+    e.preventDefault();
+    const t = e.touches[0];
+    mouse.px=mouse.x; mouse.py=mouse.y; mouse.x=t.clientX; mouse.y=t.clientY;
+    addTrail(mouse.x,mouse.y,mouse.px,mouse.py);
+    spawnParticles(mouse.x,mouse.y,mouse.px,mouse.py,10);
+  }, {passive:false});
+
+  document.getElementById('clear-btn').addEventListener('click', () => { ctx.clearRect(0,0,W,H); trails=[]; particles=[]; });
+  document.getElementById('hue-btn').addEventListener('click', () => { hueBase=(hueBase+60)%360; });
+
+  function draw() {
+    // Fade background slowly for trail effect
+    ctx.fillStyle = 'rgba(0,0,0,0.04)';
+    ctx.fillRect(0,0,W,H);
+
+    // Draw trails
+    trails.forEach((t,i) => {
+      ctx.beginPath();
+      ctx.moveTo(t.px,t.py);
+      ctx.lineTo(t.x,t.y);
+      ctx.strokeStyle = `hsla(${t.hue},95%,60%,${t.life*0.9})`;
+      ctx.lineWidth = t.width * t.life;
+      ctx.lineCap='round';
+      ctx.shadowBlur = 20 * t.life;
+      ctx.shadowColor = `hsl(${t.hue},100%,60%)`;
+      ctx.stroke();
+      t.life -= 0.025;
+    });
+    ctx.shadowBlur = 0;
+    trails = trails.filter(t=>t.life>0);
+
+    // Draw particles
+    particles.forEach((p,i) => {
+      p.x+=p.vx; p.y+=p.vy; p.vx*=0.96; p.vy*=0.96; p.life-=p.decay;
+      ctx.beginPath();
+      ctx.arc(p.x,p.y,p.size*p.life,0,Math.PI*2);
+      ctx.fillStyle = `hsla(${p.hue},${p.sat}%,${p.lit}%,${p.life*0.8})`;
+      ctx.shadowBlur = 15;
+      ctx.shadowColor = `hsl(${p.hue},100%,60%)`;
+      ctx.fill();
+    });
+    ctx.shadowBlur = 0;
+    particles = particles.filter(p=>p.life>0);
+
+    requestAnimationFrame(draw);
+  }
+  draw();
+</script>
+</body>
+</html>
