@@ -104,5 +104,14 @@
     }
   }, 5000);
 </script>
+<script src="discovery.js"></script>
+<script>
+  // Cursed Secret: Wait 30 seconds to earn the "Liar" fragment
+  setTimeout(() => {
+    if (typeof Discovery !== 'undefined') {
+      Discovery.unlock('liar');
+    }
+  }, 30000);
+</script>
 </body>
 </html>
