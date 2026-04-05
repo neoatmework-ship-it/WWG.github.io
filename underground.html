@@ -3,182 +3,471 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>THE UNDERGROUND | Master Archive</title>
+    <title>THE UNDERGROUND - ARCHIVE</title>
     <link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
     <style>
         :root {
-            --bg: #000;
-            --text: #fff;
-            --accent: #ffff00;
-            --save: #ffff00;
+            --undertale-white: #ffffff;
+            --undertale-yellow: #ffff00;
+            --undertale-green: #00ff00;
+            --undertale-red: #ff0000;
+            --undertale-blue: #0000ff;
+            --undertale-purple: #ff00ff;
+            --terminal-bg: #000000;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            cursor: crosshair;
         }
 
         body {
-            background: var(--bg);
-            color: var(--text);
+            background-color: var(--terminal-bg);
+            color: var(--undertale-white);
             font-family: 'VT323', monospace;
-            margin: 0;
-            padding: 40px;
-            line-height: 1.4;
+            overflow-x: hidden;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
         }
 
         .header {
-            border-bottom: 4px solid var(--save);
+            width: 100%;
+            max-width: 1000px;
+            border-bottom: 4px solid var(--undertale-white);
             padding-bottom: 20px;
-            margin-bottom: 40px;
-            text-align: center;
-        }
-
-        h1 { font-size: 4rem; color: var(--accent); margin: 0; }
-        .subtitle { font-size: 1.5rem; opacity: 0.7; }
-
-        .section-title {
-            font-size: 2.5rem;
-            color: var(--save);
-            margin-top: 50px;
-            margin-bottom: 20px;
+            margin-bottom: 30px;
             display: flex;
-            align-items: center;
-            gap: 15px;
+            justify-content: space-between;
+            align-items: flex-end;
         }
-        .section-title::before { content: '★'; }
+
+        .header h1 {
+            font-size: 4rem;
+            color: var(--undertale-yellow);
+            text-shadow: 4px 4px var(--undertale-red);
+        }
+
+        /* Tabs System */
+        .tabs-container {
+            width: 100%;
+            max-width: 1000px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .tab-btn {
+            background: transparent;
+            border: 2px solid var(--undertale-white);
+            color: var(--undertale-white);
+            padding: 10px 20px;
+            font-family: inherit;
+            font-size: 1.5rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .tab-btn:hover, .tab-btn.active {
+            background: var(--undertale-white);
+            color: var(--terminal-bg);
+            box-shadow: 0 0 10px var(--undertale-white);
+        }
+
+        .tab-btn.active {
+            border-color: var(--undertale-yellow);
+            color: var(--undertale-yellow);
+            background: rgba(255, 255, 0, 0.1);
+        }
+
+        .category-section {
+            display: none;
+            width: 100%;
+            max-width: 1000px;
+        }
+
+        .category-section.active {
+            display: block;
+            animation: glitchFade 0.3s ease-out;
+        }
+
+        @keyframes glitchFade {
+            0% { opacity: 0; transform: translateX(-10px); }
+            50% { opacity: 0.5; transform: translateX(5px); }
+            100% { opacity: 1; transform: translateX(0); }
+        }
 
         .archive-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
             gap: 25px;
+            width: 100%;
         }
 
         .card {
-            background: rgba(255,255,255,0.05);
-            border: 2px solid #fff;
-            padding: 20px;
-            transition: 0.3s;
-            cursor: pointer;
+            border: 2px solid var(--undertale-white);
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.05);
+            transition: transform 0.3s;
+            position: relative;
+            overflow: hidden;
         }
+
         .card:hover {
-            background: rgba(255,255,255,0.1);
-            border-color: var(--accent);
             transform: scale(1.02);
-        }
-        .card h3 { font-size: 1.8rem; margin: 0 0 10px; color: var(--accent); }
-        .card p { font-size: 1.2rem; margin: 0; opacity: 0.8; }
-
-        .save-point {
-            position: fixed;
-            bottom: 40px;
-            right: 40px;
-            font-size: 3rem;
-            color: var(--save);
-            animation: pulse-save 2s infinite;
-        }
-        @keyframes pulse-save {
-            0%, 100% { opacity: 0.5; transform: scale(1); }
-            50% { opacity: 1; transform: scale(1.1); }
+            border-color: var(--undertale-yellow);
+            background: rgba(255, 255, 0, 0.05);
         }
 
-        .back-btn {
-            position: fixed; top: 20px; left: 20px;
-            color: #fff; text-decoration: none; font-size: 1.5rem;
+        .sprite-wrap {
+            width: 100%;
+            height: 200px;
+            background: #080808;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 15px;
+            border: 1px solid #333;
+            image-rendering: pixelated;
         }
+
+        .sprite-wrap img {
+            max-height: 90%;
+            max-width: 90%;
+        }
+
+        .monster-name {
+            font-size: 2rem;
+            color: var(--undertale-yellow);
+            margin-bottom: 5px;
+            text-transform: uppercase;
+        }
+
+        .monster-stats {
+            color: var(--undertale-green);
+            font-size: 1.2rem;
+            margin-bottom: 10px;
+            border-bottom: 1px solid #444;
+            padding-bottom: 5px;
+        }
+
+        .monster-desc {
+            font-size: 1.1rem;
+            line-height: 1.4;
+            color: #ccc;
+        }
+
+        .pacifist-hint {
+            margin-top: 15px;
+            padding: 8px;
+            border: 1px dashed var(--undertale-purple);
+            color: var(--undertale-purple);
+            font-size: 1rem;
+        }
+
+        .nav-btn {
+            text-decoration: none;
+            color: var(--undertale-white);
+            border: 2px solid var(--undertale-white);
+            padding: 5px 15px;
+            font-size: 1.2rem;
+        }
+
+        .nav-btn:hover {
+            background: var(--undertale-white);
+            color: var(--terminal-bg);
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #000; }
+        ::-webkit-scrollbar-thumb { background: #333; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--undertale-yellow); }
     </style>
 </head>
 <body>
-
-    <a href="index.html" class="back-btn">← [RESET]</a>
-
     <div class="header">
-        <h1>THE UNDERGROUND</h1>
-        <div class="subtitle">STATUS: ACCESS_GRANTED // DETERMINATION_DETECTED</div>
+        <h1>BESTIARY_ARCHIVE</h1>
+        <a href="index.html" class="nav-btn">← HUB</a>
     </div>
 
-    <div class="section-title">THE BOSSES</div>
-    <div class="archive-grid">
-        <div class="card">
-            <h3>SANS</h3>
-            <p>The judge of the JUDGEMENT HALL. Loves puns, ketchup, and making your life a bad time. 1 ATK / 1 DEF. The easiest enemy.</p>
-        </div>
-        <div class="card">
-            <h3>PAPYRUS</h3>
-            <p>NYEH HEH HEH! Great at puzzles, loves spaghetti, and wants to be a member of the Royal Guard.</p>
-        </div>
-        <div class="card">
-            <h3>UNDYNE</h3>
-            <p>The Spear of Justice. Hero of the underground. Never gives up. Battles you in Waterfall.</p>
-        </div>
-        <div class="card">
-            <h3>TORIEL</h3>
-            <p>Caretaker of the Ruins. Loves butterscotch cinnamon pie and snails. She just wants to protect you.</p>
-        </div>
-        <div class="card">
-            <h3>ASGORE</h3>
-            <p>King of the Underground. Not good at names. Just wants to see his family again. "Fingertips..."</p>
-        </div>
+    <!-- Tier Navigation -->
+    <div class="tabs-container">
+        <button class="tab-btn active" data-target="tier-boss">BOSSES</button>
+        <button class="tab-btn" data-target="area-ruins">RUINS</button>
+        <button class="tab-btn" data-target="area-snowdin">SNOWDIN</button>
+        <button class="tab-btn" data-target="area-waterfall">WATERFALL</button>
+        <button class="tab-btn" data-target="area-hotland">HOTLAND & CORE</button>
     </div>
 
-    <div class="section-title">THE ROUTES</div>
-    <div class="archive-grid">
-        <div class="card">
-            <h3>PACIFIST</h3>
-            <p>Kill nothing. Befriend everyone. The true ending where everyone goes to the surface.</p>
+    <!-- Tier: Bosses -->
+    <section id="tier-boss" class="category-section active">
+        <div class="archive-grid">
+            <div class="card">
+                <div class="sprite-wrap"><img src="https://undertale.wiki/images/Flowey_battle_talk.gif" alt="Flowey"></div>
+                <h3 class="monster-name">FLOWEY</h3>
+                <div class="monster-stats">HP: 6000 | ATK: 19 | DEF: 0</div>
+                <p class="monster-desc">Your best friend! "Friendlyness Pellets."</p>
+                <div class="pacifist-hint">PACIFIST: Don't take his pellets... and run away.</div>
+            </div>
+            <div class="card">
+                <div class="sprite-wrap"><img src="assets/sprites/toriel.png" alt="Toriel"></div>
+                <h3 class="monster-name">TORIEL</h3>
+                <div class="monster-stats">HP: 440 | ATK: 80 | DEF: 80</div>
+                <p class="monster-desc">Caretaker of the ruins. Fire magic specialist.</p>
+                <div class="pacifist-hint">PACIFIST: Keep SPARING until she stops fighting.</div>
+            </div>
+            <div class="card">
+                <div class="sprite-wrap"><img src="assets/sprites/papyrus.png" alt="Papyrus"></div>
+                <h3 class="monster-name">PAPYRUS</h3>
+                <div class="monster-stats">HP: 680 | ATK: 20 | DEF: 20</div>
+                <p class="monster-desc">Skeleton sentinel. "Blue Soul" master.</p>
+                <div class="pacifist-hint">PACIFIST: Surviving "Special Attack" = Instant friends.</div>
+            </div>
+            <div class="card">
+                <div class="sprite-wrap"><img src="assets/sprites/undyne.png" alt="Undyne"></div>
+                <h3 class="monster-name">UNDYNE</h3>
+                <div class="monster-stats">HP: 1500 | ATK: 50 | DEF: 20</div>
+                <p class="monster-desc">Captain of the Royal Guard. Spear volleys.</p>
+                <div class="pacifist-hint">PACIFIST: Flee when red. Give her water in Hotland.</div>
+            </div>
+            <div class="card">
+                <div class="sprite-wrap"><img src="https://undertale.wiki/images/Mettaton_EX_battle.gif" alt="Mettaton"></div>
+                <h3 class="monster-name">METTATON EX</h3>
+                <div class="monster-stats">HP: 1600 | ATK: 47 | DEF: 47</div>
+                <p class="monster-desc">The Underground's only star. Ratings-focused.</p>
+                <div class="pacifist-hint">PACIFIST: Reach 10,000+ Ratings through drama!</div>
+            </div>
+            <div class="card">
+                <div class="sprite-wrap"><img src="https://undertale.wiki/images/Sans_battle_idle.gif" alt="Sans"></div>
+                <h3 class="monster-name">SANS</h3>
+                <div class="monster-stats">HP: 1 | ATK: 1 | DEF: 1</div>
+                <p class="monster-desc">The final judge. Only fights in Genocide.</p>
+                <div class="pacifist-hint">PACIFIST: Unnecessary. He's just a lazy skeleton.</div>
+            </div>
+            <div class="card" style="border-color: #f0f;">
+                <div class="sprite-wrap"><img src="assets/sprites/omega_flowey.png" alt="Omega Flowey"></div>
+                <h3 class="monster-name">OMEGA FLOWEY</h3>
+                <div class="monster-stats">HP: 6000 | ATK: 19 | DEF: 0</div>
+                <p class="monster-desc">The beast of six souls. Reality-shattering attacks.</p>
+                <div class="pacifist-hint">PACIFIST: Call for help from the six human souls.</div>
+            </div>
+            <div class="card">
+                <div class="sprite-wrap"><img src="assets/sprites/asgore.png" alt="Asgore"></div>
+                <h3 class="monster-name">ASGORE DREEMURR</h3>
+                <div class="monster-stats">HP: 3500 | ATK: 80 | DEF: 80</div>
+                <p class="monster-desc">King of the Underground. Trident master.</p>
+                <div class="pacifist-hint">PACIFIST: Fight until near death, then SPARE.</div>
+            </div>
+            <div class="card" style="border-color: #fff;">
+                <div class="sprite-wrap"><img src="https://undertale.wiki/images/Asriel_Dreemurr_battle.png" alt="Asriel"></div>
+                <h3 class="monster-name">ASRIEL DREEMURR</h3>
+                <div class="monster-stats">HP: ∞ | ATK: ∞ | DEF: ∞</div>
+                <p class="monster-desc">The God of Hyperdeath. The true prince.</p>
+                <div class="pacifist-hint">PACIFIST: SAVE your friends. Reach out to him.</div>
+            </div>
         </div>
-        <div class="card">
-            <h3>NEUTRAL</h3>
-            <p>Anything in between. Flowey judges your choices. Many variations based on who survives.</p>
-        </div>
-        <div class="card">
-            <h3>GENOCIDE</h3>
-            <p>Kill EVERYTHING. Erase the world. You’re gonna have a bad time. "Dust."</p>
-        </div>
-    </div>
+    </section>
 
-    <div class="section-title">THE LORE</div>
-    <div class="archive-grid" style="grid-template-columns: 1fr;">
-        <div class="card">
-            <h3>W.D. GASTER</h3>
-            <p>The royal scientist before Alphys. Fell into his own creation. Scattered across space and time. ENTRY NUMBER SEVENTEEN: DARK, DARKER, YET DARKER.</p>
+    <!-- Area: Ruins -->
+    <section id="area-ruins" class="category-section">
+        <div class="archive-grid">
+            <div class="card">
+                <div class="sprite-wrap"><img src="assets/sprites/froggit.png" alt="Froggit"></div>
+                <h3 class="monster-name">FROGGIT</h3>
+                <div class="monster-stats">HP: 30 | ATK: 4 | DEF: 1</div>
+                <p class="monster-desc">Hop-hop. Doesn't understand much.</p>
+                <div class="pacifist-hint">PACIFIST: Compliment or Threaten (then SPARE).</div>
+            </div>
+            <div class="card">
+                <div class="sprite-wrap"><img src="assets/sprites/whimsun.png" alt="Whimsun"></div>
+                <h3 class="monster-name">WHIMSUN</h3>
+                <div class="monster-stats">HP: 10 | ATK: 3 | DEF: 0</div>
+                <p class="monster-desc">Too sensitive. Only wants to be alone.</p>
+                <div class="pacifist-hint">PACIFIST: Console or Spare immediately.</div>
+            </div>
+            <div class="card">
+                <div class="sprite-wrap"><img src="assets/sprites/napstablook.png" alt="Napstablook"></div>
+                <h3 class="monster-name">NAPSTABLOOK</h3>
+                <div class="monster-stats">HP: 88 | ATK: 10 | DEF: 10</div>
+                <p class="monster-desc">Ghostly music lover. Often crying.</p>
+                <div class="pacifist-hint">PACIFIST: Cheer repeatedly. No violence!</div>
+            </div>
+            <div class="card">
+                <div class="sprite-wrap"><img src="assets/sprites/moldsmal.png" alt="Moldsmal"></div>
+                <h3 class="monster-name">MOLDSMAL</h3>
+                <div class="monster-stats">HP: 50 | ATK: 6 | DEF: 0</div>
+                <p class="monster-desc">Jiggle-like monster. Non-verbal.</p>
+                <div class="pacifist-hint">PACIFIST: Flirt or Lie.</div>
+            </div>
+            <div class="card">
+                <div class="sprite-wrap"><img src="https://undertale.wiki/images/Loox_battle_idle.gif" alt="Loox"></div>
+                <h3 class="monster-name">LOOX</h3>
+                <div class="monster-stats">HP: 50 | ATK: 6 | DEF: 4</div>
+                <p class="monster-desc">Single-eyed monster. Don't pick on him.</p>
+                <div class="pacifist-hint">PACIFIST: Don't Pick On.</div>
+            </div>
+            <div class="card">
+                <div class="sprite-wrap"><img src="https://undertale.wiki/images/Vegetoid_battle_idle.gif" alt="Vegetoid"></div>
+                <h3 class="monster-name">VEGETOID</h3>
+                <div class="monster-stats">HP: 75 | ATK: 6 | DEF: 6</div>
+                <p class="monster-desc">Vegetable monster. Eat your greens.</p>
+                <div class="pacifist-hint">PACIFIST: Dinner or Snack (Green attacks).</div>
+            </div>
         </div>
-    </div>
+    </section>
 
-    <div class="section-title">THE GALLERY // TIMELINE MEMORIES</div>
-    <div class="archive-grid">
-        <div class="card" style="border: 2px dashed #666;">
-            <div style="height: 150px; background: #222; display: flex; align-items: center; justify-content: center; font-size: 3rem; margin-bottom: 10px;">🛡️</div>
-            <h3>FRAGMENT_01</h3>
-            <p>The first encounter. A memory of the old world.</p>
+    <!-- Area: Snowdin -->
+    <section id="area-snowdin" class="category-section">
+        <div class="archive-grid">
+            <div class="card">
+                <div class="sprite-wrap"><img src="assets/sprites/snowdrake.png" alt="Snowdrake"></div>
+                <h3 class="monster-name">SNOWDRAKE</h3>
+                <div class="monster-stats">HP: 75 | ATK: 12 | DEF: 2</div>
+                <p class="monster-desc">Teenage ice dragon. Loves puns.</p>
+                <div class="pacifist-hint">PACIFIST: Laugh at his jokes (after 1 turn).</div>
+            </div>
+            <div class="card">
+                <div class="sprite-wrap"><img src="assets/sprites/doggo.png" alt="Doggo"></div>
+                <h3 class="monster-name">DOGGO</h3>
+                <div class="monster-stats">HP: 70 | ATK: 12 | DEF: 5</div>
+                <p class="monster-desc">Royal Guard. Vision based on motion.</p>
+                <div class="pacifist-hint">PACIFIST: Don't move! Then Pet.</div>
+            </div>
+            <div class="card">
+                <div class="sprite-wrap"><img src="assets/sprites/lesser_dog.png" alt="Lesser Dog"></div>
+                <h3 class="monster-name">LESSER DOG</h3>
+                <div class="monster-stats">HP: 60 | ATK: 12 | DEF: 2</div>
+                <p class="monster-desc">Royal Guard. Neck grows when pet.</p>
+                <div class="pacifist-hint">PACIFIST: PET. PET. PET. PET. PET.</div>
+            </div>
+            <div class="card">
+                <div class="sprite-wrap"><img src="https://undertale.wiki/images/Dogi_battle.gif" alt="DOGAMY & DOGARESSA"></div>
+                <h3 class="monster-name">DOGAMY & DOGARESSA</h3>
+                <div class="monster-stats">HP: 100x2 | ATK: 14 | DEF: 5</div>
+                <p class="monster-desc">The canine couple. High sense of smell. Two in one!</p>
+                <div class="pacifist-hint">PACIFIST: Roll in dirt, let sniff, pet both.</div>
+            </div>
+            <div class="card">
+                <div class="sprite-wrap"><img src="https://undertale.wiki/images/Greater_Dog_battle.gif" alt="Greater Dog"></div>
+                <h3 class="monster-name">GREATER DOG</h3>
+                <div class="monster-stats">HP: 105 | ATK: 15 | DEF: 8</div>
+                <p class="monster-desc">Living suit of armor. Very excited. Needs attention.</p>
+                <div class="pacifist-hint">PACIFIST: Beckon, Pet, Play, Pet, Pet.</div>
+            </div>
         </div>
-        <div class="card" style="border: 2px dashed #666;">
-            <div style="height: 150px; background: #222; display: flex; align-items: center; justify-content: center; font-size: 3rem; margin-bottom: 10px;">💀</div>
-            <h3>THE_JUDGEMENT</h3>
-            <p>When the logo flickered for the third time.</p>
-        </div>
-        <div class="card" style="border: 2px dashed #666;">
-            <div style="height: 150px; background: #222; display: flex; align-items: center; justify-content: center; font-size: 3rem; margin-bottom: 10px;">🌟</div>
-            <h3>DETERMINATION</h3>
-            <p>Surviving the bad time. The barrier shattered.</p>
-        </div>
-    </div>
+    </section>
 
-    <div class="section-title">HOW TO REACH THE VOID</div>
-    <div class="archive-grid" style="grid-template-columns: 1fr;">
-        <div class="card" style="border-color: #f00;">
-            <h3>THE LOGO TRIGGER</h3>
-            <p>1. Find the WWG logo at the top of the home page.<br>
-               2. Click it exactly **3 times** in quick succession.<br>
-               3. The reality-glitch will pull you into the Judgement Hall.<br>
-               4. Survive Sans to return here.</p>
+    <!-- Area: Waterfall -->
+    <section id="area-waterfall" class="category-section">
+        <div class="archive-grid">
+            <div class="card">
+                <div class="sprite-wrap"><img src="assets/sprites/aaron.png" alt="Aaron"></div>
+                <h3 class="monster-name">AARON</h3>
+                <div class="monster-stats">HP: 100 | ATK: 24 | DEF: 12</div>
+                <p class="monster-desc">Horse-man mermaid. Flexy. Extremely muscular.</p>
+                <div class="pacifist-hint">PACIFIST: Flex contest! (3 times).</div>
+            </div>
+            <div class="card">
+                <div class="sprite-wrap"><img src="https://undertale.wiki/images/Temmie_battle_idle.gif" alt="Temmie"></div>
+                <h3 class="monster-name">TEMMIE</h3>
+                <div class="monster-stats">HP: 5 | ATK: 20 | DEF: 20</div>
+                <p class="monster-desc">SPECIAL ENEMY. High-pitched vibration. hOI!</p>
+                <div class="pacifist-hint">PACIFIST: Feed flakes or talk. Don't be "hOI!"-less.</div>
+            </div>
+            <div class="card">
+                <div class="sprite-wrap"><img src="https://undertale.wiki/images/Mad_Dummy_battle.gif" alt="Mad Dummy"></div>
+                <h3 class="monster-name">MAD DUMMY</h3>
+                <div class="monster-stats">HP: 250 | ATK: 30 | DEF: 30</div>
+                <p class="monster-desc">Angst-ridden stuffing. Indestructible ghost. So mad.</p>
+                <div class="pacifist-hint">PACIFIST: Deflect its own magic back at it.</div>
+            </div>
         </div>
-    </div>
+    </section>
 
-    <div class="save-point">★</div>
+    <!-- Area: Hotland & CORE -->
+    <section id="area-hotland" class="category-section">
+        <div class="archive-grid">
+            <div class="card">
+                <div class="sprite-wrap"><img src="assets/sprites/mettaton_box.png" alt="Mettaton"></div>
+                <h3 class="monster-name">METTATON (BOX)</h3>
+                <div class="monster-stats">HP: 9999 | ATK: 30 | DEF: 255</div>
+                <p class="monster-desc">The Box-form star. Unstoppable defense.</p>
+                <div class="pacifist-hint">PACIFIST: Survive the "Quiz Show" and the "Cooking Segment."</div>
+            </div>
+            <div class="card">
+                <div class="sprite-wrap"><img src="https://undertale.wiki/images/Tsunderplane_battle_idle.gif" alt="Tsunderplane"></div>
+                <h3 class="monster-name">TSUNDERPLANE</h3>
+                <div class="monster-stats">HP: 100 | ATK: 25 | DEF: 26</div>
+                <p class="monster-desc">Airplane monster. Not like it likes u.</p>
+                <div class="pacifist-hint">PACIFIST: Approach, then graze attacks.</div>
+            </div>
+            <div class="card">
+                <div class="sprite-wrap"><img src="https://undertale.wiki/images/Muffet_battle_idle.gif" alt="Muffet"></div>
+                <h3 class="monster-name">MUFFET</h3>
+                <div class="monster-stats">HP: 1250 | ATK: 38 | DEF: 18</div>
+                <p class="monster-desc">Spider queen. Tea party. Purple soul. Ahuhuhu~</p>
+                <div class="pacifist-hint">PACIFIST: Buy a cider/donut in Ruins. Don't die.</div>
+            </div>
+            <div class="card">
+                <div class="sprite-wrap"><img src="https://undertale.wiki/images/Royal_Guards_battle.gif" alt="Royal Guards"></div>
+                <h3 class="monster-name">ROYAL GUARDS</h3>
+                <div class="monster-stats">HP: 160 | ATK: 8 | DEF: 4</div>
+                <p class="monster-desc">R.01 and R.02. Bromance on the battlefield. Sentinels.</p>
+                <div class="pacifist-hint">PACIFIST: Clean armor. Encourage true feelings.</div>
+            </div>
+            <div class="card">
+                <div class="sprite-wrap"><img src="assets/sprites/knight_knight.png" alt="Knight Knight"></div>
+                <h3 class="monster-name">KNIGHT KNIGHT</h3>
+                <div class="monster-stats">HP: 230 | ATK: 36 | DEF: 36</div>
+                <p class="monster-desc">CORE warrior. Very sleepy.</p>
+                <div class="pacifist-hint">PACIFIST: Sing a lullaby (3 times) to end the watch.</div>
+            </div>
+            <div class="card">
+                <div class="sprite-wrap"><img src="https://undertale.wiki/images/Madjick_battle_idle.gif" alt="Madjick"></div>
+                <h3 class="monster-name">MADJICK</h3>
+                <div class="monster-stats">HP: 240 | ATK: 28 | DEF: 28</div>
+                <p class="monster-desc">Magic master. Orbs and chasers. Tingle!</p>
+                <div class="pacifist-hint">PACIFIST: Stare into its crystal balls or talk.</div>
+            </div>
+            <div class="card">
+                <div class="sprite-wrap"><img src="https://undertale.wiki/images/Final_Froggit_battle_idle.gif" alt="Final Froggit"></div>
+                <h3 class="monster-name">FINAL FROGGIT</h3>
+                <div class="monster-stats">HP: 180 | ATK: 30 | DEF: 24</div>
+                <p class="monster-desc">The ultimate evolution. Reflective and strong. Wise.</p>
+                <div class="pacifist-hint">PACIFIST: Mystify or Threaten.</div>
+            </div>
+        </div>
+    </section>
 
+    <script src="discovery.js"></script>
     <script>
-        // Check unlock status
-        const unlocked = localStorage.getItem('wwg_discovered_secrets');
-        if (!unlocked || !unlocked.includes('the-underground')) {
-            document.body.innerHTML = '<div style="height:100vh; display:flex; align-items:center; justify-content:center; font-size:3rem;">[ACCESS_DENIED]</div>';
+        // Check unlock status via the Hub engine
+        if (!Discovery.isUnlocked('the-underground')) {
+            document.body.innerHTML = '<div style="height:100vh; display:flex; align-items:center; justify-content:center; font-size:3rem; background:#000; color:#fff;">[ACCESS_DENIED]</div>';
             setTimeout(() => window.location.href = 'index.html', 2000);
         }
+
+        // Tab Logic
+        const tabs = document.querySelectorAll('.tab-btn');
+        const sections = document.querySelectorAll('.category-section');
+
+        tabs.forEach(tab => {
+            tab.addEventListener('click', () => {
+                const target = tab.getAttribute('data-target');
+
+                tabs.forEach(t => t.classList.remove('active'));
+                sections.forEach(s => s.classList.remove('active'));
+
+                tab.classList.add('active');
+                document.getElementById(target).classList.add('active');
+            });
+        });
     </script>
 </body>
 </html>
