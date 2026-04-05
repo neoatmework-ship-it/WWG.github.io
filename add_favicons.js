@@ -14,7 +14,6 @@ const emojiMap = {
     'dog-dress-up.html': '🐶',
     'dont-press-space.html': '🛑',
     'draw-badly.html': '🖍️',
-    'emoji-slots.html': '🎰',
     'emotional-cursor.html': '😠',
     'excuse-generator.html': '🗣️',
     'fake-loading.html': '⏳',

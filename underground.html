@@ -192,8 +192,9 @@
         /* Undertale Interactive UI */
         .card-actions {
             margin-top: 20px;
-            display: flex;
-            gap: 15px;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
             justify-content: center;
         }
 
@@ -202,8 +203,8 @@
             border: 2px solid var(--undertale-white);
             color: var(--undertale-white);
             font-family: 'VT323', monospace;
-            font-size: 1.5rem;
-            padding: 5px 25px;
+            font-size: 1.3rem;
+            padding: 5px;
             cursor: pointer;
             text-transform: uppercase;
             transition: all 0.1s;
@@ -256,6 +257,25 @@
         .win-msg { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%) rotate(-5deg); font-size: 4rem; color: var(--undertale-yellow); text-shadow: 4px 4px black; font-weight: bold; pointer-events: none; z-index: 20; display: none; }
         .win-msg.active { display: block; animation: bounceWin 0.5s cubic-bezier(.36,.07,.19,.97) both; }
         @keyframes bounceWin { 0% { transform: translate(-50%, -50%) scale(0); } 70% { transform: translate(-50%, -50%) scale(1.2); } 100% { transform: translate(-50%, -50%) scale(1); } }
+
+        /* Miss Animation */
+        .miss-text {
+            position: absolute;
+            top: 40%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: #ff0000;
+            font-size: 3rem;
+            font-weight: bold;
+            pointer-events: none;
+            z-index: 30;
+            display: none;
+        }
+        .miss-text.active { display: block; animation: missFloat 1s ease-out forwards; }
+        @keyframes missFloat { 0% { transform: translate(-50%, -50%) scale(1); opacity: 1; } 100% { transform: translate(-50%, -80%) scale(1.5); opacity: 0; } }
+
+        .sans-dodge { animation: sansDodge 0.2s ease-in-out; }
+        @keyframes sansDodge { 0% { transform: translateX(0); } 25% { transform: translateX(-30px); } 75% { transform: translateX(30px); } 100% { transform: translateX(0); } }
     </style>
 </head>
 <body>
@@ -321,9 +341,13 @@
                 <div class="pacifist-hint">PACIFIST: Unnecessary. He's just a lazy skeleton.</div>
                 
                 <div class="card-actions">
+                    <button class="ut-btn" onclick="handleSansAction('FIGHT')">FIGHT</button>
                     <button class="ut-btn" onclick="openSansMenu('ACT')">ACT</button>
                     <button class="ut-btn" onclick="openSansMenu('ITEM')">ITEM</button>
+                    <button class="ut-btn" onclick="handleSansAction('MERCY')">MERCY</button>
                 </div>
+
+                <div class="miss-text" id="sans-miss">MISS</div>
 
                 <!-- Secret Menu Overlay -->
                 <div class="card-overlay" id="sans-menu">
@@ -587,7 +611,25 @@
         window.handleSansAction = function(choice) {
             closeSansMenu();
             
-            if (choice === 'Ice Cream') {
+            const missEl = document.getElementById('sans-miss');
+            const spriteWrap = document.getElementById('sans-sprite');
+
+            if (choice === 'FIGHT') {
+                // Sans Dodges
+                missEl.classList.remove('active');
+                void missEl.offsetWidth; // Trigger reflow
+                missEl.classList.add('active');
+                
+                spriteWrap.classList.add('sans-dodge');
+                sansDesc.innerText = "* SANS dodged. * you missed.";
+                
+                setTimeout(() => {
+                    spriteWrap.classList.remove('sans-dodge');
+                }, 200);
+
+            } else if (choice === 'MERCY') {
+                sansDesc.innerText = "* You spared SANS. * he shrugs. 'takes a real person to do that.'";
+            } else if (choice === 'Ice Cream') {
                 triggerSansWin();
             } else if (choice === 'Check') {
                 sansDesc.innerText = "* SANS - 1 ATK 1 DEF. The easiest enemy. Can't keep dodging forever.";
