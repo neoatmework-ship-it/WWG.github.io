@@ -1,66 +1,88 @@
 /**
- * THE UNDERGROUND ENGINE (v5.0)
- * Manages the singular master secret: The Underground.
+ * THE SECRET HUB ENGINE (v6.0)
+ * Central management for all hidden collectibles across the system.
  */
 const Discovery = {
     STORAGE_KEY: 'wwg_discovered_secrets',
 
-    // New singular secret
-    SITES: [
-        { id: 'the-underground', name: 'The Underground', theme: 'underground-mode' }
+    // Define all available secrets in the system
+    SECRETS: [
+        { 
+            id: 'the-underground', 
+            name: 'The Underground', 
+            description: 'A reality-glitched archive from another timeline.',
+            icon: '💀',
+            url: 'underground.html'
+        },
+        { 
+            id: 'the-void', 
+            name: 'The Void', 
+            description: 'Where deleted data goes to rest.',
+            icon: '🌀',
+            url: 'glitch-void.html'
+        },
+        {
+            id: 'legacy-fragment',
+            name: 'Old World Memory',
+            description: 'A fragment from the ancient expansion era.',
+            icon: '🛡️',
+            url: 'cheatsheet.html'
+        }
     ],
 
-    unlock: function (siteId) {
-        if (siteId !== 'the-underground') return;
+    unlock: function (id) {
+        const secret = this.SECRETS.find(s => s.id === id);
+        if (!secret) return;
 
         const discovered = this.getDiscovered();
-        if (!discovered.includes(siteId)) {
-            discovered.push(siteId);
+        if (!discovered.includes(id)) {
+            discovered.push(id);
             localStorage.setItem(this.STORAGE_KEY, JSON.stringify(discovered));
-            this.notify();
+            this.notify(secret);
         }
     },
 
     getDiscovered: function () {
         const data = localStorage.getItem(this.STORAGE_KEY);
-        const discovered = data ? JSON.parse(data) : [];
-        return discovered.filter(id => id === 'the-underground');
+        try {
+            return data ? JSON.parse(data) : [];
+        } catch (e) {
+            return [];
+        }
     },
 
-    isUnlocked: function() {
-        return this.getDiscovered().includes('the-underground');
+    isUnlocked: function(id) {
+        return this.getDiscovered().includes(id);
     },
 
-    notify: function () {
+    notify: function (secret) {
         const toast = document.createElement('div');
         toast.style.cssText = `
             position: fixed; bottom: 40px; left: 50%; transform: translateX(-50%);
             background: #000; color: #ffff00;
             border: 3px solid #ffff00; padding: 20px 40px;
-            font-family: 'Courier New', monospace;
+            font-family: 'VT323', monospace;
             border-radius: 0; z-index: 10000;
             box-shadow: 0 0 40px rgba(255, 255, 0, 0.4);
             cursor: pointer; text-transform: uppercase; letter-spacing: 4px;
             font-weight: bold; font-size: 1.5rem;
+            animation: glitch-toast 0.2s infinite;
         `;
         
-        toast.innerHTML = `★ ACCESS_GRANTED: THE_UNDERGROUND ★`;
-        toast.onclick = () => window.location.href = 'underground.html';
+        toast.innerHTML = `${secret.icon} SECRET_UNLOCKED: ${secret.name.replace(/ /g, '_')} ★`;
+        toast.onclick = () => window.location.href = 'secret-hub.html';
         document.body.appendChild(toast);
 
         setTimeout(() => toast.remove(), 8000);
-        console.log("%c[SYSTEM] DETERMINATION_STABILIZED.", "color:#ffff00; font-weight:bold");
-    },
-
-    // Legacy support (safe-clear)
-    cheat_unlock_all: function () {
-        localStorage.setItem(this.STORAGE_KEY, JSON.stringify(['the-underground']));
+        console.log(`%c[SYSTEM] ${secret.name} ADDED TO ARCHIVE.`, "color:#ffff00; font-weight:bold");
     }
 };
 
-// Initial check
-(function() {
-    if (Discovery.isUnlocked()) {
-        console.log("%c[SYSTEM] WELCOME BACK TO THE UNDERGROUND.", "color:#ffff00; font-weight:bold");
-    }
-})();
+// Global Animation for Toasts
+const style = document.createElement('style');
+style.textContent = `@keyframes glitch-toast { 
+    0% { transform: translate(-50%, 0); }
+    50% { transform: translate(-52%, 2px); }
+    100% { transform: translate(-48%, -2px); }
+}`;
+document.head.appendChild(style);

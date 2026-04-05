@@ -3263,8 +3263,6 @@
                     placeholder="Describe how it works... give me all the weird details."></textarea>
                 <button class="modal-submit" id="submit-btn" onclick="submitIdea()">Submit to the Void 🚀</button>
             </div>
-            <div id="suggest-success-view" style="display:none; text-align:center; padding: 30px 0;">
-                <div style="font-size: 3rem; margin-bottom: 16px; animation: pulse 1s infinite;">✨</div>
                 <h2 style="margin-bottom: 10px;">Idea Received!</h2>
                 <p style="color: var(--text-sub); font-size: 0.9rem; line-height: 1.5;">Your suggestion has been beamed into the void. We'll review it soon!</p>
                 <button class="modal-submit" onclick="closeSuggestModal()" style="margin-top: 20px;">Close</button>
@@ -3280,7 +3278,10 @@
 
     <button class="scroll-top" id="scroll-top" onclick="window.scrollTo({top:0,behavior:'smooth'})">↑</button>
 
-    <footer>
+        <a href="secret-hub.html" title="The Vault" id="secret-vault-link" style="font-size: 24px; color: #fff; text-decoration: none; opacity: 0.1; pointer-events: none; transition: 0.5s; position: fixed; bottom: 10px; right: 10px; z-index: 1000;">
+        <i class="fas fa-vault"></i>
+    </a>
+<footer>
         <p><span id="footer-text" style="cursor:help">WWG — Weird Website Gallery</span> · Made with <span
                 id="footer-logic" style="cursor:help">✦</span> and curiosity
             <br><br>
