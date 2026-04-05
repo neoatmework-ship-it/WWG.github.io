@@ -14,13 +14,6 @@ const Discovery = {
             icon: '💀',
             url: 'underground.html'
         },
-        { 
-            id: 'the-void', 
-            name: 'The Void', 
-            description: 'Where deleted data goes to rest.',
-            icon: '🌀',
-            url: 'glitch-void.html'
-        },
         {
             id: 'legacy-fragment',
             name: 'Old World Memory',
