@@ -207,13 +207,6 @@
                 <div class="item-card locked-item" id="judge-item" onclick="setJudge()">
                     <img src="https://undertale.wiki/images/Sans_head.png" width="24" style="image-rendering: pixelated;"> Judge <span class="price-tag">REWARD</span>
                 </div>
-                <!-- Additional Rewards -->
-                <div class="item-card locked-item" id="papyrus-item" onclick="setPapyrus()">
-                    <img src="https://undertale.wiki/images/Papyrus_head.png" width="24" style="image-rendering: pixelated;"> Papyrus <span class="price-tag">50</span>
-                </div>
-                <div class="item-card locked-item" id="toriel-item" onclick="setToriel()">
-                    <img src="https://undertale.wiki/images/Toriel_head.png" width="24" style="image-rendering: pixelated;"> Toriel <span class="price-tag">50</span>
-                </div>
             </div>
         </div>
 
@@ -282,18 +275,18 @@
             
             // Rewards check
             const unlockables = {
-                'the-judge': 'judge-item',
-                'papyrus': 'papyrus-item',
-                'toriel': 'toriel-item'
+                'the-judge': 'judge-item'
             };
 
             Object.entries(unlockables).forEach(([key, id]) => {
                 if (avatarData.unlocked.includes(key)) {
                     const item = document.getElementById(id);
-                    item.classList.remove('locked-item');
-                    const label = id === 'judge-item' ? 'UNLOCKED' : 'OWNED';
-                    item.querySelector('.price-tag').textContent = label;
-                    item.querySelector('.price-tag').style.color = '#4ade80';
+                    if (item) {
+                        item.classList.remove('locked-item');
+                        const label = id === 'judge-item' ? 'UNLOCKED' : 'OWNED';
+                        item.querySelector('.price-tag').textContent = label;
+                        item.querySelector('.price-tag').style.color = '#4ade80';
+                    }
                 }
             });
             
@@ -319,11 +312,11 @@
         }
 
         function setPapyrus() {
-            buyItem('papyrus', 50, 'https://undertale.wiki/images/Papyrus_head.png', 'avatar', 'PAPYRUS', 'COOL DUDE');
+            // Removed
         }
 
         function setToriel() {
-            buyItem('toriel', 50, 'https://undertale.wiki/images/Toriel_head.png', 'avatar', 'TORIEL', 'CARETAKER');
+            // Removed
         }
 
         function setAura(color) {
