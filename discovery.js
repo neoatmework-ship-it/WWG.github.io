@@ -11,14 +11,14 @@ const Discovery = {
             id: 'the-underground', 
             name: 'The Underground', 
             description: 'A reality-glitched archive from another timeline.',
-            icon: '💀',
+            icon: 'https://undertale.wiki/images/Sans_head.png',
             url: 'underground.html'
         },
         {
-            id: 'legacy-fragment',
-            name: 'Old World Memory',
+            id: 'legacy-fragment', 
+            name: 'Old World Memory', 
             description: 'A fragment from the ancient expansion era.',
-            icon: '🛡️',
+            icon: 'https://undertale.wiki/images/Flowey_head.png',
             url: 'cheatsheet.html'
         }
     ],
@@ -65,16 +65,20 @@ const Discovery = {
         toast.style.cssText = `
             position: fixed; bottom: 40px; left: 50%; transform: translateX(-50%);
             background: #000; color: #ffff00;
-            border: 3px solid #ffff00; padding: 20px 40px;
+            border: 3px solid #ffff00; padding: 15px 30px;
             font-family: 'VT323', monospace;
             border-radius: 0; z-index: 10000;
             box-shadow: 0 0 40px rgba(255, 255, 0, 0.4);
             cursor: pointer; text-transform: uppercase; letter-spacing: 4px;
             font-weight: bold; font-size: 1.5rem;
+            display: flex; align-items: center;
             animation: glitch-toast 0.2s infinite;
         `;
         
-        toast.innerHTML = `${secret.icon} SECRET_UNLOCKED: ${secret.name.replace(/ /g, '_')} ★`;
+        toast.innerHTML = `
+            <img src="${secret.icon}" style="width: 32px; height: 32px; height: auto; image-rendering: pixelated; vertical-align: middle; margin-right: 15px;">
+            SECRET_UNLOCKED: ${secret.name.replace(/ /g, '_')} ★
+        `;
         toast.onclick = () => window.location.href = 'secret-hub.html';
         document.body.appendChild(toast);
 
