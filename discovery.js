@@ -11,7 +11,7 @@ const Discovery = {
             id: 'the-underground', 
             name: 'The Underground', 
             description: 'A reality-glitched archive from another timeline.',
-            icon: 'https://undertale.wiki/images/Heart.png',
+            icon: '⬜',
             url: 'underground.html'
         },
         {
