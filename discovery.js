@@ -18,8 +18,15 @@ const Discovery = {
             id: 'legacy-fragment', 
             name: 'Old World Memory', 
             description: 'A fragment from the ancient expansion era.',
-            icon: 'https://undertale.wiki/images/Flowey_head.png',
+            icon: 'https://static.wikia.nocookie.net/undertale/images/1/1a/Surface_intro.png',
             url: 'cheatsheet.html'
+        },
+        {
+            id: 'hollow-knight-guide',
+            name: 'The King\'s Brand',
+            description: 'A comprehensive guide to the kingdom of Hallownest.',
+            icon: 'https://hollowknight.wiki/w/images/f/f3/King%27s_Brand.png',
+            url: 'hollow-knight-guide.html'
         }
     ],
 

@@ -3354,6 +3354,27 @@
 
             // ─── SEARCH still filters cards ───
             search.addEventListener('input', () => {
+                const q = search.value.toLowerCase().trim();
+                if (q === 'void') {
+                    // Trigger Void Pulse
+                    document.body.style.transition = '2s ease-in';
+                    document.body.style.background = '#fff';
+                    document.body.style.filter = 'brightness(2) contrast(2) invert(1)';
+                    document.body.style.pointerEvents = 'none';
+                    
+                    // Create a flash overlay
+                    const flash = document.createElement('div');
+                    flash.style.position = 'fixed';
+                    flash.style.inset = '0';
+                    flash.style.background = 'white';
+                    flash.style.zIndex = '9999';
+                    flash.style.opacity = '0';
+                    flash.style.transition = 'opacity 1s ease-out';
+                    document.body.appendChild(flash);
+                    
+                    setTimeout(() => flash.style.opacity = '1', 500);
+                    setTimeout(() => window.location.href = 'radiance-fight.html', 2500);
+                }
                 filterCards();
             });
 
