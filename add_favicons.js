@@ -10,6 +10,7 @@ const emojiMap = {
     'compliment-machine.html': '🥰',
     'constellation-maker.html': '✨',
     'cookie-but-worse.html': '🍪',
+    'corridor-key.html': '🔑',
     'dessert-oracle.html': '🧁',
     'dog-dress-up.html': '🐶',
     'dont-press-space.html': '🛑',

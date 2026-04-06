@@ -191,7 +191,7 @@
 
     <div id="overlay">
         <h1 style="font-size: 4rem; color: #ff0;">DETERMINATION</h1>
-        <p>YOU ARE THE ARCHIVE NOW.</p>
+        <p>YOU ARE THE ARCHIVE NOW. 🔥 SPECIAL AVATAR UNLOCKED: THE JUDGE.</p>
         <button onclick="window.location.href='underground.html'" style="margin-top: 20px; background: #000; border: 2px solid #fff; color: #fff; padding: 10px 30px; font-family: inherit; font-size: 1.2rem; cursor: pointer;">ENTER THE VOID</button>
     </div>
 
@@ -456,6 +456,18 @@
         function win() {
             if (isGameOver) return;
             Discovery.unlock('the-underground');
+            
+            // Special Avatar Reward: THE JUDGE
+            const judgeAvatar = {
+                emoji: '⚖️',
+                aura: 'radial-gradient(circle, #0cf 0%, transparent 70%)',
+                badge: 'JUDGEMENT',
+                nickname: 'The_Judge',
+                unlocked: ['the-judge-id']
+            };
+            localStorage.setItem('wwg_avatar_data', JSON.stringify(judgeAvatar));
+            window.dispatchEvent(new CustomEvent('economyUpdate')); // Refresh header
+
             document.getElementById('overlay').style.display = 'flex';
             if (bgm) bgm.pause();
         }

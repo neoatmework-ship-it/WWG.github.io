@@ -23,6 +23,18 @@ const Discovery = {
         }
     ],
 
+    cheat_unlock_all: function() {
+        const discovered = this.getDiscovered();
+        this.SECRETS.forEach(s => { if(!discovered.includes(s.id)) discovered.push(s.id); });
+        localStorage.setItem(this.STORAGE_KEY, JSON.stringify(discovered));
+        console.log('[SYSTEM] ALL_RESTRICTIONS_LIFTED.');
+    },
+
+    unlockCheatsheet: function() {
+        this.unlock('legacy-fragment');
+        setTimeout(() => window.location.href = 'cheatsheet.html', 1000);
+    },
+
     unlock: function (id) {
         const secret = this.SECRETS.find(s => s.id === id);
         if (!secret) return;
