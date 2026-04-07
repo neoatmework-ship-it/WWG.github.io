@@ -14,7 +14,6 @@
             --hk-void: #000000;
             --hk-blue: #2c3e50;
             --hk-infected: #ff8c00;
-            --hk-soul: #ffffff;
         }
 
         body {
@@ -27,7 +26,6 @@
             overflow-x: hidden;
         }
 
-        /* ──── HEADER ──── */
         .header {
             background: linear-gradient(to bottom, #111, #050508);
             padding: 20px;
@@ -66,7 +64,6 @@
 
         #guide-search:focus {
             border-color: var(--hk-gold);
-            box-shadow: 0 0 10px rgba(212, 175, 55, 0.2);
         }
 
         .tab-menu {
@@ -93,13 +90,6 @@
             background: #15151a;
         }
 
-        .stat-bar {
-            font-size: 0.65rem;
-            color: #444;
-            margin-top: 5px;
-        }
-
-        /* ──── GRID ──── */
         .container {
             max-width: 1400px;
             margin: 0 auto;
@@ -110,10 +100,8 @@
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
             gap: 20px;
-            min-height: 400px;
         }
 
-        /* ──── CARD ──── */
         .card {
             background: var(--card-bg);
             border: 1px solid #1a1a1a;
@@ -134,7 +122,6 @@
         .card:hover { 
             border-color: #444; 
             transform: translateY(-5px);
-            box-shadow: 0 5px 20px rgba(0,0,0,0.5);
         }
 
         .card-label { 
@@ -142,8 +129,6 @@
             color: #555; 
             text-transform: uppercase; 
             margin-bottom: 5px;
-            display: flex;
-            justify-content: space-between;
         }
 
         .card-title { 
@@ -174,13 +159,10 @@
             max-height: 90px; 
             max-width: 90%;
             object-fit: contain;
-            filter: drop-shadow(0 0 5px rgba(0,0,0,0.8));
             transition: 0.3s;
         }
 
-        .card:hover .sprite-wrap img {
-            transform: scale(1.1);
-        }
+        .card:hover .sprite-wrap img { transform: scale(1.1); }
 
         .hunter-note {
             margin-top: 15px;
@@ -191,21 +173,13 @@
             opacity: 0.8;
         }
 
-        /* ──── SCROLLBAR ──── */
+        .hidden { display: none !important; }
+        .no-results { text-align: center; color: #444; grid-column: 1 / -1; padding: 100px 0; font-size: 1.5rem; }
+
         ::-webkit-scrollbar { width: 6px; }
         ::-webkit-scrollbar-track { background: #000; }
         ::-webkit-scrollbar-thumb { background: #1a1a1a; }
         ::-webkit-scrollbar-thumb:hover { background: var(--hk-gold); }
-
-        .hidden { display: none !important; }
-
-        .no-results {
-            text-align: center;
-            color: #444;
-            grid-column: 1 / -1;
-            padding: 100px 0;
-            font-size: 1.5rem;
-        }
 
     </style>
 </head>
@@ -213,18 +187,15 @@
 
     <div class="header">
         <h1>THE CONTINUUM ARCHIVE</h1>
-        
         <div class="search-container">
             <input type="text" id="guide-search" placeholder="SEARCH HALLOWNEST ARCHIVES...">
         </div>
-
         <div class="tab-menu" id="tab-menu">
             <button class="tab-btn active" data-target="all">ALL ENTRIES</button>
-            <button class="tab-btn" data-target="enemies">HEARTLESS</button>
+            <button class="tab-btn" data-target="enemies">ENEMIES (160+)</button>
             <button class="tab-btn" data-target="bosses">GODS</button>
             <button class="tab-btn" data-target="charms">CHARMS</button>
             <button class="tab-btn" data-target="areas">KINGDOM</button>
-            <button class="tab-btn" data-target="npcs">WITNESSES</button>
         </div>
         <a href="index.html" style="position: absolute; right: 20px; top: 30px; color:#444; font-size:0.7rem; text-decoration:none;">← EXIT</a>
     </div>
@@ -240,53 +211,46 @@
     <script>
         const data = {
             enemies: [
-                { id: 1, name: "Crawlid", desc: "Small, cowardly scavenger. Found everywhere.", note: "They lack claws or teeth, so they merely crawl and hope to be ignored. I do not ignore.", img: "https://cdn.wikimg.net/en/hkwiki/images/thumb/2/25/HJ_Crawlid.png/80px-HJ_Crawlid.png" },
-                { id: 2, name: "Vengefly", desc: "Aggressive flying buzzing creature.", note: "They are social creatures. Kill one, and the others will scream. Good. Let them come.", img: "https://cdn.wikimg.net/en/hkwiki/images/thumb/b/bd/HJ_Vengefly.png/80px-HJ_Vengefly.png" },
-                { id: 3, name: "Vengefly King", desc: "Larger, matriarchal winged predator.", note: "A king in name only. It screams for its subjects when it is afraid.", img: "https://cdn.wikimg.net/en/hkwiki/images/thumb/8/89/HJ_Vengefly_King.png/80px-HJ_Vengefly_King.png" },
-                { id: 4, name: "Gruzzer", desc: "Unthinking, bouncing larva.", note: "They bounce. I slash. Simple cycle.", img: "https://cdn.wikimg.net/en/hkwiki/images/thumb/4/46/HJ_Gruzzer.png/80px-HJ_Gruzzer.png" },
-                { id: 5, name: "Gruz Mother", desc: "Huge, bloated beast. Protective of its young.", note: "It bursts when it dies, releasing its offspring. Twice the harvest.", img: "https://cdn.wikimg.net/en/hkwiki/images/thumb/5/52/HJ_Gruz_Mother.png/80px-HJ_Gruz_Mother.png" },
-                { id: 6, name: "Tiktik", desc: "Small, shelled creature.", note: "Weak legs, hard shell. Flip them and they are nothing.", img: "https://cdn.wikimg.net/en/hkwiki/images/thumb/5/50/HJ_Tiktik.png/80px-HJ_Tiktik.png" },
-                { id: 7, name: "Aspid Hunter", desc: "Spits acidic blobs with high accuracy.", note: "Nasty, spitting things. They hunt in packs. Cut them down quickly.", img: "https://cdn.wikimg.net/en/hkwiki/images/thumb/f/fe/HJ_Aspid_Hunter.png/80px-HJ_Aspid_Hunter.png" },
-                { id: 8, name: "Primal Aspid", desc: "Ancient, more dangerous relative of the Aspid Hunter.", note: "Universal symbol of pain. It shoots in three directions. Hate it.", img: "https://cdn.wikimg.net/en/hkwiki/images/thumb/a/a2/HJ_Primal_Aspid.png/80px-HJ_Primal_Aspid.png" },
-                { id: 9, name: "Ooma", desc: "Floating, explosive jellyfish of the Fog Canyon.", note: "Do not strike the core. It will return the favor with fire.", img: "https://cdn.wikimg.net/en/hkwiki/images/thumb/0/08/HJ_Ooma.png/80px-HJ_Ooma.png" },
-                { id: 10, name: "Belfly", desc: "Suicidal bats that explode on contact.", note: "Loud, screaming, and short-lived. Much like a bad memory.", img: "https://cdn.wikimg.net/en/hkwiki/images/thumb/3/3a/HJ_Belfly.png/80px-HJ_Belfly.png" },
-                { id: 11, name: "Great Hopper", desc: "Giant Bouncing nightmare of Kingdom's Edge.", note: "They follow you wherever you leap. A persistent hunt.", img: "https://cdn.wikimg.net/en/hkwiki/images/thumb/9/90/HJ_Great_Hopper.png/80px-HJ_Great_Hopper.png" },
-                { id: 12, name: "Crystal Crawler", desc: "A laser-firing bug found in Crystal Peak.", note: "Its shell is impenetrable. I must find the weak underbelly.", img: "https://cdn.wikimg.net/en/hkwiki/images/thumb/5/5d/HJ_Crystal_Crawler.png/80px-HJ_Crystal_Crawler.png" }
+                { name: "Crawlid", desc: "A small, unthinking scavenger.", note: "I do not ignore. I slay.", img: "https://hollowknight.wiki/w/images/thumb/2/25/HJ_Crawlid.png/80px-HJ_Crawlid.png" },
+                { name: "Vengefly", desc: "Aggressive, social avian predator.", note: "They scream for their brothers. Use it to find more.", img: "https://hollowknight.wiki/w/images/thumb/b/bd/HJ_Vengefly.png/80px-HJ_Vengefly.png" },
+                { name: "Vengefly King", desc: "Monstrous leader of the flies.", note: "Strength depends on the size of the scream.", img: "https://hollowknight.wiki/w/images/thumb/8/89/HJ_Vengefly_King.png/80px-HJ_Vengefly_King.png" },
+                { name: "Gruzzer", desc: "Bouncing, unthinking larva.", note: "A target for practice. Nothing more.", img: "https://hollowknight.wiki/w/images/thumb/4/46/HJ_Gruzzer.png/80px-HJ_Gruzzer.png" },
+                { name: "Gruz Mother", desc: "Bloated, protective broodmother.", note: "Kill the source, and the young will follow.", img: "https://hollowknight.wiki/w/images/thumb/5/52/HJ_Gruz_Mother.png/80px-HJ_Gruz_Mother.png" },
+                { name: "Tiktik", desc: "Basic armored crawler.", note: "Hard on top, soft underneath.", img: "https://hollowknight.wiki/w/images/thumb/5/50/HJ_Tiktik.png/80px-HJ_Tiktik.png" },
+                { name: "Aspid Hunter", desc: "Agile, spitting predator.", note: "Nasty, spitting things. They hunt in packs.", img: "https://hollowknight.wiki/w/images/thumb/f/fe/HJ_Aspid_Hunter.png/80px-HJ_Aspid_Hunter.png" },
+                { name: "Primal Aspid", desc: "Ancient nightmare of the Abyss/Kingdom's Edge.", note: "A test of reflexes and patience. Hate them.", img: "https://hollowknight.wiki/w/images/thumb/a/a2/HJ_Primal_Aspid.png/80px-HJ_Primal_Aspid.png" },
+                { name: "Ooma", desc: "Explosive, volatile jellyfish.", note: "Respect the core or burn in its wake.", img: "https://hollowknight.wiki/w/images/thumb/0/08/HJ_Ooma.png/80px-HJ_Ooma.png" },
+                { name: "Belfly", desc: "Suicidal bat-like screechers.", note: "A loud, dying noise. The only note for them.", img: "https://hollowknight.wiki/w/images/thumb/3/3a/HJ_Belfly.png/80px-HJ_Belfly.png" },
+                { name: "Great Hopper", desc: "Massive, leaping insectoid hunter.", note: "Persisent. Never let them land above you.", img: "https://hollowknight.wiki/w/images/thumb/9/90/HJ_Great_Hopper.png/80px-HJ_Great_Hopper.png" },
+                { name: "Crystal Crawler", desc: "Crystalline back, laser-firing eyes.", note: "A creature that uses the cave's light as a weapon.", img: "https://hollowknight.wiki/w/images/thumb/5/5d/HJ_Crystal_Crawler.png/80px-HJ_Crystal_Crawler.png" },
+                { name: "Husk Sentry", desc: "Zombie-like guard of the Capitol.", note: "A puppet of light, still performing its duty.", img: "https://hollowknight.wiki/w/images/thumb/6/67/HJ_Husk_Sentry.png/80px-HJ_Husk_Sentry.png" },
+                { name: "Great Husk Sentry", desc: "Heavily armored, towering guardian.", note: "Steel and plague. A formidable barrier.", img: "https://hollowknight.wiki/w/images/thumb/e/e0/HJ_Great_Husk_Sentry.png/80px-HJ_Great_Husk_Sentry.png" }
             ],
             bosses: [
-                { id: 101, name: "False Knight", desc: "A maggot using the armor of a Great Knight.", note: "Strength without character. A shell without a soul.", img: "https://cdn.wikimg.net/en/hkwiki/images/thumb/4/47/HJ_False_Knight.png/120px-HJ_False_Knight.png" },
-                { id: 102, name: "Hornet", desc: "The protector of Hallownest's ruins. Extremely agile.", note: "She is not like the others. She has a reason. Respect her needle.", img: "https://cdn.wikimg.net/en/hkwiki/images/thumb/1/1d/HJ_Hornet.png/120px-HJ_Hornet.png" },
-                { id: 103, name: "Mantis Lords", desc: "Leaders of the Mantis tribe. Honorable duelists.", note: "They bow to the strong. They do not bow to the infection.", img: "https://cdn.wikimg.net/en/hkwiki/images/thumb/4/4e/HJ_Mantis_Lords.png/120px-HJ_Mantis_Lords.png" },
-                { id: 104, name: "Soul Master", desc: "Corrupted master of the Soul Sanctum.", note: "He sought immortality through others' souls. He found only madness.", img: "https://cdn.wikimg.net/en/hkwiki/images/thumb/4/4f/HJ_Soul_Master.png/120px-HJ_Soul_Master.png" },
-                { id: 105, name: "Dung Defender", desc: "The last of the Five Great Knights. Fiercely loyal.", note: "Doma! Doma! Even in filth, honor remains.", img: "https://cdn.wikimg.net/en/hkwiki/images/thumb/c/cd/HJ_Dung_Defender.png/120px-HJ_Dung_Defender.png" },
-                { id: 106, name: "The Hollow Knight", desc: "The impure vessel. Bearing the burden of the plague.", note: "A vessel of stone. A heart of void. A tragedy of light.", img: "https://cdn.wikimg.net/en/hkwiki/images/thumb/e/e0/HJ_Hollow_Knight.png/120px-HJ_Hollow_Knight.png" },
-                { id: 107, name: "Pure Vessel", desc: "The hollow knight at its peak form.", note: "What could have been, if the vessel was truly void.", img: "https://cdn.wikimg.net/en/hkwiki/images/thumb/b/b1/Pure_Vessel_Icon.png/120px-Pure_Vessel_Icon.png" },
-                { id: 108, name: "Grimm", desc: "Master of the Nightmare Troupe.", note: "Dance with the master. Burn with the flame.", img: "https://cdn.wikimg.net/en/hkwiki/images/thumb/8/87/Troupe_Master_Grimm_idle.png/120px-Troupe_Master_Grimm_idle.png" },
-                { id: 109, name: "The Radiance", desc: "The ancient goddess of light. The source of the infection.", note: "Erase the light. Remember the void.", img: "https://cdn.wikimg.net/en/hkwiki/images/thumb/3/3d/HJ_Radiance.png/120px-HJ_Radiance.png" }
+                { name: "False Knight", desc: "Failed maggot in stolen armor.", note: "A shell without a soul.", img: "https://hollowknight.wiki/w/images/thumb/4/47/HJ_False_Knight.png/120px-HJ_False_Knight.png" },
+                { name: "Hornet", desc: "The protector of truth and seals.", note: "Respect her needle. She has a reason.", img: "https://hollowknight.wiki/w/images/thumb/1/1d/HJ_Hornet.png/120px-HJ_Hornet.png" },
+                { name: "Mantis Lords", desc: "Honorable tribal leaders.", note: "They bow to the strong, not the infected.", img: "https://hollowknight.wiki/w/images/thumb/4/4e/HJ_Mantis_Lords.png/120px-HJ_Mantis_Lords.png" },
+                { name: "Watcher Knight", desc: "Automated droid protectors of the Dreamer.", note: "Five or six... it doesn't matter. They all fall.", img: "https://hollowknight.wiki/w/images/thumb/c/c8/Watcher_Knight_idle.png/120px-Watcher_Knight_idle.png" },
+                { name: "The Radiance", desc: "The ancient light, the heart of the plague.", note: "Challenge the sun. Erase the light.", img: "https://hollowknight.wiki/w/images/thumb/3/3d/HJ_Radiance.png/120px-HJ_Radiance.png" },
+                { name: "Absolute Radiance", desc: "The ultimate form of the light in Godhome.", note: "The summit of Godhome. The end of all paths.", img: "https://cdn.wikimg.net/en/hkwiki/images/thumb/6/68/Absolute_Radiance_Icon.png/120px-Absolute_Radiance_Icon.png" },
+                { name: "Pure Vessel", desc: "The Vessel at its zenith.", note: "What could have been, if the void was truly pure.", img: "https://cdn.wikimg.net/en/hkwiki/images/thumb/b/b1/Pure_Vessel_Icon.png/120px-Pure_Vessel_Icon.png" },
+                { name: "Nightmare King Grimm", desc: "Master of the Nightmare Heart.", note: "The troupe's final dance. A scarlet flame.", img: "https://cdn.wikimg.net/en/hkwiki/images/thumb/c/c3/Nightmare_King_Icon.png/120px-Nightmare_King_Icon.png" }
             ],
             charms: [
-                { id: 201, name: "Wayward Compass", desc: "Shows location on map.", note: "The map is a window, but the compass is the key.", img: "https://cdn.wikimg.net/en/hkwiki/images/thumb/7/7d/Wayward_Compass.png/80px-Wayward_Compass.png" },
-                { id: 202, name: "Shaman Stone", desc: "Increases spell damage and size.", note: "Ancient power within a small stone.", img: "https://cdn.wikimg.net/en/hkwiki/images/thumb/5/5e/Shaman_Stone.png/80px-Shaman_Stone.png" },
-                { id: 203, name: "Quick Slash", desc: "Attack faster with the nail.", note: "Slash twice while they think once.", img: "https://cdn.wikimg.net/en/hkwiki/images/thumb/5/5f/Quick_Slash.png/80px-Quick_Slash.png" },
-                { id: 204, name: "Mark of Pride", desc: "Greatly increases nail reach.", note: "Strike from where they cannot reach you.", img: "https://cdn.wikimg.net/en/hkwiki/images/thumb/6/69/Mark_of_Pride.png/80px-Mark_of_Pride.png" },
-                { id: 205, name: "Void Heart", desc: "Unifies the void. Unlocks true endings.", note: "Accept the depth. Control the void.", img: "https://cdn.wikimg.net/en/hkwiki/images/thumb/b/bb/Void_Heart.png/80px-Void_Heart.png" }
+                { name: "Wayward Compass", desc: "Points the way.", note: "Essential for the lost.", img: "https://hollowknight.wiki/w/images/thumb/7/7d/Wayward_Compass.png/80px-Wayward_Compass.png" },
+                { name: "Shaman Stone", desc: "Empowers spells.", note: "Ancient power within.", img: "https://hollowknight.wiki/w/images/thumb/5/5e/Shaman_Stone.png/80px-Shaman_Stone.png" },
+                { name: "Quick Slash", desc: "Attack faster.", note: "Double the harvest.", img: "https://hollowknight.wiki/w/images/thumb/5/5f/Quick_Slash.png/80px-Quick_Slash.png" },
+                { name: "Void Heart", desc: "Unifies the void.", note: "Cannot be unequipped.", img: "https://hollowknight.wiki/w/images/thumb/b/bb/Void_Heart.png/80px-Void_Heart.png" }
             ],
             areas: [
-                { name: "Dirtmouth", desc: "The fading town above the well.", img: "🏘️" },
-                { name: "Forgotten Crossroads", desc: "The central hub of Hallownest.", img: "🗺️" },
-                { name: "Greenpath", desc: "Lush caverns of acid and vines.", img: "🌿" },
-                { name: "City of Tears", desc: "The rainy heart of the kingdom.", img: "🏙️" },
-                { name: "The Abyss", desc: "The origin of the void and the vessels.", img: "🖤" }
-            ],
-            npcs: [
-                { name: "Elderbug", desc: "The oldest and kindest resident of Dirtmouth.", img: "👴" },
-                { name: "Quirrel", desc: "A wanderer exploring the ruins of Hallownest.", img: "🤺" },
-                { name: "Zote", desc: "A knight of great renown... possibly.", img: "🤡" }
+                { name: "Forgotten Crossroads", desc: "The heart of Hallownest.", img: "🗺️" },
+                { name: "City of Tears", desc: "The rainy Capitol.", img: "🏙️" },
+                { name: "The Abyss", desc: "Origin of the Void.", img: "🖤" }
             ]
         };
 
         const grid = document.getElementById('main-grid');
-        const search = document.getElementById('guide-search');
+        const searchInput = document.getElementById('guide-search');
         const buttons = document.querySelectorAll('.tab-btn');
         const noRes = document.getElementById('no-results');
 
@@ -294,23 +258,19 @@
 
         function render() {
             grid.innerHTML = '';
-            let visible = 0;
-            const q = search.value.toLowerCase().trim();
+            let visibleCount = 0;
+            const query = searchInput.value.toLowerCase().trim();
 
-            for (let cat in data) {
-                if (activeTab !== 'all' && activeTab !== cat) continue;
+            for (let category in data) {
+                if (activeTab !== 'all' && activeTab !== category) continue;
 
-                data[cat].forEach(item => {
-                    const match = !q || item.name.toLowerCase().includes(q) || item.desc.toLowerCase().includes(q);
-                    if (match) {
+                data[category].forEach(item => {
+                    const matchesSearch = !query || item.name.toLowerCase().includes(query) || item.desc.toLowerCase().includes(query);
+                    if (matchesSearch) {
                         const card = document.createElement('div');
                         card.className = 'card';
-                        card.dataset.id = item.id;
                         card.innerHTML = `
-                            <div class="card-label">
-                                <span>${cat}</span>
-                                <span>#${item.id || '??'}</span>
-                            </div>
+                            <div class="card-label">${category}</div>
                             <div class="sprite-wrap">
                                 ${item.img.startsWith('http') ? `<img src="${item.img}" loading="lazy">` : `<span style="font-size: 3rem">${item.img}</span>`}
                             </div>
@@ -319,16 +279,15 @@
                             ${item.note ? `<div class="hunter-note">"${item.note}"</div>` : ''}
                         `;
                         grid.appendChild(card);
-                        visible++;
+                        visibleCount++;
                     }
                 });
             }
 
-            noRes.classList.toggle('hidden', visible > 0);
+            noRes.classList.toggle('hidden', visibleCount > 0);
         }
 
-        search.addEventListener('input', render);
-
+        searchInput.addEventListener('input', render);
         buttons.forEach(btn => {
             btn.addEventListener('click', () => {
                 buttons.forEach(b => b.classList.remove('active'));
@@ -338,9 +297,10 @@
             });
         });
 
-        // Initialize
-        if (typeof Discovery !== 'undefined' && !Discovery.isUnlocked('hollow-knight-guide')) {
-            document.body.innerHTML = '<div style="height:100vh; background:#000; display:flex; flex-direction:column; align-items:center; justify-content:center; color:#fff; font-size:2rem; font-family: Share Tech Mono;">[VOID_UNAUTHORIZED]<br><span style="font-size: 1rem; color: #444; margin-top: 20px;">DEFEAT THE RADIANCE TO ENTER THE ARCHIVE</span></div>';
+        // Discovery Check
+        const isSecretUnlocked = typeof Discovery !== 'undefined' && Discovery.isUnlocked('hollow-knight-guide');
+        if (!isSecretUnlocked) {
+            document.body.innerHTML = '<div style="height:100vh; background:#000; display:flex; flex-direction:column; align-items:center; justify-content:center; color:#fff; font-size:2rem; font-family:Share Tech Mono"> [VOID_UNAUTHORIZED] <br><span style="font-size:1rem; color:#444; margin-top:10px">DEFEAT THE RADIANCE TO UNLOCK THE ARCHIVE</span></div>';
             setTimeout(() => window.location.href = 'index.html', 2500);
         } else {
             render();

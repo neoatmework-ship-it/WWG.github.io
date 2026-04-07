@@ -22,11 +22,11 @@ const Discovery = {
             url: 'cheatsheet.html'
         },
         {
-            id: 'hollow-knight-guide',
-            name: 'The King\'s Brand',
-            description: 'A comprehensive guide to the kingdom of Hallownest.',
-            icon: 'https://hollowknight.wiki/w/images/f/f3/King%27s_Brand.png',
-            url: 'hollow-knight-guide.html'
+            id: 'mini-silksong',
+            name: 'The Weaver\'s Needle',
+            description: 'A fragment of the realm of Pharloom. The song of silk awakens.',
+            icon: 'https://hollowknight.wiki/w/images/0/07/Hornet_idle_HK.png',
+            url: 'mini-silksong.html'
         }
     ],
 
