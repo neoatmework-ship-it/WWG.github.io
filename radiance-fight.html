@@ -188,6 +188,15 @@
         const radianceSprite = new Image();
         radianceSprite.src = 'https://hollowknight.wiki/w/images/f/f9/Radiance_intro.png';
 
+        // Platforms
+        const platforms = [
+            { x: 100, y: 400, w: 150, h: 10 },
+            { x: 550, y: 400, w: 150, h: 10 },
+            { x: 325, y: 280, w: 150, h: 10 },
+            { x: 150, y: 160, w: 120, h: 10 },
+            { x: 530, y: 160, w: 120, h: 10 }
+        ];
+
         // Constants
         const GRAVITY = 0.5;
         const JUMP_FORCE = -12;
@@ -198,6 +207,7 @@
         let gameRunning = false;
         let p, boss, particles = [], projectiles = [];
         let keys = {};
+        let gamepad = null;
 
         class Player {
             constructor() {
@@ -222,32 +232,73 @@
                 if (this.dashing > 0) this.dashing--;
                 if (this.slashTime > 0) this.slashTime--;
 
-                // Movement
+                // Gamepad Polling
+                pollGamepad();
+
+                // Movement (Keyboard or Gamepad)
                 if (this.dashing === 0) {
-                    if (keys['a'] || keys['ArrowLeft'] || keys['A']) { this.vx = -MOVE_SPEED; this.lastDir = -1; }
-                    else if (keys['d'] || keys['ArrowRight'] || keys['D']) { this.vx = MOVE_SPEED; this.lastDir = 1; }
-                    else { this.vx *= 0.8; }
+                    let moveX = 0;
+                    if (keys['a'] || keys['ArrowLeft'] || keys['A']) moveX = -MOVE_SPEED;
+                    else if (keys['d'] || keys['ArrowRight'] || keys['D']) moveX = MOVE_SPEED;
+                    
+                    // Controller Axis
+                    if (gamepad) {
+                        const axis = gamepad.axes[0];
+                        if (Math.abs(axis) > 0.3) moveX = axis * MOVE_SPEED;
+                    }
+
+                    if (moveX !== 0) {
+                        this.vx = moveX;
+                        this.lastDir = moveX > 0 ? 1 : -1;
+                    } else {
+                        this.vx *= 0.8;
+                    }
                 }
 
                 this.x += this.vx;
                 this.vy += GRAVITY;
                 this.y += this.vy;
 
-                // Floor Collision
-                if (this.y > 540) {
-                    this.y = 540;
-                    this.vy = 0;
-                    this.grounded = true;
-                    this.jumps = 0;
+                // One-way Platform Collision
+                this.grounded = false;
+                if (this.vy >= 0) { // Only collide while falling
+                    // Floor
+                    if (this.y > 540) {
+                        this.y = 540;
+                        this.vy = 0;
+                        this.grounded = true;
+                        this.jumps = 0;
+                    }
+                    // Platforms
+                    platforms.forEach(plt => {
+                        if (this.x + this.w > plt.x && this.x < plt.x + plt.w) {
+                            if (this.y + this.h > plt.y && this.y + this.h < plt.y + 20 && this.vy >= 0) {
+                                this.y = plt.y - this.h;
+                                this.vy = 0;
+                                this.grounded = true;
+                                this.jumps = 0;
+                            }
+                        }
+                    });
                 }
 
                 // Boundaries
                 if (this.x < 0) this.x = 0;
                 if (this.x > 760) this.x = 760;
+                if (this.y > 650) this.takeDamage(); // Void Fall
             }
 
             draw() {
                 ctx.save();
+                // Draw Platforms
+                ctx.fillStyle = 'rgba(255, 255, 255, 0.2)';
+                ctx.shadowBlur = 10;
+                ctx.shadowColor = '#fff';
+                platforms.forEach(plt => {
+                    ctx.fillRect(plt.x, plt.y, plt.w, plt.h);
+                });
+                ctx.shadowBlur = 0;
+
                 if (this.invuln % 10 < 5) {
                     ctx.fillStyle = '#fff';
                     ctx.translate(this.x + this.w/2, this.y + this.h/2);
@@ -444,6 +495,37 @@
             }
         }
 
+        function pollGamepad() {
+            const gamepads = navigator.getGamepads();
+            if (gamepads[0]) {
+                gamepad = gamepads[0];
+                
+                // Jump (A / Cross)
+                if (gamepad.buttons[0].pressed && !p.buttonPressed0) {
+                    p.jump();
+                    p.buttonPressed0 = true;
+                } else if (!gamepad.buttons[0].pressed) {
+                    p.buttonPressed0 = false;
+                }
+
+                // Slash (X / Square)
+                if (gamepad.buttons[2].pressed && !p.buttonPressed2) {
+                    p.slash();
+                    p.buttonPressed2 = true;
+                } else if (!gamepad.buttons[2].pressed) {
+                    p.buttonPressed2 = false;
+                }
+
+                // Dash (B or Shoulders)
+                if ((gamepad.buttons[1].pressed || gamepad.buttons[4].pressed || gamepad.buttons[5].pressed) && !p.buttonPressedB) {
+                    p.dash();
+                    p.buttonPressedB = true;
+                } else if (!gamepad.buttons[1].pressed && !gamepad.buttons[4].pressed && !gamepad.buttons[5].pressed) {
+                    p.buttonPressedB = false;
+                }
+            }
+        }
+
         function updateMasks() {
             const masks = maskPool.querySelectorAll('.mask');
             masks.forEach((m, i) => {
@@ -451,6 +533,19 @@
                 else m.classList.remove('broken');
             });
         }
+
+        window.addEventListener("gamepadconnected", (e) => {
+            console.log("Gamepad connected at index %d: %s. %d buttons, %d axes.",
+                e.gamepad.index, e.gamepad.id,
+                e.gamepad.buttons.length, e.gamepad.axes.length);
+            gamepad = e.gamepad;
+        });
+
+        window.addEventListener("gamepaddisconnected", (e) => {
+            console.log("Gamepad disconnected from index %d: %s",
+                e.gamepad.index, e.gamepad.id);
+            gamepad = null;
+        });
 
         function startGame() {
             gameRunning = true;
