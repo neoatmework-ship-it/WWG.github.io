@@ -15,17 +15,10 @@ const Discovery = {
             url: 'underground.html'
         },
         {
-            id: 'legacy-fragment', 
-            name: 'Old World Memory', 
-            description: 'A fragment from the ancient expansion era.',
-            icon: 'https://static.wikia.nocookie.net/undertale/images/1/1a/Surface_intro.png',
-            url: 'cheatsheet.html'
-        },
-        {
             id: 'mini-silksong',
             name: 'The Weaver\'s Needle',
             description: 'A fragment of the realm of Pharloom. The song of silk awakens.',
-            icon: 'https://hollowknight.wiki/w/images/0/07/Hornet_idle_HK.png',
+            icon: '🕷️',
             url: 'mini-silksong.html'
         }
     ],
@@ -35,11 +28,6 @@ const Discovery = {
         this.SECRETS.forEach(s => { if(!discovered.includes(s.id)) discovered.push(s.id); });
         localStorage.setItem(this.STORAGE_KEY, JSON.stringify(discovered));
         console.log('[SYSTEM] ALL_RESTRICTIONS_LIFTED.');
-    },
-
-    unlockCheatsheet: function() {
-        this.unlock('legacy-fragment');
-        setTimeout(() => window.location.href = 'cheatsheet.html', 1000);
     },
 
     unlock: function (id) {
@@ -82,8 +70,13 @@ const Discovery = {
             animation: glitch-toast 0.2s infinite;
         `;
         
+        const isEmoji = !secret.icon.startsWith('http');
+        const iconHtml = isEmoji 
+            ? `<span style="font-size: 2rem; margin-right: 15px;">${secret.icon}</span>`
+            : `<img src="${secret.icon}" style="width: 32px; height: 32px; image-rendering: pixelated; vertical-align: middle; margin-right: 15px;">`;
+
         toast.innerHTML = `
-            <img src="${secret.icon}" style="width: 32px; height: 32px; height: auto; image-rendering: pixelated; vertical-align: middle; margin-right: 15px;">
+            ${iconHtml}
             SECRET_UNLOCKED: ${secret.name.replace(/ /g, '_')} ★
         `;
         toast.onclick = () => window.location.href = 'secret-hub.html';
