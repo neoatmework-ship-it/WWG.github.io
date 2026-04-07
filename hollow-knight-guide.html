@@ -3,17 +3,18 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>THE_ARCHIVE://HOLLOW_KNIGHT_EXTREME</title>
+    <title>THE_ARCHIVE://HOLLOW_KNIGHT_WIKI_CLONE</title>
     <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap" rel="stylesheet">
     <style>
         :root {
             --bg: #050508;
-            --card-bg: #0f0f15;
+            --card-bg: #0d0d12;
             --hk-white: #e8e8e8;
             --hk-gold: #d4af37;
             --hk-void: #000000;
             --hk-blue: #2c3e50;
             --hk-infected: #ff8c00;
+            --hk-soul: #ffffff;
         }
 
         body {
@@ -23,37 +24,55 @@
             color: var(--hk-white);
             font-family: 'Share Tech Mono', monospace;
             line-height: 1.4;
+            overflow-x: hidden;
         }
 
+        /* ──── HEADER ──── */
         .header {
             background: linear-gradient(to bottom, #111, #050508);
-            padding: 40px 20px;
+            padding: 20px;
             text-align: center;
             border-bottom: 2px solid #1a1a1a;
             position: sticky;
             top: 0;
-            z-index: 100;
+            z-index: 1000;
+            backdrop-filter: blur(10px);
         }
 
         .header h1 {
-            font-size: 2.5rem;
-            margin: 0;
-            letter-spacing: 8px;
+            font-size: 1.8rem;
+            margin: 0 0 15px 0;
+            letter-spacing: 6px;
             color: var(--hk-gold);
             text-shadow: 0 0 15px rgba(212, 175, 55, 0.4);
         }
 
-        .container {
-            max-width: 1400px;
-            margin: 0 auto;
-            padding: 20px;
+        .search-container {
+            max-width: 600px;
+            margin: 0 auto 15px;
+        }
+
+        #guide-search {
+            width: 100%;
+            padding: 12px 20px;
+            background: #000;
+            border: 1px solid #333;
+            color: #fff;
+            font-family: inherit;
+            font-size: 1rem;
+            outline: none;
+            transition: 0.3s;
+        }
+
+        #guide-search:focus {
+            border-color: var(--hk-gold);
+            box-shadow: 0 0 10px rgba(212, 175, 55, 0.2);
         }
 
         .tab-menu {
             display: flex;
             justify-content: center;
-            gap: 10px;
-            margin: 20px 0;
+            gap: 8px;
             flex-wrap: wrap;
         }
 
@@ -61,218 +80,270 @@
             background: #0a0a0e;
             border: 1px solid #222;
             color: #555;
-            padding: 8px 16px;
+            padding: 6px 12px;
             cursor: pointer;
-            font-size: 0.8rem;
+            font-size: 0.75rem;
             transition: 0.2s;
+            text-transform: uppercase;
         }
 
         .tab-btn.active {
             border-color: var(--hk-gold);
             color: var(--hk-gold);
-            background: #11111a;
+            background: #15151a;
         }
 
-        .category-section {
-            display: none;
-            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-            gap: 15px;
+        .stat-bar {
+            font-size: 0.65rem;
+            color: #444;
+            margin-top: 5px;
         }
 
-        .category-section.active {
+        /* ──── GRID ──── */
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .archive-grid {
             display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 20px;
+            min-height: 400px;
         }
 
+        /* ──── CARD ──── */
         .card {
             background: var(--card-bg);
             border: 1px solid #1a1a1a;
             padding: 15px;
-            transition: 0.2s;
+            transition: 0.3s ease;
             display: flex;
             flex-direction: column;
+            position: relative;
+            overflow: hidden;
+            animation: cardFade 0.4s ease-out backwards;
         }
 
-        .card:hover { border-color: #333; transform: scale(1.02); }
+        @keyframes cardFade {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
 
-        .card-label { font-size: 0.6rem; color: #555; text-transform: uppercase; margin-bottom: 5px; }
-        .card-title { font-size: 1.1rem; margin: 0 0 8px 0; color: #fff; }
-        .card-desc { font-size: 0.75rem; color: #999; flex-grow: 1; }
+        .card:hover { 
+            border-color: #444; 
+            transform: translateY(-5px);
+            box-shadow: 0 5px 20px rgba(0,0,0,0.5);
+        }
+
+        .card-label { 
+            font-size: 0.6rem; 
+            color: #555; 
+            text-transform: uppercase; 
+            margin-bottom: 5px;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .card-title { 
+            font-size: 1.2rem; 
+            margin: 0 0 10px 0; 
+            color: #fff;
+            letter-spacing: 1px;
+        }
+
+        .card-desc { 
+            font-size: 0.8rem; 
+            color: #888; 
+            flex-grow: 1;
+            font-style: italic;
+        }
 
         .sprite-wrap {
-            height: 100px;
+            height: 120px;
             display: flex;
             align-items: center;
             justify-content: center;
-            background: #000;
-            margin-bottom: 10px;
+            background: radial-gradient(circle, #050505 0%, #000 100%);
+            margin: -15px -15px 15px -15px;
+            border-bottom: 1px solid #1a1a1a;
         }
 
-        .sprite-wrap img { max-height: 80px; image-rendering: pixelated; }
+        .sprite-wrap img { 
+            max-height: 90px; 
+            max-width: 90%;
+            object-fit: contain;
+            filter: drop-shadow(0 0 5px rgba(0,0,0,0.8));
+            transition: 0.3s;
+        }
 
-        .tag-row { display: flex; gap: 5px; margin-top: 10px; flex-wrap: wrap; }
-        .tag { font-size: 0.6rem; padding: 2px 6px; background: #1a1a24; color: #778; border-radius: 2px; }
-        .tag.boss { color: var(--hk-infected); }
-        .tag.area { color: #3498db; }
-        .tag.charm { color: #2ecc71; }
+        .card:hover .sprite-wrap img {
+            transform: scale(1.1);
+        }
 
-        /* Scrollbar */
-        ::-webkit-scrollbar { width: 5px; }
+        .hunter-note {
+            margin-top: 15px;
+            padding-top: 10px;
+            border-top: 1px dashed #222;
+            font-size: 0.75rem;
+            color: var(--hk-gold);
+            opacity: 0.8;
+        }
+
+        /* ──── SCROLLBAR ──── */
+        ::-webkit-scrollbar { width: 6px; }
         ::-webkit-scrollbar-track { background: #000; }
-        ::-webkit-scrollbar-thumb { background: #222; }
+        ::-webkit-scrollbar-thumb { background: #1a1a1a; }
         ::-webkit-scrollbar-thumb:hover { background: var(--hk-gold); }
 
-        @media (max-width: 600px) { .header h1 { font-size: 1.5rem; } }
+        .hidden { display: none !important; }
+
+        .no-results {
+            text-align: center;
+            color: #444;
+            grid-column: 1 / -1;
+            padding: 100px 0;
+            font-size: 1.5rem;
+        }
+
     </style>
 </head>
 <body>
 
     <div class="header">
         <h1>THE CONTINUUM ARCHIVE</h1>
-        <div class="tab-menu" id="tab-menu">
-            <button class="tab-btn active" data-target="areas">AREAS</button>
-            <button class="tab-btn" data-target="bosses">BOSSES</button>
-            <button class="tab-btn" data-target="enemies">ENEMIES</button>
-            <button class="tab-btn" data-target="charms">CHARMS</button>
-            <button class="tab-btn" data-target="npcs">NPCs</button>
+        
+        <div class="search-container">
+            <input type="text" id="guide-search" placeholder="SEARCH HALLOWNEST ARCHIVES...">
         </div>
-        <a href="index.html" style="color:#444; font-size:0.7rem; text-decoration:none;">← HUB EXIT</a>
+
+        <div class="tab-menu" id="tab-menu">
+            <button class="tab-btn active" data-target="all">ALL ENTRIES</button>
+            <button class="tab-btn" data-target="enemies">HEARTLESS</button>
+            <button class="tab-btn" data-target="bosses">GODS</button>
+            <button class="tab-btn" data-target="charms">CHARMS</button>
+            <button class="tab-btn" data-target="areas">KINGDOM</button>
+            <button class="tab-btn" data-target="npcs">WITNESSES</button>
+        </div>
+        <a href="index.html" style="position: absolute; right: 20px; top: 30px; color:#444; font-size:0.7rem; text-decoration:none;">← EXIT</a>
     </div>
 
     <div class="container">
-        <!-- AREAS -->
-        <section id="areas" class="category-section active">
+        <div class="archive-grid" id="main-grid">
             <!-- Data will be populated here -->
-        </section>
-
-        <!-- BOSSES -->
-        <section id="bosses" class="category-section">
-            <!-- Data will be populated here -->
-        </section>
-
-        <!-- ENEMIES -->
-        <section id="enemies" class="category-section">
-            <!-- Data will be populated here -->
-        </section>
-
-        <!-- CHARMS -->
-        <section id="charms" class="category-section">
-            <!-- Data will be populated here -->
-        </section>
-
-        <!-- NPCS -->
-        <section id="npcs" class="category-section">
-            <!-- Data will be populated here -->
-        </section>
+        </div>
+        <div id="no-results" class="no-results hidden">[NO_MATCHES_IN_THE_VOID]</div>
     </div>
 
     <script src="discovery.js"></script>
     <script>
         const data = {
-            areas: [
-                { name: "Dirtmouth", desc: "The fading town. Above ground hub.", icon: "🏘️" },
-                { name: "Forgotten Crossroads", desc: "Twisting highways below the well. Becomes Infected later.", icon: "🗺️" },
-                { name: "Greenpath", desc: "Lush caverns filled with acid and greenery.", icon: "🌿" },
-                { name: "Fungal Wastes", desc: "Smelly area populated by sentient fungi.", icon: "🍄" },
-                { name: "City of Tears", desc: "Rainy capital of Hallownest. Built within a massive cavern.", icon: "🏙️" },
-                { name: "Crystal Peak", desc: "Mining area filled with dangerous crystals and light.", icon: "💎" },
-                { name: "Deepnest", desc: "Dark, terrifying home of weavers and spiders.", icon: "🕷️" },
-                { name: "Ancient Basin", desc: "Void-touched bottom of the kingdom.", icon: "⛓️" },
-                { name: "Abyss", desc: "The origin of the Void and the Vessels.", icon: "🖤" },
-                { name: "Kingdom's Edge", desc: "Ash-covered cliffs. Home of the Colosseum.", icon: "⚔️" },
-                { name: "Queen's Gardens", desc: "Preserved sanctuary of the White Lady.", icon: "🌸" },
-                { name: "Resting Grounds", desc: "Spiritual site where the Dreamers rest.", icon: "👻" },
-                { name: "The Hive", desc: "Hidden kingdom of the bees.", icon: "🐝" },
-                { name: "White Palace", desc: "The ethereal home of the Pale King.", icon: "🏰" },
-                { name: "Godhome", desc: "The dream of the Godseeker. Boss rush haven.", icon: "🔱" }
+            enemies: [
+                { id: 1, name: "Crawlid", desc: "Small, cowardly scavenger. Found everywhere.", note: "They lack claws or teeth, so they merely crawl and hope to be ignored. I do not ignore.", img: "https://cdn.wikimg.net/en/hkwiki/images/thumb/2/25/HJ_Crawlid.png/80px-HJ_Crawlid.png" },
+                { id: 2, name: "Vengefly", desc: "Aggressive flying buzzing creature.", note: "They are social creatures. Kill one, and the others will scream. Good. Let them come.", img: "https://cdn.wikimg.net/en/hkwiki/images/thumb/b/bd/HJ_Vengefly.png/80px-HJ_Vengefly.png" },
+                { id: 3, name: "Vengefly King", desc: "Larger, matriarchal winged predator.", note: "A king in name only. It screams for its subjects when it is afraid.", img: "https://cdn.wikimg.net/en/hkwiki/images/thumb/8/89/HJ_Vengefly_King.png/80px-HJ_Vengefly_King.png" },
+                { id: 4, name: "Gruzzer", desc: "Unthinking, bouncing larva.", note: "They bounce. I slash. Simple cycle.", img: "https://cdn.wikimg.net/en/hkwiki/images/thumb/4/46/HJ_Gruzzer.png/80px-HJ_Gruzzer.png" },
+                { id: 5, name: "Gruz Mother", desc: "Huge, bloated beast. Protective of its young.", note: "It bursts when it dies, releasing its offspring. Twice the harvest.", img: "https://cdn.wikimg.net/en/hkwiki/images/thumb/5/52/HJ_Gruz_Mother.png/80px-HJ_Gruz_Mother.png" },
+                { id: 6, name: "Tiktik", desc: "Small, shelled creature.", note: "Weak legs, hard shell. Flip them and they are nothing.", img: "https://cdn.wikimg.net/en/hkwiki/images/thumb/5/50/HJ_Tiktik.png/80px-HJ_Tiktik.png" },
+                { id: 7, name: "Aspid Hunter", desc: "Spits acidic blobs with high accuracy.", note: "Nasty, spitting things. They hunt in packs. Cut them down quickly.", img: "https://cdn.wikimg.net/en/hkwiki/images/thumb/f/fe/HJ_Aspid_Hunter.png/80px-HJ_Aspid_Hunter.png" },
+                { id: 8, name: "Primal Aspid", desc: "Ancient, more dangerous relative of the Aspid Hunter.", note: "Universal symbol of pain. It shoots in three directions. Hate it.", img: "https://cdn.wikimg.net/en/hkwiki/images/thumb/a/a2/HJ_Primal_Aspid.png/80px-HJ_Primal_Aspid.png" },
+                { id: 9, name: "Ooma", desc: "Floating, explosive jellyfish of the Fog Canyon.", note: "Do not strike the core. It will return the favor with fire.", img: "https://cdn.wikimg.net/en/hkwiki/images/thumb/0/08/HJ_Ooma.png/80px-HJ_Ooma.png" },
+                { id: 10, name: "Belfly", desc: "Suicidal bats that explode on contact.", note: "Loud, screaming, and short-lived. Much like a bad memory.", img: "https://cdn.wikimg.net/en/hkwiki/images/thumb/3/3a/HJ_Belfly.png/80px-HJ_Belfly.png" },
+                { id: 11, name: "Great Hopper", desc: "Giant Bouncing nightmare of Kingdom's Edge.", note: "They follow you wherever you leap. A persistent hunt.", img: "https://cdn.wikimg.net/en/hkwiki/images/thumb/9/90/HJ_Great_Hopper.png/80px-HJ_Great_Hopper.png" },
+                { id: 12, name: "Crystal Crawler", desc: "A laser-firing bug found in Crystal Peak.", note: "Its shell is impenetrable. I must find the weak underbelly.", img: "https://cdn.wikimg.net/en/hkwiki/images/thumb/5/5d/HJ_Crystal_Crawler.png/80px-HJ_Crystal_Crawler.png" }
             ],
             bosses: [
-                { name: "False Knight", desc: "Failed maggot in stolen armor. Crossroads guardian.", img: "https://hollowknight.wiki/w/images/f/f6/False_Knight_idle.png" },
-                { name: "Hornet", desc: "The gendered child. Protecting the kingdom's truth.", img: "https://hollowknight.wiki/w/images/b/b3/Hornet_Sentintel_idle.png" },
-                { name: "Mantis Lords", desc: "Territorial leaders of the Mantis Village.", img: "https://hollowknight.wiki/w/images/1/1a/Mantis_Lords_idle.png" },
-                { name: "Soul Master", desc: "Corrupted scholar in the Sanctum.", img: "https://hollowknight.wiki/w/images/9/98/Soul_Master_idle.png" },
-                { name: "Dung Defender", desc: "The loyal Ogrim. Five Great Knights survivor.", img: "https://hollowknight.wiki/w/images/3/30/Dung_Defender_idle.png" },
-                { name: "Broken Vessel", desc: "A forgotten sibling in the Basin.", img: "https://hollowknight.wiki/w/images/8/8e/Broken_Vessel_idle.png" },
-                { name: "Nosk", desc: "A shape-shifter mimic lure found in Deepnest.", img: "https://hollowknight.wiki/w/images/1/1b/Nosk_idle.png" },
-                { name: "Collector", desc: "Lurien's automation, collector of grubs.", img: "https://hollowknight.wiki/w/images/d/df/The_Collector_idle.png" },
-                { name: "Watcher Knight", desc: "Protector of the Dreamer in the Capitol.", img: "https://hollowknight.wiki/w/images/c/c8/Watcher_Knight_idle.png" },
-                { name: "Traitor Lord", desc: "Rejected mantis in the Queen's Gardens.", img: "https://hollowknight.wiki/w/images/f/f0/Traitor_Lord_idle.png" },
-                { name: "Grimm", desc: "The Nightmare Master. Requires the torch.", img: "https://hollowknight.wiki/w/images/8/87/Troupe_Master_Grimm_idle.png" },
-                { name: "The Hollow Knight", desc: "The impure vessel of the plague.", img: "https://hollowknight.wiki/w/images/4/4c/The_Hollow_Knight_idle.png" },
-                { name: "Pure Vessel", desc: "The vessel at its most powerful peak.", img: "https://hollowknight.wiki/w/images/4/4e/Pure_Vessel_idle.png" }
-            ],
-            enemies: [
-                { name: "Crawlid", desc: "The most basic citizen of Hallownest.", icon: "🐛" },
-                { name: "Aspid Hunter", desc: "Spits acidic blobs. Highly annoying.", icon: "🦟" },
-                { name: "Ooma", desc: "Floating jellyfish with explosive cores.", icon: "🎐" },
-                { name: "Great Hopper", desc: "Bouncing nightmare of the Edge.", icon: "🦘" },
-                { name: "Belfly", desc: "Suicidal bats that explode on contact.", icon: "🦇" },
-                { name: "Primal Aspid", desc: "Universal symbol of pain. Shoots in 3 directions.", icon: "🎯" }
+                { id: 101, name: "False Knight", desc: "A maggot using the armor of a Great Knight.", note: "Strength without character. A shell without a soul.", img: "https://cdn.wikimg.net/en/hkwiki/images/thumb/4/47/HJ_False_Knight.png/120px-HJ_False_Knight.png" },
+                { id: 102, name: "Hornet", desc: "The protector of Hallownest's ruins. Extremely agile.", note: "She is not like the others. She has a reason. Respect her needle.", img: "https://cdn.wikimg.net/en/hkwiki/images/thumb/1/1d/HJ_Hornet.png/120px-HJ_Hornet.png" },
+                { id: 103, name: "Mantis Lords", desc: "Leaders of the Mantis tribe. Honorable duelists.", note: "They bow to the strong. They do not bow to the infection.", img: "https://cdn.wikimg.net/en/hkwiki/images/thumb/4/4e/HJ_Mantis_Lords.png/120px-HJ_Mantis_Lords.png" },
+                { id: 104, name: "Soul Master", desc: "Corrupted master of the Soul Sanctum.", note: "He sought immortality through others' souls. He found only madness.", img: "https://cdn.wikimg.net/en/hkwiki/images/thumb/4/4f/HJ_Soul_Master.png/120px-HJ_Soul_Master.png" },
+                { id: 105, name: "Dung Defender", desc: "The last of the Five Great Knights. Fiercely loyal.", note: "Doma! Doma! Even in filth, honor remains.", img: "https://cdn.wikimg.net/en/hkwiki/images/thumb/c/cd/HJ_Dung_Defender.png/120px-HJ_Dung_Defender.png" },
+                { id: 106, name: "The Hollow Knight", desc: "The impure vessel. Bearing the burden of the plague.", note: "A vessel of stone. A heart of void. A tragedy of light.", img: "https://cdn.wikimg.net/en/hkwiki/images/thumb/e/e0/HJ_Hollow_Knight.png/120px-HJ_Hollow_Knight.png" },
+                { id: 107, name: "Pure Vessel", desc: "The hollow knight at its peak form.", note: "What could have been, if the vessel was truly void.", img: "https://cdn.wikimg.net/en/hkwiki/images/thumb/b/b1/Pure_Vessel_Icon.png/120px-Pure_Vessel_Icon.png" },
+                { id: 108, name: "Grimm", desc: "Master of the Nightmare Troupe.", note: "Dance with the master. Burn with the flame.", img: "https://cdn.wikimg.net/en/hkwiki/images/thumb/8/87/Troupe_Master_Grimm_idle.png/120px-Troupe_Master_Grimm_idle.png" },
+                { id: 109, name: "The Radiance", desc: "The ancient goddess of light. The source of the infection.", note: "Erase the light. Remember the void.", img: "https://cdn.wikimg.net/en/hkwiki/images/thumb/3/3d/HJ_Radiance.png/120px-HJ_Radiance.png" }
             ],
             charms: [
-                { name: "Wayward Compass", desc: "Shows location on map. Essential first pick.", icon: "🧭" },
-                { name: "Gathering Swarm", desc: "Geo comes to you automatically.", icon: "🏮" },
-                { name: "Stalwart Shell", desc: "Increases invulnerability duration.", icon: "🐚" },
-                { name: "Soul Catcher", desc: "Increases soul gain on hits.", icon: "🧿" },
-                { name: "Shaman Stone", desc: "Greatly increases spell power.", icon: "🔮" },
-                { name: "Dashmaster", desc: "Dash more often and downwards.", icon: "🏃" },
-                { name: "Sprintmaster", desc: "Increase walk speed.", icon: "👟" },
-                { name: "Grubsong", desc: "Gain soul when taking damage.", icon: "🐛" },
-                { name: "Fragile Heart", desc: "Boosts health but breaks on death.", icon: "🤎" },
-                { name: "Quick Slash", desc: "Attack faster with your nail.", icon: "⚔️" },
-                { name: "Mark of Pride", desc: "Greatly increases nail reach.", icon: "📏" },
-                { name: "Flukenest", desc: "Turn spell into a swarm of flukes.", icon: "🐟" },
-                { name: "Sharp Shadow", desc: "Damage enemies while dashing.", icon: "🌑" },
-                { name: "Spore Shroom", desc: "Emit cloud while healing.", icon: "🍄" },
-                { name: "Quick Focus", desc: "Heal twice as fast.", icon: "⚡" },
-                { name: "Deep Focus", desc: "Heal 2 masks slower, for more soul.", icon: "🧘" },
-                { name: "Joni's Blessing", desc: "Convert all health to Lifeblood.", icon: "💎" },
-                { name: "Hiveblood", desc: "Regenerate health over time.", icon: "🐝" },
-                { name: "Kingsoul", desc: "Continuous soul generation.", icon: "👑" },
-                { name: "Void Heart", desc: "Unify the void. No soul cost to dash.", icon: "🖤" }
+                { id: 201, name: "Wayward Compass", desc: "Shows location on map.", note: "The map is a window, but the compass is the key.", img: "https://cdn.wikimg.net/en/hkwiki/images/thumb/7/7d/Wayward_Compass.png/80px-Wayward_Compass.png" },
+                { id: 202, name: "Shaman Stone", desc: "Increases spell damage and size.", note: "Ancient power within a small stone.", img: "https://cdn.wikimg.net/en/hkwiki/images/thumb/5/5e/Shaman_Stone.png/80px-Shaman_Stone.png" },
+                { id: 203, name: "Quick Slash", desc: "Attack faster with the nail.", note: "Slash twice while they think once.", img: "https://cdn.wikimg.net/en/hkwiki/images/thumb/5/5f/Quick_Slash.png/80px-Quick_Slash.png" },
+                { id: 204, name: "Mark of Pride", desc: "Greatly increases nail reach.", note: "Strike from where they cannot reach you.", img: "https://cdn.wikimg.net/en/hkwiki/images/thumb/6/69/Mark_of_Pride.png/80px-Mark_of_Pride.png" },
+                { id: 205, name: "Void Heart", desc: "Unifies the void. Unlocks true endings.", note: "Accept the depth. Control the void.", img: "https://cdn.wikimg.net/en/hkwiki/images/thumb/b/bb/Void_Heart.png/80px-Void_Heart.png" }
+            ],
+            areas: [
+                { name: "Dirtmouth", desc: "The fading town above the well.", img: "🏘️" },
+                { name: "Forgotten Crossroads", desc: "The central hub of Hallownest.", img: "🗺️" },
+                { name: "Greenpath", desc: "Lush caverns of acid and vines.", img: "🌿" },
+                { name: "City of Tears", desc: "The rainy heart of the kingdom.", img: "🏙️" },
+                { name: "The Abyss", desc: "The origin of the void and the vessels.", img: "🖤" }
             ],
             npcs: [
-                { name: "Elderbug", desc: "The oldest resident of Dirtmouth.", icon: "👴" },
-                { name: "Quirrel", desc: "Curious wanderer with a hidden past.", icon: "🤺" },
-                { name: "Cornifer", desc: "Professional mapmaker. Follow the humming.", icon: "🗺️" },
-                { name: "Zote the Mighty", desc: "A knight of great renown (self-proclaimed).", icon: "🤡" },
-                { name: "The Last Stag", desc: "Final survivor of the transport network.", icon: "🦌" }
+                { name: "Elderbug", desc: "The oldest and kindest resident of Dirtmouth.", img: "👴" },
+                { name: "Quirrel", desc: "A wanderer exploring the ruins of Hallownest.", img: "🤺" },
+                { name: "Zote", desc: "A knight of great renown... possibly.", img: "🤡" }
             ]
         };
 
-        function populate() {
+        const grid = document.getElementById('main-grid');
+        const search = document.getElementById('guide-search');
+        const buttons = document.querySelectorAll('.tab-btn');
+        const noRes = document.getElementById('no-results');
+
+        let activeTab = 'all';
+
+        function render() {
+            grid.innerHTML = '';
+            let visible = 0;
+            const q = search.value.toLowerCase().trim();
+
             for (let cat in data) {
-                const section = document.getElementById(cat);
+                if (activeTab !== 'all' && activeTab !== cat) continue;
+
                 data[cat].forEach(item => {
-                    const card = document.createElement('div');
-                    card.className = 'card';
-                    card.innerHTML = `
-                        <div class="card-label">${cat}</div>
-                        ${item.img ? `<div class="sprite-wrap"><img src="${item.img}"></div>` : `<div class="sprite-wrap" style="font-size:3rem">${item.icon}</div>`}
-                        <h3 class="card-title">${item.name}</h3>
-                        <p class="card-desc">${item.desc}</p>
-                    `;
-                    section.appendChild(card);
+                    const match = !q || item.name.toLowerCase().includes(q) || item.desc.toLowerCase().includes(q);
+                    if (match) {
+                        const card = document.createElement('div');
+                        card.className = 'card';
+                        card.dataset.id = item.id;
+                        card.innerHTML = `
+                            <div class="card-label">
+                                <span>${cat}</span>
+                                <span>#${item.id || '??'}</span>
+                            </div>
+                            <div class="sprite-wrap">
+                                ${item.img.startsWith('http') ? `<img src="${item.img}" loading="lazy">` : `<span style="font-size: 3rem">${item.img}</span>`}
+                            </div>
+                            <h3 class="card-title">${item.name}</h3>
+                            <p class="card-desc">${item.desc}</p>
+                            ${item.note ? `<div class="hunter-note">"${item.note}"</div>` : ''}
+                        `;
+                        grid.appendChild(card);
+                        visible++;
+                    }
                 });
             }
+
+            noRes.classList.toggle('hidden', visible > 0);
         }
 
-        populate();
+        search.addEventListener('input', render);
 
-        // Tabs
-        const tabs = document.querySelectorAll('.tab-btn');
-        const sections = document.querySelectorAll('.category-section');
-        tabs.forEach(tab => {
-            tab.addEventListener('click', () => {
-                tabs.forEach(t => t.classList.remove('active'));
-                sections.forEach(s => s.classList.remove('active'));
-                tab.classList.add('active');
-                document.getElementById(tab.dataset.target).classList.add('active');
+        buttons.forEach(btn => {
+            btn.addEventListener('click', () => {
+                buttons.forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                activeTab = btn.dataset.target;
+                render();
             });
         });
 
+        // Initialize
         if (typeof Discovery !== 'undefined' && !Discovery.isUnlocked('hollow-knight-guide')) {
-            document.body.innerHTML = '<div style="height:100vh; background:#000; display:flex; align-items:center; justify-content:center; color:#fff; font-size:2rem;">[VOID_UNAUTHORIZED]</div>';
-            setTimeout(() => window.location.href = 'index.html', 1500);
+            document.body.innerHTML = '<div style="height:100vh; background:#000; display:flex; flex-direction:column; align-items:center; justify-content:center; color:#fff; font-size:2rem; font-family: Share Tech Mono;">[VOID_UNAUTHORIZED]<br><span style="font-size: 1rem; color: #444; margin-top: 20px;">DEFEAT THE RADIANCE TO ENTER THE ARCHIVE</span></div>';
+            setTimeout(() => window.location.href = 'index.html', 2500);
+        } else {
+            render();
         }
     </script>
 </body>
