@@ -16,8 +16,8 @@ const Discovery = {
         },
         {
             id: 'mini-silksong',
-            name: 'The Weaver\'s Needle',
-            description: 'A fragment of the realm of Pharloom. The song of silk awakens.',
+            name: 'The Weaver\'s Test',
+            description: 'How well do you know the song? A test of Pharloom knowledge.',
             icon: '🕷️',
             url: 'mini-silksong.html'
         }
