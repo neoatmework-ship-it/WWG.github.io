@@ -13,13 +13,6 @@ const Discovery = {
             description: 'A reality-glitched archive from another timeline.',
             icon: '💀',
             url: 'underground.html'
-        },
-        {
-            id: 'mini-silksong',
-            name: 'The Weaver\'s Test',
-            description: 'How well do you know the song? A test of Pharloom knowledge.',
-            icon: '🕷️',
-            url: 'mini-silksong.html'
         }
     ],
 
