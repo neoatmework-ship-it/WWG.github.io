@@ -83,4 +83,6 @@ const BEACON_API = `https://api.counterapi.dev/v1/${BEACON_NAMESPACE}`;
             }
         }
     });
+    // Expose for manual events
+    window.WWG_BEACON = beaconFetch;
 })();

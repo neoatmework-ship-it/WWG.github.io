@@ -7,6 +7,8 @@
     <title>Retro Boot Screen | WWG</title>
     <link rel="icon"
         href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E💾%3C/text%3E%3C/svg%3E">
+    <script src="discovery.js"></script>
+    <script src="tracker.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=VT323&display=swap');
 
@@ -243,6 +245,11 @@
             abortBoot = true;
             await typeDelay(100);
             abortBoot = false;
+
+            // Unlock secret and ping beacon
+            if(window.Discovery) Discovery.unlock('the-terminal');
+            if(window.WWG_BEACON) WWG_BEACON('terminal_accessed');
+
             screen.innerHTML = '';
 
             switch (type) {

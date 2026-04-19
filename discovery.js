@@ -13,6 +13,13 @@ const Discovery = {
             description: 'You faced the judgement and survived.',
             icon: '⚖️',
             url: 'sans-fight.html'
+        },
+        { 
+            id: 'the-terminal', 
+            name: 'TermOS Terminal', 
+            description: 'You accessed the restricted command-line interface.',
+            icon: '⌨️',
+            url: 'retro-boot.html'
         }
     ],
 
