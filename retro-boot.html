@@ -246,10 +246,6 @@
             await typeDelay(100);
             abortBoot = false;
 
-            // Unlock secret and ping beacon
-            if(window.Discovery) Discovery.unlock('the-terminal');
-            if(window.WWG_BEACON) WWG_BEACON('terminal_accessed');
-
             screen.innerHTML = '';
 
             switch (type) {
