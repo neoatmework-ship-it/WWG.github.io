@@ -215,6 +215,8 @@
         let accel = 0.35;
         let jumpPower = -6;
         let isGameOver = false;
+        let turnCount = 0;
+        let isSansTurn = false;
 
         window.addEventListener('keydown', e => keys[e.code] = true);
         window.addEventListener('keyup', e => keys[e.code] = false);
@@ -262,13 +264,13 @@
 
         function takeDamage() {
             if (isInvincible || isGameOver) return;
-            hp = Math.max(0, hp - 6);
+            hp = Math.max(0, hp - 12);
             hpFill.style.width = (hp / 92 * 100) + '%';
             hpText.innerText = `${hp} / 92`;
             shake();
             isInvincible = true;
             soul.style.filter = 'invert(1)';
-            setTimeout(() => { isInvincible = false; soul.style.filter = 'none'; }, 100);
+            setTimeout(() => { isInvincible = false; soul.style.filter = 'none'; }, 40);
             if (hp <= 0) {
                  isGameOver = true;
                  textEl.innerText = "Y O U  A R E  D E A D .";
@@ -400,57 +402,103 @@
                 win();
             } else if (choice === 'Check') {
                 await typeText("* SANS 1 ATK 1 DEF. The easiest enemy.");
+                await new Promise(r => setTimeout(r, 1000));
+                startSansTurn();
             } else {
                 await typeText(`* You used ${choice}. * sans shrugs.`);
+                await new Promise(r => setTimeout(r, 1000));
+                startSansTurn();
             }
         };
 
+        const SANS_LINES = [
+            "* so... you finally arrived.",
+            "* look, i'm gonna be honest.",
+            "* i'm not a fan of this timeline.",
+            "* you really like swinging that thing, huh?",
+            "* guess i'm just too lazy to stop you.",
+            "* or maybe i'm just waiting for the punchline.",
+            "* tick tock, kid.",
+            "* you look like you're having a bad time.",
+            "* almost there.",
+            "* this is it. the end of the line."
+        ];
+
         window.startCombat = async function(type) {
-            if (type === 'MERCY') {
+            if (type === 'FIGHT') {
+                await typeText("* SANS dodged.");
+                await new Promise(r => setTimeout(r, 1000));
+                startSansTurn();
+            } else if (type === 'MERCY') {
                 await typeText("* You spared sans.");
                 await new Promise(r => setTimeout(r, 1000));
                 await typeText("* he appreciates the sentiment.");
-                win();
-                return;
+                await new Promise(r => setTimeout(r, 1000));
+                startSansTurn();
             }
+        };
 
-            // Standard Bullet Hell Start
+        async function startSansTurn() {
+            if (isGameOver) return;
+            isSansTurn = true;
+            turnCount++;
             document.getElementById('battle-controls').style.display = 'none';
-            await typeText("* so... you finally arrived.");
-            await new Promise(r => setTimeout(r, 1500));
             
+            // Random Sans dialogue
+            const line = SANS_LINES[Math.min(turnCount - 1, SANS_LINES.length - 1)];
+            await typeText(line);
+            await new Promise(r => setTimeout(r, 1000));
+
             // Start BGM if not playing
             if (bgm && bgm.paused) bgm.play();
 
-            const itv1 = setInterval(() => spawnBone('right', 7, 80, 0), 300);
-            await new Promise(r => setTimeout(r, 4000));
-            clearInterval(itv1);
+            // Difficulty increase per turn
+            const complexity = Math.min(turnCount, 10);
+            
+            if (turnCount === 10) {
+                // Final Phase
+                await typeText("T R U E  G E N O C I D E");
+                const finalBones = setInterval(() => { spawnBone('right', 12, 70, 0); spawnBone('left', 12, 70, 0); }, 200);
+                const finalSpears = setInterval(spawnSpear, 300);
+                const finalBlasters = setInterval(() => fireBlaster(Math.random() * 120), 1000);
+                const glitchItv = setInterval(() => document.body.classList.toggle('glitch'), 500);
 
-            await typeText("try and dodge this.");
-            const itv2 = setInterval(spawnSpear, 400);
-            await new Promise(r => setTimeout(r, 5000));
-            clearInterval(itv2);
-
-            isBlue = true; soul.classList.add('blue');
-            const slams = ['down', 'right', 'up', 'left'];
-            for(let s of slams) {
-                gravityDir = s; velocity = 0;
-                shake();
-                await new Promise(r => setTimeout(r, 1000));
-                fireBlaster(Math.random()*100);
+                setTimeout(() => {
+                    clearInterval(finalBones);
+                    clearInterval(finalSpears);
+                    clearInterval(finalBlasters);
+                    clearInterval(glitchItv);
+                    document.body.classList.remove('glitch');
+                    win();
+                }, 25000);
+                return;
             }
 
-            await typeText("T R U E  G E N O C I D E");
-            const finalBones = setInterval(() => { spawnBone('right', 10, 60, 0); spawnBone('left', 10, 60, 0); }, 250);
-            const finalSpears = setInterval(spawnSpear, 600);
-            const finalBlasters = setInterval(() => fireBlaster(soulPos.y - 10), 1500);
+            // Normal Turn Attacks
+            let attackDuration = 3000 + (complexity * 1000);
+            let intervals = [];
+
+            if (turnCount % 3 === 1) {
+                intervals.push(setInterval(() => spawnBone('right', 8 + complexity, 80, 0), 300 - (complexity * 10)));
+            } else if (turnCount % 3 === 2) {
+                intervals.push(setInterval(spawnSpear, 400 - (complexity * 15)));
+            } else {
+                isBlue = true; soul.classList.add('blue');
+                const slams = ['down', 'right', 'up', 'left'].slice(0, Math.min(4, 2 + turnCount/3));
+                for(let s of slams) {
+                    gravityDir = s; velocity = 0;
+                    shake();
+                    await new Promise(r => setTimeout(r, 800));
+                    fireBlaster(Math.random()*100);
+                }
+            }
 
             setTimeout(() => {
-                clearInterval(finalBones);
-                clearInterval(finalSpears);
-                clearInterval(finalBlasters);
-                win();
-            }, 12000);
+                intervals.forEach(clearInterval);
+                isSansTurn = false;
+                document.getElementById('battle-controls').style.display = 'flex';
+                typeText("* Sans looks bored.");
+            }, attackDuration);
         }
 
         function win() {

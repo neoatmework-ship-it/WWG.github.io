@@ -180,6 +180,16 @@
         }
 
         .action-btn:hover { border-color: #fff; color: #fff; }
+        
+        .glitch-active {
+            animation: glitch-shake 0.1s infinite;
+            filter: invert(1) contrast(2);
+        }
+        @keyframes glitch-shake {
+            0% { transform: translate(2px, 2px); }
+            50% { transform: translate(-2px, -2px); }
+            100% { transform: translate(2px, -2px); }
+        }
 
     </style>
 </head>
@@ -267,21 +277,46 @@
             filtered.forEach(m => {
                 const card = document.createElement('div');
                 card.className = 'monster-card';
+                if (m.name === 'Sans') card.id = 'sans-card';
+                
                 card.innerHTML = `
                     <div class="sprite-wrap">
                         <img src="${m.sprite}" alt="${m.name}" class="sprite">
                     </div>
                     <div class="monster-name">${m.name}</div>
                     <div class="monster-area" style="color: var(--${m.area.toLowerCase()})">AREA:// ${m.area.toUpperCase()}</div>
-                    <div class="monster-desc">${m.desc}</div>
+                    <div class="monster-desc" id="${m.name === 'Sans' ? 'sans-desc' : ''}">${m.desc}</div>
                     ${m.atk ? `<div class="stats-bar"><span>ATK: ${m.atk}</span><span>DEF: ${m.def}</span></div>` : '<div class="stats-bar">STAT_DATA_UNKNOWN</div>'}
                     <div class="btn-row">
-                        <button class="action-btn">FIGHT</button>
-                        <button class="action-btn">MERCY</button>
+                        <button class="action-btn" onclick="handleMonsterAction('${m.name}', 'FIGHT', this)">FIGHT</button>
+                        <button class="action-btn" onclick="handleMonsterAction('${m.name}', 'MERCY', this)">MERCY</button>
                     </div>
                 `;
                 grid.appendChild(card);
             });
+        }
+
+        window.handleMonsterAction = function(name, action, btn) {
+            if (name === 'Sans') {
+                const desc = document.getElementById('sans-desc');
+                if (action === 'FIGHT') {
+                    desc.innerText = "* SANS dodged. * you're gonna have a bad time.";
+                    desc.style.color = "#f00";
+                    document.body.classList.add('glitch-active');
+                    setTimeout(() => {
+                        if (confirm("D O  Y O U  W A N T  T O  F A C E  H I M ?")) {
+                            window.location.href = 'sans-fight.html';
+                        }
+                        document.body.classList.remove('glitch-active');
+                        desc.style.color = "";
+                        desc.innerText = "Easiest enemy. Can only deal 1 damage. don't ask why he's so tired.";
+                    }, 1000);
+                } else {
+                    desc.innerText = "* SANS shrugs. 'take it easy, kid.'";
+                }
+            } else {
+                alert(`${name} was ${action === 'FIGHT' ? 'defeated' : 'spared'}!`);
+            }
         }
 
         search.addEventListener('input', renderMonsters);
