@@ -327,8 +327,11 @@
         render();
     </script>
 
-    <!-- wwg-mobile-patch-js-start -->
+    <script src="economy.js"></script>
+    <script src="gaster-hook.js"></script>
     <script>
+        GasterHook.spawnFragment('fragment-backrooms', '40%', '5%');
+        
         // Touch-to-Mouse Polyfill for legacy canvas interactives
         document.addEventListener('touchstart', function(e) {
             if(e.touches.length > 0) {
