@@ -79,9 +79,22 @@
 
         #overlay { position: fixed; inset: 0; background: #000; display: none; flex-direction: column; align-items: center; justify-content: center; z-index: 1000; }
         .glitch { filter: invert(1) grayscale(1) contrast(500%); }
+
+        /* CRT FX */
+        body::before {
+            content: " ";
+            display: block;
+            position: fixed;
+            top: 0; left: 0; bottom: 0; right: 0;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.1) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.03), rgba(0, 255, 0, 0.01), rgba(0, 0, 255, 0.03));
+            z-index: 10000;
+            background-size: 100% 3px, 3px 100%;
+            pointer-events: none;
+        }
     </style>
 </head>
 <body>
+    <script src="transitions.js"></script>
 
     <div id="music-container" style="position: absolute; visibility: hidden; pointer-events: none;">
         <audio id="bgm" loop src="megalovania but its a metal cover.mp3"></audio>

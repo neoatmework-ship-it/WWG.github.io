@@ -57,8 +57,17 @@
         .hero {
             position: relative;
             text-align: center;
-            padding: 80px 24px 48px;
+            padding: 100px 24px 60px;
             overflow: hidden;
+            background: radial-gradient(circle at 50% 50%, rgba(167, 139, 250, 0.05) 0%, transparent 70%);
+        }
+
+        #hero-canvas {
+            position: absolute;
+            inset: 0;
+            z-index: 0;
+            pointer-events: none;
+            opacity: 0.6;
         }
 
         .hero::before {
@@ -760,6 +769,7 @@
         </div>
         <div class="id-coins">🪙 <span class="coin-balance-val">0</span></div>
     </a>
+        <canvas id="hero-canvas"></canvas>
         <span class="hero-badge">✦ Curated Collection</span>
         <a href="../neo-portfolio/index.html" style="text-decoration: none; color: var(--accent); font-weight: 700; font-size: 0.7rem; letter-spacing: 2px; margin-bottom: 20px; display: block; opacity: 0.6; transition: 0.3s; text-transform: uppercase;" onmouseover="this.style.opacity=1" onmouseout="this.style.opacity=0.6">BY NEO</a>
         <h1><span class="gradient-text" id="wwg-title" style="cursor:pointer;user-select:none;" title="WWG">WWG</span>
@@ -3477,7 +3487,74 @@
     </script>
     <script src="tracker.js" defer></script>
 <!-- HINT: The Pattern Breaker connects the four corners of existence in the proper order... -->
+    <script src="transitions.js"></script>
     <script>
+        // ── Void Starfield Canvas Logic ──
+        (function() {
+            const canvas = document.getElementById('hero-canvas');
+            if(!canvas) return;
+            const ctx = canvas.getContext('2d');
+            let w, h, stars = [];
+            
+            function init() {
+                w = canvas.width = window.innerWidth;
+                h = canvas.height = 400; 
+                stars = [];
+                for(let i=0; i<150; i++) {
+                    stars.push({
+                        x: Math.random() * w,
+                        y: Math.random() * h,
+                        size: Math.random() * 1.5,
+                        speed: Math.random() * 0.5 + 0.2
+                    });
+                }
+            }
+            
+            function animate() {
+                ctx.clearRect(0, 0, w, h);
+                ctx.fillStyle = '#fff';
+                stars.forEach(s => {
+                    ctx.globalAlpha = 0.3 + Math.random() * 0.4;
+                    ctx.beginPath();
+                    ctx.arc(s.x, s.y, s.size, 0, Math.PI*2);
+                    ctx.fill();
+                    s.y -= s.speed;
+                    if(s.y < 0) s.y = h;
+                });
+                requestAnimationFrame(animate);
+            }
+            
+            window.addEventListener('resize', init);
+            init();
+            animate();
+        })();
+
+        // ── 3D Card Tilt Logic ──
+        (function() {
+            const cards = document.querySelectorAll('.card');
+            cards.forEach(card => {
+                card.addEventListener('mousemove', (e) => {
+                    const rect = card.getBoundingClientRect();
+                    const x = e.clientX - rect.left;
+                    const y = e.clientY - rect.top;
+                    const centerX = rect.width / 2;
+                    const centerY = rect.height / 2;
+                    const rotateX = (y - centerY) / 8;
+                    const rotateY = (centerX - x) / 8;
+                    
+                    card.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) translateY(-8px)`;
+                    card.style.transition = 'none';
+                    card.style.zIndex = "10";
+                });
+                
+                card.addEventListener('mouseleave', () => {
+                    card.style.transform = `perspective(1000px) rotateX(0deg) rotateY(0deg) translateY(0)`;
+                    card.style.transition = 'transform 0.5s ease, box-shadow 0.4s';
+                    card.style.zIndex = "1";
+                });
+            });
+        })();
+
         function updateIdentity() {
             const data = JSON.parse(localStorage.getItem('wwg_avatar_data') || '{}');
             if (data.emoji) {

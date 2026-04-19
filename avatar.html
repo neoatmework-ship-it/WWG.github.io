@@ -166,6 +166,21 @@
             border-radius: 50px; font-weight: bold; display: none;
             z-index: 2000;
         }
+
+        /* Polish FX */
+        .items-locked-pulse { animation: locked-pulse 2s infinite ease-in-out; }
+        @keyframes locked-pulse {
+            0%, 100% { box-shadow: 0 0 5px rgba(255, 255, 255, 0.05); }
+            50% { box-shadow: 0 0 20px rgba(167, 139, 250, 0.2); }
+        }
+        .transforming {
+            animation: transform-flash 0.5s ease-out forwards;
+        }
+        @keyframes transform-flash {
+            0% { filter: brightness(1); transform: scale(1); }
+            50% { filter: brightness(5); transform: scale(1.1); }
+            100% { filter: brightness(1); transform: scale(1); }
+        }
     </style>
 </head>
 <body>
@@ -210,6 +225,7 @@
 
     <div class="save-banner" id="save-banner">IDENTITY SAVED</div>
 
+    <script src="transitions.js"></script>
     <script src="economy.js"></script>
     <script>
         const STORAGE_KEY = 'wwg_avatar_data';
@@ -229,6 +245,11 @@
         if (saved) avatarData = JSON.parse(saved);
 
         function updatePreview() {
+            const container = document.getElementById('avatar-view');
+            container.classList.remove('transforming');
+            void container.offsetWidth; // Trigger reflow
+            container.classList.add('transforming');
+
             const emojiEl = document.getElementById('emoji-view');
             emojiEl.textContent = avatarData.emoji;
             document.getElementById('aura-view').style.background = avatarData.aura;
@@ -240,9 +261,11 @@
             Object.entries(REWARDS).forEach(([id, config]) => {
                 const item = document.getElementById(id + '-item');
                 if (avatarData.unlocked.includes(config.key)) {
-                    item.classList.remove('locked-item');
+                    item.classList.remove('locked-item', 'items-locked-pulse');
                     item.querySelector('.price-tag').textContent = 'UNLOCKED';
                     item.querySelector('.price-tag').style.color = '#4ade80';
+                } else {
+                    item.classList.add('items-locked-pulse');
                 }
             });
 
