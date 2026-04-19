@@ -56,10 +56,15 @@
         /* ── Hero ── */
         .hero {
             position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
             text-align: center;
-            padding: 100px 24px 60px;
+            padding: 120px 24px 80px;
             overflow: hidden;
             background: radial-gradient(circle at 50% 50%, rgba(167, 139, 250, 0.05) 0%, transparent 70%);
+            min-height: 450px;
         }
 
         #hero-canvas {
@@ -780,8 +785,8 @@
         }
         window.addEventListener('load', syncHeader);
         window.addEventListener('economyUpdate', syncHeader);
-        window.addEventListener('storage', syncHeader);
     </script>
+    <section class="hero">
         <canvas id="hero-canvas"></canvas>
         <span class="hero-badge">✦ Curated Collection</span>
         <a href="../neo-portfolio/index.html" style="text-decoration: none; color: var(--accent); font-weight: 700; font-size: 0.7rem; letter-spacing: 2px; margin-bottom: 20px; display: block; opacity: 0.6; transition: 0.3s; text-transform: uppercase;" onmouseover="this.style.opacity=1" onmouseout="this.style.opacity=0.6">BY NEO</a>
@@ -3511,8 +3516,9 @@
             let w, h, stars = [];
             
             function init() {
+                const hero = document.querySelector('.hero');
                 w = canvas.width = window.innerWidth;
-                h = canvas.height = 400; 
+                h = canvas.height = hero ? hero.offsetHeight : 450; 
                 stars = [];
                 for(let i=0; i<150; i++) {
                     stars.push({
@@ -3568,23 +3574,6 @@
                 });
             });
         })();
-
-        function updateIdentity() {
-            const data = JSON.parse(localStorage.getItem('wwg_avatar_data') || '{}');
-            if (data.emoji) {
-                const av = document.getElementById('id-avatar');
-                if (data.emoji.startsWith('http')) {
-                    av.innerHTML = `<img src="${data.emoji}" style="width:24px; height:24px; image-rendering:pixelated;">`;
-                } else {
-                    av.textContent = data.emoji;
-                }
-                document.getElementById('id-name').textContent = data.nickname || 'VOID_VISITOR';
-            }
-        }
-        window.addEventListener('load', updateIdentity);
-        window.addEventListener('storage', updateIdentity);
-        window.addEventListener('economyUpdate', updateIdentity);
     </script>
 </body>
-
-</html>
+</html>
