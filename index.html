@@ -730,30 +730,23 @@
             92% { opacity: 0.5; }
             95% { opacity: 0.8; }
         }
-        /* ── Identity Bar ── */
-        .identity-bar {
-            position: fixed; top: 0; left: 0; width: 100%; height: 60px;
-            background: linear-gradient(180deg, rgba(5, 5, 8, 0.95) 0%, rgba(5, 5, 8, 0.8) 100%);
-            backdrop-filter: blur(12px);
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-            display: flex; align-items: center; justify-content: space-between;
-            padding: 0 30px; z-index: 5000; text-decoration: none; color: inherit;
-            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.5);
-            transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        /* ── Economy Bar (User Preferred) ── */
+        .economy-bar {
+            position: sticky; top: 0; z-index: 2000;
+            background: rgba(5,5,8,0.8); backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+            padding: 10px 20px; display: flex; justify-content: flex-end; align-items: center; gap: 20px;
+            font-family: 'Outfit', sans-serif;
         }
-        .identity-bar:hover { background: rgba(15, 15, 20, 0.95); border-bottom-color: var(--accent); }
-        .id-profile { display: flex; align-items: center; gap: 15px; }
-        .id-avatar { font-size: 1.8rem; filter: drop-shadow(0 0 10px rgba(167, 139, 250, 0.3)); }
-        .id-name { 
-            font-size: 1.1rem; font-weight: 700; text-transform: uppercase; 
-            letter-spacing: 2px; color: #fff; font-family: 'Space Grotesk', sans-serif;
-            text-shadow: 0 2px 10px rgba(0,0,0,0.5);
+        .econ-link { text-decoration: none; display: flex; align-items: center; gap: 8px; transition: 0.2s; }
+        .coin-btn {
+            font-family: 'Share Tech Mono', monospace; color: #ffd700;
+            background: rgba(255, 215, 0, 0.1); padding: 4px 12px;
+            border-radius: 50px; border: 1px solid rgba(255, 215, 0, 0.3); font-size: 0.9rem;
         }
-        .id-coins { 
-            font-family: 'Space Grotesk', sans-serif; font-weight: 700; 
-            color: var(--orange); font-size: 1.1rem; display: flex; align-items: center; gap: 8px;
-            background: rgba(251, 146, 60, 0.1); padding: 6px 15px; border-radius: 100px;
-            border: 1px solid rgba(251, 146, 60, 0.2);
+        .avatar-btn {
+            padding: 4px 12px; background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1); border-radius: 50px;
         }
     </style>
     <script src="economy.js"></script>
@@ -761,14 +754,34 @@
 </head>
 
 <body>
+    <div class="economy-bar">
+        <a href="shop.html" class="econ-link coin-btn">
+            <span>🪙</span> <span class="coin-balance-val">0</span>
+        </a>
+        <a href="avatar.html" id="avatar-btn" class="econ-link avatar-btn">
+            <span id="header-avatar-emoji" style="font-size: 1.2rem;">👾</span>
+            <span id="header-avatar-nick" style="font-size: 0.8rem; font-weight: 600; color: #fff; letter-spacing: 0.5px;">Void_Visitor</span>
+        </a>
+    </div>
 
-    <a href="avatar.html" class="identity-bar" id="id-bar">
-        <div class="id-profile">
-            <span class="id-avatar" id="id-avatar">👾</span>
-            <span class="id-name" id="id-name">VOID_VISITOR</span>
-        </div>
-        <div class="id-coins">🪙 <span class="coin-balance-val">0</span></div>
-    </a>
+    <script>
+        // Sync Avatar and Coins in Header
+        function syncHeader() {
+            const avatarSaved = localStorage.getItem('wwg_avatar_data');
+            if (avatarSaved) {
+                const data = JSON.parse(avatarSaved);
+                document.getElementById('header-avatar-emoji').textContent = data.emoji || '👾';
+                document.getElementById('header-avatar-nick').textContent = data.nickname || 'Void_Visitor';
+                const btn = document.getElementById('avatar-btn');
+                btn.style.borderColor = (data.aura && data.aura !== 'transparent') ? data.aura : 'rgba(255,255,255,0.1)';
+                btn.style.boxShadow = (data.aura && data.aura !== 'transparent') ? `0 0 10px ${data.aura}` : 'none';
+            }
+            if (window.Economy) Economy.updateUI();
+        }
+        window.addEventListener('load', syncHeader);
+        window.addEventListener('economyUpdate', syncHeader);
+        window.addEventListener('storage', syncHeader);
+    </script>
         <canvas id="hero-canvas"></canvas>
         <span class="hero-badge">✦ Curated Collection</span>
         <a href="../neo-portfolio/index.html" style="text-decoration: none; color: var(--accent); font-weight: 700; font-size: 0.7rem; letter-spacing: 2px; margin-bottom: 20px; display: block; opacity: 0.6; transition: 0.3s; text-transform: uppercase;" onmouseover="this.style.opacity=1" onmouseout="this.style.opacity=0.6">BY NEO</a>
@@ -781,6 +794,7 @@
             <input class="search-input" id="search" type="text"
                 placeholder="Search 108+ sites by name, description, or tag...">
             <a href="secret-hub.html" class="vault-btn" title="The Secret Hub">
+                <img src="https://undertale.wiki/images/Sans_attack_Gaster_Blaster.png" style="width: 24px; height: auto; image-rendering: pixelated; filter: drop-shadow(0 0 5px rgba(255,255,255,0.5));">
                 <span class="vault-icon">🔒</span>
             </a>
         </div>
