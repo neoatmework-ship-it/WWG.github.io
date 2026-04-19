@@ -3303,7 +3303,7 @@
         <p><span id="footer-text" style="cursor:help">WWG — Weird Website Gallery</span> · Made with <span
                 id="footer-logic" style="cursor:help">✦</span> and curiosity
             <br><br>
-            <span id="footer-version" style="font-size: 0.6rem; opacity: 0.3; cursor: pointer;">v4.0.0-UNDERGROUND</span><br>
+            <span id="footer-version" style="font-size: 0.6rem; opacity: 0.3; cursor: pointer;">v5.0.0-VOID</span><br>
         <div id="guide-link-container" style="display:none;">
             <a href="cheatsheet.html"
                 style="color:rgba(255,255,255,0.2);text-decoration:none;font-size:0.7rem;transition:0.3s;"
@@ -3406,6 +3406,16 @@
 
             // ─── SEARCH still filters cards ───
             search.addEventListener('input', () => {
+                const q = search.value.toLowerCase().trim();
+                // SECRET COMMANDS
+                if (q === 'terminal' || q === 'boot' || q === 'termos') {
+                    if (window.pageTransition) {
+                        window.pageTransition('retro-boot.html');
+                    } else {
+                        window.location.href = 'retro-boot.html';
+                    }
+                    return;
+                }
                 filterCards();
             });
 

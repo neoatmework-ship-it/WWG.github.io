@@ -207,6 +207,9 @@
                     <div class="item-card locked-item" id="judge-item" onclick="setRewardAvatar('judge')">
                         ⚖️ Judge <span class="price-tag">REWARD</span>
                     </div>
+                    <div class="item-card locked-item" id="sysadmin-item" onclick="setRewardAvatar('sysadmin')">
+                        🖥️ SysAdmin <span class="price-tag">REWARD</span>
+                    </div>
                 </div>
             </div>
 
@@ -217,8 +220,27 @@
             </div>
 
             <div class="guide-panel">
-                <span class="option-label">The Only Trial</span>
-                <div class="quest-item"><span>THE JUDGE</span><span class="quest-req">Survive the 30-second final attack in the Secret Hub.</span></div>
+                <span class="option-label">Achievement Guide (Step-by-Step)</span>
+                
+                <div style="margin-bottom: 25px;">
+                    <div class="quest-item" style="font-weight: 600; color: var(--accent);">1. THE JUDGE (Void Conqueror)</div>
+                    <div class="quest-req" style="margin-top: 5px; line-height: 1.4;">
+                        • Visit the home page.<br>
+                        • Click the "WWG" title 3 times quickly.<br>
+                        • Survive the 30-second glitch attack in the Secret Hub.<br>
+                        • Result: Unlocks ⚖️ Judge Identity.
+                    </div>
+                </div>
+
+                <div>
+                    <div class="quest-item" style="font-weight: 600; color: #4ade80;">2. THE SYSADMIN (System Root)</div>
+                    <div class="quest-req" style="margin-top: 5px; line-height: 1.4;">
+                        • Visit the home page.<br>
+                        • Type "terminal" into the search bar.<br>
+                        • Wait for the boot sequence to complete.<br>
+                        • Result: Unlocks 🖥️ SysAdmin Identity.
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -238,7 +260,8 @@
         };
 
         const REWARDS = {
-            'judge': { emoji: '⚖️', name: 'JUDGEMENT', aura: '#0cf', badge: 'THE JUDGE', key: 'the-judge' }
+            'judge': { emoji: '⚖️', name: 'JUDGEMENT', aura: '#0cf', badge: 'THE JUDGE', key: 'void-conqueror' },
+            'sysadmin': { emoji: '🖥️', name: 'SYS_ADMIN', aura: 'repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,255,0,0.1) 2px, rgba(0,255,0,0.1) 4px)', badge: 'SYS_ADMIN', key: 'the-terminal' }
         };
 
         const saved = localStorage.getItem(STORAGE_KEY);
