@@ -8,11 +8,11 @@ const Discovery = {
     // Define all available secrets in the system
     SECRETS: [
         { 
-            id: 'the-underground', 
-            name: 'The Underground', 
-            description: 'A reality-glitched archive from another timeline.',
-            icon: '💀',
-            url: 'underground.html'
+            id: 'void-conqueror', 
+            name: 'Void Conqueror', 
+            description: 'You faced the judgement and survived.',
+            icon: '⚖️',
+            url: 'sans-fight.html'
         }
     ],
 

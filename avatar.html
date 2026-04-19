@@ -138,7 +138,6 @@
             font-weight: bold;
         }
 
-        /* ──── GUIDE SECTION ──── */
         .guide-panel {
             margin-top: 40px;
             padding: 25px;
@@ -186,26 +185,12 @@
 
         <div class="controls">
             <div class="option-group">
-                <span class="option-label">High-Traction Identities</span>
+                <span class="option-label">Reward Identities</span>
                 <div class="option-grid">
-                    <div class="item-card active" onclick="setAvatar('👾', 'Void_Visitor')">👾 Void</div>
-                    <div class="item-card" onclick="setAvatar('🤖', 'Cyber_Link')">🤖 Mech</div>
-                    
+                    <div class="item-card active" onclick="resetAvatar()">👾 Visitor</div>
                     <!-- Reward Identities -->
                     <div class="item-card locked-item" id="judge-item" onclick="setRewardAvatar('judge')">
                         ⚖️ Judge <span class="price-tag">REWARD</span>
-                    </div>
-                    <div class="item-card locked-item" id="alchemist-item" onclick="setRewardAvatar('alchemist')">
-                        ⚗️ Alchemist <span class="price-tag">REWARD</span>
-                    </div>
-                    <div class="item-card locked-item" id="voidwalker-item" onclick="setRewardAvatar('voidwalker')">
-                        🔥 Voidwalker <span class="price-tag">REWARD</span>
-                    </div>
-                    <div class="item-card locked-item" id="collector-item" onclick="setRewardAvatar('collector')">
-                        💎 Collector <span class="price-tag">REWARD</span>
-                    </div>
-                    <div class="item-card locked-item" id="wingdings-item" style="font-family: 'VT323', monospace;" onclick="setRewardAvatar('wingdings')">
-                        ⚐ Wingdings <span class="price-tag">???</span>
                     </div>
                 </div>
             </div>
@@ -217,12 +202,8 @@
             </div>
 
             <div class="guide-panel">
-                <span class="option-label">Achievement Guide</span>
+                <span class="option-label">The Only Trial</span>
                 <div class="quest-item"><span>THE JUDGE</span><span class="quest-req">Survive the total collapse of the barrier.</span></div>
-                <div class="quest-item"><span>THE ALCHEMIST</span><span class="quest-req">Synthesize the essence of immortality (alchemy).</span></div>
-                <div class="quest-item"><span>THE VOIDWALKER</span><span class="quest-req">Harvest 1,000 souls in the blaster void.</span></div>
-                <div class="quest-item"><span>THE COLLECTOR</span><span class="quest-req">Reassemble the 5 shattered Gaster Fragments.</span></div>
-                <div class="quest-item"><span>THE GHOST</span><span class="quest-req">Speak His Name into the console.</span></div>
             </div>
         </div>
     </div>
@@ -241,11 +222,7 @@
         };
 
         const REWARDS = {
-            'judge': { emoji: '⚖️', name: 'JUDGEMENT', aura: '#0cf', badge: 'THE JUDGE', key: 'the-judge' },
-            'alchemist': { emoji: '⚗️', name: 'ASCENDED', aura: '#ffd700', badge: 'ALCHEMIST', key: 'the-alchemist' },
-            'voidwalker': { emoji: '🔥', name: 'VOID_THREAT', aura: '#f00', badge: 'VOIDWALKER', key: 'the-voidwalker' },
-            'collector': { emoji: '💎', name: 'ARCHIVIST', aura: '#fff', badge: 'COLLECTOR', key: 'the-collector' },
-            'wingdings': { emoji: '⚐', name: '⚐☜🕆', aura: '#333', badge: '🕈👎 ☝︎✌︎💧︎❄︎☜︎☼︎', key: 'the-wingdings' }
+            'judge': { emoji: '⚖️', name: 'JUDGEMENT', aura: '#0cf', badge: 'THE JUDGE', key: 'the-judge' }
         };
 
         const saved = localStorage.getItem(STORAGE_KEY);
@@ -272,16 +249,18 @@
             save();
         }
 
-        function setAvatar(emoji, nick) {
-            avatarData.emoji = emoji;
-            avatarData.nickname = nick;
+        function resetAvatar() {
+            avatarData.emoji = '👾';
+            avatarData.nickname = 'Void_Visitor';
+            avatarData.aura = 'transparent';
+            avatarData.badge = 'EXPLORER';
             updatePreview();
         }
 
         function setRewardAvatar(id) {
             const config = REWARDS[id];
             if (!avatarData.unlocked.includes(config.key)) {
-                alert(`REQUIREMENT NOT MET: Refer to the Achievement Guide.`);
+                alert(`REQUIREMENT NOT MET: Defeat Sans to win judgement.`);
                 return;
             }
             avatarData.emoji = config.emoji;
@@ -303,21 +282,6 @@
             banner.style.display = 'block';
             setTimeout(() => banner.style.display = 'none', 1000);
         }
-
-        // ──── EASTER EGG: G-A-S-T-E-R ────
-        let inputString = "";
-        window.addEventListener('keydown', (e) => {
-            inputString += e.key.toUpperCase();
-            if (inputString.endsWith("GASTER")) {
-                if (!avatarData.unlocked.includes('the-wingdings')) {
-                    avatarData.unlocked.push('the-wingdings');
-                    save();
-                    alert("...DARKER... DARKER... YET DARKER...");
-                    updatePreview();
-                }
-            }
-            if (inputString.length > 20) inputString = inputString.slice(-20);
-        });
 
         updatePreview();
     </script>
