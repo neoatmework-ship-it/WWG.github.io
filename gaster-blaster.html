@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GASTER_BLASTER://SIMULATOR</title>
+    <link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #000;
+            --beam: #fff;
+            --beam-glow: #0cf;
+            --accent: #fff;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; cursor: crosshair; }
+
+        body {
+            background: var(--bg);
+            color: var(--accent);
+            font-family: 'VT323', monospace;
+            overflow: hidden;
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* ──── VOID PARTICLES ──── */
+        #particle-canvas {
+            position: fixed; top: 0; left: 0;
+            width: 100%; height: 100%;
+            z-index: 1; pointer-events: none;
+        }
+
+        /* ──── CRT SCANLINES ──── */
+        .crt-overlay {
+            position: fixed; inset: 0;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.1) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.03), rgba(0, 255, 0, 0.01), rgba(0, 0, 255, 0.03));
+            background-size: 100% 3px, 3px 100%;
+            pointer-events: none; z-index: 1000;
+        }
+
+        .ui-container {
+            position: fixed; top: 20px; left: 20px;
+            z-index: 2000; display: flex; flex-direction: column; gap: 10px;
+            background: rgba(0,0,0,0.8); padding: 15px; border: 2px solid #333;
+        }
+
+        .title { font-size: 2.5rem; letter-spacing: 4px; color: #fff; text-shadow: 2px 2px #0cf; }
+        .hint { font-size: 1.2rem; color: #666; }
+
+        .btn {
+            background: #000; border: 2px solid #fff; color: #fff;
+            font-family: inherit; font-size: 1.4rem; padding: 5px 15px;
+            cursor: pointer; transition: 0.2s;
+        }
+        .btn:hover { background: #fff; color: #000; box-shadow: 0 0 15px #fff; }
+
+        /* ──── BLASTER STYLING ──── */
+        .blaster {
+            position: absolute; width: 100px; height: 100px;
+            background: url('https://undertale.wiki/images/Gaster_Blaster_idle.gif') no-repeat center center;
+            background-size: contain;
+            z-index: 100; pointer-events: none;
+            image-rendering: pixelated;
+            transition: transform 0.1s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .beam {
+            position: absolute; background: #fff;
+            box-shadow: 0 0 20px #0cf, 0 0 40px #fff, 0 0 60px #0cf;
+            z-index: 90; pointer-events: none; transform-origin: top center;
+            opacity: 0;
+        }
+
+        .shake { animation: shake 0.2s infinite; }
+        @keyframes shake {
+            0% { transform: translate(2px, 2px); }
+            50% { transform: translate(-2px, -2px); }
+            100% { transform: translate(2px, -2px); }
+        }
+
+        .glitch-flash {
+            position: fixed; inset: 0; background: #fff; opacity: 0;
+            z-index: 5000; pointer-events: none;
+        }
+
+        @keyframes flashIn { 0% { opacity: 0.8; } 100% { opacity: 0; } }
+
+        .back-hub { position: fixed; bottom: 20px; right: 20px; z-index: 2000; color: #444; font-size: 1.5rem; text-decoration: none; }
+        .back-hub:hover { color: #fff; }
+    </style>
+</head>
+<body>
+
+    <canvas id="particle-canvas"></canvas>
+    <div class="crt-overlay"></div>
+    <div class="glitch-flash" id="flash"></div>
+
+    <div class="ui-container">
+        <h1 class="title">GASTER_BLASTER</h1>
+        <p class="hint">CLICK ANYWHERE TO FIRE // SPACE TO RESET</p>
+        <button class="btn" onclick="triggerJudgement()">JUDGEMENT_MODE</button>
+    </div>
+
+    <a href="index.html" class="back-hub">← HUB</a>
+
+    <script>
+        const canvas = document.getElementById('particle-canvas');
+        const ctx = canvas.getContext('2d');
+        const flash = document.getElementById('flash');
+
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+
+        // Void Particles
+        let particles = [];
+        class Particle {
+            constructor() {
+                this.x = Math.random() * canvas.width;
+                this.y = Math.random() * canvas.height;
+                this.size = Math.random() * 2;
+                this.speedY = Math.random() * 0.5 + 0.1;
+                this.opacity = Math.random();
+            }
+            update() {
+                this.y -= this.speedY;
+                if (this.y < 0) this.y = canvas.height;
+            }
+            draw() {
+                ctx.fillStyle = `rgba(255, 255, 255, ${this.opacity})`;
+                ctx.fillRect(this.x, this.y, this.size, this.size);
+            }
+        }
+
+        function initParticles() {
+            for (let i = 0; i < 100; i++) particles.push(new Particle());
+        }
+
+        function animateParticles() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            particles.forEach(p => { p.update(); p.draw(); });
+            requestAnimationFrame(animateParticles);
+        }
+
+        initParticles();
+        animateParticles();
+
+        // ──── BLASTER LOGIC ────
+
+        window.onclick = (e) => {
+            if (e.target.tagName === 'BUTTON') return;
+            fireBlaster(e.clientX, e.clientY);
+        };
+
+        window.onkeydown = (e) => {
+            if (e.code === 'Space') {
+                document.querySelectorAll('.blaster, .beam').forEach(el => el.remove());
+            }
+        };
+
+        async function fireBlaster(targetX, targetY) {
+            const blaster = document.createElement('div');
+            blaster.className = 'blaster';
+            
+            // Spawn position (off-screen)
+            const spawnX = targetX + (Math.random() - 0.5) * 400;
+            const spawnY = targetY - 300 - Math.random() * 200;
+            
+            blaster.style.left = spawnX + 'px';
+            blaster.style.top = spawnY + 'px';
+            
+            // Angle to target
+            const angle = Math.atan2(targetY - spawnY, targetX - spawnX);
+            blaster.style.transform = `rotate(${angle * 180 / Math.PI + 90}deg) scale(0)`;
+            
+            document.body.appendChild(blaster);
+
+            // Animate in
+            await new Promise(r => setTimeout(r, 10));
+            blaster.style.transform = `rotate(${angle * 180 / Math.PI + 90}deg) scale(1.5)`;
+            
+            // Charge phase
+            await new Promise(r => setTimeout(r, 400));
+            blaster.style.transform += ' scale(1.2)';
+            
+            // Fire!
+            const beam = document.createElement('div');
+            beam.className = 'beam';
+            beam.style.left = (spawnX + 45) + 'px';
+            beam.style.top = (spawnY + 45) + 'px';
+            beam.style.width = '10px';
+            beam.style.height = '1500px';
+            beam.style.transform = `rotate(${angle * 180 / Math.PI + 90}deg)`;
+            document.body.appendChild(beam);
+
+            // Beam Animation
+            beam.style.opacity = '1';
+            beam.style.width = '60px';
+            beam.style.left = (spawnX + 20) + 'px'; // Center adjustment
+            
+            document.body.classList.add('shake');
+            flash.style.animation = 'flashIn 0.3s ease-out';
+
+            setTimeout(() => {
+                beam.style.width = '0px';
+                beam.style.opacity = '0';
+                blaster.style.opacity = '0';
+                blaster.style.transform += ' scale(0)';
+                document.body.classList.remove('shake');
+                flash.style.animation = '';
+                setTimeout(() => { beam.remove(); blaster.remove(); }, 300);
+            }, 500);
+        }
+
+        async function triggerJudgement() {
+            const cx = window.innerWidth / 2;
+            const cy = window.innerHeight / 2;
+            const radius = 300;
+            
+            for (let i = 0; i < 8; i++) {
+                const angle = (i / 8) * Math.PI * 2;
+                const x = cx + Math.cos(angle) * (radius - 100);
+                const y = cy + Math.sin(angle) * (radius - 100);
+                fireBlaster(cx, cy);
+                await new Promise(r => setTimeout(r, 100));
+            }
+        }
+
+        window.onresize = () => {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        };
+    </script>
+</body>
+</html>
