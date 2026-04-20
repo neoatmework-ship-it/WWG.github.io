@@ -171,10 +171,8 @@
         <a href="terminal.html" class="back-link">← [RETURN_TO_CONSOLES]</a>
     </div>
 
+    <script src="telemetry.js"></script>
     <script>
-        const BEACON_NAMESPACE = 'wwg_telemetry_pikav';
-        const API_BASE = `https://api.counterapi.dev/v1/${BEACON_NAMESPACE}`;
-
         const els = {
             visits: document.getElementById('val-visits'),
             visitors: document.getElementById('val-visitors'),
@@ -189,44 +187,17 @@
             els.log.prepend(p);
         }
 
-        async function proxyFetch(target) {
-            const proxies = [
-                (url) => url, // Direct
-                (url) => `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(url)}`,
-                (url) => `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`,
-                (url) => `https://corsproxy.io/?${encodeURIComponent(url)}`,
-            ];
-
-            for (let getProxyUrl of proxies) {
-                try {
-                    const res = await fetch(getProxyUrl(target));
-                    if (res.ok) return await res.json();
-                } catch (e) {}
-            }
-            throw new Error("ALL_PROXIES_FAILED");
-        }
-
-        async function fetchStat(key) {
-            try {
-                const data = await proxyFetch(`${API_BASE}/${key}`);
-                return data.count || 0;
-            } catch (e) {
-                console.error(`Fetch failed for ${key}:`, e);
-                return "ERR";
-            }
-        }
-
         async function loadData() {
-            addLog("Pinging telemetry nodes...");
-            const v = await fetchStat('total_visits');
+            addLog("Establishing connection to telemetry node...");
+            const v = await Telemetry.fetch('total_visits');
             els.visits.textContent = v;
             
-            addLog("De-anonymizing visitors...");
-            const u = await fetchStat('visitors');
+            addLog("Intercepting unique visitor IDs...");
+            const u = await Telemetry.fetch('visitors');
             els.visitors.textContent = u;
 
-            addLog("Counting global interactions...");
-            const c = await fetchStat('clicks');
+            addLog("Calculating global interaction density...");
+            const c = await Telemetry.fetch('clicks');
             els.clicks.textContent = c;
 
             els.status.textContent = "STATUS: STABLE";
