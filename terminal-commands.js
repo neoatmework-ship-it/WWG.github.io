@@ -67,7 +67,6 @@ const simpleResponses = {
     'taco': 'It is raining tacos!',
 
     // Fake Hacking Text
-    'hack': '[*] INITIALIZING HACKING SEQUENCE...\\n[*] BYPASSING MAINFRAME...\\n[!] ACCESS DENIED. COUNTER-MEASURE DEPLOYED.',
     'nmap': 'Starting Nmap 7.91...\\nHost is up (0.00013s latency).\\nAll 1000 scanned ports are filtered.',
     'bruteforce': 'Starting dictionary attack...\\ntrying: password\\ntrying: 123456\\ntrying: admin\\ntrying: IlikeFeet\\n[ERROR] LOCKED OUT FOR 999 YEARS.',
     'decrypt': 'Decrypting quantum hash...\\n[=     ] 12%\\n[===   ] 45%\\n[======] 99%\\n[ERROR] DATA CORRUPTED.',
@@ -132,6 +131,24 @@ WWG_COMMANDS['fact'] = function () { writeToTerminal('[FACT] ' + facts[Math.floo
 WWG_COMMANDS['joke'] = function () { writeToTerminal('[JOKE] ' + jokes[Math.floor(Math.random() * jokes.length)]); };
 
 // Complex Commands & Minigames
+WWG_COMMANDS['hack'] = async function() {
+    writeToTerminal('[*] INITIALIZING NEURAL BREACH SEQUENCE...');
+    await new Promise(r => setTimeout(r, 1000));
+    writeToTerminal('[*] PROBING TELEMETRY NODE (api.counterapi.dev)...');
+    await new Promise(r => setTimeout(r, 1500));
+    writeToTerminal('[*] INJECTING QUANTUM PAYLOAD...');
+    await new Promise(r => setTimeout(r, 1200));
+    writeToTerminal('[!] FIREWALL DETECTED. BYPASSING CRYPTOGRAPHIC LAYERS...');
+    await new Promise(r => setTimeout(r, 2000));
+    writeToTerminal('[*] BREACH SUCCESSFUL. SYSTEM BEACON ACCESSIBLE.');
+    
+    if (typeof Discovery !== 'undefined') {
+        Discovery.unlock('the-beacon');
+    }
+
+    writeToTerminal('>> ACCESS_NODE: <a href="beacon.html" style="color:#ffff00">BEACON.HTML</a>', true);
+};
+
 WWG_COMMANDS['roll'] = function (args) {
     let max = parseInt(args[0]) || 6;
     writeToTerminal('You rolled a ' + (Math.floor(Math.random() * max) + 1) + ' (d' + max + ')');

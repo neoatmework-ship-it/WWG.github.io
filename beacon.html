@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SYSTEM_BEACON // WWG Telemetry</title>
+    <link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #050505;
+            --text: #00ffcc;
+            --accent: #ffff00;
+            --low: #333;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            background: var(--bg);
+            color: var(--text);
+            font-family: 'VT323', monospace;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 40px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* ──── RADAR BACKGROUND ──── */
+        .radar {
+            position: fixed;
+            width: 800px;
+            height: 800px;
+            border-radius: 50%;
+            border: 1px solid rgba(0, 255, 204, 0.1);
+            z-index: -1;
+            pointer-events: none;
+        }
+        .radar::after {
+            content: "";
+            position: absolute;
+            inset: 0;
+            border-radius: 50%;
+            background: conic-gradient(from 0deg, transparent 0%, rgba(0, 255, 204, 0.2) 100%);
+            animation: rotate 6s linear infinite;
+        }
+        @keyframes rotate { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+
+        .dashboard {
+            width: 100%;
+            max-width: 900px;
+            background: rgba(0, 0, 0, 0.8);
+            border: 2px solid var(--text);
+            padding: 50px;
+            box-shadow: 0 0 50px rgba(0, 255, 204, 0.2);
+            position: relative;
+            backdrop-filter: blur(10px);
+        }
+
+        h1 {
+            font-size: 4rem;
+            text-align: center;
+            margin-bottom: 40px;
+            letter-spacing: 5px;
+            color: var(--accent);
+            text-shadow: 0 0 20px rgba(255, 255, 0, 0.4);
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 30px;
+            margin-bottom: 40px;
+        }
+
+        .stat-card {
+            text-align: center;
+            border: 1px solid #222;
+            padding: 20px;
+            background: #000;
+        }
+
+        .stat-label {
+            font-size: 1.2rem;
+            color: #666;
+            text-transform: uppercase;
+            margin-bottom: 10px;
+        }
+
+        .stat-value {
+            font-size: 3.5rem;
+            font-weight: bold;
+            color: var(--text);
+        }
+
+        .status-header {
+            display: flex;
+            justify-content: space-between;
+            border-bottom: 1px solid var(--low);
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+            font-size: 1.2rem;
+        }
+
+        .loading {
+            animation: pulse 1s infinite alternate;
+            opacity: 0.5;
+        }
+        @keyframes pulse { from { opacity: 0.3; } to { opacity: 1; } }
+
+        .back-link {
+            display: block;
+            margin-top: 30px;
+            color: #444;
+            text-decoration: none;
+            font-size: 1.5rem;
+            text-align: center;
+        }
+        .back-link:hover { color: var(--accent); }
+
+        /* Scanning effect */
+        .scanline {
+            width: 100%;
+            height: 2px;
+            background: rgba(0, 255, 204, 0.1);
+            position: absolute;
+            top: 0;
+            left: 0;
+            animation: scan 4s linear infinite;
+        }
+        @keyframes scan { from { top: 0; } to { top: 100%; } }
+
+    </style>
+</head>
+<body>
+
+    <div class="radar"></div>
+
+    <div class="dashboard">
+        <div class="scanline"></div>
+        <div class="status-header">
+            <span>NODE_ID: WEAVER_PIKAV</span>
+            <span id="status">STATUS: TRANSMITTING...</span>
+        </div>
+
+        <h1>SYSTEM_BEACON</h1>
+
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-label">Total Visits</div>
+                <div class="stat-value" id="val-visits">---</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Unique Visitors</div>
+                <div class="stat-value" id="val-visitors">---</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Interaction Count</div>
+                <div class="stat-value" id="val-clicks">---</div>
+            </div>
+        </div>
+
+        <div id="log" style="font-size: 1rem; color: #333; line-height: 1.4; height: 100px; overflow: hidden;">
+            [*] Establishing connection to telemetry node...<br>
+            [*] Fetching encrypted data packets from origin...<br>
+        </div>
+
+        <a href="terminal.html" class="back-link">← [RETURN_TO_CONSOLES]</a>
+    </div>
+
+    <script>
+        const BEACON_NAMESPACE = 'wwg_telemetry_pikav';
+        const API_BASE = `https://api.counterapi.dev/v1/${BEACON_NAMESPACE}`;
+
+        const els = {
+            visits: document.getElementById('val-visits'),
+            visitors: document.getElementById('val-visitors'),
+            clicks: document.getElementById('val-clicks'),
+            log: document.getElementById('log'),
+            status: document.getElementById('status')
+        };
+
+        function addLog(msg) {
+            const p = document.createElement('div');
+            p.textContent = `[*] ${msg}`;
+            els.log.prepend(p);
+        }
+
+        async function fetchStat(key) {
+            try {
+                // Fetch directly from counterapi.dev
+                const res = await fetch(`${API_BASE}/${key}`);
+                if (!res.ok) throw new Error(`HTTP ${res.status}`);
+                const data = await res.json();
+                return data.count || 0;
+            } catch (e) {
+                console.error(`Fetch failed for ${key}:`, e);
+                return "ERR";
+            }
+        }
+
+        async function loadData() {
+            addLog("Reading visits...");
+            const v = await fetchStat('total_visits');
+            els.visits.textContent = v;
+            
+            addLog("Reading unique IDs...");
+            const u = await fetchStat('visitors');
+            els.visitors.textContent = u;
+
+            addLog("Calculating global clicks...");
+            const c = await fetchStat('clicks');
+            els.clicks.textContent = c;
+
+            els.status.textContent = "STATUS: STABLE";
+            els.status.style.color = "#00ff00";
+            addLog("Data stream synchronized.");
+        }
+
+        loadData();
+    </script>
+</body>
+</html>

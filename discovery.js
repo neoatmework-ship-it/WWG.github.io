@@ -19,7 +19,14 @@ const Discovery = {
             name: 'TermOS Terminal', 
             description: 'You accessed the restricted command-line interface.',
             icon: '⌨️',
-            url: 'retro-boot.html'
+            url: 'terminal.html'
+        },
+        {
+            id: 'the-beacon',
+            name: 'System Beacon',
+            description: 'You breached the telemetry node. Data streams stabilized.',
+            icon: '📡',
+            url: 'beacon.html'
         }
     ],
 

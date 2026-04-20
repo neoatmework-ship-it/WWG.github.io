@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TermOS // Interactive Terminal</title>
+    <link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
+    <script src="discovery.js"></script>
+    <script src="tracker.js"></script>
+    <style>
+        :root {
+            --green: #00ff41;
+            --bg: #030303;
+            --dim: #003311;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            background: var(--bg);
+            color: var(--green);
+            font-family: 'VT323', monospace;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            padding: 20px;
+            position: relative;
+        }
+
+        /* ──── CRT EFFECTS ──── */
+        body::before {
+            content: "";
+            position: fixed;
+            inset: 0;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.04), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.04));
+            background-size: 100% 2px, 3px 100%;
+            pointer-events: none;
+            z-index: 100;
+        }
+
+        body::after {
+            content: "";
+            position: fixed;
+            inset: 0;
+            background: radial-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 10, 0, 0.15) 100%);
+            pointer-events: none;
+            z-index: 99;
+        }
+
+        #output {
+            flex-grow: 1;
+            overflow-y: auto;
+            white-space: pre-wrap;
+            font-size: 20px;
+            padding-bottom: 20px;
+            scrollbar-width: thin;
+            scrollbar-color: var(--dim) transparent;
+        }
+
+        #output::-webkit-scrollbar { width: 5px; }
+        #output::-webkit-scrollbar-thumb { background: var(--dim); }
+
+        .input-line {
+            display: flex;
+            align-items: center;
+            font-size: 22px;
+            border-top: 1px solid var(--dim);
+            padding-top: 10px;
+            background: var(--bg);
+            z-index: 10;
+        }
+
+        .prompt { margin-right: 15px; color: #fff; }
+
+        #command-input {
+            background: transparent;
+            border: none;
+            color: var(--green);
+            font-family: inherit;
+            font-size: inherit;
+            width: 100%;
+            outline: none;
+        }
+
+        .back-link {
+            position: fixed;
+            top: 10px;
+            right: 20px;
+            color: #666;
+            text-decoration: none;
+            font-size: 16px;
+            z-index: 101;
+        }
+        .back-link:hover { color: var(--green); }
+
+        .glitch { animation: glitch 0.5s infinite; }
+        @keyframes glitch {
+            0% { transform: translate(0); }
+            20% { transform: translate(-2px, 2px); filter: hue-rotate(90deg); }
+            40% { transform: translate(-2px, -2px); }
+            60% { transform: translate(2px, 2px); filter: hue-rotate(180deg); }
+            80% { transform: translate(2px, -2px); }
+            100% { transform: translate(0); }
+        }
+
+        @keyframes shake {
+            10%, 90% { transform: translate3d(-1px, 0, 0); }
+            20%, 80% { transform: translate3d(2px, 0, 0); }
+            30%, 50%, 70% { transform: translate3d(-4px, 0, 0); }
+            40%, 60% { transform: translate3d(4px, 0, 0); }
+        }
+    </style>
+</head>
+<body>
+
+    <a href="index.html" class="back-link">[ESC] DISCONNECT</a>
+
+    <div id="output">TermOS v6.0.4-LTS Initialized...
+Type 'help' for a list of available commands.
+[!] SYSTEM NOTICE: Restricted access detected. Memory monitoring active.
+
+</div>
+
+    <div class="input-line">
+        <span class="prompt">guest@TermOS:~$</span>
+        <input type="text" id="command-input" autofocus spellcheck="false">
+    </div>
+
+    <script src="terminal-commands.js"></script>
+    <script>
+        const output = document.getElementById('output');
+        const input = document.getElementById('command-input');
+        let history = [];
+        let historyIndex = -1;
+
+        function writeToTerminal(text, raw = false) {
+            const div = document.createElement('div');
+            if (raw) {
+                div.innerHTML = text;
+            } else {
+                div.textContent = text;
+            }
+            output.appendChild(div);
+            output.scrollTop = output.scrollHeight;
+        }
+
+        // Global exposing for terminal-commands.js
+        window.writeToTerminal = writeToTerminal;
+
+        input.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                const fullCmd = input.value.trim();
+                if (!fullCmd) return;
+
+                history.push(fullCmd);
+                historyIndex = history.length;
+
+                writeToTerminal(`guest@TermOS:~$ ${fullCmd}`);
+                
+                const parts = fullCmd.split(' ');
+                const cmd = parts[0].toLowerCase();
+                const args = parts.slice(1);
+
+                if (cmd === 'clear' || cmd === 'cls') {
+                    output.innerHTML = '';
+                } else if (cmd === 'exit' || cmd === 'quit') {
+                    window.location.href = 'index.html';
+                } else if (WWG_COMMANDS[cmd]) {
+                    WWG_COMMANDS[cmd](args);
+                } else {
+                    writeToTerminal(`Command not found: ${cmd}. Type 'help' for assistance.`);
+                }
+
+                input.value = '';
+            } else if (e.key === 'ArrowUp') {
+                if (historyIndex > 0) {
+                    historyIndex--;
+                    input.value = history[historyIndex];
+                }
+                e.preventDefault();
+            } else if (e.key === 'ArrowDown') {
+                if (historyIndex < history.length - 1) {
+                    historyIndex++;
+                    input.value = history[historyIndex];
+                } else {
+                    historyIndex = history.length;
+                    input.value = '';
+                }
+                e.preventDefault();
+            }
+        });
+
+        // Initialize autoscroll
+        window.addEventListener('click', () => input.focus());
+    </script>
+</body>
+</html>

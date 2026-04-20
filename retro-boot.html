@@ -393,6 +393,10 @@
             await typeDelay(500);
             addLine('Last login: Mon Mar 03 20:30:00 2026 from 192.168.1.1', 'info');
             addLine('user@server:~$ _', 'success');
+            await typeDelay(1000);
+            addLine('[SYSTEM] REDIRECTING TO INTERACTIVE SHELL...', 'warning');
+            await typeDelay(1000);
+            window.location.href = 'terminal.html';
         }
 
         async function bootBSOD() {
