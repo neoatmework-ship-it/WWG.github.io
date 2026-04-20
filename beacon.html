@@ -189,12 +189,26 @@
             els.log.prepend(p);
         }
 
+        async function proxyFetch(target) {
+            const proxies = [
+                (url) => url, // Direct
+                (url) => `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(url)}`,
+                (url) => `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`,
+                (url) => `https://corsproxy.io/?${encodeURIComponent(url)}`,
+            ];
+
+            for (let getProxyUrl of proxies) {
+                try {
+                    const res = await fetch(getProxyUrl(target));
+                    if (res.ok) return await res.json();
+                } catch (e) {}
+            }
+            throw new Error("ALL_PROXIES_FAILED");
+        }
+
         async function fetchStat(key) {
             try {
-                // Fetch directly from counterapi.dev
-                const res = await fetch(`${API_BASE}/${key}`);
-                if (!res.ok) throw new Error(`HTTP ${res.status}`);
-                const data = await res.json();
+                const data = await proxyFetch(`${API_BASE}/${key}`);
                 return data.count || 0;
             } catch (e) {
                 console.error(`Fetch failed for ${key}:`, e);
@@ -203,15 +217,15 @@
         }
 
         async function loadData() {
-            addLog("Reading visits...");
+            addLog("Pinging telemetry nodes...");
             const v = await fetchStat('total_visits');
             els.visits.textContent = v;
             
-            addLog("Reading unique IDs...");
+            addLog("De-anonymizing visitors...");
             const u = await fetchStat('visitors');
             els.visitors.textContent = u;
 
-            addLog("Calculating global clicks...");
+            addLog("Counting global interactions...");
             const c = await fetchStat('clicks');
             els.clicks.textContent = c;
 
