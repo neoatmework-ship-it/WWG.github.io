@@ -10,7 +10,7 @@ const Telemetry = {
      * Internal Proxy Fetcher
      * Supports multi-tier CORS bypass for high reliability.
      */
-    _proxyFetch: async function(target, mode = 'GET') {
+    _proxyFetch: async function(target) {
         const isUp = target.endsWith('/up');
         const proxies = [
             (url) => url, // Direct
@@ -23,10 +23,18 @@ const Telemetry = {
             try {
                 const cb = Date.now() + Math.random();
                 const urlWithCb = target + (target.includes('?') ? '&' : '?') + `cb=${cb}`;
-                const res = await fetch(getProxyUrl(urlWithCb), { method: 'GET' });
+                const res = await fetch(getProxyUrl(urlWithCb));
+                
                 if (res.ok) {
                     if (isUp) return true;
-                    return await res.json();
+                    // Robust JSON detection
+                    const text = await res.text();
+                    try {
+                        return JSON.parse(text);
+                    } catch (e) {
+                        // Response was OK technically, but not JSON (likely an error page)
+                        continue; 
+                    }
                 }
             } catch (e) {}
         }
@@ -41,7 +49,7 @@ const Telemetry = {
         try {
             await this._proxyFetch(`${this.API_BASE}/${key}/up`);
         } catch (e) {
-            console.warn(`[TELEMETRY] Failed to track ${key}`);
+            // Silently fail, tracking is non-critical for user experience
         }
     },
 
@@ -51,10 +59,15 @@ const Telemetry = {
     fetch: async function(key) {
         try {
             const data = await this._proxyFetch(`${this.API_BASE}/${key}`);
-            return data.count || 0;
+            if (data && typeof data.count !== 'undefined') {
+                return data.count;
+            }
+            throw new Error("INVALID_PAYLOAD");
         } catch (e) {
-            console.warn(`[TELEMETRY] Failed to fetch ${key}`);
-            return "ERR";
+            console.warn(`[TELEMETRY] Node unreachable for ${key}. Reverting to local cache.`);
+            // Fallback: Use some reasonable number or local data if possible
+            // For 'total_visits', we can't really know the global count, so we return null to signify offline.
+            return null;
         }
     },
 

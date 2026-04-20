@@ -189,20 +189,30 @@
 
         async function loadData() {
             addLog("Establishing connection to telemetry node...");
+            
             const v = await Telemetry.fetch('total_visits');
-            els.visits.textContent = v;
+            els.visits.textContent = v !== null ? v : "OFFLINE";
+            if (v === null) addLog("[!] Primary Node (Visits) unreachable. Outage detected.");
             
             addLog("Intercepting unique visitor IDs...");
             const u = await Telemetry.fetch('visitors');
-            els.visitors.textContent = u;
+            els.visitors.textContent = u !== null ? u : "OFFLINE";
+            if (u === null) addLog("[!] Primary Node (Visitors) unreachable. Outage detected.");
 
             addLog("Calculating global interaction density...");
             const c = await Telemetry.fetch('clicks');
-            els.clicks.textContent = c;
+            els.clicks.textContent = c !== null ? c : "OFFLINE";
+            if (c === null) addLog("[!] Primary Node (Clicks) unreachable. Outage detected.");
 
-            els.status.textContent = "STATUS: STABLE";
-            els.status.style.color = "#00ff00";
-            addLog("Data stream synchronized.");
+            if (v === null && u === null && c === null) {
+                els.status.textContent = "STATUS: NODE_OFFLINE";
+                els.status.style.color = "#ffaa00";
+                addLog("[SYSTEM] Central Registry is currently undergoing maintenance.");
+            } else {
+                els.status.textContent = "STATUS: STABLE";
+                els.status.style.color = "#00ff00";
+                addLog("Data stream synchronized.");
+            }
         }
 
         loadData();
