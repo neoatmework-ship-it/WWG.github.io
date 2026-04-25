@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Orbital Defense | WWG</title>
+    <link rel="stylesheet" href="sprite-arcade.css">
+</head>
+<body class="arcade-game">
+    <canvas id="game" class="game-canvas"></canvas>
+    <a href="index.html" class="wwg-back-btn" title="Back to Gallery">&larr;</a>
+    <header class="game-hud">
+        <div class="game-title">
+            <h1>Orbital Defense</h1>
+            <p>Spin a shield around the core and shatter incoming meteors before impact.</p>
+        </div>
+        <div class="stat-bar">
+            <div class="stat">Score <span data-score>0</span></div>
+            <div class="stat">Core <span data-lives>5</span></div>
+            <div class="stat">Threat <span data-level>0</span></div>
+            <button class="restart-btn" data-restart>Restart</button>
+        </div>
+    </header>
+    <div class="game-toast" data-toast></div>
+    <script src="sprite-games.js"></script>
+    <script>WWGSpriteGames.orbitalDefense("game");</script>
+</body>
+</html>
