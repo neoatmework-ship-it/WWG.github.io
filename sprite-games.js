@@ -201,7 +201,8 @@
                 offset: 0,
                 speed: 0,
                 stopAt: 0,
-                spinning: false
+                spinning: false,
+                precision: 0
             }));
             const coins = [];
             let credits = 250;
@@ -209,7 +210,12 @@
             let lastWin = 0;
             let spinTimer = 0;
             let flash = 0;
-            let message = "Fake credits only. Space or Spin to play.";
+            let luck = 100;
+            let streak = 0;
+            let stopIndex = 0;
+            let gameOver = false;
+            let victory = false;
+            let message = "Fake credits only. Reach 1000 credits before luck hits zero.";
             kit.toast(message);
 
             function weightedSymbol() {
@@ -223,7 +229,9 @@
             }
 
             function setStats() {
-                kit.setStats({ credits, bet, win: lastWin });
+                kit.setStats({ credits, bet, win: lastWin, luck: Math.max(0, Math.ceil(luck)), streak });
+                const spinButton = document.querySelector('[data-action="spin"]');
+                if (spinButton) spinButton.textContent = spinTimer > 0 ? `Stop ${Math.min(3, stopIndex + 1)}` : "Spin";
             }
 
             function sprayCoins(multiplier) {
@@ -240,9 +248,45 @@
                 }
             }
 
+            function evaluatePrecision(reel) {
+                const frac = reel.offset - Math.floor(reel.offset);
+                return 1 - Math.min(frac, 1 - frac) * 2;
+            }
+
+            function stopNextReel(auto) {
+                if (spinTimer <= 0 || stopIndex >= reels.length) return;
+                const reel = reels[stopIndex];
+                reel.precision = auto ? .25 : evaluatePrecision(reel);
+                reel.spinning = false;
+                reel.symbol = names[Math.floor(reel.offset) % names.length];
+                reel.target = reel.symbol;
+                reel.offset = 0;
+
+                if (reel.precision > .84) {
+                    streak++;
+                    luck = clamp(luck + 4, 0, 120);
+                    message = `Clean stop. Streak ${streak}.`;
+                } else if (reel.precision < .32) {
+                    streak = 0;
+                    luck = clamp(luck - 7, 0, 120);
+                    message = auto ? "Auto-stop burns luck." : "Messy stop. Luck slipped.";
+                } else {
+                    message = "Reel locked. Keep timing it.";
+                }
+                stopIndex++;
+                if (stopIndex >= reels.length) {
+                    spinTimer = 0;
+                    finishSpin();
+                }
+                kit.toast(message);
+                setStats();
+            }
+
             function finishSpin() {
                 const result = reels.map((r) => r.target);
                 lastWin = 0;
+                const precisionBonus = reels.reduce((sum, reel) => sum + reel.precision, 0);
+                const skillMultiplier = 1 + Math.min(.75, precisionBonus * .1 + streak * .03);
                 const counts = result.reduce((map, symbol) => {
                     map[symbol] = (map[symbol] || 0) + 1;
                     return map;
@@ -250,26 +294,50 @@
                 const triple = Object.keys(counts).find((symbol) => counts[symbol] === 3);
                 const pair = Object.keys(counts).find((symbol) => counts[symbol] === 2);
                 if (triple) {
-                    lastWin = bet * payouts[triple];
-                    message = triple === "seven" ? "JACKPOT. The void blinks back." : `${triple.toUpperCase()} triple pays ${payouts[triple]}x.`;
+                    lastWin = Math.ceil(bet * payouts[triple] * skillMultiplier);
+                    message = triple === "seven" ? "JACKPOT. The void blinks back." : `${triple.toUpperCase()} triple pays with skill bonus.`;
                     sprayCoins(payouts[triple]);
                     flash = 1.1;
+                    luck = clamp(luck + 12, 0, 120);
                 } else if (pair) {
-                    lastWin = Math.ceil(bet * 1.5);
-                    message = `${pair.toUpperCase()} pair pays a small mercy bonus.`;
+                    lastWin = Math.ceil(bet * 1.5 * skillMultiplier);
+                    message = `${pair.toUpperCase()} pair pays with timing bonus.`;
                     sprayCoins(3);
                     flash = .45;
+                    luck = clamp(luck + 3, 0, 120);
                 } else {
-                    message = "No match. The house smiles politely.";
+                    streak = 0;
+                    luck = clamp(luck - 10, 0, 120);
+                    message = "No match. Luck drains.";
                 }
                 credits += lastWin;
-                if (credits <= 0) message = "Out of fake credits. Reset to refill.";
+                if (credits >= 1000) {
+                    victory = true;
+                    gameOver = true;
+                    message = "You beat the void casino with fake credits.";
+                    sprayCoins(24);
+                    flash = 1.5;
+                } else if (credits <= 0) {
+                    gameOver = true;
+                    message = "Out of fake credits. Reset to refill.";
+                } else if (luck <= 0) {
+                    gameOver = true;
+                    message = "Luck hit zero. The round is over.";
+                }
                 kit.toast(message);
                 setStats();
             }
 
             function spin() {
-                if (spinTimer > 0) return;
+                if (spinTimer > 0) {
+                    stopNextReel(false);
+                    return;
+                }
+                if (gameOver) {
+                    message = victory ? "You already won. Reset for a fresh run." : "Round over. Reset to play again.";
+                    kit.toast(message);
+                    return;
+                }
                 if (credits < bet) {
                     message = "Not enough fake credits for that bet.";
                     kit.toast(message);
@@ -277,21 +345,24 @@
                 }
                 credits -= bet;
                 lastWin = 0;
-                spinTimer = 1.55;
+                spinTimer = 4.25;
+                stopIndex = 0;
                 flash = 0;
                 reels.forEach((reel, i) => {
                     reel.target = weightedSymbol();
-                    reel.speed = 26 + i * 7;
-                    reel.stopAt = .75 + i * .32;
+                    reel.speed = 12 + i * 4 + bet * .08;
+                    reel.stopAt = 0;
+                    reel.precision = 0;
                     reel.spinning = true;
                 });
-                message = "Reels spinning. The odds are pretending to be mysterious.";
+                luck = clamp(luck - 3, 0, 120);
+                message = "Press Space, click, or Stop to lock each reel.";
                 kit.toast(message);
                 setStats();
             }
 
             function changeBet(delta) {
-                if (spinTimer > 0) return;
+                if (spinTimer > 0 || gameOver) return;
                 bet = clamp(bet + delta, 5, 50);
                 if (bet > credits && credits > 0) bet = Math.max(5, Math.min(50, credits));
                 message = `Bet set to ${bet} fake credits.`;
@@ -316,21 +387,10 @@
                         reels.forEach((reel) => {
                             if (!reel.spinning) return;
                             reel.offset += reel.speed * dt;
-                            if (spinTimer < reel.stopAt) {
-                                reel.spinning = false;
-                                reel.symbol = reel.target;
-                                reel.offset = 0;
-                            } else {
-                                reel.symbol = names[Math.floor(reel.offset) % names.length];
-                            }
+                            reel.symbol = names[Math.floor(reel.offset) % names.length];
                         });
                         if (spinTimer <= 0) {
-                            reels.forEach((reel) => {
-                                reel.spinning = false;
-                                reel.symbol = reel.target;
-                                reel.offset = 0;
-                            });
-                            finishSpin();
+                            while (stopIndex < reels.length) stopNextReel(true);
                         }
                     }
                     flash = Math.max(0, flash - dt);
@@ -368,7 +428,7 @@
                     ctx.fillText("VOID SLOTS", machineCx, top + 44);
                     ctx.fillStyle = "rgba(255,255,255,.64)";
                     ctx.font = "700 12px Courier New, monospace";
-                    ctx.fillText("PLAY MONEY ONLY", machineCx, top + 66);
+                    ctx.fillText(gameOver ? (victory ? "YOU WON THE RUN" : "ROUND OVER") : "STOP REELS TO PLAY", machineCx, top + 66);
 
                     const reelW = Math.min(150, (machineW - 120) / 3);
                     const reelH = Math.min(190, machineH - 160);
@@ -380,8 +440,9 @@
                         ctx.fillRect(x, y, reelW, reelH);
                         ctx.fillStyle = "#111827";
                         ctx.fillRect(x + 8, y + 8, reelW - 16, reelH - 16);
-                        ctx.strokeStyle = "#7dd3fc";
-                        ctx.lineWidth = 2;
+                        const active = reel.spinning && i === stopIndex;
+                        ctx.strokeStyle = active ? "#fde047" : "#7dd3fc";
+                        ctx.lineWidth = active ? 4 : 2;
                         ctx.strokeRect(x + 8, y + 8, reelW - 16, reelH - 16);
                         const list = reel.spinning ? names : [reel.symbol];
                         if (reel.spinning) {
@@ -392,8 +453,23 @@
                             }
                         } else {
                             kit.sprites[list[0]].draw(ctx, x + reelW / 2, y + reelH / 2, 4.1, kit.time * 8 + i);
+                            if (reel.precision > 0) {
+                                ctx.fillStyle = reel.precision > .84 ? "#bef264" : reel.precision < .32 ? "#fb7185" : "#fef08a";
+                                ctx.font = "700 11px Courier New, monospace";
+                                ctx.fillText(`${Math.round(reel.precision * 100)}%`, x + reelW / 2, y + reelH - 14);
+                            }
                         }
                     });
+
+                    const luckW = machineW - 64;
+                    ctx.fillStyle = "rgba(255,255,255,.1)";
+                    ctx.fillRect(left + 32, top + machineH - 92, luckW, 8);
+                    ctx.fillStyle = luck > 35 ? "#22c55e" : "#fb7185";
+                    ctx.fillRect(left + 32, top + machineH - 92, luckW * clamp(luck / 100, 0, 1), 8);
+                    ctx.fillStyle = "rgba(255,255,255,.1)";
+                    ctx.fillRect(left + 32, top + machineH - 78, luckW, 8);
+                    ctx.fillStyle = "#facc15";
+                    ctx.fillRect(left + 32, top + machineH - 78, luckW * clamp(credits / 1000, 0, 1), 8);
 
                     ctx.fillStyle = "#0f172a";
                     ctx.fillRect(left + 32, top + machineH - 62, machineW - 64, 34);
