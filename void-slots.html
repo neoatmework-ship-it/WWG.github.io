@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Void Slots | WWG</title>
+    <link rel="stylesheet" href="sprite-arcade.css">
+</head>
+<body class="arcade-game">
+    <canvas id="game" class="game-canvas"></canvas>
+    <a href="index.html" class="wwg-back-btn" title="Back to Gallery">&larr;</a>
+    <header class="game-hud">
+        <div class="game-title">
+            <h1>Void Slots</h1>
+            <p>Spin animated reels with fake credits only. Match symbols, chase jackpots, and never spend real money.</p>
+        </div>
+        <div class="stat-bar">
+            <div class="stat">Credits <span data-credits>250</span></div>
+            <div class="stat">Bet <span data-bet>10</span></div>
+            <div class="stat">Win <span data-win>0</span></div>
+            <button class="restart-btn" data-action="bet-down">Bet -</button>
+            <button class="restart-btn" data-action="spin">Spin</button>
+            <button class="restart-btn" data-action="bet-up">Bet +</button>
+            <button class="restart-btn" data-restart>Reset</button>
+        </div>
+    </header>
+    <div class="game-toast" data-toast></div>
+    <script src="sprite-games.js"></script>
+    <script>WWGSpriteGames.voidSlots("game");</script>
+</body>
+</html>
