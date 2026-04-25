@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cursor Weather | WWG</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        :root {
+            --bg: #071014;
+            --panel: rgba(9, 17, 24, .78);
+            --line: rgba(255,255,255,.13);
+            --text: #eef7ff;
+            --muted: #91a6b8;
+            --a: #5eead4;
+            --b: #f59e0b;
+            --c: #f43f5e;
+        }
+        body {
+            min-height: 100vh;
+            font-family: Inter, system-ui, sans-serif;
+            color: var(--text);
+            background: radial-gradient(circle at 50% 40%, rgba(94,234,212,.18), transparent 34%), var(--bg);
+            overflow: hidden;
+        }
+        canvas { position: fixed; inset: 0; width: 100%; height: 100%; }
+        .back {
+            position: fixed; top: 18px; left: 18px; z-index: 5;
+            width: 44px; height: 44px; border-radius: 50%;
+            display: grid; place-items: center; text-decoration: none;
+            color: var(--text); background: var(--panel); border: 1px solid var(--line);
+            backdrop-filter: blur(14px);
+        }
+        .hud {
+            position: fixed;
+            left: 50%;
+            top: 26px;
+            transform: translateX(-50%);
+            width: min(760px, calc(100% - 92px));
+            z-index: 4;
+            display: grid;
+            gap: 14px;
+            justify-items: center;
+            text-align: center;
+            pointer-events: none;
+        }
+        h1 { font-size: clamp(2.2rem, 6vw, 5.4rem); line-height: .9; letter-spacing: -3px; }
+        p { max-width: 56ch; color: var(--muted); line-height: 1.55; }
+        .controls {
+            pointer-events: auto;
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            justify-content: center;
+            padding: 10px;
+            border: 1px solid var(--line);
+            background: var(--panel);
+            backdrop-filter: blur(14px);
+        }
+        button {
+            border: 1px solid rgba(255,255,255,.14);
+            background: rgba(255,255,255,.07);
+            color: var(--text);
+            padding: 10px 14px;
+            font-weight: 700;
+            cursor: pointer;
+            min-width: 86px;
+        }
+        button.active { color: #061014; background: var(--a); border-color: transparent; }
+        .sliders {
+            position: fixed;
+            right: 18px;
+            bottom: 18px;
+            z-index: 4;
+            width: min(320px, calc(100% - 36px));
+            padding: 16px;
+            background: var(--panel);
+            border: 1px solid var(--line);
+            backdrop-filter: blur(14px);
+        }
+        label { display: grid; gap: 8px; color: var(--muted); font-size: .82rem; margin-bottom: 14px; }
+        input[type="range"] { width: 100%; accent-color: var(--a); }
+        .readout { font: 700 12px/1.5 "Courier New", monospace; color: rgba(255,255,255,.62); }
+        @media (max-width: 700px) {
+            .hud { top: 78px; width: calc(100% - 30px); }
+            .controls { width: 100%; }
+            button { flex: 1 1 42%; }
+        }
+    </style>
+</head>
+<body>
+    <canvas id="weather"></canvas>
+    <a class="back" href="index.html" title="Back to Gallery">&larr;</a>
+    <section class="hud">
+        <h1>Cursor Weather</h1>
+        <p>Your pointer is now a local climate event. Move, press, and stir until the forecast gives up.</p>
+        <div class="controls" id="modes">
+            <button class="active" data-mode="drizzle">Drizzle</button>
+            <button data-mode="wind">Wind</button>
+            <button data-mode="spark">Spark</button>
+            <button data-mode="fog">Fog</button>
+        </div>
+    </section>
+    <aside class="sliders">
+        <label>Density <input id="density" type="range" min="2" max="18" value="8"></label>
+        <label>Gravity <input id="gravity" type="range" min="-12" max="18" value="4"></label>
+        <div class="readout" id="readout">MODE drizzle // PRESS TO INTENSIFY</div>
+    </aside>
+    <script>
+        const canvas = document.getElementById("weather");
+        const ctx = canvas.getContext("2d");
+        const densityInput = document.getElementById("density");
+        const gravityInput = document.getElementById("gravity");
+        const readout = document.getElementById("readout");
+        const pointer = { x: innerWidth / 2, y: innerHeight / 2, down: false };
+        const particles = [];
+        let mode = "drizzle";
+        let frame = 0;
+
+        function resize() {
+            canvas.width = innerWidth * devicePixelRatio;
+            canvas.height = innerHeight * devicePixelRatio;
+            ctx.setTransform(devicePixelRatio, 0, 0, devicePixelRatio, 0, 0);
+        }
+        addEventListener("resize", resize);
+        resize();
+
+        function move(e) {
+            const p = e.touches ? e.touches[0] : e;
+            pointer.x = p.clientX;
+            pointer.y = p.clientY;
+        }
+        addEventListener("pointermove", move);
+        addEventListener("pointerdown", e => { pointer.down = true; move(e); });
+        addEventListener("pointerup", () => pointer.down = false);
+        addEventListener("touchmove", e => { move(e); e.preventDefault(); }, { passive: false });
+
+        document.getElementById("modes").addEventListener("click", e => {
+            const btn = e.target.closest("button");
+            if (!btn) return;
+            mode = btn.dataset.mode;
+            document.querySelectorAll("#modes button").forEach(b => b.classList.toggle("active", b === btn));
+            readout.textContent = `MODE ${mode.toUpperCase()} // PRESS TO INTENSIFY`;
+        });
+
+        function spawn() {
+            const density = Number(densityInput.value) + (pointer.down ? 14 : 0);
+            for (let i = 0; i < density; i++) {
+                const angle = Math.random() * Math.PI * 2;
+                const radius = Math.random() * (pointer.down ? 92 : 34);
+                const speed = mode === "wind" ? 4 + Math.random() * 6 : 1 + Math.random() * 3;
+                particles.push({
+                    x: pointer.x + Math.cos(angle) * radius,
+                    y: pointer.y + Math.sin(angle) * radius,
+                    vx: Math.cos(angle) * speed + (mode === "wind" ? 3 : 0),
+                    vy: Math.sin(angle) * speed,
+                    life: 45 + Math.random() * 90,
+                    max: 70 + Math.random() * 90,
+                    size: mode === "fog" ? 12 + Math.random() * 34 : 1.5 + Math.random() * 4,
+                    hue: mode === "spark" ? 22 + Math.random() * 44 : mode === "drizzle" ? 185 + Math.random() * 50 : mode === "wind" ? 150 + Math.random() * 60 : 220 + Math.random() * 35
+                });
+            }
+            if (particles.length > 1500) particles.splice(0, particles.length - 1500);
+        }
+
+        function draw() {
+            frame++;
+            ctx.fillStyle = "rgba(7,16,20,.18)";
+            ctx.fillRect(0, 0, innerWidth, innerHeight);
+            spawn();
+            const gravity = Number(gravityInput.value) / 100;
+            for (let i = particles.length - 1; i >= 0; i--) {
+                const p = particles[i];
+                p.life--;
+                p.vy += gravity;
+                if (mode === "wind") p.vx += Math.sin((p.y + frame) * .018) * .08;
+                if (mode === "fog") {
+                    p.vx *= .992;
+                    p.vy *= .992;
+                }
+                p.x += p.vx;
+                p.y += p.vy;
+                const a = Math.max(0, p.life / p.max);
+                ctx.globalAlpha = mode === "fog" ? a * .13 : a * .82;
+                ctx.fillStyle = `hsl(${p.hue} 88% ${mode === "spark" ? "62%" : "72%"})`;
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, p.size * (mode === "spark" ? a : 1), 0, Math.PI * 2);
+                ctx.fill();
+                if (mode === "drizzle") {
+                    ctx.strokeStyle = ctx.fillStyle;
+                    ctx.beginPath();
+                    ctx.moveTo(p.x, p.y);
+                    ctx.lineTo(p.x - p.vx * 3, p.y - p.vy * 3 - 12);
+                    ctx.stroke();
+                }
+                if (p.life <= 0 || p.x < -80 || p.x > innerWidth + 80 || p.y < -80 || p.y > innerHeight + 80) {
+                    particles.splice(i, 1);
+                }
+            }
+            ctx.globalAlpha = 1;
+            requestAnimationFrame(draw);
+        }
+        draw();
+    </script>
+    <script src="transitions.js"></script>
+</body>
+</html>

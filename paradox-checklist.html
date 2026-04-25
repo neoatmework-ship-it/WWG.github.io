@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Paradox Checklist | WWG</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        :root {
+            --bg: #101014;
+            --paper: #f8f4e8;
+            --ink: #17151c;
+            --line: rgba(23,21,28,.18);
+            --muted: #69636f;
+            --pink: #e84a7a;
+            --blue: #246bfe;
+            --green: #0f8b62;
+        }
+        body {
+            min-height: 100vh;
+            font-family: Inter, system-ui, sans-serif;
+            background:
+                radial-gradient(circle at 10% 18%, rgba(232,74,122,.32), transparent 28%),
+                radial-gradient(circle at 90% 82%, rgba(36,107,254,.28), transparent 32%),
+                var(--bg);
+            color: var(--paper);
+        }
+        .back {
+            position: fixed; top: 18px; left: 18px; z-index: 10;
+            width: 44px; height: 44px; border-radius: 50%;
+            display: grid; place-items: center; color: var(--paper);
+            text-decoration: none; background: rgba(16,16,20,.72);
+            border: 1px solid rgba(255,255,255,.16); backdrop-filter: blur(12px);
+        }
+        main {
+            width: min(1040px, calc(100% - 32px));
+            margin: 0 auto;
+            min-height: 100vh;
+            display: grid;
+            grid-template-columns: .9fr 1.1fr;
+            gap: 28px;
+            align-items: center;
+            padding: 78px 0 38px;
+        }
+        h1 { font-size: clamp(2.8rem, 7vw, 6.4rem); line-height: .86; letter-spacing: -4px; }
+        .lead { color: rgba(248,244,232,.72); line-height: 1.65; margin: 18px 0; max-width: 42ch; }
+        .score {
+            display: inline-grid;
+            grid-auto-flow: column;
+            gap: 12px;
+            align-items: center;
+            padding: 10px 14px;
+            border: 1px solid rgba(255,255,255,.14);
+            background: rgba(255,255,255,.08);
+            font: 700 .86rem "Courier New", monospace;
+        }
+        .board {
+            background: var(--paper);
+            color: var(--ink);
+            padding: 22px;
+            box-shadow: 0 30px 90px rgba(0,0,0,.36);
+            transform: rotate(-1deg);
+        }
+        .topline {
+            display: flex;
+            gap: 10px;
+            border-bottom: 2px solid var(--ink);
+            padding-bottom: 16px;
+            margin-bottom: 16px;
+        }
+        input {
+            flex: 1;
+            min-width: 0;
+            border: 1px solid var(--line);
+            background: #fffaf0;
+            padding: 13px;
+            font: 600 1rem Inter, system-ui, sans-serif;
+        }
+        button {
+            border: 1px solid var(--ink);
+            background: var(--ink);
+            color: var(--paper);
+            padding: 11px 13px;
+            font-weight: 800;
+            cursor: pointer;
+        }
+        .ghost {
+            background: transparent;
+            color: var(--ink);
+        }
+        ul { list-style: none; display: grid; gap: 10px; }
+        li {
+            border: 1px solid var(--line);
+            background: #fffaf0;
+            padding: 12px;
+            display: grid;
+            grid-template-columns: 32px 1fr auto;
+            gap: 12px;
+            align-items: center;
+            transition: transform .18s, background .18s;
+        }
+        li.done { background: rgba(15,139,98,.1); }
+        li button.check {
+            width: 30px; height: 30px; padding: 0;
+            border-radius: 50%;
+            background: transparent;
+            color: var(--green);
+            border-color: rgba(15,139,98,.45);
+        }
+        li.done button.check { background: var(--green); color: #fff; }
+        .task { line-height: 1.35; }
+        .tag {
+            font: 700 .68rem "Courier New", monospace;
+            color: var(--blue);
+            border: 1px solid rgba(36,107,254,.2);
+            padding: 4px 6px;
+        }
+        .note {
+            margin-top: 16px;
+            color: var(--muted);
+            font-size: .86rem;
+            line-height: 1.55;
+        }
+        @media (max-width: 850px) {
+            main { grid-template-columns: 1fr; }
+            .board { transform: none; }
+        }
+        @media (max-width: 520px) {
+            .topline { flex-direction: column; }
+            li { grid-template-columns: 32px 1fr; }
+            .tag { grid-column: 2; width: fit-content; }
+        }
+    </style>
+</head>
+<body>
+    <a class="back" href="index.html" title="Back to Gallery">&larr;</a>
+    <main>
+        <section>
+            <h1>Paradox Checklist</h1>
+            <p class="lead">A productivity tool that becomes less certain every time you complete something. Perfect for finishing the idea of finishing.</p>
+            <div class="score" id="score">0 OF 0 COMPLETE</div>
+        </section>
+        <section class="board">
+            <div class="topline">
+                <input id="new-task" placeholder="Add a suspiciously achievable task">
+                <button id="add">Add</button>
+                <button class="ghost" id="shuffle">Negotiate</button>
+            </div>
+            <ul id="tasks"></ul>
+            <p class="note" id="note">Checking a task may rewrite reality. This is considered a feature in several departments.</p>
+        </section>
+    </main>
+    <script>
+        const initial = [
+            "Write the first item after the list already exists",
+            "Archive a memory that has not happened yet",
+            "Close the tab inside the tab inside the tab",
+            "Prove this checklist is useful without completing it",
+            "Put the final task at the beginning"
+        ];
+        const mutations = [
+            "Confirm that the previous task was only a rehearsal",
+            "Add one tiny exception to the success criteria",
+            "Re-open this item for dramatic balance",
+            "Celebrate responsibly, then undo the celebration",
+            "File the completion under pending evidence",
+            "Ask the list whether it feels seen"
+        ];
+        let tasks = initial.map((text, i) => ({ text, done: false, id: i + 1 }));
+        let nextId = tasks.length + 1;
+        const list = document.getElementById("tasks");
+        const score = document.getElementById("score");
+        const input = document.getElementById("new-task");
+        const note = document.getElementById("note");
+
+        function render() {
+            list.innerHTML = "";
+            tasks.forEach(task => {
+                const li = document.createElement("li");
+                li.className = task.done ? "done" : "";
+                li.innerHTML = `<button class="check" title="Toggle">${task.done ? "✓" : ""}</button><span class="task">${task.text}</span><span class="tag">ID ${String(task.id).padStart(2, "0")}</span>`;
+                li.querySelector(".check").addEventListener("click", () => toggle(task.id));
+                list.appendChild(li);
+            });
+            const done = tasks.filter(t => t.done).length;
+            score.textContent = `${done} OF ${tasks.length} COMPLETE`;
+        }
+
+        function toggle(id) {
+            const task = tasks.find(t => t.id === id);
+            task.done = !task.done;
+            if (task.done && Math.random() > .35) {
+                tasks.splice(Math.floor(Math.random() * (tasks.length + 1)), 0, {
+                    text: mutations[Math.floor(Math.random() * mutations.length)],
+                    done: false,
+                    id: nextId++
+                });
+                note.textContent = "The list accepted your progress and issued a small amendment.";
+            } else {
+                note.textContent = task.done ? "Progress detected. Reality is reviewing the paperwork." : "The item has returned to its natural unfinished state.";
+            }
+            render();
+        }
+
+        function addTask() {
+            const text = input.value.trim();
+            if (!text) return;
+            tasks.unshift({ text, done: false, id: nextId++ });
+            input.value = "";
+            note.textContent = "A new task has appeared with suspicious confidence.";
+            render();
+        }
+
+        document.getElementById("add").addEventListener("click", addTask);
+        input.addEventListener("keydown", e => { if (e.key === "Enter") addTask(); });
+        document.getElementById("shuffle").addEventListener("click", () => {
+            tasks = tasks.sort(() => Math.random() - .5).map((task, index) => {
+                if (index === 0 && !task.done) task.text = "Start by reviewing why this is first";
+                return task;
+            });
+            note.textContent = "The checklist negotiated its own order.";
+            render();
+        });
+        render();
+    </script>
+    <script src="transitions.js"></script>
+</body>
+</html>
